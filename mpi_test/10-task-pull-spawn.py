@@ -13,8 +13,8 @@ import random
 import time
 import sys
 
-n_workers = 10
-n_tasks = 50
+n_workers = 4
+n_tasks = 40
 start_worker = 'worker'
 usage = 'Program should be started without argument'
 
@@ -51,15 +51,20 @@ if len(sys.argv) == 1:
         sys.stdout.flush()
 
     # Gather reports from workers
-    reports = comm.gather(root=MPI.ROOT)
+    reports = []
+    reports = comm.gather(reports, root=MPI.ROOT)
 
     # Print summary
-    workers = 0; tasks = 0; time = 0
+    workers = 0
+    tasks = 0
+    time = 0
     print('\n\n  Worker   Tasks    Time')
     print('-' * 26)
     for worker, report in enumerate(reports):
         print('%8i%8i%8i' % (worker, len(report), sum(report)))
-        workers += 1; tasks += len(report); time += sum(report)
+        workers += 1
+        tasks += len(report)
+        time += sum(report)
     print('-' * 26)
     print('%8i%8i%8i' % (workers, tasks, time))
 
@@ -89,7 +94,7 @@ elif sys.argv[1] == start_worker:
 
     # Ask for work until stop sentinel
     log = []
-    for task in iter(lambda: comm.sendrecv(dest=0), StopIteration):
+    for task in iter(lambda: comm.sendrecv(None, dest=0), StopIteration):
         log.append(task)
 
         # Do work (or not!)
