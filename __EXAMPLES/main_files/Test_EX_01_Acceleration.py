@@ -28,12 +28,13 @@ from beam.profile import CutOptions, FitOptions, Profile
 from monitors.monitors import BunchMonitor
 from plots.plot import Plot
 import os
-from mpi4py import MPI 
+from mpi4py import MPI
 import sys
 
 comm = MPI.COMM_WORLD
-rank = comm.rank
-size = comm.size
+assert comm.size == 1, 'Only one process can be the master!\nRe-run with only 1 process.'
+# rank = comm.rank
+# size = comm.size
 
 # Simulation parameters -------------------------------------------------------
 # Bunch parameters
@@ -55,101 +56,99 @@ alpha = 1./gamma_t/gamma_t        # First order mom. comp. factor
 N_t = 2000           # Number of turns to track
 dt_plt = 200         # Time steps between plots
 
-if rank == 0:
-    try:
-        os.mkdir('../output_files')
-    except:
-        pass
-    try:
-        os.mkdir('../output_files/EX_01_fig')
-    except:
-        pass
-
+try:
+    os.mkdir('../output_files')
+except:
+    pass
+try:
+    os.mkdir('../output_files/EX_01_fig')
+except:
+    pass
 
 
 # Simulation setup ------------------------------------------------------------
-    print("Setting up the simulation...")
-    print("")
+print("Setting up the simulation...")
+print("")
 
 
 # Define general parameters
-    ring = Ring(C, alpha, np.linspace(p_i, p_f, N_t+1), Proton(), N_t)
+ring = Ring(C, alpha, np.linspace(p_i, p_f, N_t+1), Proton(), N_t)
 
 # Define beam and distribution
-    beam = Beam(ring, N_p, N_b)
+beam = Beam(ring, N_p, N_b)
 
 
 # Define RF station parameters and corresponding tracker
-    rf = RFStation(ring, [h], [V], [dphi])
+rf = RFStation(ring, [h], [V], [dphi])
 
-
-    bigaussian(ring, rf, beam, tau_0/4, reinsertion=True, seed=1)
+bigaussian(ring, rf, beam, tau_0/4, reinsertion=True, seed=1)
 
 
 # Need slices for the Gaussian fit
-    profile = Profile(beam, CutOptions(n_slices=100),
-                      FitOptions(fit_option='gaussian'))
+profile = Profile(beam, CutOptions(n_slices=100),
+                  FitOptions(fit_option='gaussian'))
 
-    long_tracker = RingAndRFTracker(rf, beam)
+long_tracker = RingAndRFTracker(rf, beam)
 
 # Define what to save in file
-    # bunchmonitor = BunchMonitor(ring, rf, beam,
-    #                             '../output_files/EX_01_output_data', Profile=profile)
-    # 
-    # format_options = {'dirname': '../output_files/EX_01_fig'}
-    # plots = Plot(ring, rf, beam, dt_plt, N_t, 0, 0.0001763*h,
-    #              -400e6, 400e6, xunit='rad', separatrix_plot=True,
-    #              Profile=profile, h5file='../output_files/EX_01_output_data',
-    #              format_options=format_options)
-    # 
+# bunchmonitor = BunchMonitor(ring, rf, beam,
+#                             '../output_files/EX_01_output_data', Profile=profile)
+#
+# format_options = {'dirname': '../output_files/EX_01_fig'}
+# plots = Plot(ring, rf, beam, dt_plt, N_t, 0, 0.0001763*h,
+#              -400e6, 400e6, xunit='rad', separatrix_plot=True,
+#              Profile=profile, h5file='../output_files/EX_01_output_data',
+#              format_options=format_options)
+#
 # Accelerator map
-    map_ = [long_tracker]
-    print("Map set")
-    print("")
-    sys.stdout.flush()
+map_ = [long_tracker]
+print("Map set")
+print("")
+sys.stdout.flush()
     # print("dE: ", beam.dE)
 
 # scatter the data
 
-my_N_p = (N_p + size - 1)//comm.size
+# my_N_p = (N_p + size - 1)//comm.size
 
-# if comm.rank==comm.size-1:
-#     my_N_p = N_p - (comm.size-1)*my_N_p
+# # if comm.rank==comm.size-1:
+# #     my_N_p = N_p - (comm.size-1)*my_N_p
 
-my_dE = np.empty(my_N_p, dtype=np.float64)
-my_dt = np.empty(my_N_p, dtype=np.float64)
-
-
-# for r in range(size):
-#     if rank == r:
-#         print("[%d] Size: %d" % (rank, my_N_p))
-#     comm.Barrier()
-
-dE = None
-dt = None
-if rank == 0:
-    dE = beam.dE
-    dt = beam.dt
-    dE = np.append(dE, np.zeros(int(comm.size * my_N_p - N_p)))
-    dt = np.append(dt, np.zeros(int(comm.size * my_N_p - N_p)))
+# my_dE = np.empty(my_N_p, dtype=np.float64)
+# my_dt = np.empty(my_N_p, dtype=np.float64)
 
 
-comm.Scatter(dE, my_dE, root=0)
+# # for r in range(size):
+# #     if rank == r:
+# #         print("[%d] Size: %d" % (rank, my_N_p))
+# #     comm.Barrier()
 
-# for r in range(comm.size):
-#     if comm.rank == r:
-#         print("[%d] :" % comm.rank, my_dE)
-#     comm.Barrier()
+# dE = None
+# dt = None
+# if rank == 0:
+#     dE = beam.dE
+#     dt = beam.dt
+#     dE = np.append(dE, np.zeros(int(comm.size * my_N_p - N_p)))
+#     dt = np.append(dt, np.zeros(int(comm.size * my_N_p - N_p)))
 
 
-sys.exit(0)
+# comm.Scatter(dE, my_dE, root=0)
+
+# # for r in range(comm.size):
+# #     if comm.rank == r:
+# #         print("[%d] :" % comm.rank, my_dE)
+# #     comm.Barrier()
+
+
+# sys.exit(0)
 
 # print(long_tracker.rf_voltage[0])
 
+N_t = 10
 # Tracking --------------------------------------------------------------------
 for i in range(1, N_t+1):
     # Plot has to be done before tracking (at least for cases with separatrix)
-    if (i % dt_plt) == 0 and (comm.rank == 0):
+    if (i % dt_plt) == 0:
         print("Outputting at time step %d..." % i)
         print("   Beam momentum %.6e eV" % beam.momentum)
         print("   Beam gamma %3.3f" % beam.gamma)
@@ -162,9 +161,13 @@ for i in range(1, N_t+1):
     # Track
     for m in map_:
         m.track()
+    # long_tracker.track()
 
     # Define losses according to separatrix and/or longitudinal position
     # beam.losses_separatrix(ring, rf)
     # beam.losses_longitudinal_cut(0., 2.5e-9)
+
+print('dE mean: ', np.mean(beam.dE))
+print('dE std: ', np.std(beam.dE))
 
 print("Done!")

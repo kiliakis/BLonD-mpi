@@ -24,6 +24,8 @@ import logging
 
 from utils import bmath as bm
 
+from mpi4py import MPI
+
 
 class FullRingAndRF(object):
     """

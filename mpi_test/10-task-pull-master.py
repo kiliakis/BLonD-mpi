@@ -5,21 +5,25 @@ parent will then spawn specified number of workers. Work is randomized to
 demonstrate dynamic allocation. Worker logs are collectively passed back to
 parent at the end in place of results. Comments and output are both
 deliberately excessive for instructional purposes. """
-from __future__ import print_function
-from __future__ import division
 
 from mpi4py import MPI
 import random
 import time
 import sys
 
-n_workers = 4
-n_tasks = 40
-start_worker = 'worker'
-usage = 'Program should be started without argument'
+n_workers = 9
+n_tasks = 50
+worker = sys.path[0]+'/10-task-pull-worker.py'
 
 # Parent
-if len(sys.argv) == 1:
+if __name__ == '__main__':
+    comm = MPI.COMM_WORLD
+    rank = comm.Get_rank()
+
+    print('Master[%d]: Hostname: %s' % (rank, MPI.Get_processor_name()))
+    # print(worker)
+    # sys.exit()
+    # sys.stdout.flush()
 
     # Start clock
     start = MPI.Wtime()
@@ -34,7 +38,7 @@ if len(sys.argv) == 1:
     # Spawn workers
     comm = MPI.COMM_WORLD.Spawn(
         sys.executable,
-        args=[sys.argv[0], start_worker],
+        args=[worker],
         maxprocs=n_workers)
 
     # Reply to whoever asks until done
@@ -81,31 +85,3 @@ if len(sys.argv) == 1:
 
     # Shutdown
     comm.Disconnect()
-
-# Worker
-elif sys.argv[1] == start_worker:
-
-    # Connect to parent
-    try:
-        comm = MPI.Comm.Get_parent()
-        rank = comm.Get_rank()
-    except:
-        raise ValueError('Could not connect to parent - ' + usage)
-
-    # Ask for work until stop sentinel
-    log = []
-    for task in iter(lambda: comm.sendrecv(None, dest=0), StopIteration):
-        log.append(task)
-
-        # Do work (or not!)
-        time.sleep(task)
-
-    # Collective report to parent
-    comm.gather(sendobj=log, root=0)
-
-    # Shutdown
-    comm.Disconnect()
-
-# Catch
-else:
-    raise ValueError(usage)
