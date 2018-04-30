@@ -30,6 +30,12 @@ from plots.plot import Plot
 import os
 from mpi4py import MPI
 import sys
+from toolbox.logger import Logger
+
+logger = Logger(debug=True)
+import logging
+
+from mpi import mpi_config
 
 comm = MPI.COMM_WORLD
 assert comm.size == 1, 'Only one process can be the master!\nRe-run with only 1 process.'
@@ -56,19 +62,18 @@ alpha = 1./gamma_t/gamma_t        # First order mom. comp. factor
 N_t = 2000           # Number of turns to track
 dt_plt = 200         # Time steps between plots
 
-try:
-    os.mkdir('../output_files')
-except:
-    pass
-try:
-    os.mkdir('../output_files/EX_01_fig')
-except:
-    pass
+# try:
+#     os.mkdir('../output_files')
+# except:
+#     pass
+# try:
+#     os.mkdir('../output_files/EX_01_fig')
+# except:
+#     pass
 
 
 # Simulation setup ------------------------------------------------------------
 print("Setting up the simulation...")
-print("")
 
 
 # Define general parameters
@@ -103,46 +108,17 @@ long_tracker = RingAndRFTracker(rf, beam)
 # Accelerator map
 map_ = [long_tracker]
 print("Map set")
-print("")
-sys.stdout.flush()
-    # print("dE: ", beam.dE)
-
-# scatter the data
-
-# my_N_p = (N_p + size - 1)//comm.size
-
-# # if comm.rank==comm.size-1:
-# #     my_N_p = N_p - (comm.size-1)*my_N_p
-
-# my_dE = np.empty(my_N_p, dtype=np.float64)
-# my_dt = np.empty(my_N_p, dtype=np.float64)
+# sys.stdout.flush()
 
 
-# # for r in range(size):
-# #     if rank == r:
-# #         print("[%d] Size: %d" % (rank, my_N_p))
-# #     comm.Barrier()
+# Workers initialization
+logging.info('master[%d]@%s: Spawning the workers' %
+             (comm.Get_rank(), MPI.Get_processor_name()))
+comm = MPI.COMM_WORLD.Spawn(
+    mpi_config.executable,
+    args=[mpi_config.worker_script],
+    maxprocs=mpi_config.n_workers)
 
-# dE = None
-# dt = None
-# if rank == 0:
-#     dE = beam.dE
-#     dt = beam.dt
-#     dE = np.append(dE, np.zeros(int(comm.size * my_N_p - N_p)))
-#     dt = np.append(dt, np.zeros(int(comm.size * my_N_p - N_p)))
-
-
-# comm.Scatter(dE, my_dE, root=0)
-
-# # for r in range(comm.size):
-# #     if comm.rank == r:
-# #         print("[%d] :" % comm.rank, my_dE)
-# #     comm.Barrier()
-
-
-# sys.exit(0)
-
-# print(long_tracker.rf_voltage[0])
 
 N_t = 10
 # Tracking --------------------------------------------------------------------
