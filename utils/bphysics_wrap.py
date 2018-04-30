@@ -36,33 +36,51 @@ def rf_volt_comp(voltages, omega_rf, phi_rf, ring):
 
 
 def kick(ring, dt, dE, turn):
-    voltage_kick = np.ascontiguousarray(ring.charge*ring.voltage[:, turn])
-    omegarf_kick = np.ascontiguousarray(ring.omega_rf[:, turn])
-    phirf_kick = np.ascontiguousarray(ring.phi_rf[:, turn])
+    voltage = np.ascontiguousarray(ring.charge * ring.voltage[:, turn])
+    omegarf = np.ascontiguousarray(ring.omega_rf[:, turn])
+    phirf = np.ascontiguousarray(ring.phi_rf[:, turn])
 
+    __kick(dt, dE, turn, ring.charge, voltage, omegarf,
+           phirf, ring.n_rf, ring.acceleration_kick[turn])
+
+
+def __kick(dt, dE, turn,
+           charge, voltage, omega_rf,
+           phi_rf, n_rf, acc_kick):
     __lib.kick(__getPointer(dt),
                __getPointer(dE),
-               ct.c_int(ring.n_rf),
-               __getPointer(voltage_kick),
-               __getPointer(omegarf_kick),
-               __getPointer(phirf_kick),
+               ct.c_int(n_rf),
+               __getPointer(voltage),
+               __getPointer(omega_rf),
+               __getPointer(phi_rf),
                __getLen(dt),
-               ct.c_double(ring.acceleration_kick[turn]))
+               ct.c_double(acc_kick))
 
 
 def drift(ring, dt, dE, turn):
+    __drift(dt, dE, turn, ring.solver, ring.t_rev[turn],
+            ring.length_ratio, ring.alpha_order,
+            ring.eta_0[turn], ring.eta_1[turn],
+            ring.eta_2[turn], ring.rf_params.beta[turn],
+            ring.rf_params.energy[turn], dt)
+
+
+def __drift(dt, dE, turn, solver,
+            t_rev, length_ratio, alpha_order,
+            eta_0, eta_1, eta_2,
+            beta, energy):
 
     __lib.drift(__getPointer(dt),
                 __getPointer(dE),
-                ct.c_char_p(ring.solver),
-                ct.c_double(ring.t_rev[turn]),
-                ct.c_double(ring.length_ratio),
-                ct.c_double(ring.alpha_order),
-                ct.c_double(ring.eta_0[turn]),
-                ct.c_double(ring.eta_1[turn]),
-                ct.c_double(ring.eta_2[turn]),
-                ct.c_double(ring.rf_params.beta[turn]),
-                ct.c_double(ring.rf_params.energy[turn]),
+                ct.c_char_p(solver),
+                ct.c_double(t_rev[turn]),
+                ct.c_double(length_ratio),
+                ct.c_double(alpha_order),
+                ct.c_double(eta_0[turn]),
+                ct.c_double(eta_1[turn]),
+                ct.c_double(eta_2[turn]),
+                ct.c_double(beta[turn]),
+                ct.c_double(energy[turn]),
                 __getLen(dt))
 
 

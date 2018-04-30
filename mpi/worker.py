@@ -4,17 +4,26 @@ import time
 import numpy as np
 import sys
 from mpi import mpi_config as mpiconf
+from utils.bphysics_wrap import __kick, __drift
 
 
 def kick():
-    print('Worker[%d]: I am running kick' % rank)
+    # first get needed parameters
+    # then compute
+    __kick(...)
+    # finally send back any needed values
+
 
 def drift():
-    print('Worker[%d]: I am running drift' % rank)
+    # print('Worker[%d]: I am running drift' % rank)
+    # first get needed parameters
+    # then compute
+    __drift(...)
+    # finally send back any needed values
 
 
 if __name__ == '__main__':
-    
+
     try:
         # Connect to parent
         comm = MPI.Comm.Get_parent()
@@ -53,4 +62,3 @@ if __name__ == '__main__':
     # Shutdown
     finally:
         comm.Disconnect()
-        
