@@ -1,0 +1,12 @@
+*__pycache__*
+*.pyc
+*.o
+*.so
+*.project
+*.settings
+*.dll
+*.pydevproject
+*__doc/build
+*__doc/_build
+*__EXAMPLES/output_files/
+*.log
