@@ -19,20 +19,24 @@ def __getLen(x):
 
 
 def rf_volt_comp(voltages, omega_rf, phi_rf, ring):
-    # voltages = np.ascontiguousarray(ring.voltage[:, ring.counter[0]])
-    # omega_rf = np.ascontiguousarray(ring.omega_rf[:, ring.counter[0]])
-    # phi_rf = np.ascontiguousarray(ring.phi_rf[:, ring.counter[0]])
 
     rf_voltage = np.zeros(len(ring.profile.bin_centers))
+    __rf_volt_comp(voltages, omega_rf, phi_rf,
+                   ring.profile.bin_centers, rf_voltage)
+
+    return rf_voltage
+
+
+def __rf_volt_comp(voltages, omega_rf, phi_rf,
+                   bin_centers, rf_voltage):
 
     __lib.rf_volt_comp(__getPointer(voltages),
                        __getPointer(omega_rf),
                        __getPointer(phi_rf),
-                       __getPointer(ring.profile.bin_centers),
+                       __getPointer(bin_centers),
                        __getLen(voltages),
                        __getLen(rf_voltage),
                        __getPointer(rf_voltage))
-    return rf_voltage
 
 
 def kick(ring, dt, dE, turn):
@@ -84,14 +88,32 @@ def __drift(dt, dE, solver,
 
 
 def linear_interp_kick(ring, dt, dE, turn):
+    __linear_interp_kick(dt, dE, ring.total_voltage,
+                         ring.profile.bin_centers, ring.beam.Particle.charge,
+                         ring.acceleration_kick[turn])
+    # __lib.linear_interp_kick(__getPointer(dt),
+    #                          __getPointer(dE),
+    #                          __getPointer(ring.total_voltage),
+    #                          __getPointer(ring.profile.bin_centers),
+    #                          ct.c_double(ring.beam.Particle.charge),
+    #                          ct.c_int(ring.profile.n_slices),
+    #                          ct.c_int(ring.beam.n_macroparticles),
+    #                          ct.c_double(ring.acceleration_kick[turn]))
+
+
+def __linear_interp_kick(dt, dE, total_voltage, bin_centers,
+                         charge, acc_kick):
     __lib.linear_interp_kick(__getPointer(dt),
                              __getPointer(dE),
-                             __getPointer(ring.total_voltage),
-                             __getPointer(ring.profile.bin_centers),
-                             ct.c_double(ring.beam.Particle.charge),
-                             ct.c_int(ring.profile.n_slices),
-                             ct.c_int(ring.beam.n_macroparticles),
-                             ct.c_double(ring.acceleration_kick[turn]))
+                             __getPointer(total_voltage),
+                             __getPointer(bin_centers),
+                             ct.c_double(charge),
+                             __getLen(bin_centers),
+                             __getLen(dt),
+                             ct.c_double(acc_kick))
+
+
+def __linear_interp_kick():
 
 
 def linear_interp_time_translation(ring, dt, dE, turn):
@@ -99,12 +121,19 @@ def linear_interp_time_translation(ring, dt, dE, turn):
 
 
 def slice(profile):
-    __lib.histogram(__getPointer(profile.Beam.dt),
-                    __getPointer(profile.n_macroparticles),
-                    ct.c_double(profile.cut_left),
-                    ct.c_double(profile.cut_right),
-                    ct.c_int(profile.n_slices),
-                    ct.c_int(profile.Beam.n_macroparticles))
+    __slice(__getPointer(profile.Beam.dt),
+            __getPointer(profile.n_macroparticles),
+            ct.c_double(profile.cut_left),
+            ct.c_double(profile.cut_right))
+
+
+def __slice(dt, profile, cut_left, cut_right):
+    __lib.histogram(__getPointer(dt),
+                    __getPointer(profile),
+                    ct.c_double(cut_left),
+                    ct.c_double(cut_right),
+                    __getLen(profile),
+                    __getLen(dt))
 
 
 def slice_smooth(profile):
