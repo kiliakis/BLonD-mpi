@@ -27,7 +27,11 @@ def histo():
     vars_dict = multi_bcast_worker(comm)
     globals().update(vars_dict)
     __slice(dt, profile, cut_left, cut_right)
-    # Here we need to send back the profile 
+    new_profile = np.empty(len(profile), dtype='d')
+    comm.Allreduce(profile, new_profile, op=MPI.SUM, root=0)
+    profile = new_profile
+    # Or even better, allreduce it
+
 
 def LIkick():
     vars_dict = multi_bcast_worker(comm)
@@ -41,7 +45,8 @@ def RFVCalc():
     vars_dict = multi_bcast_worker(comm)
     globals().update(vars_dict)
     __rf_volt_comp(voltages, omega_rf, phi_rf, bin_centers,
-                         rf_voltage)
+                   rf_voltage)
+
 
 def gather():
     mpiconf.multi_gather_worker(comm, globals())
