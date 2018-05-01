@@ -40,11 +40,11 @@ def kick(ring, dt, dE, turn):
     omegarf = np.ascontiguousarray(ring.omega_rf[:, turn])
     phirf = np.ascontiguousarray(ring.phi_rf[:, turn])
 
-    __kick(dt, dE, turn, ring.charge, voltage, omegarf,
+    __kick(dt, dE, ring.charge, voltage, omegarf,
            phirf, ring.n_rf, ring.acceleration_kick[turn])
 
 
-def __kick(dt, dE, turn,
+def __kick(dt, dE,
            charge, voltage, omega_rf,
            phi_rf, n_rf, acc_kick):
     __lib.kick(__getPointer(dt),
@@ -58,14 +58,14 @@ def __kick(dt, dE, turn,
 
 
 def drift(ring, dt, dE, turn):
-    __drift(dt, dE, turn, ring.solver, ring.t_rev[turn],
+    __drift(dt, dE, ring.solver, ring.t_rev[turn],
             ring.length_ratio, ring.alpha_order,
             ring.eta_0[turn], ring.eta_1[turn],
             ring.eta_2[turn], ring.rf_params.beta[turn],
-            ring.rf_params.energy[turn], dt)
+            ring.rf_params.energy[turn])
 
 
-def __drift(dt, dE, turn, solver,
+def __drift(dt, dE, solver,
             t_rev, length_ratio, alpha_order,
             eta_0, eta_1, eta_2,
             beta, energy):
@@ -73,14 +73,14 @@ def __drift(dt, dE, turn, solver,
     __lib.drift(__getPointer(dt),
                 __getPointer(dE),
                 ct.c_char_p(solver),
-                ct.c_double(t_rev[turn]),
+                ct.c_double(t_rev),
                 ct.c_double(length_ratio),
                 ct.c_double(alpha_order),
-                ct.c_double(eta_0[turn]),
-                ct.c_double(eta_1[turn]),
-                ct.c_double(eta_2[turn]),
-                ct.c_double(beta[turn]),
-                ct.c_double(energy[turn]),
+                ct.c_double(eta_0),
+                ct.c_double(eta_1),
+                ct.c_double(eta_2),
+                ct.c_double(beta),
+                ct.c_double(energy),
                 __getLen(dt))
 
 
