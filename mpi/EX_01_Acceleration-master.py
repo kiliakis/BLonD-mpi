@@ -30,9 +30,9 @@ from plots.plot import Plot
 import os
 from mpi4py import MPI
 import sys
-from toolbox.logger import Logger
+#from toolbox.logger import Logger
 
-logger = Logger(debug=True)
+#logger = Logger(rank=-1, debug=True)
 import logging
 
 from mpi import mpi_config as mpiconf
@@ -77,23 +77,23 @@ print("Setting up the simulation...")
 
 
 # # Define general parameters
-# ring = Ring(C, alpha, np.linspace(p_i, p_f, N_t+1), Proton(), N_t)
+ring = Ring(C, alpha, np.linspace(p_i, p_f, N_t+1), Proton(), N_t)
 
 # # Define beam and distribution
-# beam = Beam(ring, N_p, N_b)
+beam = Beam(ring, N_p, N_b)
 
 
 # # Define RF station parameters and corresponding tracker
-# rf = RFStation(ring, [h], [V], [dphi])
+rf = RFStation(ring, [h], [V], [dphi])
 
-# bigaussian(ring, rf, beam, tau_0/4, reinsertion=True, seed=1)
+bigaussian(ring, rf, beam, tau_0/4, reinsertion=True, seed=1)
 
 
 # # Need slices for the Gaussian fit
-# profile = Profile(beam, CutOptions(n_slices=100),
-#                   FitOptions(fit_option='gaussian'))
+profile = Profile(beam, CutOptions(n_slices=100),
+                   FitOptions(fit_option='gaussian'))
 
-# long_tracker = RingAndRFTracker(rf, beam)
+long_tracker = RingAndRFTracker(rf, beam)
 
 # # Define what to save in file
 # # bunchmonitor = BunchMonitor(ring, rf, beam,
@@ -105,10 +105,10 @@ print("Setting up the simulation...")
 # #              Profile=profile, h5file='../output_files/EX_01_output_data',
 # #              format_options=format_options)
 # #
-# # Accelerator map
-# map_ = [long_tracker]
-# print("Map set")
-# sys.stdout.flush()
+# Accelerator map
+map_ = [long_tracker]
+print("Map set")
+sys.stdout.flush()
 
 # def get_dict_info(d):
 #     sizes = []
