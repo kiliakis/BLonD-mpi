@@ -350,19 +350,34 @@ class RingAndRFTracker(object):
             \\Delta t^{n+1} = \\Delta t^{n} + \\frac{L}{C} T_0^{n+1}\\eta_0\\delta^{n+1} \quad \\text{(simple)}
 
         """
+        import mpi.mpi_config as mpiconf
+        workercomm = mpiconf.workercomm
 
-        libblond.drift(beam_dt.ctypes.data_as(ctypes.c_void_p),
-                       beam_dE.ctypes.data_as(ctypes.c_void_p),
-                       ctypes.c_char_p(self.solver),
-                       ctypes.c_double(self.t_rev[index]),
-                       ctypes.c_double(self.length_ratio),
-                       ctypes.c_double(self.alpha_order),
-                       ctypes.c_double(self.eta_0[index]),
-                       ctypes.c_double(self.eta_1[index]),
-                       ctypes.c_double(self.eta_2[index]),
-                       ctypes.c_double(self.rf_params.beta[index]),
-                       ctypes.c_double(self.rf_params.energy[index]),
-                       ctypes.c_int(len(beam_dt)))
+        workercomm.bcast('drift', root=MPI.ROOT)
+
+        vars_dict = {
+            't_rev': self.t_rev[index],
+            'eta_0': self.eta_0[index],
+            'eta_1': self.eta_1[index],
+            'eta_2': self.eta_2[index],
+            'beta': self.rf_params.beta[index],
+            'energy': self.rf_params.energy[index]
+        }
+
+        mpiconf.multi_bcast_master(workercomm, vars_dict)
+
+        # libblond.drift(beam_dt.ctypes.data_as(ctypes.c_void_p),
+        #                beam_dE.ctypes.data_as(ctypes.c_void_p),
+        #                ctypes.c_char_p(self.solver),
+        #                ctypes.c_double(self.t_rev[index]),
+        #                ctypes.c_double(self.length_ratio),
+        #                ctypes.c_double(self.alpha_order),
+        #                ctypes.c_double(self.eta_0[index]),
+        #                ctypes.c_double(self.eta_1[index]),
+        #                ctypes.c_double(self.eta_2[index]),
+        #                ctypes.c_double(self.rf_params.beta[index]),
+        #                ctypes.c_double(self.rf_params.energy[index]),
+        #                ctypes.c_int(len(beam_dt)))
 
     def rf_voltage_calculation(self):
         """Function calculating the total, discretised RF voltage seen by the
@@ -482,7 +497,7 @@ class RingAndRFTracker(object):
                 else:
                     self.kick(self.beam.dt, self.beam.dE, self.counter[0])
 
-            # self.drift(self.beam.dt, self.beam.dE, self.counter[0] + 1)
+            self.drift(self.beam.dt, self.beam.dE, self.counter[0] + 1)
 
         # Increment by one the turn counter
         self.counter[0] += 1

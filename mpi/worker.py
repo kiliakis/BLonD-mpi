@@ -37,6 +37,17 @@ def drift():
     # finally send back any needed values
     # I don't need to send anything back
 
+def gather(vars):
+    mpiconf.multi_gather_worker(comm, vars, globals())
+
+
+def bcast():
+    return mpiconf.multi_bcast_worker(comm)
+    # logging.debug('Initialization dictionary: ' % (rank), vars_dict)
+
+def scatter():
+    return mpiconf.multi_scatter_worker(comm)
+    # logging.debug('Received dict: ' % (rank), vars_dict)
 
 if __name__ == '__main__':
 
@@ -48,35 +59,40 @@ if __name__ == '__main__':
         raise ValueError('Could not connect to parent')
 
     try:
-        logger = mpiconf.Logger(rank)
+        logger = mpiconf.MPILog(rank)
 
         logging.debug('Hostname: %s' % MPI.Get_processor_name())
 
         # General initialization variables
-        vars_dict = mpiconf.multi_bcast_worker(comm)
-        comm.Barrier()
-        globals().update(vars_dict)
-        logging.debug('Initialization dictionary: ' % (rank), vars_dict)
+        # vars_dict = mpiconf.multi_bcast_worker(comm)
+        # comm.Barrier()
+        # globals().update(vars_dict)
+        # logging.debug('Initialization dictionary: ' % (rank), vars_dict)
 
         # Numpy arrays, coordinates etc
-        vars_dict = mpiconf.multi_scatter_worker(comm)
-        comm.Barrier()
-        logging.debug('Received dict: ' % (rank), vars_dict)
-        globals().update(vars_dict)
+        # vars_dict = mpiconf.multi_scatter_worker(comm)
+        # comm.Barrier()
+        # logging.debug('Received dict: ' % (rank), vars_dict)
+        # globals().update(vars_dict)
 
         # This is the main loop
         task = None
-        task = comm.bcast(task, root=0)
-        while task != 'stop':
+        # task = comm.bcast(task, root=0)
+        while (task = comm.bcast(task, root=0)) != 'stop':
+            logging.debug('Received a %s task.' % task)
             if task == 'kick':
-                logging.debug('Received kick task')
                 kick()
             elif task == 'drift':
-                logging.debug('Computing drift task')
                 drift()
+            elif task == 'gather':
+                gather(globals())
+            elif task == 'bcast':
+                globals().update(bcast())
+            elif task == 'scatter':
+                globals().update(scatter())
             else:
-                raise ValueError('Invalid task: %s' % task)
-            task = comm.bcast(task, root=0)
+                raise ValueError('Invalid task: %s.' % task)
+            # task = comm.bcast(task, root=0)
         comm.Barrier()
 
     # Shutdown

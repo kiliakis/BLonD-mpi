@@ -28,28 +28,28 @@ class Logger(object):
     
     """
     
-    def __init__(self, rank, debug = True):
+    def __init__(self, debug = False):
 
         # Root logger on DEBUG level
         root_logger = logging.getLogger()
         root_logger.setLevel(logging.DEBUG)
         
         # Console handler on INFO level        
-        # console_handler = logging.StreamHandler()
-        # console_handler.setLevel(logging.INFO)
+        console_handler = logging.StreamHandler()
+        console_handler.setLevel(logging.INFO)
         log_format = logging.Formatter(
             "%(asctime)s %(name)-25s %(levelname)-9s %(message)s")
-        # console_handler.setFormatter(log_format)
+        console_handler.setFormatter(log_format)
         root_logger.addHandler(console_handler)
         
         # File logger on DEBUG level
-        # if debug == True:       
-        file_handler = logging.FileHandler('worker-%d.log' % rank, mode = 'w')
-        file_handler.setLevel(logging.DEBUG)
-        file_handler.setFormatter(log_format)
-        root_logger.addHandler(file_handler)
+        if debug == True:       
+            file_handler = logging.FileHandler('debug.log', mode = 'w')
+            file_handler.setLevel(logging.DEBUG)
+            file_handler.setFormatter(log_format)
+            root_logger.addHandler(file_handler)
             
-        logging.debug("Start logging")
+        logging.info("Start logging")
         if debug == True:
             logging.debug("Logger in debug mode")
 

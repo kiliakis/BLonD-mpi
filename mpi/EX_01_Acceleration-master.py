@@ -154,7 +154,7 @@ init_dict = {
 }
 
 mpiconf.multi_bcast_master(workercomm, init_dict)
-workercomm.Barrier()
+# workercomm.Barrier()
 
 
 # Scatter coordinates etc
@@ -162,14 +162,14 @@ workercomm.Barrier()
 # dE = np.arange(10, 20, dtype='d')
 # id = np.arange(0, 20, dtype='i')
 
-scatter_vars_dict = {
-    'dt': (beam.dt, 'd'),
-    'dE': (beam.dE, 'd')
+vars_dict = {
+    'dt': beam.dt,
+    'dE': beam.dE
     # 'id': (id, 'i')
 }
 
-mpiconf.multi_scatter_master(workercomm, scatter_vars_dict)
-workercomm.Barrier()
+mpiconf.multi_scatter_master(workercomm, vars_dict)
+# workercomm.Barrier()
 
 
 N_t = 10
@@ -198,6 +198,8 @@ for i in range(1, N_t+1):
 #     # Define losses according to separatrix and/or longitudinal position
 #     # beam.losses_separatrix(ring, rf)
 #     # beam.losses_longitudinal_cut(0., 2.5e-9)
+
+mpiconf.multi_gather_master(workercomm, vars_dict)
 
 workercomm.bcast('stop', root=MPI.ROOT)
 workercomm.Barrier()
