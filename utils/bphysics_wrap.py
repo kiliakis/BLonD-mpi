@@ -40,8 +40,8 @@ def kick(ring, dt, dE, turn):
     omegarf = np.ascontiguousarray(ring.omega_rf[:, turn])
     phirf = np.ascontiguousarray(ring.phi_rf[:, turn])
 
-    __kick(dt, dE, ring.charge, voltage, omegarf,
-           phirf, ring.n_rf, ring.acceleration_kick[turn])
+    __kick(dt, dE, voltage, omegarf, phirf,
+           ring.n_rf, ring.acceleration_kick[turn])
 
 
 def __kick(dt, dE, voltage, omega_rf,
