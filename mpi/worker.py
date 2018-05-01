@@ -9,7 +9,8 @@ import logging
 
 comm = None
 rank = -1
-
+# initial variables needed for kick:
+# charge, n_rf + dt, dE
 def kick():
     # first get needed parameters
     # these are: voltage, omega_rf, phi_rf, acc_kick
@@ -17,12 +18,12 @@ def kick():
     globals().update(vars_dict)
 
     # then compute
-    __kick(dt, dE, charge, voltage, omega_rf, phi_rf,
-           n_rf, acc_kick)
+    __kick(dt, dE, voltage, omega_rf, phi_rf, n_rf, acc_kick)
     # finally send back any needed values
     # I don't need to send anything back
 
-
+# initial variables needed for kick:
+# solver, length_ratio, alpha_order + dt, dE
 def drift():
     # logging.debug('I am running drift' % rank)
     # first get needed parameters

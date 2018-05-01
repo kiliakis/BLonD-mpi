@@ -138,19 +138,19 @@ workercomm = MPI.COMM_WORLD.Spawn(mpiconf.executable,
                                   maxprocs=mpiconf.n_workers)
 
 mpiconf.n_workers = workercomm.Get_remote_size()
+mpiconf.workercomm = workercomm
 logging.info('master: %d workers successfully initialized' % mpiconf.n_workers)
 
 
 # Send initial data to the workers
-var1 = np.array([0.1, 2., 3], dtype=np.float64)
-var2 = 3.14
-var3 = 1
-var4 = 'hi'
+# var1 = np.array([0.1, 2., 3], dtype=np.float64)
+# var2 = 3.14
+# var3 = 1
+# var4 = 'hi'
 init_dict = {
-    'var1': var1,
-    'var2': var2,
-    'var3': var3,
-    'var4': var4
+    'n_rf': long_tracker.n_rf,
+    'length_ratio': long_tracker.length_ratio,
+    'alpha_order': long_tracker.alpha_order
 }
 
 mpiconf.multi_bcast_master(workercomm, init_dict)
@@ -158,14 +158,14 @@ workercomm.Barrier()
 
 
 # Scatter coordinates etc
-dt = np.arange(0, 9, dtype='d')
-dE = np.arange(10, 20, dtype='d')
-id = np.arange(0, 20, dtype='i')
+# dt = np.arange(0, 9, dtype='d')
+# dE = np.arange(10, 20, dtype='d')
+# id = np.arange(0, 20, dtype='i')
 
 scatter_vars_dict = {
-    'dt': (dt, 'd'),
-    'dE': (dE, 'd'),
-    'id': (id, 'i')
+    'dt': (beam.dt, 'd'),
+    'dE': (beam.dE, 'd')
+    # 'id': (id, 'i')
 }
 
 mpiconf.multi_scatter_master(workercomm, scatter_vars_dict)
@@ -176,11 +176,8 @@ N_t = 10
 # Tracking --------------------------------------------------------------------
 for i in range(1, N_t+1):
     # distribute work tasks to the workers
-    workercomm.bcast('kick', root=MPI.ROOT)
-    workercomm.bcast('drift', root=MPI.ROOT)
+#     workercomm.bcast('drift', root=MPI.ROOT)
 
-workercomm.bcast('stop', root=MPI.ROOT)
-workercomm.Barrier()
 
 #     # Plot has to be done before tracking (at least for cases with separatrix)
 #     if (i % dt_plt) == 0:
@@ -196,14 +193,17 @@ workercomm.Barrier()
 #     # Track
 #     for m in map_:
 #         m.track()
-#     # long_tracker.track()
+    long_tracker.track()
 
 #     # Define losses according to separatrix and/or longitudinal position
 #     # beam.losses_separatrix(ring, rf)
 #     # beam.losses_longitudinal_cut(0., 2.5e-9)
 
-# print('dE mean: ', np.mean(beam.dE))
-# print('dE std: ', np.std(beam.dE))
+workercomm.bcast('stop', root=MPI.ROOT)
+workercomm.Barrier()
+
+print('dE mean: ', np.mean(beam.dE))
+print('dE std: ', np.std(beam.dE))
 
 print("Done!")
 workercomm.Disconnect()

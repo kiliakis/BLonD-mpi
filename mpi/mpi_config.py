@@ -3,6 +3,8 @@ from mpi4py import MPI
 import numpy as np
 import logging
 
+
+
 mpi_type = {
     'd': MPI.DOUBLE,
     'i': MPI.INT
@@ -11,7 +13,7 @@ mpi_type = {
 executable = 'python'
 n_workers = 2
 worker_script = sys.path[0] + '/worker.py'
-
+workercomm = None
 
 def multi_scatter_master(comm, vars):
 

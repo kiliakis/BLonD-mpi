@@ -44,8 +44,7 @@ def kick(ring, dt, dE, turn):
            phirf, ring.n_rf, ring.acceleration_kick[turn])
 
 
-def __kick(dt, dE,
-           charge, voltage, omega_rf,
+def __kick(dt, dE, voltage, omega_rf,
            phi_rf, n_rf, acc_kick):
     __lib.kick(__getPointer(dt),
                __getPointer(dE),

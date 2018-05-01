@@ -307,19 +307,33 @@ class RingAndRFTracker(object):
             \Delta E^{n+1} = \Delta E^n + \sum_{k=0}^{n_{\mathsf{rf}}-1}{e V_k^n \\sin{\\left(\omega_{\mathsf{rf,k}}^n \\Delta t^n + \phi_{\mathsf{rf,k}}^n \\right)}} - (E_s^{n+1} - E_s^n) 
 
         """
+        import mpi.mpi_config as mpiconf
+        workercomm = mpiconf.workercomm
+
+        workercomm.bcast('kick', root=MPI.ROOT)
 
         voltage_kick = np.ascontiguousarray(self.charge*self.voltage[:, index])
         omegarf_kick = np.ascontiguousarray(self.omega_rf[:, index])
         phirf_kick = np.ascontiguousarray(self.phi_rf[:, index])
 
-        libblond.kick(beam_dt.ctypes.data_as(ctypes.c_void_p),
-                      beam_dE.ctypes.data_as(ctypes.c_void_p),
-                      ctypes.c_int(self.n_rf),
-                      voltage_kick.ctypes.data_as(ctypes.c_void_p),
-                      omegarf_kick.ctypes.data_as(ctypes.c_void_p),
-                      phirf_kick.ctypes.data_as(ctypes.c_void_p),
-                      ctypes.c_int(len(beam_dt)),
-                      ctypes.c_double(self.acceleration_kick[index]))
+        vars_dict = {
+            'voltage': voltage_kick,
+            'omegarf': omegarf_kick,
+            'phirf': phirf_kick,
+            'acc_kick': self.acceleration_kick[index]
+        }
+
+        mpiconf.multi_bcast_master(workercomm, vars_dict)
+        # workercomm.Barrier()
+     
+        # libblond.kick(beam_dt.ctypes.data_as(ctypes.c_void_p),
+        #               beam_dE.ctypes.data_as(ctypes.c_void_p),
+        #               ctypes.c_int(self.n_rf),
+        #               voltage_kick.ctypes.data_as(ctypes.c_void_p),
+        #               omegarf_kick.ctypes.data_as(ctypes.c_void_p),
+        #               phirf_kick.ctypes.data_as(ctypes.c_void_p),
+        #               ctypes.c_int(len(beam_dt)),
+        #               ctypes.c_double(self.acceleration_kick[index]))
 
     def drift(self, beam_dt, beam_dE, index):
         """Function updating the particle arrival time to the RF station 
@@ -468,7 +482,7 @@ class RingAndRFTracker(object):
                 else:
                     self.kick(self.beam.dt, self.beam.dE, self.counter[0])
 
-            self.drift(self.beam.dt, self.beam.dE, self.counter[0] + 1)
+            # self.drift(self.beam.dt, self.beam.dE, self.counter[0] + 1)
 
         # Increment by one the turn counter
         self.counter[0] += 1
