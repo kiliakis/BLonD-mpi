@@ -28,24 +28,13 @@ from beam.profile import CutOptions, FitOptions, Profile
 from monitors.monitors import BunchMonitor
 from plots.plot import Plot
 import os
-from mpi4py import MPI
 import sys
-from toolbox.logger import Logger
 
-logger = Logger(debug=True)
-import logging
-
-from mpi import mpi_config
-
-comm = MPI.COMM_WORLD
-assert comm.size == 1, 'Only one process can be the master!\nRe-run with only 1 process.'
-# rank = comm.rank
-# size = comm.size
 
 # Simulation parameters -------------------------------------------------------
 # Bunch parameters
 N_b = 1e9           # Intensity
-N_p = 8         # Macro-particles
+N_p = 10         # Macro-particles
 tau_0 = 0.4e-9          # Initial bunch length, 4 sigma [s]
 
 # Machine and RF parameters
@@ -112,15 +101,10 @@ print("Map set")
 
 
 # Workers initialization
-logging.info('master[%d]@%s: Spawning the workers' %
-             (comm.Get_rank(), MPI.Get_processor_name()))
-comm = MPI.COMM_WORLD.Spawn(
-    mpi_config.executable,
-    args=[mpi_config.worker_script],
-    maxprocs=mpi_config.n_workers)
 
-
-N_t = 10
+N_t = 4
+print('dE mean: ', np.mean(beam.dE))
+print('dE std: ', np.std(beam.dE))
 # Tracking --------------------------------------------------------------------
 for i in range(1, N_t+1):
     # Plot has to be done before tracking (at least for cases with separatrix)

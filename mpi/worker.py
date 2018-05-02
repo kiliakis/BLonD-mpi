@@ -6,82 +6,66 @@ from mpi import mpi_config as mpiconf
 from utils.bphysics_wrap import __kick, __drift
 import logging
 
-comm = None
-rank = -1
+worker = None
 
 
 def kick():
-    vars_dict = mpiconf.multi_bcast_worker(comm)
-    globals().update(vars_dict)
-    __kick(dt, dE, voltage, omega_rf, phi_rf, n_rf, acc_kick)
+    __kick(dt, dE, voltage, omegarf, phirf, n_rf, acc_kick)
+    # comm.Barrier()
 
 
 def drift():
-    vars_dict = mpiconf.multi_bcast_worker(comm)
-    globals().update(vars_dict)
     __drift(dt, dE, solver, t_rev, length_ratio, alpha_order,
             eta_0, eta_1, eta_2, beta, energy)
+    # comm.Barrier()
 
 
 def histo():
-    vars_dict = mpiconf.multi_bcast_worker(comm)
-    globals().update(vars_dict)
     __slice(dt, profile, cut_left, cut_right)
     new_profile = np.empty(len(profile), dtype='d')
-    comm.Allreduce(profile, new_profile, op=MPI.SUM, root=0)
+    worker.intercomm.Allreduce(profile, new_profile, op=MPI.SUM, root=0)
     profile = new_profile
     # Or even better, allreduce it
 
 
 def LIkick():
-    vars_dict = mpiconf.multi_bcast_worker(comm)
-    globals().update(vars_dict)
     __linear_interp_kick(dt, dE, total_voltage, bin_centers,
                          charge, acc_kick)
 
 
 # Perhaps this is not big enough to use mpi, an omp might be better
 def RFVCalc():
-    vars_dict = mpiconf.multi_bcast_worker(comm)
-    globals().update(vars_dict)
     __rf_volt_comp(voltages, omega_rf, phi_rf, bin_centers,
                    rf_voltage)
 
 
 def gather():
-    mpiconf.multi_gather_worker(comm, globals())
+    worker.multi_gather(globals())
 
 
 def bcast():
-    globals().update(mpiconf.multi_bcast_worker(comm))
+    globals().update(worker.multi_bcast())
 
 
 def scatter():
-    globals().update(mpiconf.multi_scatter_worker(comm))
+    globals().update(worker.multi_scatter())
 
 
 def barrier():
-    comm.Barrier()
+    worker.intercomm.Barrier()
 
 
 if __name__ == '__main__':
 
     try:
-        # Connect to parent
-        comm = MPI.Comm.Get_parent()
-        rank = comm.Get_rank()
-    except:
-        raise ValueError('Could not connect to parent')
 
-    try:
-        logger = mpiconf.MPILog(rank)
-        logging.debug('Hostname: %s' % MPI.Get_processor_name())
+        worker = mpiconf.Worker()
 
         # This is the main loop
         task = None
-        task = comm.bcast(task, root=0)
+        task = worker.intercomm.bcast(task, root=0)
+        logging.debug('Received a %s task.' % task)
         while task != 'stop':
-            logging.debug('Received a %s task.' % task)
             if task == 'kick':
                 kick()
             elif task == 'drift':
@@ -103,8 +87,13 @@ if __name__ == '__main__':
             else:
                 raise ValueError('Invalid task: %s.' % task)
             logging.debug('Completed the %s task.' % task)
-            task = comm.bcast(task, root=0)
+            task = worker.intercomm.bcast(task, root=0)
+            logging.debug('Received a %s task.' % task)
+        logging.debug('Wating on the barrier')
+        worker.intercomm.Barrier()
 
     # Shutdown
     finally:
-        comm.Disconnect()
+        sys.stdout.flush()
+        sys.stderr.flush()
+        worker.intercomm.Disconnect()

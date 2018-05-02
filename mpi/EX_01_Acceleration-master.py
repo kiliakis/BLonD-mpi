@@ -28,25 +28,17 @@ from beam.profile import CutOptions, FitOptions, Profile
 from monitors.monitors import BunchMonitor
 from plots.plot import Plot
 import os
-from mpi4py import MPI
 import sys
 #from toolbox.logger import Logger
 
-#logger = Logger(rank=-1, debug=True)
 import logging
 
 from mpi import mpi_config as mpiconf
-logger = mpiconf.MPILog(rank=-1)
-
-comm = MPI.COMM_WORLD
-assert comm.size == 1, 'Only one process can be the master!\nRe-run with only 1 process.'
-# rank = comm.rank
-# size = comm.size
 
 # Simulation parameters -------------------------------------------------------
 # Bunch parameters
 N_b = 1e9           # Intensity
-N_p = 1000         # Macro-particles
+N_p = 10         # Macro-particles
 tau_0 = 0.4e-9          # Initial bunch length, 4 sigma [s]
 
 # Machine and RF parameters
@@ -109,60 +101,35 @@ long_tracker = RingAndRFTracker(rf, beam)
 # Accelerator map
 map_ = [long_tracker]
 print("Map set")
-sys.stdout.flush()
-
-# def get_dict_info(d):
-#     sizes = []
-#     types = []
-#     names = []
-#     for k in sorted(d.keys()):
-#         names.append(k)
-#         try:
-#             size = len(d[k])
-#             sizes.append(size)
-#             types.append(type(d[k][0]))
-#         except TypeError:
-#             sizes.append(1)
-#             types.append(type(d[k]))
-#             d[k] = np.array(d[k], dtype=type(d[k]))
-#     return sizes, types, names
+# sys.stdout.flush()
 
 
 # Workers initialization
-logging.info('master: Spawning the workers')
-# logging.info('master[%d]@%s: Executable: %s, Script: %s' %
-#              (comm.Get_rank(), MPI.Get_processor_name(), mpi_config.executable, mpi_config.worker_script))
-# sys.stdout.flush()
+# logging.debug('master: Spawning the workers')
 
-workercomm = MPI.COMM_WORLD.Spawn(mpiconf.executable,
-                                  args=[mpiconf.worker_script],
-                                  maxprocs=mpiconf.n_workers)
+# workercomm = MPI.COMM_WORLD.Spawn(mpiconf.executable,
+#                                   args=mpiconf.args,
+#                                   maxprocs=mpiconf.n_workers)
 
-mpiconf.n_workers = workercomm.Get_remote_size()
-mpiconf.workercomm = workercomm
-logging.info('master: %d workers successfully initialized' % mpiconf.n_workers)
+# mpiconf.n_workers = workercomm.Get_remote_size()
+# mpiconf.workercomm = workercomm
+# logging.debug('master: %d workers successfully initialized' % mpiconf.n_workers)
 
+master = mpiconf.Master()
+master.spawn_workers(workers=2, debug=False)
 
 # Send initial data to the workers
-# var1 = np.array([0.1, 2., 3], dtype=np.float64)
-# var2 = 3.14
-# var3 = 1
-# var4 = 'hi'
 init_dict = {
     'n_rf': long_tracker.n_rf,
+    'solver': long_tracker.solver,
     'length_ratio': long_tracker.length_ratio,
     'alpha_order': long_tracker.alpha_order
 }
 logging.debug('Broadcasted initial variables')
-mpiconf.multi_bcast_master(workercomm, init_dict)
-# workercomm.Barrier()
+master.multi_bcast(init_dict)
 
 
 # Scatter coordinates etc
-# dt = np.arange(0, 9, dtype='d')
-# dE = np.arange(10, 20, dtype='d')
-# id = np.arange(0, 20, dtype='i')
-
 vars_dict = {
     'dt': beam.dt,
     'dE': beam.dE
@@ -170,16 +137,17 @@ vars_dict = {
 }
 
 logging.debug('Scattered initial coordinates')
-mpiconf.multi_scatter_master(workercomm, vars_dict)
+master.multi_scatter(vars_dict)
 # workercomm.Barrier()
 
 
-N_t = 10
+N_t = 4
+print('dE mean: ', np.mean(beam.dE))
+print('dE std: ', np.std(beam.dE))
+
 # Tracking --------------------------------------------------------------------
 for i in range(1, N_t+1):
-    # distribute work tasks to the workers
-#     workercomm.bcast('drift', root=MPI.ROOT)
-
+    print('Turn: ', i)
 
 #     # Plot has to be done before tracking (at least for cases with separatrix)
 #     if (i % dt_plt) == 0:
@@ -193,21 +161,20 @@ for i in range(1, N_t+1):
 #         print("")
 
 #     # Track
-#     for m in map_:
-#         m.track()
-    long_tracker.track()
+    for m in map_:
+        m.track()
 
 #     # Define losses according to separatrix and/or longitudinal position
 #     # beam.losses_separatrix(ring, rf)
 #     # beam.losses_longitudinal_cut(0., 2.5e-9)
 
-mpiconf.multi_gather_master(workercomm, vars_dict)
-
-workercomm.bcast('stop', root=MPI.ROOT)
-workercomm.Barrier()
+master.multi_gather(vars_dict)
+master.stop()
+master.disconnect()
 
 print('dE mean: ', np.mean(beam.dE))
 print('dE std: ', np.std(beam.dE))
+print(beam.dE)
+print(beam.dt)
 
 print("Done!")
-workercomm.Disconnect()

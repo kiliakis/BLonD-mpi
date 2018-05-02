@@ -308,7 +308,7 @@ class RingAndRFTracker(object):
 
         """
         import mpi.mpi_config as mpiconf
-        workercomm = mpiconf.workercomm
+        master = mpiconf.master
 
 
         voltage_kick = np.ascontiguousarray(self.charge*self.voltage[:, index])
@@ -321,9 +321,10 @@ class RingAndRFTracker(object):
             'phirf': phirf_kick,
             'acc_kick': self.acceleration_kick[index]
         }
+        # logging.debug('')
+        master.multi_bcast(vars_dict)
         logging.debug('Broadcasting a kick task')
-        workercomm.bcast('kick', root=MPI.ROOT)
-        mpiconf.multi_bcast_master(workercomm, vars_dict)
+        master.intercomm.bcast('kick', root=MPI.ROOT)
         # workercomm.Barrier()
      
         # libblond.kick(beam_dt.ctypes.data_as(ctypes.c_void_p),
@@ -351,9 +352,8 @@ class RingAndRFTracker(object):
 
         """
         import mpi.mpi_config as mpiconf
-        workercomm = mpiconf.workercomm
+        master = mpiconf.master
 
-        workercomm.bcast('drift', root=MPI.ROOT)
 
         vars_dict = {
             't_rev': self.t_rev[index],
@@ -364,7 +364,11 @@ class RingAndRFTracker(object):
             'energy': self.rf_params.energy[index]
         }
 
-        mpiconf.multi_bcast_master(workercomm, vars_dict)
+        master.multi_bcast(vars_dict)
+
+        logging.debug('Broadcasting a drift task')
+        master.intercomm.bcast('drift', root=MPI.ROOT)
+        # workercomm.Barrier()
 
         # libblond.drift(beam_dt.ctypes.data_as(ctypes.c_void_p),
         #                beam_dE.ctypes.data_as(ctypes.c_void_p),

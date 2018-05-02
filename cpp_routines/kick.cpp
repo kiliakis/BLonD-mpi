@@ -12,7 +12,7 @@ Project website: http://blond.web.cern.ch/
 // Author: Danilo Quartullo, Helga Timko, Alexandre Lasheen
 
 #include "sin.h"
-
+#include <stdio.h>
 using namespace vdt;
 
 extern "C" void kick(const double * __restrict__ beam_dt, 
@@ -23,7 +23,6 @@ extern "C" void kick(const double * __restrict__ beam_dt,
 					 const int n_macroparticles,
 					 const double acc_kick){
 int j;
-
 // KICK
 for (j = 0; j < n_rf; j++)
 #pragma omp parallel for
@@ -35,6 +34,7 @@ for (j = 0; j < n_rf; j++)
 #pragma omp parallel for
 	for (int i = 0; i < n_macroparticles; i++)
 		beam_dE[i] = beam_dE[i] + acc_kick;
+
 
 }
 
