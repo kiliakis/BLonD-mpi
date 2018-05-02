@@ -36,6 +36,7 @@ import sys
 import logging
 
 from mpi import mpi_config as mpiconf
+logger = mpiconf.MPILog(rank=-1)
 
 comm = MPI.COMM_WORLD
 assert comm.size == 1, 'Only one process can be the master!\nRe-run with only 1 process.'
@@ -45,7 +46,7 @@ assert comm.size == 1, 'Only one process can be the master!\nRe-run with only 1 
 # Simulation parameters -------------------------------------------------------
 # Bunch parameters
 N_b = 1e9           # Intensity
-N_p = 8         # Macro-particles
+N_p = 1000         # Macro-particles
 tau_0 = 0.4e-9          # Initial bunch length, 4 sigma [s]
 
 # Machine and RF parameters
@@ -152,7 +153,7 @@ init_dict = {
     'length_ratio': long_tracker.length_ratio,
     'alpha_order': long_tracker.alpha_order
 }
-
+logging.debug('Broadcasted initial variables')
 mpiconf.multi_bcast_master(workercomm, init_dict)
 # workercomm.Barrier()
 
@@ -168,6 +169,7 @@ vars_dict = {
     # 'id': (id, 'i')
 }
 
+logging.debug('Scattered initial coordinates')
 mpiconf.multi_scatter_master(workercomm, vars_dict)
 # workercomm.Barrier()
 

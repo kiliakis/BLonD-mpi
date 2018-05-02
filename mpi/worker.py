@@ -11,20 +11,20 @@ rank = -1
 
 
 def kick():
-    vars_dict = multi_bcast_worker(comm)
+    vars_dict = mpiconf.multi_bcast_worker(comm)
     globals().update(vars_dict)
     __kick(dt, dE, voltage, omega_rf, phi_rf, n_rf, acc_kick)
 
 
 def drift():
-    vars_dict = multi_bcast_worker(comm)
+    vars_dict = mpiconf.multi_bcast_worker(comm)
     globals().update(vars_dict)
     __drift(dt, dE, solver, t_rev, length_ratio, alpha_order,
             eta_0, eta_1, eta_2, beta, energy)
 
 
 def histo():
-    vars_dict = multi_bcast_worker(comm)
+    vars_dict = mpiconf.multi_bcast_worker(comm)
     globals().update(vars_dict)
     __slice(dt, profile, cut_left, cut_right)
     new_profile = np.empty(len(profile), dtype='d')
@@ -34,7 +34,7 @@ def histo():
 
 
 def LIkick():
-    vars_dict = multi_bcast_worker(comm)
+    vars_dict = mpiconf.multi_bcast_worker(comm)
     globals().update(vars_dict)
     __linear_interp_kick(dt, dE, total_voltage, bin_centers,
                          charge, acc_kick)
@@ -42,7 +42,7 @@ def LIkick():
 
 # Perhaps this is not big enough to use mpi, an omp might be better
 def RFVCalc():
-    vars_dict = multi_bcast_worker(comm)
+    vars_dict = mpiconf.multi_bcast_worker(comm)
     globals().update(vars_dict)
     __rf_volt_comp(voltages, omega_rf, phi_rf, bin_centers,
                    rf_voltage)
@@ -102,6 +102,7 @@ if __name__ == '__main__':
                 barrier()
             else:
                 raise ValueError('Invalid task: %s.' % task)
+            logging.debug('Completed the %s task.' % task)
             task = comm.bcast(task, root=0)
 
     # Shutdown

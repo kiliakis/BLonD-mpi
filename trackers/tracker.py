@@ -310,7 +310,6 @@ class RingAndRFTracker(object):
         import mpi.mpi_config as mpiconf
         workercomm = mpiconf.workercomm
 
-        workercomm.bcast('kick', root=MPI.ROOT)
 
         voltage_kick = np.ascontiguousarray(self.charge*self.voltage[:, index])
         omegarf_kick = np.ascontiguousarray(self.omega_rf[:, index])
@@ -322,7 +321,8 @@ class RingAndRFTracker(object):
             'phirf': phirf_kick,
             'acc_kick': self.acceleration_kick[index]
         }
-
+        logging.debug('Broadcasting a kick task')
+        workercomm.bcast('kick', root=MPI.ROOT)
         mpiconf.multi_bcast_master(workercomm, vars_dict)
         # workercomm.Barrier()
      

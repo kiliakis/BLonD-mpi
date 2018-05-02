@@ -74,9 +74,11 @@ def multi_gather_worker(comm, globs):
 # e.g. (comm, beam.dt, beam.dE)
 def multi_gather_master(comm, gather_dict):
     comm.bcast('gather', root=MPI.ROOT)
-    comm.bcast(gather_dict.keys(), root=MPI.ROOT)
+    keys = list(gather_dict.keys())
+    comm.bcast(keys, root=MPI.ROOT)
     sendbuf = None
-    for v in gather_dict.keys():
+    for k in gather_dict.keys():
+        v = gather_dict[k]
         basesize = len(v) // n_workers
         plusone = len(v) - basesize * n_workers
         counts = np.array([basesize+1]*plusone + [basesize] *

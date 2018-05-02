@@ -113,8 +113,6 @@ def __linear_interp_kick(dt, dE, total_voltage, bin_centers,
                              ct.c_double(acc_kick))
 
 
-def __linear_interp_kick():
-
 
 def linear_interp_time_translation(ring, dt, dE, turn):
     pass
