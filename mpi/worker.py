@@ -3,7 +3,7 @@ import time
 import numpy as np
 import sys
 from mpi import mpi_config as mpiconf
-from utils.bphysics_wrap import __kick, __drift
+from utils.bphysics_wrap import __kick, __drift, __slice, __linear_interp_kick, __rf_volt_comp
 import logging
 
 worker = None
@@ -21,10 +21,12 @@ def drift():
 
 
 def histo():
+    global profile
+    profile = np.empty(n_slices, dtype='d')
     __slice(dt, profile, cut_left, cut_right)
-    new_profile = np.empty(len(profile), dtype='d')
-    worker.intercomm.Allreduce(profile, new_profile, op=MPI.SUM, root=0)
-    profile = new_profile
+    # new_profile = np.empty(len(profile), dtype='d')
+    # worker.intercomm.Allreduce(profile, new_profile, op=MPI.SUM, root=0)
+    # profile = new_profile
     # Or even better, allreduce it
 
 
@@ -35,7 +37,7 @@ def LIkick():
 
 # Perhaps this is not big enough to use mpi, an omp might be better
 def RFVCalc():
-    __rf_volt_comp(voltages, omega_rf, phi_rf, bin_centers,
+    __rf_volt_comp(voltage, omegarf, phirf, bin_centers,
                    rf_voltage)
 
 
@@ -59,7 +61,7 @@ if __name__ == '__main__':
 
     try:
 
-        worker = mpiconf.Worker(log=False)
+        worker = mpiconf.Worker(log=True)
 
         # This is the main loop
         task = None

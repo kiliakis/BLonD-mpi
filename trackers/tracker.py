@@ -24,7 +24,6 @@ import logging
 
 from utils import bmath as bm
 
-from mpi4py import MPI
 
 
 class FullRingAndRF(object):
@@ -308,6 +307,8 @@ class RingAndRFTracker(object):
 
         """
         import mpi.mpi_config as mpiconf
+        from mpi4py import MPI
+
         master = mpiconf.master
 
 
@@ -352,6 +353,8 @@ class RingAndRFTracker(object):
 
         """
         import mpi.mpi_config as mpiconf
+        from mpi4py import MPI
+
         master = mpiconf.master
 
 

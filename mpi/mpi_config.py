@@ -133,8 +133,8 @@ class Worker:
         self.logger = MPILog(rank=self.rank)
         if log==False:
             self.logger.disable()
-        sys.stdout = open('stdout-worker-%.3d.txt' % self.rank, 'w')
-        sys.stderr = open('stderr-worker-%.3d.txt' % self.rank, 'w')
+        # sys.stdout = open('stdout-worker-%.3d.txt' % self.rank, 'w')
+        # sys.stderr = open('stderr-worker-%.3d.txt' % self.rank, 'w')
         self.intracomm = MPI.COMM_WORLD
         logging.debug('Hostname: %s' % self.hostname)
 

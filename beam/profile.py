@@ -22,7 +22,7 @@ from scipy import ndimage
 import ctypes
 from setup_cpp import libblond
 import toolbox.filters_and_fitting as ffroutines
-
+import logging
 
 class CutOptions(object):
     r"""
@@ -445,12 +445,26 @@ class Profile(object):
         Constant space slicing with a constant frame. 
         """
         
-        libblond.histogram(self.Beam.dt.ctypes.data_as(ctypes.c_void_p), 
-                         self.n_macroparticles.ctypes.data_as(ctypes.c_void_p), 
-                         ctypes.c_double(self.cut_left), 
-                         ctypes.c_double(self.cut_right), 
-                         ctypes.c_int(self.n_slices), 
-                         ctypes.c_int(self.Beam.n_macroparticles))
+        import mpi.mpi_config as mpiconf
+        from mpi4py import MPI
+
+        master = mpiconf.master
+
+        vars_dict = {
+            'cut_left': self.cut_left,
+            'cut_right': self.cut_right
+        }
+
+        master.multi_bcast(vars_dict)
+        logging.debug('Broadcasting a histo task')
+        master.intercomm.bcast('histo', root=MPI.ROOT)
+
+        # libblond.histogram(self.Beam.dt.ctypes.data_as(ctypes.c_void_p), 
+        #                  self.n_macroparticles.ctypes.data_as(ctypes.c_void_p), 
+        #                  ctypes.c_double(self.cut_left), 
+        #                  ctypes.c_double(self.cut_right), 
+        #                  ctypes.c_int(self.n_slices), 
+        #                  ctypes.c_int(self.Beam.n_macroparticles))
     
     
     def _slice_smooth(self):

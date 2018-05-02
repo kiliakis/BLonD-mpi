@@ -99,7 +99,7 @@ long_tracker = RingAndRFTracker(rf, beam)
 # #              format_options=format_options)
 # #
 # Accelerator map
-map_ = [long_tracker]
+map_ = [long_tracker, profile]
 print("Map set")
 # sys.stdout.flush()
 
@@ -115,15 +115,16 @@ print("Map set")
 # mpiconf.workercomm = workercomm
 # logging.debug('master: %d workers successfully initialized' % mpiconf.n_workers)
 
-master = mpiconf.Master(log=False)
-master.spawn_workers(workers=2, debug=False)
+master = mpiconf.Master(log=True)
+master.spawn_workers(workers=2, debug=True)
 
 # Send initial data to the workers
 init_dict = {
     'n_rf': long_tracker.n_rf,
     'solver': long_tracker.solver,
     'length_ratio': long_tracker.length_ratio,
-    'alpha_order': long_tracker.alpha_order
+    'alpha_order': long_tracker.alpha_order,
+    'n_slices': profile.n_slices
 }
 logging.debug('Broadcasted initial variables')
 master.multi_bcast(init_dict)
