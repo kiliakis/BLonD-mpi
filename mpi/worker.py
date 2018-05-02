@@ -59,7 +59,7 @@ if __name__ == '__main__':
 
     try:
 
-        worker = mpiconf.Worker()
+        worker = mpiconf.Worker(log=False)
 
         # This is the main loop
         task = None

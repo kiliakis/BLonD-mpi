@@ -27,7 +27,7 @@ _debug_args = ['-e', 'python', '-m', 'pdb']
 master = None
 
 class Master:
-    def __init__(self):
+    def __init__(self, log=True):
         self.intercomm = None
         self.intracomm = MPI.COMM_WORLD
 
@@ -37,6 +37,8 @@ class Master:
         self.workers = 0
         self.hostname = MPI.Get_processor_name()
         self.logger = MPILog(rank=-1)
+        if log == False:
+            self.logger.disable()
         logging.debug('Initialized.')
         global master
         master = self
@@ -110,12 +112,16 @@ class Master:
         logging.debug('Waiting on the barrier')
         self.intercomm.Barrier()
 
+    def sync(self):
+        self.intercomm.bcast('barrier', root=MPI.ROOT)
+        self.intercomm.Barrier()
+
     def disconnect(self):
         self.intercomm.Disconnect()
 
 
 class Worker:
-    def __init__(self):
+    def __init__(self, log=True):
         try:
             # Connect to parent
             self.intercomm = MPI.Comm.Get_parent()
@@ -125,6 +131,8 @@ class Worker:
             raise ValueError('Could not connect to parent')
 
         self.logger = MPILog(rank=self.rank)
+        if log==False:
+            self.logger.disable()
         sys.stdout = open('stdout-worker-%.3d.txt' % self.rank, 'w')
         sys.stderr = open('stderr-worker-%.3d.txt' % self.rank, 'w')
         self.intracomm = MPI.COMM_WORLD
@@ -172,8 +180,8 @@ class MPILog(object):
     def __init__(self, rank=-1):
 
         # Root logger on DEBUG level
-        root_logger = logging.getLogger()
-        root_logger.setLevel(logging.DEBUG)
+        self.root_logger = logging.getLogger()
+        self.root_logger.setLevel(logging.DEBUG)
         if rank < 0:
             log_name = 'master.log'
         else:
@@ -184,12 +192,12 @@ class MPILog(object):
         log_format = logging.Formatter(
             "%(asctime)s %(name)-25s %(levelname)-9s %(message)s")
         # console_handler.setFormatter(log_format)
-        # root_logger.addHandler(console_handler)
+        # self.root_logger.addHandler(console_handler)
 
-        file_handler = logging.FileHandler(log_name, mode='w')
-        file_handler.setLevel(logging.DEBUG)
-        file_handler.setFormatter(log_format)
-        root_logger.addHandler(file_handler)
+        self.file_handler = logging.FileHandler(log_name, mode='w')
+        self.file_handler.setLevel(logging.DEBUG)
+        self.file_handler.setFormatter(log_format)
+        self.root_logger.addHandler(self.file_handler)
         logging.debug("Start logging")
         # if debug == True:
         #     logging.debug("Logger in debug mode")
@@ -198,5 +206,8 @@ class MPILog(object):
         """Disables all logging."""
 
         logging.info("Disable logging")
-        logging.disable(level=logging.NOTSET)
+        # logging.disable(level=logging.NOTSET)
+        # self.root_logger.setLevel(logging.NOTSET)
+        # self.file_handler.setLevel(logging.NOTSET)
 
+        self.root_logger.disabled = True
