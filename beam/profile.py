@@ -458,7 +458,9 @@ class Profile(object):
         master.multi_bcast(vars_dict)
         logging.debug('Broadcasting a histo task')
         master.intercomm.bcast('histo', root=MPI.ROOT)
-
+        zero = np.zeros(self.n_slices, dtype='d')
+        master.intercomm.Allreduce(zero, self.n_macroparticles, op=MPI.SUM)
+        # print(sum(self.n_macroparticles))
         # libblond.histogram(self.Beam.dt.ctypes.data_as(ctypes.c_void_p), 
         #                  self.n_macroparticles.ctypes.data_as(ctypes.c_void_p), 
         #                  ctypes.c_double(self.cut_left), 

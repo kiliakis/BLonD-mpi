@@ -24,9 +24,10 @@ def histo():
     global profile
     profile = np.empty(n_slices, dtype='d')
     __slice(dt, profile, cut_left, cut_right)
-    # new_profile = np.empty(len(profile), dtype='d')
-    # worker.intercomm.Allreduce(profile, new_profile, op=MPI.SUM, root=0)
-    # profile = new_profile
+    new_profile = np.empty(len(profile), dtype='d')
+    worker.intercomm.Allreduce(profile, new_profile, op=MPI.SUM)
+    # print(np.sum(profile))
+    profile = new_profile
     # Or even better, allreduce it
 
 

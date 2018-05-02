@@ -29,6 +29,8 @@ from monitors.monitors import BunchMonitor
 from plots.plot import Plot
 import os
 import sys
+import matplotlib.pyplot as plt 
+
 #from toolbox.logger import Logger
 
 import logging
@@ -116,7 +118,7 @@ print("Map set")
 # logging.debug('master: %d workers successfully initialized' % mpiconf.n_workers)
 
 master = mpiconf.Master(log=True)
-master.spawn_workers(workers=2, debug=True)
+master.spawn_workers(workers=2, debug=False)
 
 # Send initial data to the workers
 init_dict = {
@@ -176,6 +178,10 @@ master.disconnect()
 
 print('dE mean: ', np.mean(beam.dE))
 print('dE std: ', np.std(beam.dE))
+# plt.figure()
+# plt.plot(profile.n_macroparticles)
+# plt.show()
+
 # print(beam.dE)
 # print(beam.dt)
 
