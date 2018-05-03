@@ -180,6 +180,7 @@ class MPILog(object):
     def __init__(self, rank=-1):
 
         # Root logger on DEBUG level
+        self.disabled = False
         self.root_logger = logging.getLogger()
         self.root_logger.setLevel(logging.DEBUG)
         if rank < 0:
@@ -209,5 +210,14 @@ class MPILog(object):
         # logging.disable(level=logging.NOTSET)
         # self.root_logger.setLevel(logging.NOTSET)
         # self.file_handler.setLevel(logging.NOTSET)
-
         self.root_logger.disabled = True
+        self.disabled = True
+
+    def debug(self, string):
+        if self.disabled == False:
+            logging.debug(string)
+
+    def info(self, string):
+        if self.disabled == False:
+            logging.info(string)
+

@@ -324,7 +324,7 @@ class RingAndRFTracker(object):
         }
         # logging.debug('')
         master.multi_bcast(vars_dict)
-        logging.debug('Broadcasting a kick task')
+        master.logger.debug('Broadcasting a kick task')
         master.intercomm.bcast('kick', root=MPI.ROOT)
         # workercomm.Barrier()
      
@@ -369,7 +369,7 @@ class RingAndRFTracker(object):
 
         master.multi_bcast(vars_dict)
 
-        logging.debug('Broadcasting a drift task')
+        master.logger.debug('Broadcasting a drift task')
         master.intercomm.bcast('drift', root=MPI.ROOT)
         # workercomm.Barrier()
 

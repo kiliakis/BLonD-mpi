@@ -117,7 +117,7 @@ print("Map set")
 # mpiconf.workercomm = workercomm
 # logging.debug('master: %d workers successfully initialized' % mpiconf.n_workers)
 
-master = mpiconf.Master(log=True)
+master = mpiconf.Master(log=False)
 master.spawn_workers(workers=2, debug=False)
 
 # Send initial data to the workers
@@ -128,7 +128,7 @@ init_dict = {
     'alpha_order': long_tracker.alpha_order,
     'n_slices': profile.n_slices
 }
-logging.debug('Broadcasted initial variables')
+master.logger.debug('Broadcasted initial variables')
 master.multi_bcast(init_dict)
 
 
@@ -139,12 +139,12 @@ vars_dict = {
     # 'id': (id, 'i')
 }
 
-logging.debug('Scattered initial coordinates')
+master.logger.debug('Scattered initial coordinates')
 master.multi_scatter(vars_dict)
 # workercomm.Barrier()
 
 
-# N_t = 1000
+N_t = 2000
 print('dE mean: ', np.mean(beam.dE))
 print('dE std: ', np.std(beam.dE))
 
@@ -167,7 +167,7 @@ for i in range(1, N_t+1):
     for m in map_:
         m.track()
 
-    master.sync()
+    # master.sync()
 #     # Define losses according to separatrix and/or longitudinal position
 #     # beam.losses_separatrix(ring, rf)
 #     # beam.losses_longitudinal_cut(0., 2.5e-9)
