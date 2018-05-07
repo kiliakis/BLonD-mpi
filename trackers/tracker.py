@@ -23,7 +23,7 @@ from setup_cpp import libblond
 import logging
 
 from utils import bmath as bm
-
+from pyprof import timing
 
 
 class FullRingAndRF(object):
@@ -461,10 +461,12 @@ class RingAndRFTracker(object):
 
                 else:
                     # self.kick(self.beam.dt, self.beam.dE, self.counter[0])
-                    bm.kick_mpi(self, self.counter[0])
+                    with timing.timed_region('kick') as tr:
+                        bm.kick_mpi(self, self.counter[0])
 
             # self.drift(self.beam.dt, self.beam.dE, self.counter[0] + 1)
-            bm.drift_mpi(self, self.counter[0] + 1)
+            with timing.timed_region('drift') as tr:
+                bm.drift_mpi(self, self.counter[0] + 1)
 
         # Increment by one the turn counter
         self.counter[0] += 1

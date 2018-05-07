@@ -2,7 +2,7 @@ import sys
 from mpi4py import MPI
 import numpy as np
 import logging
-
+from pyprof import timing
 
 mpi_type = {
     'd': MPI.DOUBLE,
@@ -27,6 +27,7 @@ _debug_args = ['-e', 'python', '-m', 'pdb']
 master = None
 
 class Master:
+    @timing.timeit()
     def __init__(self, log=True):
         self.intercomm = None
         self.intracomm = MPI.COMM_WORLD
@@ -43,6 +44,7 @@ class Master:
         global master
         master = self
 
+    @timing.timeit()
     def spawn_workers(self, workers=1, worker_script=_worker_script,
                       debug=False, args=None):
         if args:
@@ -61,6 +63,7 @@ class Master:
         self.workers = self.intercomm.Get_remote_size()
         logging.debug('%d workers successfully initialized.' % self.workers)
 
+    @timing.timeit()
     def multi_scatter(self, vars):
         self.intercomm.bcast('scatter', root=MPI.ROOT)
 
@@ -85,6 +88,7 @@ class Master:
 
     # args are the buffers to fill with the gathered values
     # e.g. (comm, beam.dt, beam.dE)
+    @timing.timeit()
     def multi_gather(self, gather_dict):
         self.intercomm.bcast('gather', root=MPI.ROOT)
         keys = list(gather_dict.keys())
@@ -100,24 +104,38 @@ class Master:
 
             self.intercomm.Gatherv(sendbuf, [v, counts, displs, mpi_type[v.dtype.char]],
                                    root=MPI.ROOT)
-
+    @timing.timeit()
     def multi_bcast(self, vars):
         logging.debug('Broadcasting variables')
         self.intercomm.bcast('bcast', root=MPI.ROOT)
         self.intercomm.bcast(vars, root=MPI.ROOT)
 
+    @timing.timeit()
+    def bcast(self, cmd):
+        self.intercomm.bcast(cmd, root=MPI.ROOT)
+
+    @timing.timeit()
     def stop(self):
         logging.debug('Sending a stop signal')
         self.intercomm.bcast('stop', root=MPI.ROOT)
         logging.debug('Waiting on the barrier')
         self.intercomm.Barrier()
-
+    
+    @timing.timeit()
     def sync(self):
         self.intercomm.bcast('barrier', root=MPI.ROOT)
         self.intercomm.Barrier()
 
+    @timing.timeit()
     def disconnect(self):
         self.intercomm.Disconnect()
+
+    @timing.timeit()
+    def quit(self):
+        self.intercomm.bcast('quit', root=MPI.ROOT)
+
+
+
 
 
 class Worker:

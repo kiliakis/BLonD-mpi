@@ -29,13 +29,15 @@ from monitors.monitors import BunchMonitor
 from plots.plot import Plot
 import os
 import sys
-import matplotlib.pyplot as plt 
+import matplotlib.pyplot as plt
+import time
 
 #from toolbox.logger import Logger
 
 import logging
 
 from mpi import mpi_config as mpiconf
+from pyprof import timing
 
 # Simulation parameters -------------------------------------------------------
 # Bunch parameters
@@ -86,7 +88,7 @@ bigaussian(ring, rf, beam, tau_0/4, reinsertion=True, seed=1)
 
 # # Need slices for the Gaussian fit
 profile = Profile(beam, CutOptions(n_slices=100),
-                   FitOptions(fit_option='gaussian'))
+                  FitOptions(fit_option='gaussian'))
 
 long_tracker = RingAndRFTracker(rf, beam)
 
@@ -116,6 +118,8 @@ print("Map set")
 # mpiconf.n_workers = workercomm.Get_remote_size()
 # mpiconf.workercomm = workercomm
 # logging.debug('master: %d workers successfully initialized' % mpiconf.n_workers)
+
+start_t = time.time()
 
 master = mpiconf.Master(log=False)
 master.spawn_workers(workers=2, debug=False)
@@ -152,7 +156,7 @@ print('dE std: ', np.std(beam.dE))
 for i in range(1, N_t+1):
     # print('Turn: ', i)
 
-#     # Plot has to be done before tracking (at least for cases with separatrix)
+    #     # Plot has to be done before tracking (at least for cases with separatrix)
     if (i % dt_plt) == 0:
         print("Outputting at time step %d..." % i)
         print("   Beam momentum %.6e eV" % beam.momentum)
@@ -175,6 +179,10 @@ for i in range(1, N_t+1):
 master.multi_gather(vars_dict)
 master.stop()
 master.disconnect()
+
+end_t = time.time()
+timing.report(total_time=1e3*(end_t-start_t),
+              out_file='report-master.csv')
 
 print('dE mean: ', np.mean(beam.dE))
 print('dE std: ', np.std(beam.dE))

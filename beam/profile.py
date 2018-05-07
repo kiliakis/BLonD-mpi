@@ -25,6 +25,7 @@ import toolbox.filters_and_fitting as ffroutines
 import logging
 
 from utils import bmath as bm
+from pyprof import timing
 
 class CutOptions(object):
     r"""
@@ -446,7 +447,8 @@ class Profile(object):
         """
         Constant space slicing with a constant frame. 
         """
-        bm.slice_mpi(self)        
+        with timing.timed_region('histo') as tr:
+            bm.slice_mpi(self)
         # libblond.histogram(self.Beam.dt.ctypes.data_as(ctypes.c_void_p), 
         #                  self.n_macroparticles.ctypes.data_as(ctypes.c_void_p), 
         #                  ctypes.c_double(self.cut_left), 

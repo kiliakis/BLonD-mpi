@@ -67,7 +67,7 @@ def kick_mpi(ring, turn):
 
     master.multi_bcast(vars_dict)
     master.logger.debug('Broadcasting a kick task')
-    master.intercomm.bcast('kick', root=MPI.ROOT)
+    master.bcast('kick')
     # workercomm.Barrier()
 
 
@@ -107,7 +107,7 @@ def drift_mpi(ring, turn):
     master.multi_bcast(vars_dict)
 
     master.logger.debug('Broadcasting a drift task')
-    master.intercomm.bcast('drift', root=MPI.ROOT)
+    master.bcast('drift')
 
 
 def __drift(dt, dE, solver,
@@ -151,7 +151,7 @@ def LIKick_mpi(ring, turn):
 
     master.multi_bcast(vars_dict)
     master.logger.debug('Broadcasting a LIKick task')
-    master.intercomm.bcast('LIKick', root=MPI.ROOT)
+    master.bcast('LIKick')
 
 
 def __linear_interp_kick(dt, dE, total_voltage, bin_centers,
@@ -190,7 +190,7 @@ def slice_mpi(profile):
 
     master.multi_bcast(vars_dict)
     master.logger.debug('Broadcasting a histo task')
-    master.intercomm.bcast('histo', root=MPI.ROOT)
+    master.bcast('histo')
     zero = np.zeros(profile.n_slices, dtype='d')
     master.intercomm.Allreduce(zero, profile.n_macroparticles, op=MPI.SUM)
 
