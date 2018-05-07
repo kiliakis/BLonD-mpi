@@ -48,6 +48,29 @@ def kick(ring, dt, dE, turn):
            ring.n_rf, ring.acceleration_kick[turn])
 
 
+def kick_mpi(ring, turn):
+    import mpi.mpi_config as mpiconf
+    from mpi4py import MPI
+
+    master = mpiconf.master
+
+    voltage_kick = np.ascontiguousarray(ring.charge*ring.voltage[:, turn])
+    omegarf_kick = np.ascontiguousarray(ring.omega_rf[:, turn])
+    phirf_kick = np.ascontiguousarray(ring.phi_rf[:, turn])
+
+    vars_dict = {
+        'voltage': voltage_kick,
+        'omegarf': omegarf_kick,
+        'phirf': phirf_kick,
+        'acc_kick': ring.acceleration_kick[turn]
+    }
+
+    master.multi_bcast(vars_dict)
+    master.logger.debug('Broadcasting a kick task')
+    master.intercomm.bcast('kick', root=MPI.ROOT)
+    # workercomm.Barrier()
+
+
 def __kick(dt, dE, voltage, omega_rf,
            phi_rf, n_rf, acc_kick):
     __lib.kick(__getPointer(dt),
@@ -66,6 +89,25 @@ def drift(ring, dt, dE, turn):
             ring.eta_0[turn], ring.eta_1[turn],
             ring.eta_2[turn], ring.rf_params.beta[turn],
             ring.rf_params.energy[turn])
+
+
+def drift_mpi(ring, turn):
+    import mpi.mpi_config as mpiconf
+    from mpi4py import MPI
+
+    master = mpiconf.master
+    vars_dict = {
+        't_rev': ring.t_rev[turn],
+        'eta_0': ring.eta_0[turn],
+        'eta_1': ring.eta_1[turn],
+        'eta_2': ring.eta_2[turn],
+        'beta': ring.rf_params.beta[turn],
+        'energy': ring.rf_params.energy[turn]
+    }
+    master.multi_bcast(vars_dict)
+
+    master.logger.debug('Broadcasting a drift task')
+    master.intercomm.bcast('drift', root=MPI.ROOT)
 
 
 def __drift(dt, dE, solver,
@@ -87,18 +129,29 @@ def __drift(dt, dE, solver,
                 __getLen(dt))
 
 
-def linear_interp_kick(ring, dt, dE, turn):
+def LIKick(ring, dt, dE, turn):
     __linear_interp_kick(dt, dE, ring.total_voltage,
                          ring.profile.bin_centers, ring.beam.Particle.charge,
                          ring.acceleration_kick[turn])
-    # __lib.linear_interp_kick(__getPointer(dt),
-    #                          __getPointer(dE),
-    #                          __getPointer(ring.total_voltage),
-    #                          __getPointer(ring.profile.bin_centers),
-    #                          ct.c_double(ring.beam.Particle.charge),
-    #                          ct.c_int(ring.profile.n_slices),
-    #                          ct.c_int(ring.beam.n_macroparticles),
-    #                          ct.c_double(ring.acceleration_kick[turn]))
+
+
+
+def LIKick_mpi(ring, turn):
+    import mpi.mpi_config as mpiconf
+    from mpi4py import MPI
+
+    master = mpiconf.master
+
+    vars_dict = {
+        'total_voltage': ring.total_voltage,
+        'bin_centers': ring.profile.bin_centers,
+        'charge': ring.beam.Particle.charge,
+        'acc_kick': ring.acceleration_kick[turn]
+    }
+
+    master.multi_bcast(vars_dict)
+    master.logger.debug('Broadcasting a LIKick task')
+    master.intercomm.bcast('LIKick', root=MPI.ROOT)
 
 
 def __linear_interp_kick(dt, dE, total_voltage, bin_centers,
@@ -113,7 +166,6 @@ def __linear_interp_kick(dt, dE, total_voltage, bin_centers,
                              ct.c_double(acc_kick))
 
 
-
 def linear_interp_time_translation(ring, dt, dE, turn):
     pass
 
@@ -123,6 +175,25 @@ def slice(profile):
             __getPointer(profile.n_macroparticles),
             ct.c_double(profile.cut_left),
             ct.c_double(profile.cut_right))
+
+
+def slice_mpi(profile):
+    import mpi.mpi_config as mpiconf
+    from mpi4py import MPI
+
+    master = mpiconf.master
+
+    vars_dict = {
+        'cut_left': profile.cut_left,
+        'cut_right': profile.cut_right
+    }
+
+    master.multi_bcast(vars_dict)
+    master.logger.debug('Broadcasting a histo task')
+    master.intercomm.bcast('histo', root=MPI.ROOT)
+    zero = np.zeros(profile.n_slices, dtype='d')
+    master.intercomm.Allreduce(zero, profile.n_macroparticles, op=MPI.SUM)
+
 
 
 def __slice(dt, profile, cut_left, cut_right):
@@ -173,22 +244,39 @@ def music_track_multiturn(music):
                                 ct.c_double(music.coeff4))
 
 
-def synchrotron_radiation(SyncRad, turn):
+def SR(SyncRad, turn):
+    __synch_rad(SyncRad.beam.dE, SyncRad.U0,
+                SyncRad.tau_z, SyncRad.n_kicks)
+
+
+def __synch_rad(dE, U0, tau_z, n_kicks):
     __lib.synchrotron_radiation(
-        __getPointer(SyncRad.beam.dE),
-        ct.c_double(SyncRad.U0 / SyncRad.n_kicks),
-        ct.c_int(SyncRad.beam.n_macroparticles),
-        ct.c_double(SyncRad.tau_z * SyncRad.n_kicks),
-        ct.c_int(SyncRad.n_kicks))
+        __getPointer(dE), ct.c_double(U0 / n_kicks),
+        __getLen(dE), ct.c_double(tau_z * n_kicks), ct.c_int(n_kicks))
 
 
-def synchrotron_radiation_full(SyncRad, turn):
+def SR_full(SyncRad, turn):
+    __sync_rad_full(SyncRad.beam.dE, SyncRad.U0,
+                    SyncRad.tau_z, SyncRad.n_kicks,
+                    SyncRad.sigma_dE, SyncRad.general_params.energy[0, turn],
+                    SyncRad.random_array)
+
+
+def SR_full_mpi(SyncRad, turn):
+    __sync_rad_full(SyncRad.beam.dE, SyncRad.U0,
+                    SyncRad.tau_z, SyncRad.n_kicks,
+                    SyncRad.sigma_dE, SyncRad.general_params.energy[0, turn],
+                    SyncRad.random_array)
+
+
+
+def __sync_rad_full(dE, U0, tau_z, n_kicks,
+                    sigma_dE, energy, random_array=None):
+    if random_array == None:
+        random_array = np.empty(len(dE), dtype='d')
+
     __lib.synchrotron_radiation_full(
-        __getPointer(SyncRad.beam.dE),
-        ct.c_double(SyncRad.U0 / SyncRad.n_kicks),
-        ct.c_int(SyncRad.beam.n_macroparticles),
-        ct.c_double(SyncRad.sigma_dE),
-        ct.c_double(SyncRad.tau_z * SyncRad.n_kicks),
-        ct.c_double(SyncRad.general_params.energy[0, turn]),
-        __getPointer(SyncRad.random_array),
-        ct.c_int(SyncRad.n_kicks))
+        __getPointer(dE), ct.c_double(U0 / n_kicks),
+        __getLen(dE), ct.c_double(sigma_dE),
+        ct.c_double(tau_z * n_kicks), ct.c_double(energy),
+        __getPointer(random_array), ct.c_int(n_kicks))

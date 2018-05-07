@@ -24,6 +24,8 @@ from setup_cpp import libblond
 import toolbox.filters_and_fitting as ffroutines
 import logging
 
+from utils import bmath as bm
+
 class CutOptions(object):
     r"""
     This class groups all the parameters necessary to slice the phase space
@@ -444,23 +446,7 @@ class Profile(object):
         """
         Constant space slicing with a constant frame. 
         """
-        
-        import mpi.mpi_config as mpiconf
-        from mpi4py import MPI
-
-        master = mpiconf.master
-
-        vars_dict = {
-            'cut_left': self.cut_left,
-            'cut_right': self.cut_right
-        }
-
-        master.multi_bcast(vars_dict)
-        master.logger.debug('Broadcasting a histo task')
-        master.intercomm.bcast('histo', root=MPI.ROOT)
-        zero = np.zeros(self.n_slices, dtype='d')
-        master.intercomm.Allreduce(zero, self.n_macroparticles, op=MPI.SUM)
-        # print(sum(self.n_macroparticles))
+        bm.slice_mpi(self)        
         # libblond.histogram(self.Beam.dt.ctypes.data_as(ctypes.c_void_p), 
         #                  self.n_macroparticles.ctypes.data_as(ctypes.c_void_p), 
         #                  ctypes.c_double(self.cut_left), 

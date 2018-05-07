@@ -306,36 +306,14 @@ class RingAndRFTracker(object):
             \Delta E^{n+1} = \Delta E^n + \sum_{k=0}^{n_{\mathsf{rf}}-1}{e V_k^n \\sin{\\left(\omega_{\mathsf{rf,k}}^n \\Delta t^n + \phi_{\mathsf{rf,k}}^n \\right)}} - (E_s^{n+1} - E_s^n) 
 
         """
-        import mpi.mpi_config as mpiconf
-        from mpi4py import MPI
-
-        master = mpiconf.master
-
-
-        voltage_kick = np.ascontiguousarray(self.charge*self.voltage[:, index])
-        omegarf_kick = np.ascontiguousarray(self.omega_rf[:, index])
-        phirf_kick = np.ascontiguousarray(self.phi_rf[:, index])
-
-        vars_dict = {
-            'voltage': voltage_kick,
-            'omegarf': omegarf_kick,
-            'phirf': phirf_kick,
-            'acc_kick': self.acceleration_kick[index]
-        }
-        # logging.debug('')
-        master.multi_bcast(vars_dict)
-        master.logger.debug('Broadcasting a kick task')
-        master.intercomm.bcast('kick', root=MPI.ROOT)
-        # workercomm.Barrier()
-     
-        # libblond.kick(beam_dt.ctypes.data_as(ctypes.c_void_p),
-        #               beam_dE.ctypes.data_as(ctypes.c_void_p),
-        #               ctypes.c_int(self.n_rf),
-        #               voltage_kick.ctypes.data_as(ctypes.c_void_p),
-        #               omegarf_kick.ctypes.data_as(ctypes.c_void_p),
-        #               phirf_kick.ctypes.data_as(ctypes.c_void_p),
-        #               ctypes.c_int(len(beam_dt)),
-        #               ctypes.c_double(self.acceleration_kick[index]))
+        libblond.kick(beam_dt.ctypes.data_as(ctypes.c_void_p),
+                      beam_dE.ctypes.data_as(ctypes.c_void_p),
+                      ctypes.c_int(self.n_rf),
+                      voltage_kick.ctypes.data_as(ctypes.c_void_p),
+                      omegarf_kick.ctypes.data_as(ctypes.c_void_p),
+                      phirf_kick.ctypes.data_as(ctypes.c_void_p),
+                      ctypes.c_int(len(beam_dt)),
+                      ctypes.c_double(self.acceleration_kick[index]))
 
     def drift(self, beam_dt, beam_dE, index):
         """Function updating the particle arrival time to the RF station 
@@ -352,39 +330,18 @@ class RingAndRFTracker(object):
             \\Delta t^{n+1} = \\Delta t^{n} + \\frac{L}{C} T_0^{n+1}\\eta_0\\delta^{n+1} \quad \\text{(simple)}
 
         """
-        import mpi.mpi_config as mpiconf
-        from mpi4py import MPI
-
-        master = mpiconf.master
-
-
-        vars_dict = {
-            't_rev': self.t_rev[index],
-            'eta_0': self.eta_0[index],
-            'eta_1': self.eta_1[index],
-            'eta_2': self.eta_2[index],
-            'beta': self.rf_params.beta[index],
-            'energy': self.rf_params.energy[index]
-        }
-
-        master.multi_bcast(vars_dict)
-
-        master.logger.debug('Broadcasting a drift task')
-        master.intercomm.bcast('drift', root=MPI.ROOT)
-        # workercomm.Barrier()
-
-        # libblond.drift(beam_dt.ctypes.data_as(ctypes.c_void_p),
-        #                beam_dE.ctypes.data_as(ctypes.c_void_p),
-        #                ctypes.c_char_p(self.solver),
-        #                ctypes.c_double(self.t_rev[index]),
-        #                ctypes.c_double(self.length_ratio),
-        #                ctypes.c_double(self.alpha_order),
-        #                ctypes.c_double(self.eta_0[index]),
-        #                ctypes.c_double(self.eta_1[index]),
-        #                ctypes.c_double(self.eta_2[index]),
-        #                ctypes.c_double(self.rf_params.beta[index]),
-        #                ctypes.c_double(self.rf_params.energy[index]),
-        #                ctypes.c_int(len(beam_dt)))
+        libblond.drift(beam_dt.ctypes.data_as(ctypes.c_void_p),
+                       beam_dE.ctypes.data_as(ctypes.c_void_p),
+                       ctypes.c_char_p(self.solver),
+                       ctypes.c_double(self.t_rev[index]),
+                       ctypes.c_double(self.length_ratio),
+                       ctypes.c_double(self.alpha_order),
+                       ctypes.c_double(self.eta_0[index]),
+                       ctypes.c_double(self.eta_1[index]),
+                       ctypes.c_double(self.eta_2[index]),
+                       ctypes.c_double(self.rf_params.beta[index]),
+                       ctypes.c_double(self.rf_params.energy[index]),
+                       ctypes.c_int(len(beam_dt)))
 
     def rf_voltage_calculation(self):
         """Function calculating the total, discretised RF voltage seen by the
@@ -489,22 +446,25 @@ class RingAndRFTracker(object):
                     else:
                         self.total_voltage = self.rf_voltage
 
-                    libblond.linear_interp_kick(
-                        self.beam.dt.ctypes.data_as(ctypes.c_void_p),
-                        self.beam.dE.ctypes.data_as(ctypes.c_void_p),
-                        self.total_voltage.ctypes.data_as(ctypes.c_void_p),
-                        self.profile.bin_centers.ctypes.data_as(
-                            ctypes.c_void_p),
-                        ctypes.c_double(self.beam.Particle.charge),
-                        ctypes.c_int(self.profile.n_slices),
-                        ctypes.c_int(self.beam.n_macroparticles),
-                        ctypes.c_double(
-                            self.acceleration_kick[self.counter[0]]))
+                    bm.LIKick_mpi(self, self.counter[0])
+                    # libblond.linear_interp_kick(
+                    #     self.beam.dt.ctypes.data_as(ctypes.c_void_p),
+                    #     self.beam.dE.ctypes.data_as(ctypes.c_void_p),
+                    #     self.total_voltage.ctypes.data_as(ctypes.c_void_p),
+                    #     self.profile.bin_centers.ctypes.data_as(
+                    #         ctypes.c_void_p),
+                    #     ctypes.c_double(self.beam.Particle.charge),
+                    #     ctypes.c_int(self.profile.n_slices),
+                    #     ctypes.c_int(self.beam.n_macroparticles),
+                    #     ctypes.c_double(
+                    #         self.acceleration_kick[self.counter[0]]))
 
                 else:
-                    self.kick(self.beam.dt, self.beam.dE, self.counter[0])
+                    # self.kick(self.beam.dt, self.beam.dE, self.counter[0])
+                    bm.kick_mpi(self, self.counter[0])
 
-            self.drift(self.beam.dt, self.beam.dE, self.counter[0] + 1)
+            # self.drift(self.beam.dt, self.beam.dE, self.counter[0] + 1)
+            bm.drift_mpi(self, self.counter[0] + 1)
 
         # Increment by one the turn counter
         self.counter[0] += 1

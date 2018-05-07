@@ -29,16 +29,21 @@ def histo():
         profile = np.empty(n_slices, dtype='d')
         __slice(dt, profile, cut_left, cut_right)
 
-    with timing.timed_region('extra_histo') as tr:
+    with timing.timed_region('histo_extra') as tr:
         new_profile = np.empty(len(profile), dtype='d')
         worker.intercomm.Allreduce(profile, new_profile, op=MPI.SUM)
         profile = new_profile
     # Or even better, allreduce it
 
 @timing.timeit()
-def LIkick():
+def LIKick():
     __linear_interp_kick(dt, dE, total_voltage, bin_centers,
                          charge, acc_kick)
+
+
+@timing.timeit()
+def SR():
+    __sync_rad_full(dE, U0, tau_z, n_kicks, sigma_dE, energy)
 
 
 # Perhaps this is not big enough to use mpi, an omp might be better
@@ -64,6 +69,16 @@ def barrier():
     worker.intercomm.Barrier()
 
 
+@timing.timeit()
+def quit():
+    sys.stdout.flush()
+    sys.stderr.flush()
+    worker.logger.debug('Going to disconnect()')
+
+    worker.intercomm.Disconnect()
+    sys.exit(0)
+
+
 if __name__ == '__main__':
 
     try:
@@ -84,8 +99,8 @@ if __name__ == '__main__':
                 drift()
             elif task == 'histo':
                 histo()
-            elif task == 'LIkick':
-                LIkick()
+            elif task == 'LIKick':
+                LIKick()
             elif task == 'RFVCalc':
                 RFVCalc()
             elif task == 'gather':
@@ -95,6 +110,8 @@ if __name__ == '__main__':
             elif task == 'scatter':
                 scatter()
             elif task == 'barrier':
+                barrier()
+            elif task == 'quit':
                 barrier()
             else:
                 raise ValueError('Invalid task: %s.' % task)
