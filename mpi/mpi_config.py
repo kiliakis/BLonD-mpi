@@ -28,7 +28,7 @@ master = None
 
 class Master:
     @timing.timeit()
-    def __init__(self, log=True):
+    def __init__(self, log=False):
         self.intercomm = None
         self.intracomm = MPI.COMM_WORLD
 
@@ -46,7 +46,7 @@ class Master:
 
     @timing.timeit()
     def spawn_workers(self, workers=1, worker_script=_worker_script,
-                      debug=False, args=None):
+                      debug=False, args=None, log=False):
         if args:
             self.args = args
         elif debug == False:
@@ -55,9 +55,12 @@ class Master:
         else:
             self.args = _debug_args
             self.exec = _debug_exec
-
+        if log == True:
+            args = self.args + [worker_script, 'log']
+        else:
+            args = self.args + [worker_script, 'nolog']
         self.intercomm = self.intracomm.Spawn(self.exec,
-                                              args=self.args + [worker_script],
+                                              args=args,
                                               maxprocs=workers)
 
         self.workers = self.intercomm.Get_remote_size()

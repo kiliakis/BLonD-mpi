@@ -82,8 +82,8 @@ def quit():
 if __name__ == '__main__':
 
     try:
-
-        worker = mpiconf.Worker(log=False)
+        log = 'nolog' not in sys.argv
+        worker = mpiconf.Worker(log=log)
 
         # This is the main loop
         task = None
@@ -112,7 +112,7 @@ if __name__ == '__main__':
             elif task == 'barrier':
                 barrier()
             elif task == 'quit':
-                barrier()
+                quit()
             else:
                 raise ValueError('Invalid task: %s.' % task)
             worker.logger.debug('Completed the %s task.' % task)

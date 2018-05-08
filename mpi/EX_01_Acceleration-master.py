@@ -121,8 +121,8 @@ print("Map set")
 
 start_t = time.time()
 
-master = mpiconf.Master(log=False)
-master.spawn_workers(workers=2, debug=False)
+master = mpiconf.Master(log=True)
+master.spawn_workers(workers=7, debug=False, log=True)
 
 # Send initial data to the workers
 init_dict = {
@@ -148,7 +148,7 @@ master.multi_scatter(vars_dict)
 # workercomm.Barrier()
 
 
-N_t = 2000
+N_t = 1000
 print('dE mean: ', np.mean(beam.dE))
 print('dE std: ', np.std(beam.dE))
 
