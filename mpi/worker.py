@@ -88,9 +88,11 @@ def quit():
     worker.intercomm.Disconnect()
     sys.exit(0)
 
+
 @timing.timeit(key='comm:stop')
 def stop():
     pass
+
 
 task_dir = {
     0: kick,
@@ -113,50 +115,28 @@ if __name__ == '__main__':
         log = 'nolog' not in sys.argv
         worker = mpiconf.Worker(log=log)
 
-        # This is the main loop
+        start_t = time.time()
+
         task = np.array(0, np.uint8)
         worker.intercomm.Bcast(task, root=0)
         task = np.uint8(task)
-        logging.debug('Received a %s task.' % task_dir[task].__name__)
-
-        start_t = time.time()
-
+        logging.debug('Received a %d task.' % task)
+        # This is the main loop
         while task != 10:
             try:
                 task_dir[task]()
             except:
                 raise ValueError('Invalid task: %d.' % task)
-            # if task == 'kick':
-            #     kick()
-            # elif task == 'drift':
-            #     drift()
-            # elif task == 'histo':
-            #     histo()
-            # elif task == 'LIKick':
-            #     LIKick()
-            # elif task == 'RFVCalc':
-            #     RFVCalc()
-            # elif task == 'gather':
-            #     gather()
-            # elif task == 'bcast':
-            #     bcast()
-            # elif task == 'scatter':
-            #     scatter()
-            # elif task == 'barrier':
-            #     barrier()
-            # elif task == 'quit':
-            #     quit()
-            # else:
-            #     raise ValueError('Invalid task: %s.' % task)
-            worker.logger.debug('Completed the %s task.' %
-                                task_dir[task].__name__)
+
+            worker.logger.debug('Completed the %d task.' % task)
 
             with timing.timed_region('comm:task_receive') as tr:
                 task = np.array(0, dtype=np.uint8)
                 worker.intercomm.Bcast(task, root=0)
                 task = np.uint8(task)
 
-            worker.logger.debug('Received a %s task.' % task_dir[task].__name__)
+            worker.logger.debug('Received a %d task.' % task)
+        
         end_t = time.time()
 
         worker.logger.debug('Wating on the barrier')
