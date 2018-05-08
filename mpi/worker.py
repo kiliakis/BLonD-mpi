@@ -40,6 +40,7 @@ def histo():
 
     # Or even better, allreduce it
 
+
 @timing.timeit(key='comp:LIKick')
 def LIKick():
     __linear_interp_kick(dt, dE, total_voltage, bin_centers,
@@ -57,17 +58,21 @@ def RFVCalc():
     __rf_volt_comp(voltage, omegarf, phirf, bin_centers,
                    rf_voltage)
 
+
 @timing.timeit(key='comm:gather')
 def gather():
     worker.multi_gather(globals())
+
 
 @timing.timeit(key='comm:bcast')
 def bcast():
     globals().update(worker.multi_bcast())
 
+
 @timing.timeit(key='comm:scatter')
 def scatter():
     globals().update(worker.multi_scatter())
+
 
 @timing.timeit(key='comm:barrier')
 def barrier():
@@ -83,6 +88,24 @@ def quit():
     worker.intercomm.Disconnect()
     sys.exit(0)
 
+@timing.timeit(key='comm:stop')
+def stop():
+    pass
+
+task_dir = {
+    0: kick,
+    1: drift,
+    2: histo,
+    3: LIKick,
+    4: RFVCalc,
+    5: gather,
+    6: bcast,
+    7: scatter,
+    8: barrier,
+    9: quit,
+    10: stop
+}
+
 
 if __name__ == '__main__':
 
@@ -91,40 +114,49 @@ if __name__ == '__main__':
         worker = mpiconf.Worker(log=log)
 
         # This is the main loop
-        task = None
-        task = worker.intercomm.bcast(task, root=0)
-        logging.debug('Received a %s task.' % task)
+        task = np.array(0, np.uint8)
+        worker.intercomm.Bcast(task, root=0)
+        task = np.uint8(task)
+        logging.debug('Received a %s task.' % task_dir[task].__name__)
 
         start_t = time.time()
-        while task != 'stop':
-            if task == 'kick':
-                kick()
-            elif task == 'drift':
-                drift()
-            elif task == 'histo':
-                histo()
-            elif task == 'LIKick':
-                LIKick()
-            elif task == 'RFVCalc':
-                RFVCalc()
-            elif task == 'gather':
-                gather()
-            elif task == 'bcast':
-                bcast()
-            elif task == 'scatter':
-                scatter()
-            elif task == 'barrier':
-                barrier()
-            elif task == 'quit':
-                quit()
-            else:
-                raise ValueError('Invalid task: %s.' % task)
-            worker.logger.debug('Completed the %s task.' % task)
+
+        while task != 10:
+            try:
+                task_dir[task]()
+            except:
+                raise ValueError('Invalid task: %d.' % task)
+            # if task == 'kick':
+            #     kick()
+            # elif task == 'drift':
+            #     drift()
+            # elif task == 'histo':
+            #     histo()
+            # elif task == 'LIKick':
+            #     LIKick()
+            # elif task == 'RFVCalc':
+            #     RFVCalc()
+            # elif task == 'gather':
+            #     gather()
+            # elif task == 'bcast':
+            #     bcast()
+            # elif task == 'scatter':
+            #     scatter()
+            # elif task == 'barrier':
+            #     barrier()
+            # elif task == 'quit':
+            #     quit()
+            # else:
+            #     raise ValueError('Invalid task: %s.' % task)
+            worker.logger.debug('Completed the %s task.' %
+                                task_dir[task].__name__)
 
             with timing.timed_region('comm:task_receive') as tr:
-                task = worker.intercomm.bcast(task, root=0)
+                task = np.array(0, dtype=np.uint8)
+                worker.intercomm.Bcast(task, root=0)
+                task = np.uint8(task)
 
-            worker.logger.debug('Received a %s task.' % task)
+            worker.logger.debug('Received a %s task.' % task_dir[task].__name__)
         end_t = time.time()
 
         worker.logger.debug('Wating on the barrier')

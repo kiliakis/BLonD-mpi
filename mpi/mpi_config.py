@@ -12,7 +12,25 @@ mpi_type = {
     'i': MPI.INT,
     'int32': MPI.INT,
     'numpy.int32': MPI.INT,
-    '<i4': MPI.INT
+    '<i4': MPI.INT,
+    'uint8': MPI.UINT8_T,
+    'B': MPI.UINT8_T,
+    '|u1': MPI.UINT8_T
+}
+
+
+task_id = {
+    'kick': np.array(0, np.uint8),
+    'drift': np.array(1, np.uint8),
+    'histo': np.array(2, np.uint8),
+    'LIKick': np.array(3, np.uint8),
+    'RFVCalc': np.array(4, np.uint8),
+    'gather': np.array(5, np.uint8),
+    'bcast': np.array(6, np.uint8),
+    'scatter': np.array(7, np.uint8),
+    'barrier': np.array(8, np.uint8),
+    'quit': np.array(9, np.uint8),
+    'stop': np.array(10, np.uint8)
 }
 
 _worker_script = sys.path[0] + '/worker.py'
@@ -26,6 +44,7 @@ _debug_args = ['-e', 'python', '-m', 'pdb']
 
 master = None
 
+
 class Master:
     @timing.timeit(key='Master.__init__')
     def __init__(self, log=False):
@@ -33,7 +52,7 @@ class Master:
         self.intracomm = MPI.COMM_WORLD
 
         if self.intracomm.size != 1:
-            'Only one process can be the master!\nRe-run with only 1 process.'    
+            'Only one process can be the master!\nRe-run with only 1 process.'
 
         self.workers = 0
         self.hostname = MPI.Get_processor_name()
@@ -68,7 +87,7 @@ class Master:
 
     @timing.timeit(key='multi_scatter')
     def multi_scatter(self, vars):
-        self.intercomm.bcast('scatter', root=MPI.ROOT)
+        self.intercomm.Bcast(task_id['scatter'], root=MPI.ROOT)
 
         var_list = [(k, v.dtype.char) for k, v in vars.items()]
         self.intercomm.bcast(var_list, root=MPI.ROOT)
@@ -93,7 +112,7 @@ class Master:
     # e.g. (comm, beam.dt, beam.dE)
     @timing.timeit(key='multi_gather')
     def multi_gather(self, gather_dict):
-        self.intercomm.bcast('gather', root=MPI.ROOT)
+        self.intercomm.Bcast(task_id['gather'], root=MPI.ROOT)
         keys = list(gather_dict.keys())
         self.intercomm.bcast(keys, root=MPI.ROOT)
         sendbuf = None
@@ -107,26 +126,27 @@ class Master:
 
             self.intercomm.Gatherv(sendbuf, [v, counts, displs, mpi_type[v.dtype.char]],
                                    root=MPI.ROOT)
+
     @timing.timeit(key='multi_bcast')
     def multi_bcast(self, vars):
         logging.debug('Broadcasting variables')
-        self.intercomm.bcast('bcast', root=MPI.ROOT)
+        self.intercomm.Bcast(task_id['bcast'], root=MPI.ROOT)
         self.intercomm.bcast(vars, root=MPI.ROOT)
 
     @timing.timeit(key='bcast')
     def bcast(self, cmd):
-        self.intercomm.bcast(cmd, root=MPI.ROOT)
+        self.intercomm.Bcast(task_id[cmd], root=MPI.ROOT)
 
     @timing.timeit(key='stop')
     def stop(self):
         logging.debug('Sending a stop signal')
-        self.intercomm.bcast('stop', root=MPI.ROOT)
+        self.intercomm.Bcast(task_id['stop'], root=MPI.ROOT)
         logging.debug('Waiting on the barrier')
         self.intercomm.Barrier()
-    
+
     @timing.timeit(key='sync')
     def sync(self):
-        self.intercomm.bcast('barrier', root=MPI.ROOT)
+        self.intercomm.Bcast(task_id['barrier'], root=MPI.ROOT)
         self.intercomm.Barrier()
 
     @timing.timeit(key='disconnect')
@@ -135,10 +155,7 @@ class Master:
 
     @timing.timeit(key='quit')
     def quit(self):
-        self.intercomm.bcast('quit', root=MPI.ROOT)
-
-
-
+        self.intercomm.Bcast(task_id['quit'], root=MPI.ROOT)
 
 
 class Worker:
@@ -152,7 +169,7 @@ class Worker:
             raise ValueError('Could not connect to parent')
 
         self.logger = MPILog(rank=self.rank)
-        if log==False:
+        if log == False:
             self.logger.disable()
         # sys.stdout = open('stdout-worker-%.3d.txt' % self.rank, 'w')
         # sys.stderr = open('stderr-worker-%.3d.txt' % self.rank, 'w')
@@ -241,4 +258,3 @@ class MPILog(object):
     def info(self, string):
         if self.disabled == False:
             logging.info(string)
-
