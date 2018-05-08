@@ -42,7 +42,7 @@ from pyprof import timing
 # Simulation parameters -------------------------------------------------------
 # Bunch parameters
 N_b = 1e9           # Intensity
-N_p = 1000000         # Macro-particles
+N_p = 5e6         # Macro-particles
 tau_0 = 0.4e-9          # Initial bunch length, 4 sigma [s]
 
 # Machine and RF parameters
@@ -119,10 +119,15 @@ print("Map set")
 # mpiconf.workercomm = workercomm
 # logging.debug('master: %d workers successfully initialized' % mpiconf.n_workers)
 
-start_t = time.time()
+import datetime
 
-master = mpiconf.Master(log=True)
-master.spawn_workers(workers=7, debug=False, log=True)
+
+
+# start_t = time.time()
+print(datetime.datetime.now().time())
+
+master = mpiconf.Master(log=False)
+master.spawn_workers(workers=4, debug=False, log=False)
 
 # Send initial data to the workers
 init_dict = {
@@ -148,7 +153,7 @@ master.multi_scatter(vars_dict)
 # workercomm.Barrier()
 
 
-N_t = 1000
+N_t = 2000
 print('dE mean: ', np.mean(beam.dE))
 print('dE std: ', np.std(beam.dE))
 
@@ -180,8 +185,10 @@ master.multi_gather(vars_dict)
 master.stop()
 master.disconnect()
 
-end_t = time.time()
-timing.report(total_time=1e3*(end_t-start_t),
+print(datetime.datetime.now().time())
+
+# end_t = time.time()
+timing.report(#total_time=1e3*(end_t-start_t),
               out_file='report-master.csv')
 
 print('dE mean: ', np.mean(beam.dE))

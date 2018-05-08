@@ -9,6 +9,8 @@ import ctypes as ct
 import numpy as np
 from setup_cpp import libblondphysics as __lib
 
+from pyprof import timing
+
 
 def __getPointer(x):
     return x.ctypes.data_as(ct.c_void_p)
@@ -49,21 +51,22 @@ def kick(ring, dt, dE, turn):
 
 
 def kick_mpi(ring, turn):
-    import mpi.mpi_config as mpiconf
-    from mpi4py import MPI
 
-    master = mpiconf.master
+    with timing.timed_region('kick') as tr:
+        import mpi.mpi_config as mpiconf
+        from mpi4py import MPI
 
-    voltage_kick = np.ascontiguousarray(ring.charge*ring.voltage[:, turn])
-    omegarf_kick = np.ascontiguousarray(ring.omega_rf[:, turn])
-    phirf_kick = np.ascontiguousarray(ring.phi_rf[:, turn])
+        master = mpiconf.master
+        voltage_kick = np.ascontiguousarray(ring.charge*ring.voltage[:, turn])
+        omegarf_kick = np.ascontiguousarray(ring.omega_rf[:, turn])
+        phirf_kick = np.ascontiguousarray(ring.phi_rf[:, turn])
 
-    vars_dict = {
-        'voltage': voltage_kick,
-        'omegarf': omegarf_kick,
-        'phirf': phirf_kick,
-        'acc_kick': ring.acceleration_kick[turn]
-    }
+        vars_dict = {
+            'voltage': voltage_kick,
+            'omegarf': omegarf_kick,
+            'phirf': phirf_kick,
+            'acc_kick': ring.acceleration_kick[turn]
+        }
 
     master.multi_bcast(vars_dict)
     master.logger.debug('Broadcasting a kick task')
@@ -92,18 +95,19 @@ def drift(ring, dt, dE, turn):
 
 
 def drift_mpi(ring, turn):
-    import mpi.mpi_config as mpiconf
-    from mpi4py import MPI
+    with timing.timed_region('drift') as tr:
+        import mpi.mpi_config as mpiconf
+        from mpi4py import MPI
 
-    master = mpiconf.master
-    vars_dict = {
-        't_rev': ring.t_rev[turn],
-        'eta_0': ring.eta_0[turn],
-        'eta_1': ring.eta_1[turn],
-        'eta_2': ring.eta_2[turn],
-        'beta': ring.rf_params.beta[turn],
-        'energy': ring.rf_params.energy[turn]
-    }
+        master = mpiconf.master
+        vars_dict = {
+            't_rev': ring.t_rev[turn],
+            'eta_0': ring.eta_0[turn],
+            'eta_1': ring.eta_1[turn],
+            'eta_2': ring.eta_2[turn],
+            'beta': ring.rf_params.beta[turn],
+            'energy': ring.rf_params.energy[turn]
+        }
     master.multi_bcast(vars_dict)
 
     master.logger.debug('Broadcasting a drift task')
@@ -137,17 +141,18 @@ def LIKick(ring, dt, dE, turn):
 
 
 def LIKick_mpi(ring, turn):
-    import mpi.mpi_config as mpiconf
-    from mpi4py import MPI
+    with timing.timed_region('LIKick') as tr:
+        import mpi.mpi_config as mpiconf
+        from mpi4py import MPI
 
-    master = mpiconf.master
+        master = mpiconf.master
 
-    vars_dict = {
-        'total_voltage': ring.total_voltage,
-        'bin_centers': ring.profile.bin_centers,
-        'charge': ring.beam.Particle.charge,
-        'acc_kick': ring.acceleration_kick[turn]
-    }
+        vars_dict = {
+            'total_voltage': ring.total_voltage,
+            'bin_centers': ring.profile.bin_centers,
+            'charge': ring.beam.Particle.charge,
+            'acc_kick': ring.acceleration_kick[turn]
+        }
 
     master.multi_bcast(vars_dict)
     master.logger.debug('Broadcasting a LIKick task')
@@ -178,21 +183,23 @@ def slice(profile):
 
 
 def slice_mpi(profile):
-    import mpi.mpi_config as mpiconf
-    from mpi4py import MPI
+    with timing.timed_region('histo') as tr:
+        import mpi.mpi_config as mpiconf
+        from mpi4py import MPI
 
-    master = mpiconf.master
+        master = mpiconf.master
 
-    vars_dict = {
-        'cut_left': profile.cut_left,
-        'cut_right': profile.cut_right
-    }
+        vars_dict = {
+            'cut_left': profile.cut_left,
+            'cut_right': profile.cut_right
+        }
 
     master.multi_bcast(vars_dict)
     master.logger.debug('Broadcasting a histo task')
     master.bcast('histo')
-    zero = np.zeros(profile.n_slices, dtype='d')
-    master.intercomm.Allreduce(zero, profile.n_macroparticles, op=MPI.SUM)
+    # with timing.timed_region('histo') as tr:
+    #     zero = np.zeros(profile.n_slices, dtype='d')
+    #     master.intercomm.Allreduce(zero, profile.n_macroparticles, op=MPI.SUM)
 
 
 
