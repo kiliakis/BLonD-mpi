@@ -96,7 +96,6 @@ if __name__ == '__main__':
         logging.debug('Received a %s task.' % task)
 
         start_t = time.time()
-
         while task != 'stop':
             if task == 'kick':
                 kick()

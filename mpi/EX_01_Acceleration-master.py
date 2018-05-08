@@ -42,7 +42,7 @@ from pyprof import timing
 # Simulation parameters -------------------------------------------------------
 # Bunch parameters
 N_b = 1e9           # Intensity
-N_p = 5e6         # Macro-particles
+N_p = 1e8         # Macro-particles
 tau_0 = 0.4e-9          # Initial bunch length, 4 sigma [s]
 
 # Machine and RF parameters
@@ -127,7 +127,7 @@ import datetime
 print(datetime.datetime.now().time())
 
 master = mpiconf.Master(log=False)
-master.spawn_workers(workers=4, debug=False, log=False)
+master.spawn_workers(workers=7, debug=False, log=False)
 
 # Send initial data to the workers
 init_dict = {

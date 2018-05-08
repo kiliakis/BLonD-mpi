@@ -1,5 +1,5 @@
 #!/bin/sh
-#SBATCH --time=5
+#SBATCH --time=30
 #SBATCH --partition=be-long
 #SBATCH --ntasks=8
 #SBATCH --ntasks-per-node=4
