@@ -3,6 +3,7 @@ from mpi4py import MPI
 import numpy as np
 import logging
 from pyprof import timing
+import os
 
 mpi_type = {
     'd': MPI.DOUBLE,
@@ -78,9 +79,13 @@ class Master:
             args = self.args + [worker_script, 'log']
         else:
             args = self.args + [worker_script, 'nolog']
+        mpiinfo = MPI.Info.Create()
+        string = 'OMP_NUM_THREADS=%s' % os.environ.get('OMP_NUM_THREADS', '1')
+        mpiinfo.Set(key='env', value=string)
         self.intercomm = self.intracomm.Spawn(self.exec,
                                               args=args,
-                                              maxprocs=workers)
+                                              maxprocs=workers,
+                                              info=mpiinfo)
 
         self.workers = self.intercomm.Get_remote_size()
         logging.debug('%d workers successfully initialized.' % self.workers)
@@ -129,7 +134,7 @@ class Master:
 
     @timing.timeit(key='multi_bcast')
     def multi_bcast(self, vars):
-        logging.debug('Broadcasting variables')
+        self.logger.debug('Broadcasting variables')
         self.intercomm.Bcast(task_id['bcast'], root=MPI.ROOT)
         self.intercomm.bcast(vars, root=MPI.ROOT)
 
@@ -139,9 +144,9 @@ class Master:
 
     @timing.timeit(key='stop')
     def stop(self):
-        logging.debug('Sending a stop signal')
+        self.logger.debug('Sending a stop signal')
         self.intercomm.Bcast(task_id['stop'], root=MPI.ROOT)
-        logging.debug('Waiting on the barrier')
+        self.logger.debug('Waiting on the barrier')
         self.intercomm.Barrier()
 
     @timing.timeit(key='sync')
@@ -159,6 +164,7 @@ class Master:
 
 
 class Worker:
+
     def __init__(self, log=True):
         try:
             # Connect to parent
@@ -174,8 +180,10 @@ class Worker:
         # sys.stdout = open('stdout-worker-%.3d.txt' % self.rank, 'w')
         # sys.stderr = open('stderr-worker-%.3d.txt' % self.rank, 'w')
         self.intracomm = MPI.COMM_WORLD
-        logging.debug('Hostname: %s' % self.hostname)
+        self.logger.debug('Hostname: %s' % self.hostname)
+        self.taskbuf = np.array(0, np.uint8)
 
+    # @timing.timeit(key='comm:multi_scatter')
     def multi_scatter(self):
         var_list = None
         var_list = self.intercomm.bcast(var_list, root=0)
@@ -190,6 +198,7 @@ class Worker:
         return vals
         # self.intercomm.Barrier()
 
+    # @timing.timeit(key='comm:multi_gather')
     def multi_gather(self, globs):
         vars = []
         vars = self.intercomm.bcast(vars, root=0)
@@ -197,10 +206,18 @@ class Worker:
         for v in vars:
             self.intercomm.Gatherv(globs[v], recvbuf, root=0)
 
+    # @timing.timeit(key='comm:multi_bcast')
     def multi_bcast(self):
         vars = None
         vars = self.intercomm.bcast(vars, root=0)
         return vars
+
+    @timing.timeit(key='comm:recv_task')
+    def recv_task(self):
+        self.intercomm.Bcast(self.taskbuf, root=0)
+        task = np.uint8(self.taskbuf)
+        self.logger.debug('Received a %d task.' % task)
+        return task
 
 
 class MPILog(object):

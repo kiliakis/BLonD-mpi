@@ -2,6 +2,7 @@ from mpi4py import MPI
 import time
 import numpy as np
 import sys
+import os
 from mpi import mpi_config as mpiconf
 from utils.bphysics_wrap import __kick, __drift, __slice, __linear_interp_kick, __rf_volt_comp
 import logging
@@ -25,7 +26,7 @@ def drift():
 
 def histo():
     with timing.timed_region('comp:histo') as tr:
-        global profile
+        # global profile
         profile = np.empty(n_slices, dtype='d')
         __slice(dt, profile, cut_left, cut_right)
 
@@ -114,32 +115,22 @@ if __name__ == '__main__':
     try:
         log = 'nolog' not in sys.argv
         worker = mpiconf.Worker(log=log)
-
+        worker.logger.debug('OMP_NUM_THREADS=%s' % os.environ['OMP_NUM_THREADS'])
         start_t = time.time()
 
-        task = np.array(0, np.uint8)
-        worker.intercomm.Bcast(task, root=0)
-        task = np.uint8(task)
-        logging.debug('Received a %d task.' % task)
+        task = worker.recv_task()
         # This is the main loop
         while task != 10:
             try:
                 task_dir[task]()
             except:
                 raise ValueError('Invalid task: %d.' % task)
+            task = worker.recv_task()
 
-            worker.logger.debug('Completed the %d task.' % task)
 
-            with timing.timed_region('comm:task_receive') as tr:
-                task = np.array(0, dtype=np.uint8)
-                worker.intercomm.Bcast(task, root=0)
-                task = np.uint8(task)
-
-            worker.logger.debug('Received a %d task.' % task)
-        
         end_t = time.time()
 
-        worker.logger.debug('Wating on the barrier')
+        worker.logger.debug('Wating on the final barrier.')
         worker.intercomm.Barrier()
 
         timing.report(total_time=1e3*(end_t-start_t),
