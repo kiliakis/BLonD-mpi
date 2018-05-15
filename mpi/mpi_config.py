@@ -48,7 +48,8 @@ master = None
 
 class Master:
     @timing.timeit(key='Master.__init__')
-    def __init__(self, log=False):
+    def __init__(self, log=None):
+        global master
         self.intercomm = None
         self.intracomm = MPI.COMM_WORLD
 
@@ -57,16 +58,17 @@ class Master:
 
         self.workers = 0
         self.hostname = MPI.Get_processor_name()
-        self.logger = MPILog(rank=-1)
-        if log == False:
+        if log:
+            self.logger = MPILog(rank=-1, log_dir=log)
+        else:
+            self.logger = MPILog(rank=-1)
             self.logger.disable()
         logging.debug('Initialized.')
-        global master
         master = self
 
     @timing.timeit(key='spawn_workers')
     def spawn_workers(self, workers=1, worker_script=_worker_script,
-                      debug=False, args=None, log=False):
+                      debug=False, args=None, log=None, report=None):
         if args:
             self.args = args
         elif debug == False:
@@ -75,10 +77,11 @@ class Master:
         else:
             self.args = _debug_args
             self.exec = _debug_exec
-        if log == True:
-            args = self.args + [worker_script, 'log']
-        else:
-            args = self.args + [worker_script, 'nolog']
+        args = self.args + [worker_script]
+        if log:
+            args += ['--log', log]
+        if report:
+            args += ['--report', report]
         mpiinfo = MPI.Info.Create()
         string = 'OMP_NUM_THREADS=%s' % os.environ.get('OMP_NUM_THREADS', '1')
         mpiinfo.Set(key='env', value=string)
@@ -165,7 +168,7 @@ class Master:
 
 class Worker:
 
-    def __init__(self, log=True):
+    def __init__(self, log=None):
         try:
             # Connect to parent
             self.intercomm = MPI.Comm.Get_parent()
@@ -173,12 +176,12 @@ class Worker:
             self.hostname = MPI.Get_processor_name()
         except:
             raise ValueError('Could not connect to parent')
-
-        self.logger = MPILog(rank=self.rank)
-        if log == False:
+        if log:
+            self.logger = MPILog(log_dir=log, rank=self.rank)
+        else:
+            self.logger = MPILog(rank=self.rank)
             self.logger.disable()
-        # sys.stdout = open('stdout-worker-%.3d.txt' % self.rank, 'w')
-        # sys.stderr = open('stderr-worker-%.3d.txt' % self.rank, 'w')
+
         self.intracomm = MPI.COMM_WORLD
         self.logger.debug('Hostname: %s' % self.hostname)
         self.taskbuf = np.array(0, np.uint8)
@@ -232,16 +235,18 @@ class MPILog(object):
 
     """
 
-    def __init__(self, rank=-1):
+    def __init__(self, rank=-1, log_dir='./'):
 
         # Root logger on DEBUG level
         self.disabled = False
         self.root_logger = logging.getLogger()
         self.root_logger.setLevel(logging.DEBUG)
+        # if not os.path.exists(log_dir):
+        #     os.mkdir(log_dir)
         if rank < 0:
-            log_name = 'master.log'
+            log_name = log_dir+'/master.log'
         else:
-            log_name = 'worker-%.3d.log' % rank
+            log_name = log_dir+'/worker-%.3d.log' % rank
         # Console handler on INFO level
         # console_handler = logging.StreamHandler()
         # console_handler.setLevel(logging.INFO)

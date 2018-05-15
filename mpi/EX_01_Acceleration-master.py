@@ -31,18 +31,17 @@ import os
 import sys
 import matplotlib.pyplot as plt
 import time
-
-#from toolbox.logger import Logger
-
-import logging
-
+import datetime
+from toolbox.input_parser import parse
 from mpi import mpi_config as mpiconf
 from pyprof import timing
 
+args = parse()
+print(args)
 # Simulation parameters -------------------------------------------------------
 # Bunch parameters
 N_b = 1e9           # Intensity
-N_p = 1e7         # Macro-particles
+N_p = 1e6         # Macro-particles
 tau_0 = 0.4e-9          # Initial bunch length, 4 sigma [s]
 
 # Machine and RF parameters
@@ -58,6 +57,31 @@ alpha = 1./gamma_t/gamma_t        # First order mom. comp. factor
 # Tracking details
 N_t = 2000           # Number of turns to track
 dt_plt = 200         # Time steps between plots
+N_slices = 500
+
+workers = 3
+debug = False
+log = None
+report = None
+
+
+if 'turns' in args:
+    N_t = args['turns']
+if 'particles' in args:
+    N_p = args['particles']
+if 'slices' in args:
+    N_slices = args['slices']
+
+if 'omp' in args:
+    os.environ['OMP_NUM_THREADS'] = str(args['omp'])
+if 'workers' in args:
+    workers = args['workers']
+if 'log' in args:
+    log = args['log']
+if 'report' in args:
+    report = args['report']
+if 'debug' in args:
+    debug = args['debug']
 
 # try:
 #     os.mkdir('../output_files')
@@ -87,7 +111,7 @@ bigaussian(ring, rf, beam, tau_0/4, reinsertion=True, seed=1)
 
 
 # # Need slices for the Gaussian fit
-profile = Profile(beam, CutOptions(n_slices=100),
+profile = Profile(beam, CutOptions(n_slices=N_slices),
                   FitOptions(fit_option='gaussian'))
 
 long_tracker = RingAndRFTracker(rf, beam)
@@ -105,29 +129,13 @@ long_tracker = RingAndRFTracker(rf, beam)
 # Accelerator map
 map_ = [long_tracker, profile]
 print("Map set")
-# sys.stdout.flush()
 
 
-# Workers initialization
-# logging.debug('master: Spawning the workers')
-
-# workercomm = MPI.COMM_WORLD.Spawn(mpiconf.executable,
-#                                   args=mpiconf.args,
-#                                   maxprocs=mpiconf.n_workers)
-
-# mpiconf.n_workers = workercomm.Get_remote_size()
-# mpiconf.workercomm = workercomm
-# logging.debug('master: %d workers successfully initialized' % mpiconf.n_workers)
-
-import datetime
-
-
-
-# start_t = time.time()
+start_t = time.time()
 print(datetime.datetime.now().time())
 
-master = mpiconf.Master(log=False)
-master.spawn_workers(workers=3, debug=False, log=False)
+master = mpiconf.Master(log=log)
+master.spawn_workers(workers=workers, debug=debug, log=log, report=report)
 
 # Send initial data to the workers
 init_dict = {
@@ -145,7 +153,6 @@ master.multi_bcast(init_dict)
 vars_dict = {
     'dt': beam.dt,
     'dE': beam.dE
-    # 'id': (id, 'i')
 }
 
 master.logger.debug('Scattered initial coordinates')
@@ -153,15 +160,15 @@ master.multi_scatter(vars_dict)
 # workercomm.Barrier()
 
 
-N_t = 600
-print('dE mean: ', np.mean(beam.dE))
-print('dE std: ', np.std(beam.dE))
+# N_t = 600
+# print('dE mean: ', np.mean(beam.dE))
+# print('dE std: ', np.std(beam.dE))
 
 # Tracking --------------------------------------------------------------------
 for i in range(1, N_t+1):
     # print('Turn: ', i)
 
-    #     # Plot has to be done before tracking (at least for cases with separatrix)
+    # Plot has to be done before tracking (at least for cases with separatrix)
     if (i % dt_plt) == 0:
         print("Outputting at time step %d..." % i)
         print("   Beam momentum %.6e eV" % beam.momentum)
@@ -172,14 +179,13 @@ for i in range(1, N_t+1):
         print("   Gaussian bunch length %.4e s" % profile.bunchLength)
         print("")
 
-#     # Track
+    # Track
     for m in map_:
         m.track()
 
-    # master.sync()
-#     # Define losses according to separatrix and/or longitudinal position
-#     # beam.losses_separatrix(ring, rf)
-#     # beam.losses_longitudinal_cut(0., 2.5e-9)
+    # Define losses according to separatrix and/or longitudinal position
+    # beam.losses_separatrix(ring, rf)
+    # beam.losses_longitudinal_cut(0., 2.5e-9)
 
 master.multi_gather(vars_dict)
 master.stop()
@@ -187,9 +193,11 @@ master.disconnect()
 
 print(datetime.datetime.now().time())
 
-# end_t = time.time()
-timing.report(#total_time=1e3*(end_t-start_t),
-              out_file='report-master.csv')
+end_t = time.time()
+if report:
+    timing.report(total_time=1e3*(end_t-start_t),
+                  out_dir=report,
+                  out_file='master.csv')
 
 print('dE mean: ', np.mean(beam.dE))
 print('dE std: ', np.std(beam.dE))

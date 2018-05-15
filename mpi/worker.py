@@ -7,6 +7,7 @@ from mpi import mpi_config as mpiconf
 from utils.bphysics_wrap import __kick, __drift, __slice, __linear_interp_kick, __rf_volt_comp
 import logging
 from pyprof import timing
+import argparse
 
 worker = None
 
@@ -110,12 +111,31 @@ task_dir = {
 }
 
 
+def parse():
+    parser = argparse.ArgumentParser(description='MPI Worker function.')
+
+    parser.add_argument('-l', '--log', type=str, default=None,
+                        nargs='?', const='logs',
+                        help='Directory to store the log files.'
+                        '\nDefault: Do not generate log files.')
+
+    parser.add_argument('-r', '--report', type=str, default=None,
+                        nargs='?', const='reports',
+                        help='Directory to store the report files.'
+                        '\nDefault: Do not generate report files.')
+    args = parser.parse_args()
+    return vars(args)
+
+
 if __name__ == '__main__':
 
     try:
-        log = 'nolog' not in sys.argv
-        worker = mpiconf.Worker(log=log)
-        worker.logger.debug('OMP_NUM_THREADS=%s' % os.environ['OMP_NUM_THREADS'])
+        args = parse()
+        # log = 'nolog' not in sys.argv
+        # report = ''
+        worker = mpiconf.Worker(log=args.get('log', None))
+        worker.logger.debug('OMP_NUM_THREADS=%s' %
+                            os.environ['OMP_NUM_THREADS'])
         start_t = time.time()
 
         task = worker.recv_task()
@@ -127,14 +147,15 @@ if __name__ == '__main__':
                 raise ValueError('Invalid task: %d.' % task)
             task = worker.recv_task()
 
-
         end_t = time.time()
 
         worker.logger.debug('Wating on the final barrier.')
         worker.intercomm.Barrier()
 
-        timing.report(total_time=1e3*(end_t-start_t),
-                      out_file='report-worker-%d.csv' % worker.rank)
+        if args.get('report', None):
+            timing.report(total_time=1e3*(end_t-start_t),
+                          out_dir=args['report'],
+                          out_file='worker-%d.csv' % worker.rank)
     # Shutdown
     finally:
         sys.stdout.flush()
