@@ -13,8 +13,8 @@ BLOND=$HOME/git/BLonD-mpi
 cd $BLOND
 # echo $BLOND
 
-python --version
-mpicc --version
+# python --version
+# mpicc --version
 # echo $PYTHONPATH
 
 python setup_cpp.py -p
