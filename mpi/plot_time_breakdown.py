@@ -17,30 +17,42 @@ if not os.path.exists(images_dir):
 plots_config = {
     'plot1': {
         'files': {
-            res_dir+'raw/strong_scale_mpi_single_node/comm-comp-report.csv': {
-                'lines': {'parts': ['10000000'],
-                          'type': ['comm', 'comp'],
-                          'N': ['1']},
-                'labels': {'10000000-total-1': '10M-strong-scale-1node'}
-            },
-
+            # res_dir+'raw/strong_scale_mpi_single_node/comm-comp-report.csv': {
+            #     'lines': {'parts': ['10000000'],
+            #               'type': ['comp'],
+            #               'N': ['1']},
+            #     'labels': {'10000000-total-1': '10M-strong-N1'}
+            # },
             res_dir+'raw/strong_scale_mpi_dual_node/comm-comp-report.csv': {
                     'lines': {'parts': ['20000000'],
-                              'type': ['comm', 'comp'],
+                              'type': ['comp'],
                               'N': ['2']},
-                    'labels': {'20000000-total-2': '20M-strong-scale-2nodes'}
+                    'labels': {'20000000-total-2': '20M-strong-N2s'}
 
             },
-            res_dir+'raw/weak_scale_mpi_single_node/comm-comp-report.csv': {
-                    'lines': {'type': ['comm', 'comp'],
-                              'N': ['1']},
-                    'labels': {'total-1': '1M-weak-scale-1node'}
+            res_dir+'raw/strong_scale_mpi_four_node/comm-comp-report.csv': {
+                    'lines': {'parts': ['20000000'],
+                              'type': ['comp'],
+                              'N': ['4']},
+                    'labels': {'20000000-total-4': '20M-strong-N4'}
 
             },
+            # res_dir+'raw/weak_scale_mpi_single_node/comm-comp-report.csv': {
+            #         'lines': {'type': ['comp'],
+            #                   'N': ['1']},
+            #         'labels': {'total-1': '1M-weak-N1'}
+
+            # },
             res_dir+'raw/weak_scale_mpi_dual_node/comm-comp-report.csv': {
-                    'lines': {'type': ['comm', 'comp'],
+                    'lines': {'type': ['comp'],
                               'N': ['2']},
-                    'labels': {'total-2': '1M-weak-scale-2nodes'}
+                    'labels': {'total-2': '1M-weak-N2'}
+
+            },
+            res_dir+'raw/weak_scale_mpi_four_node/comm-comp-report.csv': {
+                    'lines': {'type': ['comp'],
+                              'N': ['4']},
+                    'labels': {'total-4': '1M-weak-N4'}
 
             }
         },
@@ -48,19 +60,29 @@ plots_config = {
                    '10000000-comp-1': '10M-strong-N1',
                    '20000000-comm-2': '20M-strong-N2',
                    '20000000-comp-2': '20M-strong-N2',
+                   '20000000-comm-4': '20M-strong-N4',
+                   '20000000-comp-4': '20M-strong-N4',
                    'comm-1': '1M-weak-N1',
                    'comp-1': '1M-weak-N1',
                    'comm-2': '1M-weak-N2',
-                   'comp-2': '1M-weak-N2'
+                   'comp-2': '1M-weak-N2',
+                   'comm-4': '1M-weak-N4',
+                   'comp-4': '1M-weak-N4'
+
                    },
-        'colors': {'10000000-comm-1': 'blue',
-                   '10000000-comp-1': 'blue',
-                   '20000000-comm-2': 'red',
-                   '20000000-comp-2': 'red',
-                   'comm-1': 'orange',
-                   'comp-1': 'orange',
-                   'comm-2': 'green',
-                   'comp-2': 'green'
+        'colors': {'10000000-comm-1': 'tab:purple',
+                   '10000000-comp-1': 'tab:purple',
+                   '20000000-comm-2': 'tab:red',
+                   '20000000-comp-2': 'tab:red',
+                   '20000000-comm-4': 'tab:orange',
+                   '20000000-comp-4': 'tab:orange',
+                   'comm-1': 'tab:olive',
+                   'comp-1': 'tab:olive',
+                   'comm-2': 'tab:green',
+                   'comp-2': 'tab:green',
+                   'comm-4': 'tab:blue',
+                   'comp-4': 'tab:blue'
+
                    },
         # 'exclude': [['v1', 'notcm'], ['v2', 'notcm'], ['v4', 'notcm']],
         'x_name': 'n',
@@ -68,8 +90,8 @@ plots_config = {
         'y_err_name': 'std',
         'xlabel': 'MPI Tasks',
         'ylabel': 'Run-time percent',
-        'title': '',
-        'ylim': [0, 100],
+        'title': 'Computation',
+        'ylim': [40, 100],
         'image_name': images_dir + 'time-breakdown.pdf'
 
     }
@@ -185,6 +207,7 @@ if __name__ == '__main__':
                          capsize=1, marker='', linewidth=1.5, elinewidth=1,
                          color=config['colors'][label])
             else:
+                # print(config['colors'][])
                 plt.errorbar(x, y, yerr=y_err, label=config['labels'][label],
                          capsize=1, marker='', linewidth=1.5,  elinewidth=1,
                          color=config['colors'][label])
@@ -199,10 +222,15 @@ if __name__ == '__main__':
         # from collections import OrderedDict
         # handles, labels = plt.gca().get_legend_handles_labels()
         # by_label = OrderedDict(zip(labels, handles))
+        # plt.annotate('Light\nCombine\nWorkload', xy=(
+        #     200, 6.3), textcoords='data', size='16')
+        # plt.annotate('Moderate\nCombine\nWorkload', xy=(
+        #     800, 6.3), textcoords='data', size='16')
 
-        plt.legend(loc='best', fancybox=True, fontsize=9,
+        plt.legend(loc='best', fancybox=True, fontsize=10, ncol=2,
                    labelspacing=0.2, borderpad=0.5, framealpha=0.5,
                    handletextpad=0.5, handlelength=2, borderaxespad=0)
+                   # bbox_to_anchor=(0.1, 1.15))
         plt.tight_layout()
         save_and_crop(fig, config['image_name'], dpi=600, bbox_inches='tight')
         # plt.savefig(config['image_name'], dpi=600, bbox_inches='tight')
@@ -213,9 +241,5 @@ if __name__ == '__main__':
     # plt.legend(loc='best', fancybox=True, fontsize='11')
     # plt.axvline(700.0, color='k', linestyle='--', linewidth=1.5)
     # plt.axvline(1350.0, color='k', linestyle='--', linewidth=1.5)
-    # plt.annotate('Light\nCombine\nWorkload', xy=(
-    #     200, 6.3), textcoords='data', size='16')
-    # plt.annotate('Moderate\nCombine\nWorkload', xy=(
-    #     800, 6.3), textcoords='data', size='16')
     # plt.annotate('Heavy\nCombine\nWorkload', xy=(
     #     1400, 8.2), textcoords='data', size='16')
