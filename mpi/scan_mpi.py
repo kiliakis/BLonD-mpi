@@ -18,42 +18,72 @@ setup_script = home + '/mpi/batch-setup.sh'
 job_name_form = '{}/_p{}_s{}_t{}_w{}_o{}_N{}_'
 
 configs = {
-    'weak_scale_mpi_single_node': {'p': np.arange(1000000, 19000001, 1000000),
-                                   's': np.arange(500, 9501, 500),
-                                   't': cycle([2000]),
-                                   'w': np.arange(1, 20, 1),
-                                   'o': cycle([1]),
-                                   'N': cycle([1]),
-                                   'time': cycle([45]),
-                                   'partition': cycle(['be-short'])
-                                   },
+    # 'weak_scale_mpi_single_node': {'p': np.arange(1000000, 19000001, 1000000),
+    #                                's': np.arange(500, 9501, 500),
+    #                                't': cycle([2000]),
+    #                                'w': np.arange(1, 20, 1),
+    #                                'o': cycle([1]),
+    #                                'N': cycle([1]),
+    #                                'time': cycle([45]),
+    #                                'partition': cycle(['be-short'])
+    #                                },
 
-    'strong_scale_mpi_single_node': {'p': cycle([10000000]),
-                                     's': cycle([5000]),
-                                     't': cycle([2000]),
-                                     'w': np.arange(1, 20, 1),
-                                     'o': cycle([1]),
-                                     'N': cycle([1]),
-                                     'time': cycle([60]),
-                                     'partition': cycle(['be-short'])
-                                     },
+    # 'strong_scale_mpi_single_node': {'p': cycle([10000000]),
+    #                                  's': cycle([5000]),
+    #                                  't': cycle([2000]),
+    #                                  'w': np.arange(1, 20, 1),
+    #                                  'o': cycle([1]),
+    #                                  'N': cycle([1]),
+    #                                  'time': cycle([60]),
+    #                                  'partition': cycle(['be-short'])
+    #                                  },
 
-    'weak_scale_mpi_dual_node': {'p': np.arange(1000000, 39000001, 2000000),
-                                 's': np.arange(500, 19501, 1000),
+    # 'weak_scale_mpi_dual_node': {'p': np.arange(1000000, 39000001, 2000000),
+    #                              's': np.arange(500, 19501, 1000),
+    #                              't': cycle([2000]),
+    #                              'w': np.arange(1, 40, 2),
+    #                              'o': cycle([1]),
+    #                              'N': cycle([2]),
+    #                              'time': cycle([45]),
+    #                              'partition': cycle(['be-long'])
+    #                              },
+
+    # 'strong_scale_mpi_dual_node': {'p': cycle([20000000]),
+    #                                's': cycle([10000]),
+    #                                't': cycle([2000]),
+    #                                'w': np.arange(3, 40, 2),
+    #                                'o': cycle([1]),
+    #                                'N': cycle([2]),
+    #                                'time': cycle([60]),
+    #                                'partition': cycle(['be-long'])
+    #                                },
+
+    'weak_scale_mpi_four_node': {'p': np.arange(1000000, 78000001, 2000000),
+                                 's': np.arange(500, 39501, 1000),
                                  't': cycle([2000]),
-                                 'w': np.arange(1, 40, 2),
+                                 'w': np.arange(1, 80, 2),
                                  'o': cycle([1]),
-                                 'N': cycle([2]),
+                                 'N': cycle([4]),
                                  'time': cycle([45]),
                                  'partition': cycle(['be-long'])
                                  },
 
-    'strong_scale_mpi_dual_node': {'p': cycle([20000000]),
+    # 'weak_scale_hybrid_four_node': {'p': np.arange(1000000, 78000001, 2000000),
+    #                              's': np.arange(500, 39501, 1000),
+    #                              't': cycle([2000]),
+    #                              'w': np.arange(1, 80, 2),
+    #                              'o': cycle([10]),
+    #                              'N': cycle([4]),
+    #                              'time': cycle([45]),
+    #                              'partition': cycle(['be-long'])
+    #                              },
+
+    'strong_scale_mpi_four_node': {'p': cycle([20000000]),
                                    's': cycle([10000]),
                                    't': cycle([2000]),
-                                   'w': np.arange(3, 40, 2),
+                                   'w': np.arange(3, 80, 2),
                                    'o': cycle([1]),
-                                   'N': cycle([2]),
+                                   'N': cycle([4]),
                                    'time': cycle([60]),
                                    'partition': cycle(['be-long'])
                                    }

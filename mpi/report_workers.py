@@ -168,9 +168,9 @@ if __name__ == '__main__':
     indir = args.indir
     files = fnmatch.filter(os.listdir(indir), file_pattern)
     outfile = args.outfile
-    if outfile = 'sys.stdout':
+    if outfile == 'sys.stdout':
         outfile = sys.stdout
-    
+
     if args.report == 'comm-comp':
         report_comm_comp(indir, files, outfile)
     elif args.report == 'avg':
