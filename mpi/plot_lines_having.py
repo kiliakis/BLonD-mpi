@@ -184,6 +184,20 @@ if __name__ == '__main__':
         if 'extra' in config:
             for c in config['extra']:
                 exec(c)
+        
+        # Ideal line
+        ylims = plt.gca().get_ylim()
+        
+        x = np.array(plots_dir['total-4'][:, header.index(config['x_name'])], float)
+        y = float(plots_dir['total-4'][0, header.index(config['y_name'])])
+        parts = float(plots_dir['total-4'][0, header.index('parts')])
+        turns = float(plots_dir['total-4'][0, header.index('turns')])
+        y = x * (parts * turns) / y
+        print(y)
+        plt.plot(x, y, color='black', linestyle='--')
+
+        plt.ylim(ylims)
+        
         # if plot_key == 'plot6':
         #     plt.gca().get_lines()
         #     for p in plt.gca().get_lines()[::3]:
