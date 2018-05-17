@@ -17,50 +17,51 @@ if not os.path.exists(images_dir):
 plots_config = {
     'plot1': {
         'files': {
-            res_dir+'raw/strong_scale_mpi_single_node/comm-comp-report.csv': {
-                'lines': {'parts': ['10000000'],
-                          'type': ['comm', 'comp'],
-                          'N': ['1']},
-                'labels': {'10000000-total-1': '10M-strong-scale-1node'}
-            },
+            # res_dir+'raw/strong_scale_mpi_single_node/comm-comp-report.csv': {
+            #     'lines': {'parts': ['10000000'],
+            #               'type': ['comp'],
+            #               'N': ['1']}
+            # },
 
             res_dir+'raw/strong_scale_mpi_dual_node/comm-comp-report.csv': {
                     'lines': {'parts': ['20000000'],
-                              'type': ['comm', 'comp'],
-                              'N': ['2']},
-                    'labels': {'20000000-total-2': '20M-strong-scale-2nodes'}
+                              'type': ['comp'],
+                              'N': ['2']}
 
             },
-            res_dir+'raw/weak_scale_mpi_single_node/comm-comp-report.csv': {
-                    'lines': {'type': ['comm', 'comp'],
-                              'N': ['1']},
-                    'labels': {'total-1': '1M-weak-scale-1node'}
+            # res_dir+'raw/weak_scale_mpi_single_node/comm-comp-report.csv': {
+            #         'lines': {'type': ['comp'],
+            #                   'N': ['1']}
 
-            },
+            # },
             res_dir+'raw/weak_scale_mpi_dual_node/comm-comp-report.csv': {
-                    'lines': {'type': ['comm', 'comp'],
-                              'N': ['2']},
-                    'labels': {'total-2': '1M-weak-scale-2nodes'}
+                    'lines': {'type': ['comp'],
+                              'N': ['2']}
+
+            },
+            res_dir+'raw/weak_scale_mpi_four_node/comm-comp-report.csv': {
+                    'lines': {'type': ['comp'],
+                              'N': ['4']}
+
+            },
+            res_dir+'raw/strong_scale_mpi_four_node/comm-comp-report.csv': {
+                    'lines': {'parts': ['20000000'],
+                              'type': ['comp'],
+                              'N': ['4']}
 
             }
         },
-        'labels': {'10000000-comm-1': '10M-strong-N1',
-                   '10000000-comp-1': '10M-strong-N1',
-                   '20000000-comm-2': '20M-strong-N2',
+        'labels': {'10000000-comp-1': '10M-strong-N1',
                    '20000000-comp-2': '20M-strong-N2',
-                   'comm-1': '1M-weak-N1',
+                   '20000000-comp-4': '20M-strong-N4',
                    'comp-1': '1M-weak-N1',
-                   'comm-2': '1M-weak-N2',
-                   'comp-2': '1M-weak-N2'
+                   'comp-2': '1M-weak-N2',
+                   'comp-4': '1M-weak-N4'
                    },
-        'colors': {'10000000-comm-1': 'blue',
-                   '10000000-comp-1': 'blue',
-                   '20000000-comm-2': 'red',
-                   '20000000-comp-2': 'red',
-                   'comm-1': 'orange',
-                   'comp-1': 'orange',
-                   'comm-2': 'green',
-                   'comp-2': 'green'
+        'colors': {'20000000-comp-2': 'tab:red',
+                   '20000000-comp-4': 'tab:green',
+                   'comp-2': 'tab:orange',
+                   'comp-4': 'tab:blue'
                    },
         # 'exclude': [['v1', 'notcm'], ['v2', 'notcm'], ['v4', 'notcm']],
         'x_name': 'n',
@@ -69,68 +70,12 @@ plots_config = {
         'xlabel': 'MPI Tasks',
         'ylabel': 'Run-time percent',
         'title': '',
-        'ylim': [0, 100],
+        'ylim': [30, 100],
+        'figsize': (6, 2.5),
         'image_name': images_dir + 'time-breakdown.pdf'
 
     }
-    # 'plot2': {'lines': {'version': ['v4'],
-    #                     'vec': ['vec'],
-    #                     'tcm': ['tcm'],
-    #                     'cc': ['g++', 'icc']},
-    #           'exclude': [],
 
-    #           'x_name': 'threads',
-    #           'y_name': 'time(ms)',
-    #           'y_err_name': 'std(%)',
-    #           'xlabel': 'Threads (500k points/thread)',
-    #           'ylabel': 'Run-time (ms)',
-    #           'title': 'icc VS gcc',
-    #           # 'ylim': [0, 16000],
-    #           'image_name': images_dir + 'iccVSgcc.pdf'
-    #           },
-
-    # 'plot3': {'lines': {'version': ['v5', 'v6'],
-    #                     'vec': ['vec'],
-    #                     'tcm': ['tcm'],
-    #                     'cc': ['g++']},
-    #           'exclude': [],
-
-    #           'x_name': 'threads',
-    #           'y_name': 'time(ms)',
-    #           'y_err_name': 'std(%)',
-    #           'xlabel': 'Threads (500k points/thread)',
-    #           'ylabel': 'Run-time (ms)',
-    #           'title': 'float VS double precision',
-    #           'image_name': images_dir + 'float_vs_double.pdf'
-    #           },
-
-    # 'plot4': {'lines': {'version': ['v4'],
-    #                     'vec': ['vec', 'novec'],
-    #                     'tcm': ['tcm', 'notcm'],
-    #                     'cc': ['g++']},
-    #           'exclude': [],
-
-    #           'x_name': 'threads',
-    #           'y_name': 'time(ms)',
-    #           'y_err_name': 'std(%)',
-    #           'xlabel': 'Threads (500k points/thread)',
-    #           'ylabel': 'Run-time (ms)',
-    #           'title': 'tcm and vec effects',
-    #           'image_name': images_dir + 'tcm_and_vec_effects.pdf'
-    #           },
-    # 'plot5': {'lines': {'version': ['v7', 'v8', 'v9', 'v10',
-    #                                 'v7-p100', 'v8-p100', 'v9-p100', 'v10-p100'],
-    #                     'cc': ['nvcc']},
-    #           'exclude': [],
-    #           'x_name': 'points',
-    #           'y_name': 'time(ms)',
-    #           'y_err_name': 'std(%)',
-    #           'xlabel': 'Points',
-    #           'ylabel': 'Run-time (ms)',
-    #           'title': 'All GPU versions',
-    #           'extra': ['plt.xscale(\'log\', basex=2)'],
-    #           'image_name': images_dir + 'all_gpu_versions.pdf'
-    #           },
     # 'plot6': {'lines': {'version': ['v9', 'v4', 'v9-p100'],
     #                     'cc': ['nvcc', 'g++'],
     #                     'tcm': ['tcm', 'na'],
@@ -159,8 +104,10 @@ if __name__ == '__main__':
             plots_dir.update(get_plots(header, data, config['files'][file]['lines'],
                                        exclude=config['files'][file].get('exclude', [])))
         print(plots_dir)
-        fig = plt.figure(figsize=(6, 3.5))
-        plt.grid(True, which='major', alpha=0.5)
+        fig = plt.figure(figsize=config['figsize'])
+        plt.grid(True, which='major', alpha=0.6)
+        plt.grid(True, which='minor', alpha=0.6, linestyle=':')
+        plt.minorticks_on()
         plt.title(config['title'])
         plt.xlabel(config['xlabel'])
         plt.ylabel(config['ylabel'])
@@ -182,12 +129,12 @@ if __name__ == '__main__':
             # label = config['labels'][label]
             if config['labels'][label] in plt.gca().get_legend_handles_labels()[1]:
                 plt.errorbar(x, y, yerr=y_err,
-                         capsize=1, marker='', linewidth=1.5, elinewidth=1,
-                         color=config['colors'][label])
+                             capsize=1, marker='', linewidth=1.5, elinewidth=1,
+                             color=config['colors'][label])
             else:
                 plt.errorbar(x, y, yerr=y_err, label=config['labels'][label],
-                         capsize=1, marker='', linewidth=1.5,  elinewidth=1,
-                         color=config['colors'][label])
+                             capsize=1, marker='', linewidth=1.5,  elinewidth=1,
+                             color=config['colors'][label])
         if 'extra' in config:
             for c in config['extra']:
                 exec(c)
@@ -200,7 +147,7 @@ if __name__ == '__main__':
         # handles, labels = plt.gca().get_legend_handles_labels()
         # by_label = OrderedDict(zip(labels, handles))
 
-        plt.legend(loc='best', fancybox=True, fontsize=9,
+        plt.legend(loc='best', fancybox=True, fontsize=9.5,
                    labelspacing=0.2, borderpad=0.5, framealpha=0.5,
                    handletextpad=0.5, handlelength=2, borderaxespad=0)
         plt.tight_layout()

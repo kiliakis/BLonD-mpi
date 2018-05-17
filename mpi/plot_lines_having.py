@@ -17,43 +17,32 @@ if not os.path.exists(images_dir):
 plots_config = {
     'plot1': {
         'files': {
-            res_dir+'raw/strong_scale_mpi_single_node/comm-comp-report.csv': {
-                'lines': {'parts': ['10000000'],
-                          'type': ['total'],
-                          'N': ['1']},
-                'labels': {'10000000-total-1': '10M-strong-scale-1node'}
-            },
+            # res_dir+'raw/strong_scale_mpi_single_node/comm-comp-report.csv': {
+            #     'lines': {'parts': ['10000000'],
+            #               'type': ['total'],
+            #               'N': ['1']}
+            # },
             res_dir+'raw/strong_scale_mpi_dual_node/comm-comp-report.csv': {
                 'lines': {'parts': ['20000000'],
                           'type': ['total'],
-                          'N': ['2']},
-                'labels': {'20000000-total-2': '20M-strong-scale-2nodes'}
-
+                          'N': ['2']}
             },
             res_dir+'raw/strong_scale_mpi_four_node/comm-comp-report.csv': {
                 'lines': {'parts': ['20000000'],
                           'type': ['total'],
-                          'N': ['4']},
-                'labels': {'20000000-total-4': '20M-strong-scale-4nodes'}
-
+                          'N': ['4']}
             },
-            res_dir+'raw/weak_scale_mpi_single_node/comm-comp-report.csv': {
-                'lines': {'type': ['total'],
-                          'N': ['1']},
-                'labels': {'total-1': '1M-weak-scale-1node'}
-
-            },
+            # res_dir+'raw/weak_scale_mpi_single_node/comm-comp-report.csv': {
+            #     'lines': {'type': ['total'],
+            #               'N': ['1']}
+            # },
             res_dir+'raw/weak_scale_mpi_dual_node/comm-comp-report.csv': {
                 'lines': {'type': ['total'],
-                          'N': ['2']},
-                'labels': {'total-2': '1M-weak-scale-2nodes'}
-
+                          'N': ['2']}
             },
             res_dir+'raw/weak_scale_mpi_four_node/comm-comp-report.csv': {
                 'lines': {'type': ['total'],
-                          'N': ['4']},
-                'labels': {'total-4': '1M-weak-scale-4nodes'}
-
+                          'N': ['4']}
             }
         },
         'labels': {'10000000-total-1': '10M-strong-scale-1node',
@@ -63,74 +52,70 @@ plots_config = {
                    'total-4': '1M-weak-scale-4node',
                    'total-2': '1M-weak-scale-2nodes'},
         # 'exclude': [['v1', 'notcm'], ['v2', 'notcm'], ['v4', 'notcm']],
+        'ideal': 'total-4',
         'x_name': 'n',
         'y_name': 'avg_time(sec)',
         # 'y_err_name': 'std',
         'xlabel': 'MPI Tasks',
-        'ylabel': 'Throughput',
+        'ylabel': 'Throughput (Particles/sec)',
         'title': '',
         # 'ylim': [0, 16000],
-        'image_name': images_dir + 'throughput-2.pdf'
+        'figsize': (6, 2.5),
+        'image_name': images_dir + 'mpi-multi-node-throughput.pdf'
+
+    },
+    'plot2': {
+        'files': {
+            # res_dir+'raw/strong_scale_mpi_single_node/comm-comp-report.csv': {
+            #     'lines': {'parts': ['10000000'],
+            #               'type': ['total'],
+            #               'N': ['1']}
+            # },
+            # res_dir+'raw/strong_scale_mpi_dual_node/comm-comp-report.csv': {
+            #     'lines': {'parts': ['20000000'],
+            #               'type': ['total'],
+            #               'N': ['2']}
+            # },
+            res_dir+'raw/weak_scale_mpi_single_node/comm-comp-report.csv': {
+                'lines': {'type': ['total'],
+                          'N': ['1']}
+            },
+            res_dir+'raw/weak_scale_mpi_dual_node/comm-comp-report.csv': {
+                'lines': {'type': ['total'],
+                          'N': ['2']}
+            },
+            project_dir+'../BLonD-kiliakis/results/raw/weak_scale_omp_single_node/comm-comp-report.csv': {
+                'lines': {'type': ['total'],
+                          'N': ['1'],
+                          'n': ['1']}
+            }
+            # project_dir+'../BLonD-kiliakis/results/raw/strong_scale_omp_single_node/comm-comp-report.csv': {
+            #     'lines': {'parts': ['10000000'],
+            #               'type': ['total'],
+            #               'N': ['1'],
+            #               'n': ['1']}
+            # }
+        },
+        'labels': {'10000000-total-1': '10M-strong-N1',
+                   '10000000-total-1-1': '10M-strong-omp',
+                   '20000000-total-2': '20M-strong-N2',
+                   'total-1': '1M-weak-N1',
+                   'total-1-1': '1M-weak-omp',
+                   'total-2': '1M-weak-N2'},
+        # 'exclude': [['v1', 'notcm'], ['v2', 'notcm'], ['v4', 'notcm']],
+        'ideal': 'total-2',
+        'x_name': 'n',
+        'y_name': 'avg_time(sec)',
+        # 'y_err_name': 'std',
+        'xlabel': 'MPI Tasks/OMP Threads',
+        'ylabel': 'Throughput (Particles/sec)',
+        'title': '',
+        # 'ylim': [0, 16000],
+        'figsize': (6, 2.5),
+        'image_name': images_dir + 'mpi-vs-omp-throughput.pdf'
 
     }
-    # 'plot2': {'lines': {'version': ['v4'],
-    #                     'vec': ['vec'],
-    #                     'tcm': ['tcm'],
-    #                     'cc': ['g++', 'icc']},
-    #           'exclude': [],
 
-    #           'x_name': 'threads',
-    #           'y_name': 'time(ms)',
-    #           'y_err_name': 'std(%)',
-    #           'xlabel': 'Threads (500k points/thread)',
-    #           'ylabel': 'Run-time (ms)',
-    #           'title': 'icc VS gcc',
-    #           # 'ylim': [0, 16000],
-    #           'image_name': images_dir + 'iccVSgcc.pdf'
-    #           },
-
-    # 'plot3': {'lines': {'version': ['v5', 'v6'],
-    #                     'vec': ['vec'],
-    #                     'tcm': ['tcm'],
-    #                     'cc': ['g++']},
-    #           'exclude': [],
-
-    #           'x_name': 'threads',
-    #           'y_name': 'time(ms)',
-    #           'y_err_name': 'std(%)',
-    #           'xlabel': 'Threads (500k points/thread)',
-    #           'ylabel': 'Run-time (ms)',
-    #           'title': 'float VS double precision',
-    #           'image_name': images_dir + 'float_vs_double.pdf'
-    #           },
-
-    # 'plot4': {'lines': {'version': ['v4'],
-    #                     'vec': ['vec', 'novec'],
-    #                     'tcm': ['tcm', 'notcm'],
-    #                     'cc': ['g++']},
-    #           'exclude': [],
-
-    #           'x_name': 'threads',
-    #           'y_name': 'time(ms)',
-    #           'y_err_name': 'std(%)',
-    #           'xlabel': 'Threads (500k points/thread)',
-    #           'ylabel': 'Run-time (ms)',
-    #           'title': 'tcm and vec effects',
-    #           'image_name': images_dir + 'tcm_and_vec_effects.pdf'
-    #           },
-    # 'plot5': {'lines': {'version': ['v7', 'v8', 'v9', 'v10',
-    #                                 'v7-p100', 'v8-p100', 'v9-p100', 'v10-p100'],
-    #                     'cc': ['nvcc']},
-    #           'exclude': [],
-    #           'x_name': 'points',
-    #           'y_name': 'time(ms)',
-    #           'y_err_name': 'std(%)',
-    #           'xlabel': 'Points',
-    #           'ylabel': 'Run-time (ms)',
-    #           'title': 'All GPU versions',
-    #           'extra': ['plt.xscale(\'log\', basex=2)'],
-    #           'image_name': images_dir + 'all_gpu_versions.pdf'
-    #           },
     # 'plot6': {'lines': {'version': ['v9', 'v4', 'v9-p100'],
     #                     'cc': ['nvcc', 'g++'],
     #                     'tcm': ['tcm', 'na'],
@@ -152,15 +137,17 @@ if __name__ == '__main__':
     for plot_key, config in plots_config.items():
         plots_dir = {}
         for file in config['files'].keys():
-            print(file)
+            # print(file)
             data = np.genfromtxt(file, delimiter='\t', dtype=str)
             header = list(data[0])
             data = data[1:]
             plots_dir.update(get_plots(header, data, config['files'][file]['lines'],
                                        exclude=config['files'][file].get('exclude', [])))
         # print(plots_dir)
-        fig = plt.figure(figsize=(6, 3.5))
-        plt.grid(True, which='major', alpha=0.5)
+        fig = plt.figure(figsize=config['figsize'])
+        plt.grid(True, which='major', alpha=0.6)
+        plt.grid(True, which='minor', alpha=0.6, linestyle=':')
+        plt.minorticks_on()
         plt.title(config['title'])
         plt.xlabel(config['xlabel'])
         plt.ylabel(config['ylabel'])
@@ -168,9 +155,14 @@ if __name__ == '__main__':
         if 'ylim' in config:
             plt.ylim(config['ylim'])
 
-        for label, values in plots_dir.items():
+        for key, values in plots_dir.items():
             # print(values)
-            x = np.array(values[:, header.index(config['x_name'])], float)
+            label = config['labels'][key]
+            if 'omp' in label:
+                x = np.array(values[:, header.index('omp')], float)
+            else:
+                x = np.array(values[:, header.index(config['x_name'])], float)
+
             y = np.array(values[:, header.index(config['y_name'])], float)
             parts = np.array(values[:, header.index('parts')], float)
             turns = np.array(values[:, header.index('turns')], float)
@@ -178,32 +170,34 @@ if __name__ == '__main__':
             # y_err = np.array(
             #     values[:, header.index(config['y_err_name'])], float)
             # y_err = y_err * y / 100.
-            print(label, x, y)
-            plt.errorbar(x, y, yerr=None, label=config['labels'][label],
-                         capsize=2, marker='', linewidth=2)
+            # print(label, x, y)
+            plt.errorbar(x, y, yerr=None, label=label,
+                         capsize=2, marker='', linewidth=1.5)
         if 'extra' in config:
             for c in config['extra']:
                 exec(c)
-        
+
         # Ideal line
         ylims = plt.gca().get_ylim()
-        
-        x = np.array(plots_dir['total-4'][:, header.index(config['x_name'])], float)
-        y = float(plots_dir['total-4'][0, header.index(config['y_name'])])
-        parts = float(plots_dir['total-4'][0, header.index('parts')])
-        turns = float(plots_dir['total-4'][0, header.index('turns')])
+
+        x = np.array(plots_dir[config['ideal']]
+                     [:, header.index(config['x_name'])], float)
+        y = float(plots_dir[config['ideal']][0, header.index(config['y_name'])])
+        parts = float(plots_dir[config['ideal']][0, header.index('parts')])
+        turns = float(plots_dir[config['ideal']][0, header.index('turns')])
         y = x * (parts * turns) / y
-        print(y)
+        # print(y)
         plt.plot(x, y, color='black', linestyle='--')
 
         plt.ylim(ylims)
-        
+        # plt.yticks(np.linspace(ylims[0], ylims[1], 5))
+
         # if plot_key == 'plot6':
         #     plt.gca().get_lines()
         #     for p in plt.gca().get_lines()[::3]:
         #         annotate(plt.gca(), p.get_xdata(),
         #                  p.get_ydata(), fontsize='8')
-        plt.legend(loc='best', fancybox=True, fontsize=8.5,
+        plt.legend(loc='best', fancybox=True, fontsize=9.5,
                    labelspacing=0, borderpad=0.5, framealpha=0.4,
                    handletextpad=0.5, handlelength=2, borderaxespad=0)
         plt.tight_layout()

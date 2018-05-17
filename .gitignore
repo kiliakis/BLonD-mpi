@@ -10,3 +10,4 @@
 *__doc/_build
 *__EXAMPLES/output_files/
 *.log
+*results/raw*

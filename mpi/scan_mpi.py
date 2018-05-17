@@ -6,7 +6,7 @@ from cycler import cycle
 from math import ceil
 from datetime import datetime
 import numpy as np
-
+import random
 
 # home = '/afs/cern.ch/work/k/kiliakis/git/BLonD-mpi'
 home = os.environ['HOME'] + '/git/BLonD-mpi'
@@ -141,6 +141,7 @@ for analysis, config in configs.items():
         job_name = job_name_form.format(analysis, p, s, t, w, o, N)
         for i in range(repeats):
             timestr = datetime.now().strftime('%d%b%y.%H-%M-%S')
+            timestr = timestr + '-' + str(random.randint(0,100))
             output = result_dir.format(job_name, timestr, 'output.txt')
             error = result_dir.format(job_name, timestr, 'error.txt')
             log_dir = result_dir.format(job_name, timestr, 'log')
