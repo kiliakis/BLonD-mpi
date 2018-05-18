@@ -45,12 +45,12 @@ plots_config = {
                           'N': ['4']}
             }
         },
-        'labels': {'10000000-total-1': '10M-strong-scale-1node',
-                   '20000000-total-2': '20M-strong-scale-2nodes',
-                   '20000000-total-4': '20M-strong-scale-4nodes',
-                   'total-1': '1M-weak-scale-1node',
-                   'total-4': '1M-weak-scale-4node',
-                   'total-2': '1M-weak-scale-2nodes'},
+        'labels': {'10000000-total-1': '10M-strong-N1',
+                   '20000000-total-2': '20M-strong-N2',
+                   '20000000-total-4': '20M-strong-N4',
+                   'total-1': '1M-weak-N1',
+                   'total-4': '1M-weak-N4',
+                   'total-2': '1M-weak-N2'},
         # 'exclude': [['v1', 'notcm'], ['v2', 'notcm'], ['v4', 'notcm']],
         'ideal': 'total-4',
         'x_name': 'n',
@@ -88,6 +88,12 @@ plots_config = {
                 'lines': {'type': ['total'],
                           'N': ['1'],
                           'n': ['1']}
+            },
+            project_dir+'../BLonD-kiliakis/results/raw/weak_scale_omp_local/comm-comp-report.csv': {
+                'lines': {'type': ['total'],
+                          'N': ['1'],
+                          'n': ['1'],
+                          'turns': ['2000']}
             }
             # project_dir+'../BLonD-kiliakis/results/raw/strong_scale_omp_single_node/comm-comp-report.csv': {
             #     'lines': {'parts': ['10000000'],
@@ -101,6 +107,7 @@ plots_config = {
                    '20000000-total-2': '20M-strong-N2',
                    'total-1': '1M-weak-N1',
                    'total-1-1': '1M-weak-omp',
+                   'total-1-1-2000': '1M-weak-omp-haswell',
                    'total-2': '1M-weak-N2'},
         # 'exclude': [['v1', 'notcm'], ['v2', 'notcm'], ['v4', 'notcm']],
         'ideal': 'total-2',

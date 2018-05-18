@@ -63,10 +63,10 @@ plots_config = {
                    'comp-2': '1M-weak-N2',
                    'comp-4': '1M-weak-N4'
                    },
-        'colors': {'20000000-comp-2': 'tab:red',
-                   '20000000-comp-4': 'tab:green',
-                   'comp-2': 'tab:orange',
-                   'comp-4': 'tab:blue'
+        'colors': {'20000000-comp-2': 'tab:blue',
+                   '20000000-comp-4': 'tab:orange',
+                   'comp-2': 'tab:green',
+                   'comp-4': 'tab:red'
                    },
         # 'exclude': [['v1', 'notcm'], ['v2', 'notcm'], ['v4', 'notcm']],
         'x_name': 'n',
@@ -74,9 +74,9 @@ plots_config = {
         'y_err_name': 'std',
         'xlabel': 'MPI Tasks',
         'ylabel': 'Run-time percent',
-        'title': '',
+        'title': 'Computation',
         'ylim': [30, 100],
-        'figsize': (6, 2.5),
+        'figsize': (6, 2.3),
         'image_name': images_dir + 'time-breakdown.pdf'
 
     }
