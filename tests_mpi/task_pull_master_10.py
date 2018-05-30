@@ -10,21 +10,41 @@ from mpi4py import MPI
 import random
 import time
 import sys
+from task_pull_worker_10 import worker
 
-n_workers = 9
+# n_workers = 9
 n_tasks = 50
-worker = sys.path[0]+'/10-task-pull-worker.py'
+# worker = sys.path[0]+'/10-task-pull-worker.py'
 
 # Parent
 if __name__ == '__main__':
     comm = MPI.COMM_WORLD
-    rank = comm.Get_rank()
+    rank = comm.rank
+    n_workers = comm.size - 1
 
-    print('Master[%d]: Hostname: %s' % (rank, MPI.Get_processor_name()))
+
+
     # print(worker)
     # sys.exit()
     # sys.stdout.flush()
+    if rank != 0:
+        worker()
+        exit(0)
 
+    newcomm = comm.Split(rank==0, rank)
+    # print('newcomm')
+    # print(newcomm)
+    # print(newcomm.size)
+    # print(newcomm.Get_group())
+
+    intercomm = newcomm.Create_intercomm(0, MPI.COMM_WORLD, 1)
+    # print('intercomm')
+    # print(intercomm)
+    # print(intercomm.size)
+    # print(intercomm.Get_group())
+    comm = intercomm
+    n_workers = comm.Get_remote_size()
+    print('Master[%d]: Hostname: %s' % (rank, MPI.Get_processor_name()))
     # Start clock
     start = MPI.Wtime()
 
@@ -36,10 +56,10 @@ if __name__ == '__main__':
     msg_list = task_list + ([StopIteration] * n_workers)
 
     # Spawn workers
-    comm = MPI.COMM_WORLD.Spawn(
-        sys.executable,
-        args=[worker],
-        maxprocs=n_workers)
+    # comm = MPI.COMM_WORLD.Spawn(
+    #     sys.executable,
+    #     args=[worker],
+    #     maxprocs=n_workers)
 
     # Reply to whoever asks until done
     status = MPI.Status()

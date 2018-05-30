@@ -4,6 +4,7 @@ import numpy as np
 import logging
 from pyprof import timing
 import os
+import worker
 
 mpi_type = {
     'd': MPI.DOUBLE,
@@ -34,29 +35,45 @@ task_id = {
     'stop': np.array(10, np.uint8)
 }
 
-_worker_script = sys.path[0] + '/worker.py'
+# _worker_script = sys.path[0] + '/worker.py'
 
-_exec = 'python'
-_args = []
+# _exec = 'python'
+# _args = []
 
-_debug_exec = 'xterm'
-_debug_args = ['-e', 'python', '-m', 'pdb']
+# _debug_exec = 'xterm'
+# _debug_args = ['-e', 'python', '-m', 'pdb']
 
 
 master = None
+
+
+def init():
+    rank = MPI.COMM_WORLD.rank
+    if rank != 0:
+        worker.main()
+        exit(0)
 
 
 class Master:
     @timing.timeit(key='Master.__init__')
     def __init__(self, log=None):
         global master
-        self.intercomm = None
-        self.intracomm = MPI.COMM_WORLD
+
+        rank = MPI.COMM_WORLD.rank
+        self.intracomm = MPI.COMM_WORLD.Split(rank==0, rank)
+        self.intercomm = self.intracomm.Create_intercomm(0, MPI.COMM_WORLD, 1)
+        self.workers = self.intercomm.Get_remote_size()
+        self.rank = self.intracomm.rank
+
+
+        # self.intracomm = MPI.COMM_SELF
+        # self.intercomm = MPI.COMM_WORLD
+        # self.workers = self.intercomm.size - 1
 
         if self.intracomm.size != 1:
             'Only one process can be the master!\nRe-run with only 1 process.'
 
-        self.workers = 0
+        # self.workers = 0
         self.hostname = MPI.Get_processor_name()
         if log:
             self.logger = MPILog(rank=-1, log_dir=log)
@@ -66,32 +83,32 @@ class Master:
         logging.debug('Initialized.')
         master = self
 
-    @timing.timeit(key='spawn_workers')
-    def spawn_workers(self, workers=1, worker_script=_worker_script,
-                      debug=False, args=None, log=None, report=None):
-        if args:
-            self.args = args
-        elif debug == False:
-            self.args = _args
-            self.exec = _exec
-        else:
-            self.args = _debug_args
-            self.exec = _debug_exec
-        args = self.args + [worker_script]
-        if log:
-            args += ['--log', log]
-        if report:
-            args += ['--report', report]
-        mpiinfo = MPI.Info.Create()
-        string = 'OMP_NUM_THREADS=%s' % os.environ.get('OMP_NUM_THREADS', '1')
-        mpiinfo.Set(key='env', value=string)
-        self.intercomm = self.intracomm.Spawn(self.exec,
-                                              args=args,
-                                              maxprocs=workers,
-                                              info=mpiinfo)
+    # @timing.timeit(key='spawn_workers')
+    # def spawn_workers(self, workers=1, worker_script=_worker_script,
+    #                   debug=False, args=None, log=None, report=None):
+    #     if args:
+    #         self.args = args
+    #     elif debug == False:
+    #         self.args = _args
+    #         self.exec = _exec
+    #     else:
+    #         self.args = _debug_args
+    #         self.exec = _debug_exec
+    #     args = self.args + [worker_script]
+    #     if log:
+    #         args += ['--log', log]
+    #     if report:
+    #         args += ['--report', report]
+    #     mpiinfo = MPI.Info.Create()
+    #     string = 'OMP_NUM_THREADS=%s' % os.environ.get('OMP_NUM_THREADS', '1')
+    #     mpiinfo.Set(key='env', value=string)
+    #     self.intercomm = self.intracomm.Spawn(self.exec,
+    #                                           args=args,
+    #                                           maxprocs=workers,
+    #                                           info=mpiinfo)
 
-        self.workers = self.intercomm.Get_remote_size()
-        logging.debug('%d workers successfully initialized.' % self.workers)
+    #     self.workers = self.intercomm.Get_remote_size()
+    #     logging.debug('%d workers successfully initialized.' % self.workers)
 
     @timing.timeit(key='multi_scatter')
     def multi_scatter(self, vars):
@@ -169,20 +186,27 @@ class Master:
 class Worker:
 
     def __init__(self, log=None):
-        try:
-            # Connect to parent
-            self.intercomm = MPI.Comm.Get_parent()
-            self.rank = self.intercomm.Get_rank()
-            self.hostname = MPI.Get_processor_name()
-        except:
-            raise ValueError('Could not connect to parent')
+        rank = MPI.COMM_WORLD.rank
+
+        self.intracomm = MPI.COMM_WORLD.Split(rank==0, rank)
+        self.intercomm = self.intracomm.Create_intercomm(0, MPI.COMM_WORLD, 0)
+        # self.intercomm = MPI.COMM_WORLD
+        self.rank = self.intracomm.rank
+        self.hostname = MPI.Get_processor_name()
+        # try:
+        #     # Connect to parent
+        #     self.intercomm = MPI.Comm.Get_parent()
+        #     self.rank = self.intercomm.Get_rank()
+        #     self.hostname = MPI.Get_processor_name()
+        # except:
+        #     raise ValueError('Could not connect to parent')
         if log:
             self.logger = MPILog(log_dir=log, rank=self.rank)
         else:
             self.logger = MPILog(rank=self.rank)
             self.logger.disable()
 
-        self.intracomm = MPI.COMM_WORLD
+        # self.intracomm = MPI.COMM_WORLD
         self.logger.debug('Hostname: %s' % self.hostname)
         self.taskbuf = np.array(0, np.uint8)
 

@@ -139,7 +139,6 @@ def LIKick(ring, dt, dE, turn):
                          ring.acceleration_kick[turn])
 
 
-
 def LIKick_mpi(ring, turn):
     with timing.timed_region('LIKick') as tr:
         import mpi.mpi_config as mpiconf
@@ -198,9 +197,10 @@ def slice_mpi(profile):
     master.logger.debug('Broadcasting a histo task')
     master.bcast('histo')
     # with timing.timed_region('histo') as tr:
-    #     zero = np.zeros(profile.n_slices, dtype='d')
-    #     master.intercomm.Allreduce(zero, profile.n_macroparticles, op=MPI.SUM)
-
+        # zero = np.zeros(profile.n_slices, dtype='d')
+        # profile.n_macroparticles = np.zeros(profile.n_slices, dtype='d')
+        # master.intracomm.Allreduce(
+            # MPI.IN_PLACE, profile.n_macroparticles, op=MPI.SUM)
 
 
 def __slice(dt, profile, cut_left, cut_right):
@@ -274,7 +274,6 @@ def SR_full_mpi(SyncRad, turn):
                     SyncRad.tau_z, SyncRad.n_kicks,
                     SyncRad.sigma_dE, SyncRad.general_params.energy[0, turn],
                     SyncRad.random_array)
-
 
 
 def __sync_rad_full(dE, U0, tau_z, n_kicks,

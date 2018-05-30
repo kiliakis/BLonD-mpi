@@ -36,6 +36,8 @@ from toolbox.input_parser import parse
 from mpi import mpi_config as mpiconf
 from pyprof import timing
 
+mpiconf.init()
+
 args = parse()
 print(args)
 # Simulation parameters -------------------------------------------------------
@@ -135,7 +137,7 @@ start_t = time.time()
 print(datetime.datetime.now().time())
 
 master = mpiconf.Master(log=log)
-master.spawn_workers(workers=workers, debug=debug, log=log, report=report)
+# master.spawn_workers(workers=workers, debug=debug, log=log, report=report)
 
 # Send initial data to the workers
 init_dict = {

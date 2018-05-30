@@ -7,7 +7,8 @@ from mpi import mpi_config as mpiconf
 from utils.bphysics_wrap import __kick, __drift, __slice, __linear_interp_kick, __rf_volt_comp
 import logging
 from pyprof import timing
-import argparse
+# import argparse
+from toolbox.input_parser import parse
 
 worker = None
 
@@ -111,29 +112,30 @@ task_dir = {
 }
 
 
-def parse():
-    parser = argparse.ArgumentParser(description='MPI Worker function.')
+# def parse():
+#     parser = argparse.ArgumentParser(description='MPI Worker function.')
 
-    parser.add_argument('-l', '--log', type=str, default=None,
-                        nargs='?', const='logs',
-                        help='Directory to store the log files.'
-                        '\nDefault: Do not generate log files.')
+#     parser.add_argument('-l', '--log', type=str, default=None,
+#                         nargs='?', const='logs',
+#                         help='Directory to store the log files.'
+#                         '\nDefault: Do not generate log files.')
 
-    parser.add_argument('-r', '--report', type=str, default=None,
-                        nargs='?', const='reports',
-                        help='Directory to store the report files.'
-                        '\nDefault: Do not generate report files.')
-    args = parser.parse_args()
-    return vars(args)
+#     parser.add_argument('-r', '--report', type=str, default=None,
+#                         nargs='?', const='reports',
+#                         help='Directory to store the report files.'
+#                         '\nDefault: Do not generate report files.')
+#     args = parser.parse_args()
+#     return vars(args)
 
 
-if __name__ == '__main__':
-
+def main():
+    global worker
     try:
         args = parse()
         # log = 'nolog' not in sys.argv
         # report = ''
         worker = mpiconf.Worker(log=args.get('log', None))
+        os.environ['OMP_NUM_THREADS'] = os.environ.get('OMP_NUM_THREADS', '1')
         worker.logger.debug('OMP_NUM_THREADS=%s' %
                             os.environ['OMP_NUM_THREADS'])
         start_t = time.time()
@@ -161,3 +163,4 @@ if __name__ == '__main__':
         sys.stdout.flush()
         sys.stderr.flush()
         worker.intercomm.Disconnect()
+        exit(0)
