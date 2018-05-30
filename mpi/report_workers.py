@@ -122,7 +122,6 @@ def report_comm_comp(indir, files, outfile):
 
     outfile.write(string)
 
-
 def report_avg(indir, files, outfile):
     default_funcs = []
     default_header = []
@@ -153,7 +152,6 @@ def report_avg(indir, files, outfile):
         else:
             acc_data += data
         num += 1
-
     acc_data = np.around(acc_data/num, 2)
 
     writer = csv.writer(outfile, delimiter='\t')
@@ -161,6 +159,7 @@ def report_avg(indir, files, outfile):
     for f, r in zip(default_funcs, acc_data):
         writer.writerow([f]+list(r))
 
+        
 if __name__ == '__main__':
     args = parser.parse_args()
     # print(args)

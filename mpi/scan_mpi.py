@@ -56,17 +56,17 @@ configs = {
     #                                'N': cycle([2]),
     #                                'time': cycle([60]),
     #                                'partition': cycle(['be-long'])
-    #                                },
+    #                                }
 
-    'weak_scale_mpi_four_node': {'p': np.arange(1000000, 78000001, 2000000),
-                                 's': np.arange(500, 39501, 1000),
-                                 't': cycle([2000]),
-                                 'w': np.arange(1, 80, 2),
-                                 'o': cycle([1]),
-                                 'N': cycle([4]),
-                                 'time': cycle([45]),
-                                 'partition': cycle(['be-long'])
-                                 },
+    # 'weak_scale_mpi_four_node': {'p': np.arange(1000000, 78000001, 2000000),
+    #                              's': np.arange(500, 39501, 1000),
+    #                              't': cycle([2000]),
+    #                              'w': np.arange(1, 80, 2),
+    #                              'o': cycle([1]),
+    #                              'N': cycle([4]),
+    #                              'time': cycle([45]),
+    #                              'partition': cycle(['be-long'])
+    #                              },
 
     # 'weak_scale_hybrid_four_node': {'p': np.arange(1000000, 78000001, 2000000),
     #                              's': np.arange(500, 39501, 1000),
@@ -78,15 +78,15 @@ configs = {
     #                              'partition': cycle(['be-long'])
     #                              },
 
-    'strong_scale_mpi_four_node': {'p': cycle([20000000]),
-                                   's': cycle([10000]),
-                                   't': cycle([2000]),
-                                   'w': np.arange(3, 80, 2),
-                                   'o': cycle([1]),
-                                   'N': cycle([4]),
-                                   'time': cycle([60]),
-                                   'partition': cycle(['be-long'])
-                                   }
+    # 'strong_scale_mpi_four_node': {'p': cycle([20000000]),
+    #                                's': cycle([10000]),
+    #                                't': cycle([2000]),
+    #                                'w': np.arange(3, 80, 2),
+    #                                'o': cycle([1]),
+    #                                'N': cycle([4]),
+    #                                'time': cycle([60]),
+    #                                'partition': cycle(['be-long'])
+    #                                }
 
     # 'weak_scale_mpi_single_node': {'p': np.arange(100000, 1000001, 1000000),
     #                                's': np.arange(500, 501, 500),
@@ -109,6 +109,46 @@ configs = {
     #                                  }
 
 
+    # 'weak_scale_hybrid_four_node': {'p': np.arange(20000000, 80000001, 20000000),
+    #                                 's': np.arange(10000, 40001, 10000),
+    #                                 't': cycle([2000]),
+    #                                 'w': np.arange(1, 5, 1),
+    #                                 'o': cycle([20]),
+    #                                 'N': np.arange(2, 6, 1),
+    #                                 'time': cycle([60]),
+    #                                 'partition': cycle(['be-long'])
+    #                                 }
+
+    'strong_scale_hybrid_four_node': {'p': cycle([20000000]),
+                                      's': cycle([10000]),
+                                      't': cycle([2000]),
+                                      'w': list(np.arange(3, 8, 1))
+                                      + list(np.arange(3, 16, 2))
+                                      + list(np.arange(3, 20, 2))
+                                      + list(np.arange(3, 40, 4)),
+                                      'o': [10]*5 + [5]*7 + [4]*9 + [2]*10,
+                                      'N': [2, 3, 3, 4, 4] 
+                                      + [1, 2, 2, 3, 3, 4, 4]
+                                      + [1, 2, 2, 2, 3, 3, 4, 4, 4]
+                                      + [1, 1, 2, 2, 2, 3, 3, 4, 4, 4],
+                                      'time': cycle([60]),
+                                      'partition': cycle(['be-long'])
+                                      }
+
+
+    # 'strong_scale_hybrid_four_node': {'p': cycle([20000000]),
+    #                                   's': cycle([10000]),
+    #                                   't': cycle([2000]),
+    #                                   'w': [3],
+    #                                   'o': cycle([20]),
+    #                                   'N': [4],
+    #                                   'time': cycle([60]),
+    #                                   'partition': cycle(['be-long'])
+    #                                   }
+
+
+
+
 }
 
 repeats = 1
@@ -122,8 +162,8 @@ current_sim = 0
 os.chdir(home)
 
 # compile first
-subprocess.call(['srun', '-t1', '-N1', '-n1', '-p',
-                 'be-short', 'bash', setup_script])
+# subprocess.call(['srun', '-t1', '-N1', '-n1', '-p',
+#                  'be-short', 'bash', setup_script])
 
 for analysis, config in configs.items():
     ps = config['p']
@@ -141,7 +181,7 @@ for analysis, config in configs.items():
         job_name = job_name_form.format(analysis, p, s, t, w, o, N)
         for i in range(repeats):
             timestr = datetime.now().strftime('%d%b%y.%H-%M-%S')
-            timestr = timestr + '-' + str(random.randint(0,100))
+            timestr = timestr + '-' + str(random.randint(0, 100))
             output = result_dir.format(job_name, timestr, 'output.txt')
             error = result_dir.format(job_name, timestr, 'error.txt')
             log_dir = result_dir.format(job_name, timestr, 'log')
@@ -159,7 +199,7 @@ for analysis, config in configs.items():
                           '-t', str(time), '-p', partition,
                           '-o', output,
                           '-e', error,
-                          '-J', job_name + '-' + str(i)]
+                          '-J', job_name.split('/')[0] + '-' + str(i)]
 
             all_args = ['sbatch'] + batch_args + \
                 [batch_script, exe] + exe_args

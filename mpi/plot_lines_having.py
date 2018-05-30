@@ -15,56 +15,115 @@ if not os.path.exists(images_dir):
 # csv_file = res_dir + 'csv/interp-kick1/all_results2.csv'
 
 plots_config = {
-    'plot1': {
-        'files': {
-            # res_dir+'raw/strong_scale_mpi_single_node/comm-comp-report.csv': {
-            #     'lines': {'parts': ['10000000'],
-            #               'type': ['total'],
-            #               'N': ['1']}
-            # },
-            res_dir+'raw/strong_scale_mpi_dual_node/comm-comp-report.csv': {
-                'lines': {'parts': ['20000000'],
-                          'type': ['total'],
-                          'N': ['2']}
-            },
-            res_dir+'raw/strong_scale_mpi_four_node/comm-comp-report.csv': {
-                'lines': {'parts': ['20000000'],
-                          'type': ['total'],
-                          'N': ['4']}
-            },
-            # res_dir+'raw/weak_scale_mpi_single_node/comm-comp-report.csv': {
-            #     'lines': {'type': ['total'],
-            #               'N': ['1']}
-            # },
-            res_dir+'raw/weak_scale_mpi_dual_node/comm-comp-report.csv': {
-                'lines': {'type': ['total'],
-                          'N': ['2']}
-            },
-            res_dir+'raw/weak_scale_mpi_four_node/comm-comp-report.csv': {
-                'lines': {'type': ['total'],
-                          'N': ['4']}
-            }
-        },
-        'labels': {'10000000-total-1': '10M-strong-N1',
-                   '20000000-total-2': '20M-strong-N2',
-                   '20000000-total-4': '20M-strong-N4',
-                   'total-1': '1M-weak-N1',
-                   'total-4': '1M-weak-N4',
-                   'total-2': '1M-weak-N2'},
-        # 'exclude': [['v1', 'notcm'], ['v2', 'notcm'], ['v4', 'notcm']],
-        'ideal': 'total-4',
-        'x_name': 'n',
-        'y_name': 'avg_time(sec)',
-        # 'y_err_name': 'std',
-        'xlabel': 'MPI Tasks',
-        'ylabel': 'Throughput (Particles/sec)',
-        'title': '',
-        # 'ylim': [0, 16000],
-        'figsize': (6, 2.5),
-        'image_name': images_dir + 'mpi-multi-node-throughput.pdf'
+    # 'plot1': {
+    #     'files': {
+    #         # res_dir+'raw/strong_scale_mpi_single_node/comm-comp-report.csv': {
+    #         #     'lines': {'parts': ['10000000'],
+    #         #               'type': ['total'],
+    #         #               'N': ['1']}
+    #         # },
+    #         res_dir+'raw/strong_scale_mpi_dual_node/comm-comp-report.csv': {
+    #             'lines': {'parts': ['20000000'],
+    #                       'type': ['total'],
+    #                       'N': ['2']}
+    #         },
+    #         res_dir+'raw/strong_scale_mpi_four_node/comm-comp-report.csv': {
+    #             'lines': {'parts': ['20000000'],
+    #                       'type': ['total'],
+    #                       'N': ['4']}
+    #         },
+    #         # res_dir+'raw/weak_scale_mpi_single_node/comm-comp-report.csv': {
+    #         #     'lines': {'type': ['total'],
+    #         #               'N': ['1']}
+    #         # },
+    #         res_dir+'raw/weak_scale_mpi_dual_node/comm-comp-report.csv': {
+    #             'lines': {'type': ['total'],
+    #                       'N': ['2']}
+    #         },
+    #         res_dir+'raw/weak_scale_mpi_four_node/comm-comp-report.csv': {
+    #             'lines': {'type': ['total'],
+    #                       'N': ['4']}
+    #         }
+    #     },
+    #     'labels': {'10000000-total-1': '10M-strong-N1',
+    #                '20000000-total-2': '20M-strong-N2',
+    #                '20000000-total-4': '20M-strong-N4',
+    #                'total-1': '1M-weak-N1',
+    #                'total-4': '1M-weak-N4',
+    #                'total-2': '1M-weak-N2'},
+    #     # 'exclude': [['v1', 'notcm'], ['v2', 'notcm'], ['v4', 'notcm']],
+    #     'ideal': 'total-4',
+    #     'x_name': 'n',
+    #     'y_name': 'avg_time(sec)',
+    #     # 'y_err_name': 'std',
+    #     'xlabel': 'MPI Tasks',
+    #     'ylabel': 'Throughput (Particles/sec)',
+    #     'title': '',
+    #     # 'ylim': [0, 16000],
+    #     'figsize': (6, 2.5),
+    #     'image_name': images_dir + 'mpi-multi-node-throughput.pdf'
 
-    },
-    'plot2': {
+    # },
+    # 'plot2': {
+    #     'files': {
+    #         # res_dir+'raw/strong_scale_mpi_single_node/comm-comp-report.csv': {
+    #         #     'lines': {'parts': ['10000000'],
+    #         #               'type': ['total'],
+    #         #               'N': ['1']}
+    #         # },
+    #         # res_dir+'raw/strong_scale_mpi_dual_node/comm-comp-report.csv': {
+    #         #     'lines': {'parts': ['20000000'],
+    #         #               'type': ['total'],
+    #         #               'N': ['2']}
+    #         # },
+    #         res_dir+'raw/weak_scale_mpi_single_node/comm-comp-report.csv': {
+    #             'lines': {'type': ['total'],
+    #                       'N': ['1']}
+    #         },
+    #         res_dir+'raw/weak_scale_mpi_dual_node/comm-comp-report.csv': {
+    #             'lines': {'type': ['total'],
+    #                       'N': ['2']}
+    #         },
+    #         project_dir+'../BLonD-kiliakis/results/raw/weak_scale_omp_single_node/comm-comp-report.csv': {
+    #             'lines': {'type': ['total'],
+    #                       'N': ['1'],
+    #                       'n': ['1']}
+    #         },
+    #         project_dir+'../BLonD-kiliakis/results/raw/weak_scale_omp_local/comm-comp-report.csv': {
+    #             'lines': {'type': ['total'],
+    #                       'N': ['1'],
+    #                       'n': ['1'],
+    #                       'turns': ['2000']}
+    #         }
+    #         # project_dir+'../BLonD-kiliakis/results/raw/strong_scale_omp_single_node/comm-comp-report.csv': {
+    #         #     'lines': {'parts': ['10000000'],
+    #         #               'type': ['total'],
+    #         #               'N': ['1'],
+    #         #               'n': ['1']}
+    #         # }
+    #     },
+    #     'labels': {'10000000-total-1': '10M-strong-N1',
+    #                '10000000-total-1-1': '10M-strong-omp',
+    #                '20000000-total-2': '20M-strong-N2',
+    #                'total-1': '1M-weak-N1',
+    #                'total-1-1': '1M-weak-omp',
+    #                'total-1-1-2000': '1M-weak-omp-haswell',
+    #                'total-2': '1M-weak-N2'},
+    #     # 'exclude': [['v1', 'notcm'], ['v2', 'notcm'], ['v4', 'notcm']],
+    #     'ideal': 'total-2',
+    #     'x_name': 'n',
+    #     'y_name': 'avg_time(sec)',
+    #     # 'y_err_name': 'std',
+    #     'xlabel': 'MPI Tasks/OMP Threads',
+    #     'ylabel': 'Throughput (Particles/sec)',
+    #     'title': '',
+    #     # 'ylim': [0, 16000],
+    #     'figsize': (6, 2.5),
+    #     'image_name': images_dir + 'mpi-vs-omp-throughput.pdf'
+
+    # },
+
+    'plot3': {
         'files': {
             # res_dir+'raw/strong_scale_mpi_single_node/comm-comp-report.csv': {
             #     'lines': {'parts': ['10000000'],
@@ -76,42 +135,28 @@ plots_config = {
             #               'type': ['total'],
             #               'N': ['2']}
             # },
-            res_dir+'raw/weak_scale_mpi_single_node/comm-comp-report.csv': {
-                'lines': {'type': ['total'],
-                          'N': ['1']}
+            res_dir+'raw/strong_scale_hybrid_four_node/comm-comp-report.csv': {
+                'lines': {'parts': ['20000000'],
+                          'omp': ['4', '5', '10', '20'],
+                          'type': ['total']}
             },
-            res_dir+'raw/weak_scale_mpi_dual_node/comm-comp-report.csv': {
-                'lines': {'type': ['total'],
-                          'N': ['2']}
-            },
-            project_dir+'../BLonD-kiliakis/results/raw/weak_scale_omp_single_node/comm-comp-report.csv': {
-                'lines': {'type': ['total'],
-                          'N': ['1'],
-                          'n': ['1']}
-            },
-            project_dir+'../BLonD-kiliakis/results/raw/weak_scale_omp_local/comm-comp-report.csv': {
-                'lines': {'type': ['total'],
-                          'N': ['1'],
-                          'n': ['1'],
-                          'turns': ['2000']}
+            res_dir+'raw/strong_scale_mpi_four_node/comm-comp-report.csv': {
+                'lines': {'parts': ['20000000'],
+                          'type': ['total'],
+                          'N': ['4']}
             }
-            # project_dir+'../BLonD-kiliakis/results/raw/strong_scale_omp_single_node/comm-comp-report.csv': {
-            #     'lines': {'parts': ['10000000'],
-            #               'type': ['total'],
-            #               'N': ['1'],
-            #               'n': ['1']}
-            # }
+
         },
-        'labels': {'10000000-total-1': '10M-strong-N1',
-                   '10000000-total-1-1': '10M-strong-omp',
-                   '20000000-total-2': '20M-strong-N2',
-                   'total-1': '1M-weak-N1',
-                   'total-1-1': '1M-weak-omp',
-                   'total-1-1-2000': '1M-weak-omp-haswell',
-                   'total-2': '1M-weak-N2'},
+        'labels': {'20000000-total-4': '20M-strong-N2',
+                   '20000000-4-total': '20M-hybrid-T4',
+                   '20000000-5-total': '20M-hybrid-T5',
+                   '20000000-10-total': '20M-hybrid-T10',
+                   '20000000-20-total': '20M-hybrid-T20'
+                   },
         # 'exclude': [['v1', 'notcm'], ['v2', 'notcm'], ['v4', 'notcm']],
-        'ideal': 'total-2',
+        'ideal': '',
         'x_name': 'n',
+        'omp_name': 'omp',
         'y_name': 'avg_time(sec)',
         # 'y_err_name': 'std',
         'xlabel': 'MPI Tasks/OMP Threads',
@@ -119,7 +164,7 @@ plots_config = {
         'title': '',
         # 'ylim': [0, 16000],
         'figsize': (6, 2.5),
-        'image_name': images_dir + 'mpi-vs-omp-throughput.pdf'
+        'image_name': images_dir + 'mpi-hybrid-throughtput.pdf'
 
     }
 
@@ -169,6 +214,8 @@ if __name__ == '__main__':
                 x = np.array(values[:, header.index('omp')], float)
             else:
                 x = np.array(values[:, header.index(config['x_name'])], float)
+                omp = np.array(values[:, header.index(config['omp_name'])], float)
+                x = x * omp
 
             y = np.array(values[:, header.index(config['y_name'])], float)
             parts = np.array(values[:, header.index('parts')], float)
@@ -179,24 +226,26 @@ if __name__ == '__main__':
             # y_err = y_err * y / 100.
             # print(label, x, y)
             plt.errorbar(x, y, yerr=None, label=label,
-                         capsize=2, marker='', linewidth=1.5)
+                         capsize=2, marker='.',markersize=5, linewidth=1.5)
         if 'extra' in config:
             for c in config['extra']:
                 exec(c)
 
-        # Ideal line
-        ylims = plt.gca().get_ylim()
+        if config.get('ideal', ''):
+            # Ideal line
+            ylims = plt.gca().get_ylim()
 
-        x = np.array(plots_dir[config['ideal']]
-                     [:, header.index(config['x_name'])], float)
-        y = float(plots_dir[config['ideal']][0, header.index(config['y_name'])])
-        parts = float(plots_dir[config['ideal']][0, header.index('parts')])
-        turns = float(plots_dir[config['ideal']][0, header.index('turns')])
-        y = x * (parts * turns) / y
-        # print(y)
-        plt.plot(x, y, color='black', linestyle='--')
+            x = np.array(plots_dir[config['ideal']]
+                         [:, header.index(config['x_name'])], float)
+            y = float(plots_dir[config['ideal']]
+                      [0, header.index(config['y_name'])])
+            parts = float(plots_dir[config['ideal']][0, header.index('parts')])
+            turns = float(plots_dir[config['ideal']][0, header.index('turns')])
+            y = x * (parts * turns) / y
+            # print(y)
+            plt.plot(x, y, color='black', linestyle='--')
+            plt.ylim(ylims)
 
-        plt.ylim(ylims)
         # plt.yticks(np.linspace(ylims[0], ylims[1], 5))
 
         # if plot_key == 'plot6':

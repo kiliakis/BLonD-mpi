@@ -77,9 +77,8 @@ def write_avg(files, outfile):
         else:
             acc_data += data
         num += 1
-
     acc_data = np.around(acc_data/num, 2)
-
+        
     writer = csv.writer(outfile, delimiter='\t')
     writer.writerow(default_header)
     for f, r in zip(default_funcs, acc_data):
