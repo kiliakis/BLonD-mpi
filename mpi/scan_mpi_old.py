@@ -88,6 +88,26 @@ configs = {
     #                                'partition': cycle(['be-long'])
     #                                }
 
+    # 'weak_scale_mpi_single_node': {'p': np.arange(100000, 1000001, 1000000),
+    #                                's': np.arange(500, 501, 500),
+    #                                't': cycle([2000]),
+    #                                'w': np.arange(1, 2, 1),
+    #                                'o': cycle([1]),
+    #                                'N': cycle([1]),
+    #                                'time': cycle([30]),
+    #                                'partition': cycle(['be-short'])
+    #                                },
+
+    # 'strong_scale_mpi_single_node': {'p': cycle([500000]),
+    #                                  's': cycle([2500]),
+    #                                  't': cycle([2000]),
+    #                                  'w': np.arange(1, 2, 1),
+    #                                  'o': cycle([1]),
+    #                                  'N': cycle([1]),
+    #                                  'time': cycle([45]),
+    #                                  'partition': cycle(['be-short'])
+    #                                  }
+
 
     # 'weak_scale_hybrid_four_node': {'p': np.arange(20000000, 80000001, 20000000),
     #                                 's': np.arange(10000, 40001, 10000),
@@ -99,32 +119,32 @@ configs = {
     #                                 'partition': cycle(['be-long'])
     #                                 }
 
+    'strong_scale_hybrid_four_node': {'p': cycle([20000000]),
+                                      's': cycle([10000]),
+                                      't': cycle([2000]),
+                                      'w': list(np.arange(3, 8, 1))
+                                      + list(np.arange(3, 16, 2))
+                                      + list(np.arange(3, 20, 2))
+                                      + list(np.arange(3, 40, 4)),
+                                      'o': [10]*5 + [5]*7 + [4]*9 + [2]*10,
+                                      'N': [2, 3, 3, 4, 4] 
+                                      + [1, 2, 2, 3, 3, 4, 4]
+                                      + [1, 2, 2, 2, 3, 3, 4, 4, 4]
+                                      + [1, 1, 2, 2, 2, 3, 3, 4, 4, 4],
+                                      'time': cycle([60]),
+                                      'partition': cycle(['be-long'])
+                                      }
+
+
     # 'strong_scale_hybrid_four_node': {'p': cycle([20000000]),
     #                                   's': cycle([10000]),
     #                                   't': cycle([2000]),
-    #                                   'w': list(np.arange(3, 8, 1))
-    #                                   + list(np.arange(3, 16, 2))
-    #                                   + list(np.arange(3, 20, 2))
-    #                                   + list(np.arange(3, 40, 4)),
-    #                                   'o': [10]*5 + [5]*7 + [4]*9 + [2]*10,
-    #                                   'N': [2, 3, 3, 4, 4]
-    #                                   + [1, 2, 2, 3, 3, 4, 4]
-    #                                   + [1, 2, 2, 2, 3, 3, 4, 4, 4]
-    #                                   + [1, 1, 2, 2, 2, 3, 3, 4, 4, 4],
+    #                                   'w': [3],
+    #                                   'o': cycle([20]),
+    #                                   'N': [4],
     #                                   'time': cycle([60]),
     #                                   'partition': cycle(['be-long'])
     #                                   }
-
-
-    'strong_scale_hybrid_four_node-2': {'p': cycle([20000000]),
-                                        's': cycle([10000]),
-                                        't': cycle([2000]),
-                                        'w': [1, 2, 3, 4],
-                                        'o': cycle([20]),
-                                        'N': [2, 3, 4, 5],
-                                        'time': cycle([60]),
-                                        'partition': cycle(['be-long'])
-                                        }
 
 
 
@@ -159,7 +179,6 @@ for analysis, config in configs.items():
     for p, s, t, w, o, N, time, partition in zip(ps, ss, ts, ws,
                                                  oss, Ns, times, partitions):
         job_name = job_name_form.format(analysis, p, s, t, w, o, N)
-        os.environ['OMP_NUM_THREADS'] = str(o)
         for i in range(repeats):
             timestr = datetime.now().strftime('%d%b%y.%H-%M-%S')
             timestr = timestr + '-' + str(random.randint(0, 100))
@@ -170,8 +189,7 @@ for analysis, config in configs.items():
             for d in [log_dir, report_dir]:
                 if not os.path.exists(d):
                     os.makedirs(d)
-            exe_args = ['-n', str(w+1), 'python', exe,
-                        '-p', str(p), '-s', str(s),
+            exe_args = ['-p', str(p), '-s', str(s),
                         '-t', str(t), '-w', str(w),
                         '-o', str(o), '-r', report_dir]
             print(job_name, timestr)
@@ -183,7 +201,8 @@ for analysis, config in configs.items():
                           '-e', error,
                           '-J', job_name.split('/')[0] + '-' + str(i)]
 
-            all_args = ['sbatch'] + batch_args + [batch_script] + exe_args
+            all_args = ['sbatch'] + batch_args + \
+                [batch_script, exe] + exe_args
             subprocess.call(all_args, stdout=stdout,
                             stderr=stdout, env=os.environ.copy())
             current_sim += 1

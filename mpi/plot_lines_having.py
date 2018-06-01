@@ -135,9 +135,9 @@ plots_config = {
             #               'type': ['total'],
             #               'N': ['2']}
             # },
-            res_dir+'raw/strong_scale_hybrid_four_node/comm-comp-report.csv': {
+            res_dir+'raw/strong_scale_hybrid_four_node-2/comm-comp-report.csv': {
                 'lines': {'parts': ['20000000'],
-                          'omp': ['4', '5', '10', '20'],
+                          'omp': ['2', '4', '5', '10', '20'],
                           'type': ['total']}
             },
             res_dir+'raw/strong_scale_mpi_four_node/comm-comp-report.csv': {
@@ -148,13 +148,14 @@ plots_config = {
 
         },
         'labels': {'20000000-total-4': '20M-strong-N2',
+                   '20000000-2-total': '20M-hybrid-T2',
                    '20000000-4-total': '20M-hybrid-T4',
                    '20000000-5-total': '20M-hybrid-T5',
                    '20000000-10-total': '20M-hybrid-T10',
                    '20000000-20-total': '20M-hybrid-T20'
                    },
         # 'exclude': [['v1', 'notcm'], ['v2', 'notcm'], ['v4', 'notcm']],
-        'ideal': '',
+        'ideal': '20000000-total-4',
         'x_name': 'n',
         'omp_name': 'omp',
         'y_name': 'avg_time(sec)',
@@ -163,7 +164,7 @@ plots_config = {
         'ylabel': 'Throughput (Particles/sec)',
         'title': '',
         # 'ylim': [0, 16000],
-        'figsize': (6, 2.5),
+        'figsize': (6, 3),
         'image_name': images_dir + 'mpi-hybrid-throughtput.pdf'
 
     }
@@ -241,7 +242,7 @@ if __name__ == '__main__':
                       [0, header.index(config['y_name'])])
             parts = float(plots_dir[config['ideal']][0, header.index('parts')])
             turns = float(plots_dir[config['ideal']][0, header.index('turns')])
-            y = x * (parts * turns) / y
+            y = x * (parts * turns) / (y* x[0])
             # print(y)
             plt.plot(x, y, color='black', linestyle='--')
             plt.ylim(ylims)

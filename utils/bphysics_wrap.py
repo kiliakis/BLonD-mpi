@@ -9,7 +9,8 @@ import ctypes as ct
 import numpy as np
 from setup_cpp import libblondphysics as __lib
 
-from pyprof import timing
+# from pyprof import timing
+from pyprof import mpiprof
 
 
 def __getPointer(x):
@@ -52,7 +53,7 @@ def kick(ring, dt, dE, turn):
 
 def kick_mpi(ring, turn):
 
-    with timing.timed_region('kick') as tr:
+    with mpiprof.tracked_region('kick') as tr:
         import mpi.mpi_config as mpiconf
         from mpi4py import MPI
 
@@ -95,7 +96,7 @@ def drift(ring, dt, dE, turn):
 
 
 def drift_mpi(ring, turn):
-    with timing.timed_region('drift') as tr:
+    with mpiprof.tracked_region('drift') as tr:
         import mpi.mpi_config as mpiconf
         from mpi4py import MPI
 
@@ -140,7 +141,7 @@ def LIKick(ring, dt, dE, turn):
 
 
 def LIKick_mpi(ring, turn):
-    with timing.timed_region('LIKick') as tr:
+    with mpiprof.tracked_region('LIKick') as tr:
         import mpi.mpi_config as mpiconf
         from mpi4py import MPI
 
@@ -182,7 +183,7 @@ def slice(profile):
 
 
 def slice_mpi(profile):
-    with timing.timed_region('histo') as tr:
+    with mpiprof.tracked_region('histo') as tr:
         import mpi.mpi_config as mpiconf
         from mpi4py import MPI
 
@@ -196,7 +197,7 @@ def slice_mpi(profile):
     master.multi_bcast(vars_dict)
     master.logger.debug('Broadcasting a histo task')
     master.bcast('histo')
-    # with timing.timed_region('histo') as tr:
+    # with mpiprof.tracked_region('histo') as tr:
         # zero = np.zeros(profile.n_slices, dtype='d')
         # profile.n_macroparticles = np.zeros(profile.n_slices, dtype='d')
         # master.intracomm.Allreduce(

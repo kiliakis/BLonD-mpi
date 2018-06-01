@@ -34,12 +34,31 @@ import time
 import datetime
 from toolbox.input_parser import parse
 from mpi import mpi_config as mpiconf
-from pyprof import timing
+# from pyprof import timing
 
-mpiconf.init()
+# import mpi4py
 
+# mpi4py.profile(name='mpe', logfile='cpilog.txt', path='/afs/cern.ch/work/k/kiliakis/install/lib')
+# mpi4py.MPI.Pcontrol(1)
+# from mpi4py import MPE
+
+# MPE.initLog(logfile='cpilog.txt')
+# MPE.setLogFileName('cpilog.txt')
+
+# # User-defined MPE events
+# cpi_begin = MPE.newLogEvent("ComputePi-Begin", "yellow")
+# cpi_end   = MPE.newLogEvent("ComputePi-End",   "pink")
+# # User-defined MPE states
+# synchronization = MPE.newLogState("Synchronize", "orange")
+# communication   = MPE.newLogState("Comunicate",  "red")
+# computation = MPE.newLogState("Compute", "green")
+
+# with cpi_begin : pass
+# with cpi_end : pass
 args = parse()
 print(args)
+
+mpiconf.init(track=True)
 # Simulation parameters -------------------------------------------------------
 # Bunch parameters
 N_b = 1e9           # Intensity
@@ -196,10 +215,11 @@ master.disconnect()
 print(datetime.datetime.now().time())
 
 end_t = time.time()
-if report:
-    timing.report(total_time=1e3*(end_t-start_t),
-                  out_dir=report,
-                  out_file='master.csv')
+# if report:
+#     mpiprof.finalize()
+    # timing.report(total_time=1e3*(end_t-start_t),
+    #               out_dir=report,
+    #               out_file='master.csv')
 
 print('dE mean: ', np.mean(beam.dE))
 print('dE std: ', np.std(beam.dE))

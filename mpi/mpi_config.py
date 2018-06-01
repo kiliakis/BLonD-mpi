@@ -2,7 +2,8 @@ import sys
 from mpi4py import MPI
 import numpy as np
 import logging
-from pyprof import timing
+# from pyprof import timing
+from pyprof import mpiprof
 import os
 import worker
 
@@ -47,15 +48,19 @@ task_id = {
 master = None
 
 
-def init():
+def init(track=False):
     rank = MPI.COMM_WORLD.rank
+    if track==True:
+        mpiprof.mode = 'tracking'
+        mpiprof.init()
+
     if rank != 0:
         worker.main()
         exit(0)
 
 
 class Master:
-    @timing.timeit(key='Master.__init__')
+    @mpiprof.trackit(key='Master.__init__')
     def __init__(self, log=None):
         global master
 
@@ -83,7 +88,7 @@ class Master:
         logging.debug('Initialized.')
         master = self
 
-    # @timing.timeit(key='spawn_workers')
+    # @mpiprof.trackit(key='spawn_workers')
     # def spawn_workers(self, workers=1, worker_script=_worker_script,
     #                   debug=False, args=None, log=None, report=None):
     #     if args:
@@ -110,7 +115,7 @@ class Master:
     #     self.workers = self.intercomm.Get_remote_size()
     #     logging.debug('%d workers successfully initialized.' % self.workers)
 
-    @timing.timeit(key='multi_scatter')
+    @mpiprof.trackit(key='multi_scatter')
     def multi_scatter(self, vars):
         self.intercomm.Bcast(task_id['scatter'], root=MPI.ROOT)
 
@@ -135,7 +140,7 @@ class Master:
 
     # args are the buffers to fill with the gathered values
     # e.g. (comm, beam.dt, beam.dE)
-    @timing.timeit(key='multi_gather')
+    @mpiprof.trackit(key='multi_gather')
     def multi_gather(self, gather_dict):
         self.intercomm.Bcast(task_id['gather'], root=MPI.ROOT)
         keys = list(gather_dict.keys())
@@ -152,33 +157,33 @@ class Master:
             self.intercomm.Gatherv(sendbuf, [v, counts, displs, mpi_type[v.dtype.char]],
                                    root=MPI.ROOT)
 
-    @timing.timeit(key='multi_bcast')
+    @mpiprof.trackit(key='multi_bcast')
     def multi_bcast(self, vars):
         self.logger.debug('Broadcasting variables')
         self.intercomm.Bcast(task_id['bcast'], root=MPI.ROOT)
         self.intercomm.bcast(vars, root=MPI.ROOT)
 
-    @timing.timeit(key='bcast')
+    @mpiprof.trackit(key='bcast')
     def bcast(self, cmd):
         self.intercomm.Bcast(task_id[cmd], root=MPI.ROOT)
 
-    @timing.timeit(key='stop')
+    @mpiprof.trackit(key='stop')
     def stop(self):
         self.logger.debug('Sending a stop signal')
         self.intercomm.Bcast(task_id['stop'], root=MPI.ROOT)
         self.logger.debug('Waiting on the barrier')
         self.intercomm.Barrier()
 
-    @timing.timeit(key='sync')
+    @mpiprof.trackit(key='sync')
     def sync(self):
         self.intercomm.Bcast(task_id['barrier'], root=MPI.ROOT)
         self.intercomm.Barrier()
 
-    @timing.timeit(key='disconnect')
+    @mpiprof.trackit(key='disconnect')
     def disconnect(self):
         self.intercomm.Disconnect()
 
-    @timing.timeit(key='quit')
+    @mpiprof.trackit(key='quit')
     def quit(self):
         self.intercomm.Bcast(task_id['quit'], root=MPI.ROOT)
 
@@ -210,7 +215,7 @@ class Worker:
         self.logger.debug('Hostname: %s' % self.hostname)
         self.taskbuf = np.array(0, np.uint8)
 
-    # @timing.timeit(key='comm:multi_scatter')
+    # @mpiprof.trackit(key='comm:multi_scatter')
     def multi_scatter(self):
         var_list = None
         var_list = self.intercomm.bcast(var_list, root=0)
@@ -225,7 +230,7 @@ class Worker:
         return vals
         # self.intercomm.Barrier()
 
-    # @timing.timeit(key='comm:multi_gather')
+    # @mpiprof.trackit(key='comm:multi_gather')
     def multi_gather(self, globs):
         vars = []
         vars = self.intercomm.bcast(vars, root=0)
@@ -233,13 +238,13 @@ class Worker:
         for v in vars:
             self.intercomm.Gatherv(globs[v], recvbuf, root=0)
 
-    # @timing.timeit(key='comm:multi_bcast')
+    # @mpiprof.trackit(key='comm:multi_bcast')
     def multi_bcast(self):
         vars = None
         vars = self.intercomm.bcast(vars, root=0)
         return vars
 
-    @timing.timeit(key='comm:recv_task')
+    @mpiprof.trackit(key='comm:recv_task')
     def recv_task(self):
         self.intercomm.Bcast(self.taskbuf, root=0)
         task = np.uint8(self.taskbuf)

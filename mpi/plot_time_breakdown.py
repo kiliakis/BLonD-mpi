@@ -15,69 +15,111 @@ if not os.path.exists(images_dir):
 # csv_file = res_dir + 'csv/interp-kick1/all_results2.csv'
 
 plots_config = {
+    # 'plot1': {
+    #     'files': {
+    #         # res_dir+'raw/strong_scale_mpi_single_node/comm-comp-report.csv': {
+    #         #     'lines': {'parts': ['10000000'],
+    #         #               'type': ['comp'],
+    #         #               'N': ['1']},
+    #         #     'labels': {'10000000-total-1': '10M-strong-N1'}
+    #         # },
+    #         res_dir+'raw/strong_scale_mpi_dual_node/comm-comp-report.csv': {
+    #                 'lines': {'parts': ['20000000'],
+    #                           'type': ['comp'],
+    #                           'N': ['2']}
+    #         },
+    #         res_dir+'raw/strong_scale_mpi_four_node/comm-comp-report.csv': {
+    #                 'lines': {'parts': ['20000000'],
+    #                           'type': ['comp'],
+    #                           'N': ['4']},
+    #         },
+    #         # res_dir+'raw/weak_scale_mpi_single_node/comm-comp-report.csv': {
+    #         #         'lines': {'type': ['comp'],
+    #         #                   'N': ['1']},
+    #         #         'labels': {'total-1': '1M-weak-N1'}
+
+    #         # },
+    #         res_dir+'raw/weak_scale_mpi_dual_node/comm-comp-report.csv': {
+    #                 'lines': {'type': ['comp'],
+    #                           'N': ['2']}
+
+    #         },
+    #         res_dir+'raw/weak_scale_mpi_four_node/comm-comp-report.csv': {
+    #                 'lines': {'type': ['comp'],
+    #                           'N': ['4']}
+
+    #         },
+    #         res_dir+'raw/strong_scale_mpi_four_node/comm-comp-report.csv': {
+    #                 'lines': {'parts': ['20000000'],
+    #                           'type': ['comp'],
+    #                           'N': ['4']}
+    #         }
+    #     },
+    #     'labels': {'10000000-comp-1': '10M-strong-N1',
+    #                '20000000-comp-2': '20M-strong-N2',
+    #                '20000000-comp-4': '20M-strong-N4',
+    #                'comm-1': '1M-weak-N1',
+    #                'comp-1': '1M-weak-N1',
+    #                'comp-2': '1M-weak-N2',
+    #                'comp-4': '1M-weak-N4'
+    #                },
+    #     'colors': {'20000000-comp-2': 'tab:blue',
+    #                '20000000-comp-4': 'tab:orange',
+    #                'comp-2': 'tab:green',
+    #                'comp-4': 'tab:red'
+    #                },
+    #     # 'exclude': [['v1', 'notcm'], ['v2', 'notcm'], ['v4', 'notcm']],
+    #     'x_name': 'n',
+    #     'y_name': 'avg_percent',
+    #     'y_err_name': 'std',
+    #     'xlabel': 'MPI Tasks',
+    #     'ylabel': 'Run-time percent',
+    #     'title': 'Computation',
+    #     'ylim': [30, 100],
+    #     'figsize': (6, 2.3),
+    #     'image_name': images_dir + 'time-breakdown.pdf'
+
+    # },
+
     'plot1': {
         'files': {
-            # res_dir+'raw/strong_scale_mpi_single_node/comm-comp-report.csv': {
-            #     'lines': {'parts': ['10000000'],
-            #               'type': ['comp'],
-            #               'N': ['1']},
-            #     'labels': {'10000000-total-1': '10M-strong-N1'}
-            # },
-            res_dir+'raw/strong_scale_mpi_dual_node/comm-comp-report.csv': {
-                    'lines': {'parts': ['20000000'],
-                              'type': ['comp'],
-                              'N': ['2']}
-            },
+
             res_dir+'raw/strong_scale_mpi_four_node/comm-comp-report.csv': {
-                    'lines': {'parts': ['20000000'],
-                              'type': ['comp'],
-                              'N': ['4']},
+                'lines': {'parts': ['20000000'],
+                          'type': ['comp'],
+                          'N': ['4']}
             },
-            # res_dir+'raw/weak_scale_mpi_single_node/comm-comp-report.csv': {
-            #         'lines': {'type': ['comp'],
-            #                   'N': ['1']},
-            #         'labels': {'total-1': '1M-weak-N1'}
-
-            # },
-            res_dir+'raw/weak_scale_mpi_dual_node/comm-comp-report.csv': {
-                    'lines': {'type': ['comp'],
-                              'N': ['2']}
-
-            },
-            res_dir+'raw/weak_scale_mpi_four_node/comm-comp-report.csv': {
-                    'lines': {'type': ['comp'],
-                              'N': ['4']}
-
-            },
-            res_dir+'raw/strong_scale_mpi_four_node/comm-comp-report.csv': {
-                    'lines': {'parts': ['20000000'],
-                              'type': ['comp'],
-                              'N': ['4']}
+            res_dir+'raw/strong_scale_hybrid_four_node-2/comm-comp-report.csv': {
+                'lines': {'parts': ['20000000'],
+                          'omp': ['4', '5', '10', '20'],
+                          'type': ['comp']}
             }
+
         },
-        'labels': {'10000000-comp-1': '10M-strong-N1',
-                   '20000000-comp-2': '20M-strong-N2',
-                   '20000000-comp-4': '20M-strong-N4',
-                   'comm-1': '1M-weak-N1',
-                   'comp-1': '1M-weak-N1',
-                   'comp-2': '1M-weak-N2',
-                   'comp-4': '1M-weak-N4'
+        'labels': {'20000000-comp-4': '20M-strong-N2',
+                   '20000000-2-comp': '20M-hybrid-T2',
+                   '20000000-4-comp': '20M-hybrid-T4',
+                   '20000000-5-comp': '20M-hybrid-T5',
+                   '20000000-10-comp': '20M-hybrid-T10',
+                   '20000000-20-comp': '20M-hybrid-T20'
                    },
-        'colors': {'20000000-comp-2': 'tab:blue',
-                   '20000000-comp-4': 'tab:orange',
-                   'comp-2': 'tab:green',
-                   'comp-4': 'tab:red'
+        'colors': {'20000000-comp-4': 'tab:blue',
+                   '20000000-4-comp': 'tab:orange',
+                   '20000000-5-comp': 'tab:green',
+                   '20000000-10-comp': 'tab:red',
+                   '20000000-20-comp': 'tab:purple'
                    },
         # 'exclude': [['v1', 'notcm'], ['v2', 'notcm'], ['v4', 'notcm']],
         'x_name': 'n',
+        'omp_name': 'omp',
         'y_name': 'avg_percent',
         'y_err_name': 'std',
-        'xlabel': 'MPI Tasks',
+        'xlabel': 'MPI Tasks/Threads',
         'ylabel': 'Run-time percent',
         'title': 'Computation',
         'ylim': [30, 100],
-        'figsize': (6, 2.3),
-        'image_name': images_dir + 'time-breakdown.pdf'
+        'figsize': (6, 3),
+        'image_name': images_dir + 'time-breakdown-hybrid.pdf'
 
     }
 
@@ -123,6 +165,8 @@ if __name__ == '__main__':
         for label, values in plots_dir.items():
             # print(values)
             x = np.array(values[:, header.index(config['x_name'])], float)
+            omp = np.array(values[:, header.index(config['omp_name'])], float)
+            x = x * omp
             y = np.array(values[:, header.index(config['y_name'])], float)
             # parts = np.array(values[:, header.index('parts')], float)
             # turns = np.array(values[:, header.index('turns')], float)
@@ -161,7 +205,7 @@ if __name__ == '__main__':
         plt.legend(loc='best', fancybox=True, fontsize=10, ncol=2,
                    labelspacing=0.2, borderpad=0.5, framealpha=0.5,
                    handletextpad=0.5, handlelength=2, borderaxespad=0)
-                   # bbox_to_anchor=(0.1, 1.15))
+        # bbox_to_anchor=(0.1, 1.15))
         plt.tight_layout()
         save_and_crop(fig, config['image_name'], dpi=600, bbox_inches='tight')
         # plt.savefig(config['image_name'], dpi=600, bbox_inches='tight')
