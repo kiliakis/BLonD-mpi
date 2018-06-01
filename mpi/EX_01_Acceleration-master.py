@@ -36,25 +36,6 @@ from toolbox.input_parser import parse
 from mpi import mpi_config as mpiconf
 # from pyprof import timing
 
-# import mpi4py
-
-# mpi4py.profile(name='mpe', logfile='cpilog.txt', path='/afs/cern.ch/work/k/kiliakis/install/lib')
-# mpi4py.MPI.Pcontrol(1)
-# from mpi4py import MPE
-
-# MPE.initLog(logfile='cpilog.txt')
-# MPE.setLogFileName('cpilog.txt')
-
-# # User-defined MPE events
-# cpi_begin = MPE.newLogEvent("ComputePi-Begin", "yellow")
-# cpi_end   = MPE.newLogEvent("ComputePi-End",   "pink")
-# # User-defined MPE states
-# synchronization = MPE.newLogState("Synchronize", "orange")
-# communication   = MPE.newLogState("Comunicate",  "red")
-# computation = MPE.newLogState("Compute", "green")
-
-# with cpi_begin : pass
-# with cpi_end : pass
 args = parse()
 print(args)
 
