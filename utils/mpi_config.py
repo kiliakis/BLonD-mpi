@@ -2,10 +2,10 @@ import sys
 from mpi4py import MPI
 import numpy as np
 import logging
-# from pyprof import timing
-from pyprof import mpiprof
+from pyprof import timing as mpiprof
+# from pyprof import mpiprof as mpiprof
 import os
-import worker
+from utils import worker
 
 mpi_type = {
     'd': MPI.DOUBLE,
@@ -36,22 +36,13 @@ task_id = {
     'stop': np.array(10, np.uint8)
 }
 
-# _worker_script = sys.path[0] + '/worker.py'
-
-# _exec = 'python'
-# _args = []
-
-# _debug_exec = 'xterm'
-# _debug_args = ['-e', 'python', '-m', 'pdb']
-
-
 master = None
 
 
 def init(track=False):
     rank = MPI.COMM_WORLD.rank
     if track==True:
-        mpiprof.mode = 'tracking'
+        mpiprof.mode = 'timing'
         mpiprof.init()
 
     if rank != 0:
@@ -60,7 +51,7 @@ def init(track=False):
 
 
 class Master:
-    @mpiprof.trackit(key='Master.__init__')
+    # @mpiprof.timeit(key='master:init')
     def __init__(self, log=None):
         global master
 
@@ -70,15 +61,9 @@ class Master:
         self.workers = self.intercomm.Get_remote_size()
         self.rank = self.intracomm.rank
 
-
-        # self.intracomm = MPI.COMM_SELF
-        # self.intercomm = MPI.COMM_WORLD
-        # self.workers = self.intercomm.size - 1
-
         if self.intracomm.size != 1:
             'Only one process can be the master!\nRe-run with only 1 process.'
 
-        # self.workers = 0
         self.hostname = MPI.Get_processor_name()
         if log:
             self.logger = MPILog(rank=-1, log_dir=log)
@@ -88,34 +73,8 @@ class Master:
         logging.debug('Initialized.')
         master = self
 
-    # @mpiprof.trackit(key='spawn_workers')
-    # def spawn_workers(self, workers=1, worker_script=_worker_script,
-    #                   debug=False, args=None, log=None, report=None):
-    #     if args:
-    #         self.args = args
-    #     elif debug == False:
-    #         self.args = _args
-    #         self.exec = _exec
-    #     else:
-    #         self.args = _debug_args
-    #         self.exec = _debug_exec
-    #     args = self.args + [worker_script]
-    #     if log:
-    #         args += ['--log', log]
-    #     if report:
-    #         args += ['--report', report]
-    #     mpiinfo = MPI.Info.Create()
-    #     string = 'OMP_NUM_THREADS=%s' % os.environ.get('OMP_NUM_THREADS', '1')
-    #     mpiinfo.Set(key='env', value=string)
-    #     self.intercomm = self.intracomm.Spawn(self.exec,
-    #                                           args=args,
-    #                                           maxprocs=workers,
-    #                                           info=mpiinfo)
 
-    #     self.workers = self.intercomm.Get_remote_size()
-    #     logging.debug('%d workers successfully initialized.' % self.workers)
-
-    @mpiprof.trackit(key='multi_scatter')
+    @mpiprof.timeit(key='master:multi_scatter')
     def multi_scatter(self, vars):
         self.intercomm.Bcast(task_id['scatter'], root=MPI.ROOT)
 
@@ -140,7 +99,7 @@ class Master:
 
     # args are the buffers to fill with the gathered values
     # e.g. (comm, beam.dt, beam.dE)
-    @mpiprof.trackit(key='multi_gather')
+    @mpiprof.timeit(key='master:multi_gather')
     def multi_gather(self, gather_dict):
         self.intercomm.Bcast(task_id['gather'], root=MPI.ROOT)
         keys = list(gather_dict.keys())
@@ -157,99 +116,36 @@ class Master:
             self.intercomm.Gatherv(sendbuf, [v, counts, displs, mpi_type[v.dtype.char]],
                                    root=MPI.ROOT)
 
-    @mpiprof.trackit(key='multi_bcast')
+    @mpiprof.timeit(key='master:multi_bcast')
     def multi_bcast(self, vars):
         self.logger.debug('Broadcasting variables')
         self.intercomm.Bcast(task_id['bcast'], root=MPI.ROOT)
         self.intercomm.bcast(vars, root=MPI.ROOT)
 
-    @mpiprof.trackit(key='bcast')
+    @mpiprof.timeit(key='master:bcast')
     def bcast(self, cmd):
         self.intercomm.Bcast(task_id[cmd], root=MPI.ROOT)
 
-    @mpiprof.trackit(key='stop')
+    # @mpiprof.timeit(key='master:stop')
     def stop(self):
         self.logger.debug('Sending a stop signal')
         self.intercomm.Bcast(task_id['stop'], root=MPI.ROOT)
-        self.logger.debug('Waiting on the barrier')
-        self.intercomm.Barrier()
+        # self.logger.debug('Waiting on the barrier')
+        # self.intercomm.Barrier()
 
-    @mpiprof.trackit(key='sync')
+    @mpiprof.timeit(key='master:sync')
     def sync(self):
         self.intercomm.Bcast(task_id['barrier'], root=MPI.ROOT)
         self.intercomm.Barrier()
 
-    @mpiprof.trackit(key='disconnect')
+    # @mpiprof.timeit(key='master:disconnect')
     def disconnect(self):
         self.intercomm.Disconnect()
 
-    @mpiprof.trackit(key='quit')
+    # @mpiprof.timeit(key='master:quit')
     def quit(self):
         self.intercomm.Bcast(task_id['quit'], root=MPI.ROOT)
 
-
-class Worker:
-
-    def __init__(self, log=None):
-        rank = MPI.COMM_WORLD.rank
-
-        self.intracomm = MPI.COMM_WORLD.Split(rank==0, rank)
-        self.intercomm = self.intracomm.Create_intercomm(0, MPI.COMM_WORLD, 0)
-        # self.intercomm = MPI.COMM_WORLD
-        self.rank = self.intracomm.rank
-        self.hostname = MPI.Get_processor_name()
-        # try:
-        #     # Connect to parent
-        #     self.intercomm = MPI.Comm.Get_parent()
-        #     self.rank = self.intercomm.Get_rank()
-        #     self.hostname = MPI.Get_processor_name()
-        # except:
-        #     raise ValueError('Could not connect to parent')
-        if log:
-            self.logger = MPILog(log_dir=log, rank=self.rank)
-        else:
-            self.logger = MPILog(rank=self.rank)
-            self.logger.disable()
-
-        # self.intracomm = MPI.COMM_WORLD
-        self.logger.debug('Hostname: %s' % self.hostname)
-        self.taskbuf = np.array(0, np.uint8)
-
-    # @mpiprof.trackit(key='comm:multi_scatter')
-    def multi_scatter(self):
-        var_list = None
-        var_list = self.intercomm.bcast(var_list, root=0)
-        vals = {}
-        sendbuf = None
-        for name, dtype in var_list:
-            count = np.array(0, dtype='i')
-            self.intercomm.Scatter(sendbuf, count, root=0)
-            recvbuf = np.empty(count, dtype=dtype)
-            self.intercomm.Scatterv(sendbuf, recvbuf, root=0)
-            vals[name] = recvbuf
-        return vals
-        # self.intercomm.Barrier()
-
-    # @mpiprof.trackit(key='comm:multi_gather')
-    def multi_gather(self, globs):
-        vars = []
-        vars = self.intercomm.bcast(vars, root=0)
-        recvbuf = None
-        for v in vars:
-            self.intercomm.Gatherv(globs[v], recvbuf, root=0)
-
-    # @mpiprof.trackit(key='comm:multi_bcast')
-    def multi_bcast(self):
-        vars = None
-        vars = self.intercomm.bcast(vars, root=0)
-        return vars
-
-    @mpiprof.trackit(key='comm:recv_task')
-    def recv_task(self):
-        self.intercomm.Bcast(self.taskbuf, root=0)
-        task = np.uint8(self.taskbuf)
-        self.logger.debug('Received a %d task.' % task)
-        return task
 
 
 class MPILog(object):

@@ -25,6 +25,9 @@ from setup_cpp import libblond
 
 linear_interp_kick = libblond.linear_interp_kick
 
+from pyprof import timing as mpiprof
+# from pyprof import mpiprof as mpiprof
+
 
 class TotalInducedVoltage(object):
     r"""
@@ -100,22 +103,34 @@ class TotalInducedVoltage(object):
             
         self.induced_voltage = temp_induced_voltage
         
-        
+    # @mpiprof.trackit('master:inc_volt_track')
     def track(self):
         """
         Track method to apply the induced voltage kick on the beam.
         """
-        
-        self.induced_voltage_sum()
-        
-        linear_interp_kick(self.beam.dt.ctypes.data_as(c_void_p),
-                           self.beam.dE.ctypes.data_as(c_void_p),
-                           self.induced_voltage.ctypes.data_as(c_void_p), 
-                           self.profile.bin_centers.ctypes.data_as(c_void_p),
-                           c_double(self.beam.Particle.charge),
-                           c_uint(self.profile.n_slices),
-                           c_uint(self.beam.n_macroparticles),
-                           c_double(0.))
+        import utils.mpi_config as mpiconf
+        master = mpiconf.master
+
+        with mpiprof.timed_region('master:ind_volt_sum') as tr:
+            self.induced_voltage_sum()
+
+        # with mpiprof.timed_region('master:LIKick') as tr:
+        vars_dict = {
+                'total_voltage': self.induced_voltage,
+                'acc_kick': float(0.)
+        }
+        master.multi_bcast(vars_dict)
+        master.logger.debug('Broadcasting an LIKick task (totIndVolt)')
+        master.bcast('LIKick')
+    
+        # linear_interp_kick(self.beam.dt.ctypes.data_as(c_void_p),
+        #                    self.beam.dE.ctypes.data_as(c_void_p),
+        #                    self.induced_voltage.ctypes.data_as(c_void_p), 
+        #                    self.profile.bin_centers.ctypes.data_as(c_void_p),
+        #                    c_double(self.beam.Particle.charge),
+        #                    c_uint(self.profile.n_slices),
+        #                    c_uint(self.beam.n_macroparticles),
+        #                    c_double(0.))
 
 
     def track_ghosts_particles(self, ghostBeam):

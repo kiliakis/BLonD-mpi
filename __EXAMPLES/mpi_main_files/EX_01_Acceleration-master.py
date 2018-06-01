@@ -33,8 +33,11 @@ import matplotlib.pyplot as plt
 import time
 import datetime
 from toolbox.input_parser import parse
-from mpi import mpi_config as mpiconf
+# from mpi import mpi_config as mpiconf
+from utils import mpi_config as mpiconf
+
 # from pyprof import timing
+
 
 args = parse()
 print(args)

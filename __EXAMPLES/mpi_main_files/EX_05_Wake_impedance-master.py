@@ -39,14 +39,16 @@ import os
 import time
 import datetime
 from toolbox.input_parser import parse
-from mpi import mpi_config as mpiconf
+from utils import mpi_config as mpiconf
+from pyprof import timing as mpiprof
+# from pyprof import mpiprof as mpiprof
 
 args = parse()
-print(args)
 
 mpiconf.init(track=True)
 
 
+print(args)
 # try:
 #     os.mkdir('../output_files')
 # except:
@@ -155,9 +157,6 @@ cut_options_res = CutOptions(cut_left=0, cut_right=2*np.pi, n_slices=number_slic
 slice_beam_res = Profile(my_beam_res, cut_options_res,
                          FitOptions(fit_option='gaussian'))
 
-slice_beam.track()
-slice_beam_freq.track()
-slice_beam_res.track()
 
 # MONITOR----------------------------------------------------------------------
 
@@ -175,7 +174,9 @@ slice_beam_res.track()
 
 # LOAD IMPEDANCE TABLE--------------------------------------------------------
 
-table = np.loadtxt('../input_files/EX_05_new_HQ_table.dat', comments='!')
+# print(os.getcwd())
+table = np.loadtxt(
+    '__EXAMPLES/input_files/EX_05_new_HQ_table.dat', comments='!')
 
 R_shunt = table[:, 2] * 10**6
 f_res = table[:, 0] * 10**9
@@ -235,7 +236,8 @@ tot_vol_res = TotalInducedVoltage(my_beam_res, slice_beam_res,
 
 # ACCELERATION MAP-------------------------------------------------------------
 
-map_ = [tot_vol] + [ring_RF_section] + [slice_beam] #+ [bunchmonitor] + [plots]
+map_ = [tot_vol] + [ring_RF_section] + \
+    [slice_beam]  # + [bunchmonitor] + [plots]
 # map_freq = [tot_vol_freq] + [ring_RF_section_freq] + [slice_beam_freq] \
 #     + [bunchmonitor_freq] + [plots_freq]
 # map_res = [tot_vol_res] + [ring_RF_section_res] + [slice_beam_res] \
@@ -243,7 +245,6 @@ map_ = [tot_vol] + [ring_RF_section] + [slice_beam] #+ [bunchmonitor] + [plots]
 
 # TRACKING + PLOTS-------------------------------------------------------------
 print('Map set')
-
 
 
 start_t = time.time()
@@ -255,7 +256,9 @@ init_dict = {
     'solver': ring_RF_section.solver,
     'length_ratio': ring_RF_section.length_ratio,
     'alpha_order': ring_RF_section.alpha_order,
-    'n_slices': slice_beam.n_slices
+    'n_slices': slice_beam.n_slices,
+    'bin_centers': slice_beam.bin_centers,
+    'charge': my_beam.Particle.charge
 }
 master.logger.debug('Broadcasted initial variables')
 master.multi_bcast(init_dict)
@@ -263,19 +266,26 @@ master.multi_bcast(init_dict)
 
 # Scatter coordinates etc
 vars_dict = {
-    'dt': mybeam.dt,
-    'dE': mybeam.dE
+    'dt': my_beam.dt,
+    'dE': my_beam.dE
 }
 
 master.logger.debug('Scattered initial coordinates')
 master.multi_scatter(vars_dict)
 
 
+slice_beam.track()
+# slice_beam_freq.track()
+# slice_beam_res.track()
+
+
 for i in np.arange(1, n_turns+1):
 
-    print(i)
     for m in map_:
         m.track()
+
+    if i % 200 == 0:
+        print(i)
     # for m in map_freq:
     #     m.track()
     # for m in map_res:
@@ -293,12 +303,17 @@ for i in np.arange(1, n_turns+1):
 master.multi_gather(vars_dict)
 master.stop()
 master.disconnect()
-print(datetime.datetime.now().time())
 end_t = time.time()
+print(datetime.datetime.now().time())
 
-print('dE mean: ', np.mean(mybeam.dE))
-print('dE std: ', np.std(mybeam.dE))
+print('dE mean: ', np.mean(my_beam.dE))
+print('dE std: ', np.std(my_beam.dE))
 
+if report:
+    mpiprof.finalize()
+    mpiprof.report(total_time=1e3*(end_t-start_t),
+                   out_dir=report,
+                   out_file='master.csv')
 
 # Plotting induced voltages---------------------------------------------------
 # plt.clf()
