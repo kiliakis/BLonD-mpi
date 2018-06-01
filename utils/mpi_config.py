@@ -126,6 +126,10 @@ class Master:
     def bcast(self, cmd):
         self.intercomm.Bcast(task_id[cmd], root=MPI.ROOT)
 
+    @mpiprof.timeit(key='master:reduce')
+    def reduce(self, x, y, op=MPI.SUM):
+        self.intercomm.Reduce(x, y, op=op, root=MPI.ROOT)
+
     # @mpiprof.timeit(key='master:stop')
     def stop(self):
         self.logger.debug('Sending a stop signal')

@@ -199,11 +199,13 @@ def slice_mpi(profile):
     master.logger.debug('Broadcasting a histo task')
     master.bcast('histo')
     # with mpiprof.timed_region('histo') as tr:
-        # zero = np.zeros(profile.n_slices, dtype='d')
-        # profile.n_macroparticles = np.zeros(profile.n_slices, dtype='d')
+    # zero = np.zeros(profile.n_slices, dtype='d')
+    # profile.n_macroparticles = np.zeros(profile.n_slices, dtype='d')
         # master.intracomm.Allreduce(
             # MPI.IN_PLACE, profile.n_macroparticles, op=MPI.SUM)
-
+    zero = np.zeros(profile.n_slices, dtype='d')
+    master.reduce(zero, profile.n_macroparticles)
+    # master.intercomm.Reduce(zero, profile.n_macroparticles, op=MPI.SUM, root=MPI.)    
 
 def __slice(dt, profile, cut_left, cut_right):
     __lib.histogram(__getPointer(dt),

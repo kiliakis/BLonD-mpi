@@ -97,7 +97,9 @@ def histo():
     #     profile = new_profile
     with mpiprof.timed_region('comm:histo_extra') as tr:
         # new_profile = np.empty(len(profile), dtype='d')
-        worker.intracomm.Allreduce(MPI.IN_PLACE, profile, op=MPI.SUM)
+        # worker.intracomm.Allreduce(MPI.IN_PLACE, profile, op=MPI.SUM)
+        recvbuf = None
+        worker.intercomm.Reduce(profile, recvbuf, op=MPI.SUM, root=0)
         # profile = new_profile
 
     # Or even better, allreduce it
@@ -105,8 +107,10 @@ def histo():
 
 @mpiprof.timeit(key='comp:LIKick')
 def LIKick():
+    # print(dE, total_voltage, bin_centers, charge, acc_kick)
     __linear_interp_kick(dt, dE, total_voltage, bin_centers,
                          charge, acc_kick)
+    # print(dE, total_voltage, bin_centers, charge, acc_kick)
 
 
 @mpiprof.timeit(key='comp:SR')

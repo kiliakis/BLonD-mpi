@@ -115,6 +115,7 @@ class TotalInducedVoltage(object):
             self.induced_voltage_sum()
 
         # with mpiprof.timed_region('master:LIKick') as tr:
+        # print('Master ind volt:', self.induced_voltage)
         vars_dict = {
                 'total_voltage': self.induced_voltage,
                 'acc_kick': float(0.)

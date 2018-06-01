@@ -113,49 +113,49 @@ print("Setting up the simulation...")
 
 general_params = Ring(C, momentum_compaction,
                       sync_momentum, Proton(), n_turns)
-general_params_freq = Ring(C, momentum_compaction,
-                           sync_momentum, Proton(), n_turns)
-general_params_res = Ring(C, momentum_compaction,
-                          sync_momentum, Proton(), n_turns)
+# general_params_freq = Ring(C, momentum_compaction,
+#                            sync_momentum, Proton(), n_turns)
+# general_params_res = Ring(C, momentum_compaction,
+#                           sync_momentum, Proton(), n_turns)
 
 
 RF_sct_par = RFStation(general_params, [harmonic_number],
                        [voltage_program], [phi_offset], n_rf_systems)
-RF_sct_par_freq = RFStation(general_params_freq,
-                            [harmonic_number], [voltage_program],
-                            [phi_offset], n_rf_systems)
-RF_sct_par_res = RFStation(general_params_res,
-                           [harmonic_number], [voltage_program],
-                           [phi_offset], n_rf_systems)
+# RF_sct_par_freq = RFStation(general_params_freq,
+#                             [harmonic_number], [voltage_program],
+#                             [phi_offset], n_rf_systems)
+# RF_sct_par_res = RFStation(general_params_res,
+#                            [harmonic_number], [voltage_program],
+#                            [phi_offset], n_rf_systems)
 
 my_beam = Beam(general_params, n_macroparticles, n_particles)
-my_beam_freq = Beam(general_params_freq, n_macroparticles, n_particles)
-my_beam_res = Beam(general_params_res, n_macroparticles, n_particles)
+# my_beam_freq = Beam(general_params_freq, n_macroparticles, n_particles)
+# my_beam_res = Beam(general_params_res, n_macroparticles, n_particles)
 
 ring_RF_section = RingAndRFTracker(RF_sct_par, my_beam)
-ring_RF_section_freq = RingAndRFTracker(RF_sct_par_freq, my_beam_freq)
-ring_RF_section_res = RingAndRFTracker(RF_sct_par_res, my_beam_res)
+# ring_RF_section_freq = RingAndRFTracker(RF_sct_par_freq, my_beam_freq)
+# ring_RF_section_res = RingAndRFTracker(RF_sct_par_res, my_beam_res)
 
 # DEFINE BEAM------------------------------------------------------------------
 
 bigaussian(general_params, RF_sct_par, my_beam, tau_0/4,
            seed=1)
-bigaussian(general_params_freq, RF_sct_par_freq, my_beam_freq,
-           tau_0/4, seed=1)
-bigaussian(general_params_res, RF_sct_par_res, my_beam_res,
-           tau_0/4, seed=1)
+# bigaussian(general_params_freq, RF_sct_par_freq, my_beam_freq,
+#            tau_0/4, seed=1)
+# bigaussian(general_params_res, RF_sct_par_res, my_beam_res,
+#            tau_0/4, seed=1)
 
 cut_options = CutOptions(cut_left=0, cut_right=2*np.pi, n_slices=number_slices,
                          RFSectionParameters=RF_sct_par, cuts_unit='rad')
 slice_beam = Profile(my_beam, cut_options, FitOptions(fit_option='gaussian'))
-cut_options_freq = CutOptions(cut_left=0, cut_right=2*np.pi, n_slices=number_slices,
-                              RFSectionParameters=RF_sct_par_freq, cuts_unit='rad')
-slice_beam_freq = Profile(my_beam_freq, cut_options_freq,
-                          FitOptions(fit_option='gaussian'))
-cut_options_res = CutOptions(cut_left=0, cut_right=2*np.pi, n_slices=number_slices,
-                             RFSectionParameters=ring_RF_section_res, cuts_unit='rad')
-slice_beam_res = Profile(my_beam_res, cut_options_res,
-                         FitOptions(fit_option='gaussian'))
+# cut_options_freq = CutOptions(cut_left=0, cut_right=2*np.pi, n_slices=number_slices,
+#                               RFSectionParameters=RF_sct_par_freq, cuts_unit='rad')
+# slice_beam_freq = Profile(my_beam_freq, cut_options_freq,
+#                           FitOptions(fit_option='gaussian'))
+# cut_options_res = CutOptions(cut_left=0, cut_right=2*np.pi, n_slices=number_slices,
+#                              RFSectionParameters=ring_RF_section_res, cuts_unit='rad')
+# slice_beam_res = Profile(my_beam_res, cut_options_res,
+#                          FitOptions(fit_option='gaussian'))
 
 
 # MONITOR----------------------------------------------------------------------
@@ -184,15 +184,15 @@ Q_factor = table[:, 1]
 resonator = Resonators(R_shunt, f_res, Q_factor)
 
 ind_volt_time = InducedVoltageTime(my_beam, slice_beam, [resonator])
-ind_volt_freq = InducedVoltageFreq(
-    my_beam_freq, slice_beam_freq, [resonator], 1e5)
-ind_volt_res = InducedVoltageResonator(my_beam_res, slice_beam_res, resonator)
+# ind_volt_freq = InducedVoltageFreq(
+#     my_beam_freq, slice_beam_freq, [resonator], 1e5)
+# ind_volt_res = InducedVoltageResonator(my_beam_res, slice_beam_res, resonator)
 
 tot_vol = TotalInducedVoltage(my_beam, slice_beam, [ind_volt_time])
-tot_vol_freq = TotalInducedVoltage(my_beam_freq, slice_beam_freq,
-                                   [ind_volt_freq])
-tot_vol_res = TotalInducedVoltage(my_beam_res, slice_beam_res,
-                                  [ind_volt_res])
+# tot_vol_freq = TotalInducedVoltage(my_beam_freq, slice_beam_freq,
+#                                    [ind_volt_freq])
+# tot_vol_res = TotalInducedVoltage(my_beam_res, slice_beam_res,
+#                                   [ind_volt_res])
 
 # Analytic result-----------------------------------------------------------
 # VindGauss = np.zeros(len(slice_beam.bin_centers))
@@ -243,6 +243,8 @@ map_ = [tot_vol] + [ring_RF_section] + \
 # map_res = [tot_vol_res] + [ring_RF_section_res] + [slice_beam_res] \
 #     + [bunchmonitor_res] + [plots_res]
 
+
+# map_ = [ring_RF_section, slice_beam]
 # TRACKING + PLOTS-------------------------------------------------------------
 print('Map set')
 
@@ -278,6 +280,11 @@ slice_beam.track()
 # slice_beam_freq.track()
 # slice_beam_res.track()
 
+print('dE mean: ', np.mean(my_beam.dE))
+print('dE std: ', np.std(my_beam.dE))
+
+print('dt mean: ', np.mean(my_beam.dt))
+print('dt std: ', np.std(my_beam.dt))
 
 for i in np.arange(1, n_turns+1):
 
@@ -308,6 +315,10 @@ print(datetime.datetime.now().time())
 
 print('dE mean: ', np.mean(my_beam.dE))
 print('dE std: ', np.std(my_beam.dE))
+
+print('dt mean: ', np.mean(my_beam.dt))
+print('dt std: ', np.std(my_beam.dt))
+
 
 if report:
     mpiprof.finalize()
