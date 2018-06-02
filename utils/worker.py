@@ -134,7 +134,7 @@ def RFVCalc():
 
 @mpiprof.timeit(key='comm:gather')
 def gather():
-    worker.multi_gather(worker.active)
+    worker.multi_gather()
 
 
 @mpiprof.timeit(key='comm:bcast')
