@@ -223,7 +223,7 @@ def main():
 
         end_t = time.time()
         
-        worker.logger.debug(worker.contexts)
+        # worker.logger.debug(worker.contexts)
 
         if args.get('report', None):
             mpiprof.finalize()
