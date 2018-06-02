@@ -33,7 +33,8 @@ task_id = {
     'scatter': np.array(7, np.uint8),
     'barrier': np.array(8, np.uint8),
     'quit': np.array(9, np.uint8),
-    'stop': np.array(10, np.uint8)
+    'switch_context': np.array(10, np.uint8),
+    'stop': np.array(255, np.uint8)
 }
 
 master = None
@@ -55,6 +56,7 @@ class Master:
     def __init__(self, log=None):
         global master
 
+        self.vars = {}
         rank = MPI.COMM_WORLD.rank
         self.intracomm = MPI.COMM_WORLD.Split(rank==0, rank)
         self.intercomm = self.intracomm.Create_intercomm(0, MPI.COMM_WORLD, 1)
