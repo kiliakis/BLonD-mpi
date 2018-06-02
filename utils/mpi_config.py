@@ -152,6 +152,9 @@ class Master:
     def quit(self):
         self.intercomm.Bcast(task_id['quit'], root=MPI.ROOT)
 
+    def switch_context(self, context):
+        sendbuf = np.array(context, dtype='i')
+        self.intercomm.Bcast(sendbuf, root=MPI.ROOT)
 
 
 class MPILog(object):

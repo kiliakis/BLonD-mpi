@@ -121,11 +121,20 @@ b = A(1, 3)
 init_dict = {
     'n_rf': 10,
     'n_slices': number_slices,
-    'pi': 3.14
+    'pi': 3.14,
+    'a1': a.a1,
+    'a2': a.a2
 }
-master.logger.debug('Broadcasted initial variables')
 master.multi_bcast(init_dict)
 
+
+master.switch_context(1)
+init_dict = {
+    'a1': b.a1,
+    'a2': b.a2
+}
+
+master.multi_bcast(init_dict)
 
 
 master.stop()
