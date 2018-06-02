@@ -56,7 +56,7 @@ class Worker:
         _vars = self.intercomm.bcast(_vars, root=0)
         recvbuf = None
         for v in _vars:
-            self.intercomm.Gatherv(v, recvbuf, root=0)
+            self.intercomm.Gatherv(globals()[v], recvbuf, root=0)
 
     # @mpiprof.timeit(key='comm:multi_bcast')
     def multi_bcast(self):
