@@ -170,11 +170,11 @@ def quit():
 
 def switch_context():
     recvbuf = np.array(0, dtype='i')
-    self.intercomm.Bcast(recvbuf, root=0)
+    worker.intercomm.Bcast(recvbuf, root=0)
     context = np.int32(recvbuf)
-    if context not in self.contexts:
-        self.contexts[context] = {}
-    self.active = self.contexts[context]
+    if context not in worker.contexts:
+        worker.contexts[context] = {}
+    worker.active = worker.contexts[context]
 
 
 # @mpiprof.timeit(key='comm:stop')
