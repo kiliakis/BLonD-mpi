@@ -168,7 +168,7 @@ def quit():
     sys.exit(0)
 
 
-def switch_context()
+def switch_context():
     recvbuf = np.array(0, dtype='i')
     self.intercomm.Bcast(recvbuf, root=0)
     context = np.int32(recvbuf)
@@ -214,7 +214,7 @@ def main():
 
         task = worker.recv_task()
         # This is the main loop
-        while task != 10:
+        while task != 255:
             try:
                 task_dir[task]()
             except:

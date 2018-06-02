@@ -47,7 +47,6 @@ args = parse()
 
 mpiconf.init(track=False)
 
-master = mpiconf.Master(log=log)
 
 print(args)
 # try:
@@ -109,6 +108,7 @@ if 'report' in args:
 if 'debug' in args:
     debug = args['debug']
 
+master = mpiconf.Master(log=log)
 
 class A:
     def __init__(self, a1=0, a2=0):
@@ -125,6 +125,8 @@ init_dict = {
 }
 master.logger.debug('Broadcasted initial variables')
 master.multi_bcast(init_dict)
+
+
 
 master.stop()
 master.disconnect()
