@@ -3,7 +3,7 @@ from mpi4py import MPI
 import numpy as np
 import logging
 from pyprof import timing
-# from pyprof import mpiprof
+from pyprof import mpiprof
 import os
 from utils import worker
 
@@ -40,11 +40,11 @@ task_id = {
 master = None
 
 
-def init(track=False):
+def init(trace=False, logfile='mpe-trace'):
     rank = MPI.COMM_WORLD.rank
-    if track==True:
-        mpiprof.mode = 'timing'
-        mpiprof.init()
+    if trace==True:
+        mpiprof.mode = 'tracing'
+        mpiprof.init(logfile=logfile)
 
     if rank != 0:
         worker.main()
@@ -119,16 +119,19 @@ class Master:
                                    root=MPI.ROOT)
 
     @timing.timeit(key='master:multi_bcast')
+    # @mpiprof.traceit(key='multi_bcast')
     def multi_bcast(self, vars):
         self.logger.debug('Broadcasting variables')
         self.intercomm.Bcast(task_id['bcast'], root=MPI.ROOT)
         self.intercomm.bcast(vars, root=MPI.ROOT)
 
     @timing.timeit(key='master:bcast')
+    # @mpiprof.traceit(key='recv_task')
     def bcast(self, cmd):
         self.intercomm.Bcast(task_id[cmd], root=MPI.ROOT)
 
     @timing.timeit(key='master:reduce')
+    # @mpiprof.traceit(key='reduce')
     def reduce(self, x, y, op=MPI.SUM):
         self.intercomm.Reduce(x, y, op=op, root=MPI.ROOT)
 
@@ -152,6 +155,7 @@ class Master:
     def quit(self):
         self.intercomm.Bcast(task_id['quit'], root=MPI.ROOT)
 
+    # @mpiprof.traceit(key='reduce')
     def switch_context(self, context):
         self.bcast('switch_context')
         sendbuf = np.array(context, dtype='i')

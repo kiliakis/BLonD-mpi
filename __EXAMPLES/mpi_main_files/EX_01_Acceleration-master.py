@@ -33,16 +33,15 @@ import matplotlib.pyplot as plt
 import time
 import datetime
 from toolbox.input_parser import parse
-# from mpi import mpi_config as mpiconf
 from utils import mpi_config as mpiconf
-
-# from pyprof import timing
+from pyprof import timing
+from pyprof import mpiprof
 
 
 args = parse()
-print(args)
 
-mpiconf.init(track=True)
+mpiconf.init(trace=args['trace'], logfile=args['tracefile'])
+print(args)
 # Simulation parameters -------------------------------------------------------
 # Bunch parameters
 N_b = 1e9           # Intensity
@@ -79,15 +78,12 @@ if 'slices' in args:
 
 if 'omp' in args:
     os.environ['OMP_NUM_THREADS'] = str(args['omp'])
-if 'workers' in args:
-    workers = args['workers']
 if 'log' in args:
     log = args['log']
 if 'report' in args:
     report = args['report']
-if 'debug' in args:
-    debug = args['debug']
-
+    if args['time'] == True:
+        timing.mode = 'timing'
 # try:
 #     os.mkdir('../output_files')
 # except:
@@ -200,10 +196,10 @@ print(datetime.datetime.now().time())
 
 end_t = time.time()
 # if report:
-#     mpiprof.finalize()
-    # timing.report(total_time=1e3*(end_t-start_t),
-    #               out_dir=report,
-    #               out_file='master.csv')
+mpiprof.finalize()
+timing.report(total_time=1e3*(end_t-start_t),
+              out_dir=report,
+              out_file='master.csv')
 
 print('dE mean: ', np.mean(beam.dE))
 print('dE std: ', np.std(beam.dE))

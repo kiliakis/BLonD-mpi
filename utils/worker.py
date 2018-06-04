@@ -5,10 +5,9 @@ import sys
 import os
 import logging
 from pyprof import timing
-# from pyprof import mpiprof
+from pyprof import mpiprof
 from utils.bphysics_wrap import __kick, __drift, __slice, __linear_interp_kick, __rf_volt_comp
 from utils import mpi_config as mpiconf
-# import argparse
 from toolbox.input_parser import parse
 
 worker = None
@@ -58,12 +57,14 @@ class Worker:
             self.intercomm.Gatherv(globals()[v], recvbuf, root=0)
 
     # @timing.timeit(key='comm:multi_bcast')
+    # @mpiprof.traceit(key='multi_bcast')
     def multi_bcast(self):
         _vars = None
         _vars = self.intercomm.bcast(_vars, root=0)
         return _vars
 
     @timing.timeit(key='comm:recv_task')
+    @mpiprof.traceit(key='recv_task')
     def recv_task(self):
         self.intercomm.Bcast(self.taskbuf, root=0)
         task = np.uint8(self.taskbuf)
@@ -72,6 +73,7 @@ class Worker:
 
 
 @timing.timeit(key='comp:kick')
+@mpiprof.traceit(key='kick')
 def kick():
     # globals().update(worker.active)
     __kick(dt, dE, voltage, omegarf, phirf, n_rf, acc_kick)
@@ -79,6 +81,7 @@ def kick():
 
 
 @timing.timeit(key='comp:drift')
+@mpiprof.traceit(key='drift')
 def drift():
     # globals().update(worker.active)
     __drift(dt, dE, solver, t_rev, length_ratio, alpha_order,
@@ -87,6 +90,7 @@ def drift():
 
 
 # @timing.timeit('comp:histo')
+@mpiprof.traceit(key='histo')
 def histo():
     # globals().update(worker.active)
     with timing.timed_region('comp:histo') as tr:
@@ -109,6 +113,7 @@ def histo():
 
 
 @timing.timeit(key='comp:LIKick')
+@mpiprof.traceit(key='LIKick')
 def LIKick():
     # globals().update(worker.active)
     # print(dE, total_voltage, bin_centers, charge, acc_kick)
@@ -132,11 +137,13 @@ def RFVCalc():
 
 
 @timing.timeit(key='comm:gather')
+@mpiprof.traceit(key='gather')
 def gather():
     worker.multi_gather()
 
 
 @timing.timeit(key='comm:bcast')
+@mpiprof.traceit(key='multi_bcast')
 def bcast():
     # new_vars = worker.multi_bcast()
     # if '__id__' in new_vars:
@@ -148,8 +155,8 @@ def bcast():
     globals().update(worker.active)
 
 
-
 @timing.timeit(key='comm:scatter')
+@mpiprof.traceit(key='scatter')
 def scatter():
     worker.active.update(worker.multi_scatter())
     globals().update(worker.active)
@@ -168,7 +175,9 @@ def quit():
     worker.intercomm.Disconnect()
     exit(0)
 
+
 @timing.timeit(key='comm:switch_context')
+@mpiprof.traceit(key='switch_context')
 def switch_context():
     recvbuf = np.array(0, dtype='i')
     worker.intercomm.Bcast(recvbuf, root=0)
@@ -225,14 +234,15 @@ def main():
             task = worker.recv_task()
 
         end_t = time.time()
-        
-        # worker.logger.debug(worker.contexts)
 
-        if args.get('report', None):
-            timing.finalize()
+        # worker.logger.debug(worker.contexts)
+        if args.get('trace', False) == True:
+            mpiprof.finalize()
+
+        if args.get('time', False) == True:
             timing.report(total_time=1e3*(end_t-start_t),
-                           out_dir=args['report'],
-                           out_file='worker-%d.csv' % worker.rank)
+                          out_dir=args['report'],
+                          out_file='worker-%d.csv' % worker.rank)
     # Shutdown
     finally:
         sys.stdout.flush()

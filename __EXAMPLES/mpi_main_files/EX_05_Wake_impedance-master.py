@@ -40,13 +40,12 @@ import time
 import datetime
 from toolbox.input_parser import parse
 from utils import mpi_config as mpiconf
-from pyprof import timing as mpiprof
-# from pyprof import mpiprof as mpiprof
+from pyprof import timing
+from pyprof import mpiprof
 
 args = parse()
 
-mpiconf.init(track=False)
-
+mpiconf.init(trace=args['trace'], logfile=args['tracefile'])
 
 print(args)
 # try:
@@ -85,8 +84,6 @@ phi_offset = 0.0
 number_slices = 2**8
 
 
-workers = 3
-debug = False
 log = None
 report = None
 
@@ -99,14 +96,12 @@ if 'slices' in args:
 
 if 'omp' in args:
     os.environ['OMP_NUM_THREADS'] = str(args['omp'])
-if 'workers' in args:
-    workers = args['workers']
 if 'log' in args:
     log = args['log']
 if 'report' in args:
     report = args['report']
-if 'debug' in args:
-    debug = args['debug']
+    if args['time'] == True:
+        timing.mode = 'timing'
 
 master = mpiconf.Master(log=log)
 
@@ -391,11 +386,11 @@ print('dE res mean: ', np.mean(my_beam_res.dE))
 # print('dt std: ', np.std(my_beam.dt))
 
 
-if report:
-    mpiprof.finalize()
-    mpiprof.report(total_time=1e3*(end_t-start_t),
-                   out_dir=report,
-                   out_file='master.csv')
+# if report:
+timing.report(total_time=1e3*(end_t-start_t),
+               out_dir=report,
+               out_file='master.csv')
+mpiprof.finalize()
 
 # Plotting induced voltages---------------------------------------------------
 # plt.clf()
