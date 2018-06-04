@@ -73,14 +73,14 @@ class Worker:
 
 @timing.timeit(key='comp:kick')
 def kick():
-    globals().update(worker.active)
+    # globals().update(worker.active)
     __kick(dt, dE, voltage, omegarf, phirf, n_rf, acc_kick)
     # comm.Barrier()
 
 
 @timing.timeit(key='comp:drift')
 def drift():
-    globals().update(worker.active)
+    # globals().update(worker.active)
     __drift(dt, dE, solver, t_rev, length_ratio, alpha_order,
             eta_0, eta_1, eta_2, beta, energy)
     # comm.Barrier()
@@ -88,7 +88,7 @@ def drift():
 
 # @timing.timeit('comp:histo')
 def histo():
-    globals().update(worker.active)
+    # globals().update(worker.active)
     with timing.timed_region('comp:histo') as tr:
         # global profile
         profile = np.empty(n_slices, dtype='d')
@@ -110,7 +110,7 @@ def histo():
 
 @timing.timeit(key='comp:LIKick')
 def LIKick():
-    globals().update(worker.active)
+    # globals().update(worker.active)
     # print(dE, total_voltage, bin_centers, charge, acc_kick)
     __linear_interp_kick(dt, dE, total_voltage, bin_centers,
                          charge, acc_kick)
@@ -119,14 +119,14 @@ def LIKick():
 
 @timing.timeit(key='comp:SR')
 def SR():
-    globals().update(worker.active)
+    # globals().update(worker.active)
     __sync_rad_full(dE, U0, tau_z, n_kicks, sigma_dE, energy)
 
 
 # Perhaps this is not big enough to use mpi, an omp might be better
 @timing.timeit(key='comp:RFVCalc')
 def RFVCalc():
-    globals().update(worker.active)
+    # globals().update(worker.active)
     __rf_volt_comp(voltage, omegarf, phirf, bin_centers,
                    rf_voltage)
 
@@ -145,11 +145,14 @@ def bcast():
         # worker.contexts[_id] = {}
     # worker.contexts[_id].update(new_vars)
     worker.active.update(worker.multi_bcast())
+    globals().update(worker.active)
+
 
 
 @timing.timeit(key='comm:scatter')
 def scatter():
     worker.active.update(worker.multi_scatter())
+    globals().update(worker.active)
 
 
 @timing.timeit(key='comm:barrier')
@@ -162,11 +165,10 @@ def quit():
     sys.stdout.flush()
     sys.stderr.flush()
     worker.logger.debug('Going to disconnect()')
-
     worker.intercomm.Disconnect()
     exit(0)
 
-
+@timing.timeit(key='comm:switch_context')
 def switch_context():
     recvbuf = np.array(0, dtype='i')
     worker.intercomm.Bcast(recvbuf, root=0)
@@ -174,6 +176,7 @@ def switch_context():
     if context not in worker.contexts:
         worker.contexts[context] = {}
     worker.active = worker.contexts[context]
+    globals().update(worker.active)
 
 
 # @timing.timeit(key='comm:stop')
@@ -203,10 +206,11 @@ def main():
     global worker
     try:
         args = parse()
-        # log = 'nolog' not in sys.argv
-        # report = ''
+
+        if 'omp' in args:
+            os.environ['OMP_NUM_THREADS'] = str(args['omp'])
+
         worker = Worker(log=args.get('log', None))
-        os.environ['OMP_NUM_THREADS'] = os.environ.get('OMP_NUM_THREADS', '1')
         worker.logger.debug('OMP_NUM_THREADS=%s' %
                             os.environ['OMP_NUM_THREADS'])
         start_t = time.time()

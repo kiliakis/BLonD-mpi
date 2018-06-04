@@ -110,46 +110,6 @@ if 'debug' in args:
 
 master = mpiconf.Master(log=log)
 
-# class A:
-#     def __init__(self, a1=0, a2=0):
-#         self.a1 = a1
-#         self.a2 = a2
-
-# a = A(4, 2)
-# b = A(1, 3)
-
-# init_dict = {
-#     'n_rf': 10,
-#     'n_slices': number_slices,
-#     'pi': 3.14,
-#     'a1': a.a1,
-#     'a2': a.a2
-# }
-# master.multi_bcast(init_dict)
-
-
-# master.switch_context(1)
-# init_dict = {
-#     'a1': b.a1,
-#     'a2': b.a2
-# }
-
-# master.multi_bcast(init_dict)
-
-
-# master.stop()
-# master.disconnect()
-
-# Scatter coordinates etc
-# vars_dict = {
-#     'dt': my_beam.dt,
-#     'dE': my_beam.dE
-# }
-
-# master.logger.debug('Scattered initial coordinates')
-# master.multi_scatter(vars_dict)
-
-# exit(0)
 
 # DEFINE RING------------------------------------------------------------------
 print("Setting up the simulation...")
@@ -158,8 +118,8 @@ general_params = Ring(C, momentum_compaction,
                       sync_momentum, Proton(), n_turns)
 general_params_freq = Ring(C, momentum_compaction,
                            sync_momentum, Proton(), n_turns)
-# general_params_res = Ring(C, momentum_compaction,
-#                           sync_momentum, Proton(), n_turns)
+general_params_res = Ring(C, momentum_compaction,
+                          sync_momentum, Proton(), n_turns)
 
 
 RF_sct_par = RFStation(general_params, [harmonic_number],
@@ -167,17 +127,17 @@ RF_sct_par = RFStation(general_params, [harmonic_number],
 RF_sct_par_freq = RFStation(general_params_freq,
                             [harmonic_number], [voltage_program],
                             [phi_offset], n_rf_systems)
-# RF_sct_par_res = RFStation(general_params_res,
-#                            [harmonic_number], [voltage_program],
-#                            [phi_offset], n_rf_systems)
+RF_sct_par_res = RFStation(general_params_res,
+                           [harmonic_number], [voltage_program],
+                           [phi_offset], n_rf_systems)
 
 my_beam = Beam(general_params, n_macroparticles, n_particles)
 my_beam_freq = Beam(general_params_freq, n_macroparticles, n_particles)
-# my_beam_res = Beam(general_params_res, n_macroparticles, n_particles)
+my_beam_res = Beam(general_params_res, n_macroparticles, n_particles)
 
 ring_RF_section = RingAndRFTracker(RF_sct_par, my_beam)
 ring_RF_section_freq = RingAndRFTracker(RF_sct_par_freq, my_beam_freq)
-# ring_RF_section_res = RingAndRFTracker(RF_sct_par_res, my_beam_res)
+ring_RF_section_res = RingAndRFTracker(RF_sct_par_res, my_beam_res)
 
 # DEFINE BEAM------------------------------------------------------------------
 
@@ -185,11 +145,12 @@ bigaussian(general_params, RF_sct_par, my_beam, tau_0/4,
            seed=1)
 bigaussian(general_params_freq, RF_sct_par_freq, my_beam_freq,
            tau_0/4, seed=1)
-# bigaussian(general_params_res, RF_sct_par_res, my_beam_res,
-#            tau_0/4, seed=1)
+bigaussian(general_params_res, RF_sct_par_res, my_beam_res,
+           tau_0/4, seed=1)
 
 print('dE mean: ', np.mean(my_beam.dE))
 print('dE freq mean: ', np.mean(my_beam_freq.dE))
+print('dE res mean: ', np.mean(my_beam_res.dE))
 
 cut_options = CutOptions(cut_left=0, cut_right=2*np.pi, n_slices=number_slices,
                          RFSectionParameters=RF_sct_par, cuts_unit='rad')
@@ -198,10 +159,10 @@ cut_options_freq = CutOptions(cut_left=0, cut_right=2*np.pi, n_slices=number_sli
                               RFSectionParameters=RF_sct_par_freq, cuts_unit='rad')
 slice_beam_freq = Profile(my_beam_freq, cut_options_freq,
                           FitOptions(fit_option='gaussian'))
-# cut_options_res = CutOptions(cut_left=0, cut_right=2*np.pi, n_slices=number_slices,
-#                              RFSectionParameters=ring_RF_section_res, cuts_unit='rad')
-# slice_beam_res = Profile(my_beam_res, cut_options_res,
-#                          FitOptions(fit_option='gaussian'))
+cut_options_res = CutOptions(cut_left=0, cut_right=2*np.pi, n_slices=number_slices,
+                             RFSectionParameters=ring_RF_section_res, cuts_unit='rad')
+slice_beam_res = Profile(my_beam_res, cut_options_res,
+                         FitOptions(fit_option='gaussian'))
 
 
 # MONITOR----------------------------------------------------------------------
@@ -232,13 +193,13 @@ resonator = Resonators(R_shunt, f_res, Q_factor)
 ind_volt_time = InducedVoltageTime(my_beam, slice_beam, [resonator])
 ind_volt_freq = InducedVoltageFreq(
     my_beam_freq, slice_beam_freq, [resonator], 1e5)
-# ind_volt_res = InducedVoltageResonator(my_beam_res, slice_beam_res, resonator)
+ind_volt_res = InducedVoltageResonator(my_beam_res, slice_beam_res, resonator)
 
 tot_vol = TotalInducedVoltage(my_beam, slice_beam, [ind_volt_time])
 tot_vol_freq = TotalInducedVoltage(my_beam_freq, slice_beam_freq,
                                    [ind_volt_freq])
-# tot_vol_res = TotalInducedVoltage(my_beam_res, slice_beam_res,
-#                                   [ind_volt_res])
+tot_vol_res = TotalInducedVoltage(my_beam_res, slice_beam_res,
+                                  [ind_volt_res])
 
 # Analytic result-----------------------------------------------------------
 # VindGauss = np.zeros(len(slice_beam.bin_centers))
@@ -282,16 +243,16 @@ tot_vol_freq = TotalInducedVoltage(my_beam_freq, slice_beam_freq,
 
 # ACCELERATION MAP-------------------------------------------------------------
 
-map_ = [tot_vol] + [ring_RF_section] + \
-    [slice_beam]  # + [bunchmonitor] + [plots]
+map_ = [tot_vol] + [ring_RF_section] + [slice_beam]
+# + [bunchmonitor] + [plots]
 map_freq = [tot_vol_freq] + [ring_RF_section_freq] + [slice_beam_freq]
+map_res = [tot_vol_res] + [ring_RF_section_res] + [slice_beam_res]
 # map_freq = [tot_vol_freq] + [ring_RF_section_freq] + [slice_beam_freq] \
 #     + [bunchmonitor_freq] + [plots_freq]
 # map_res = [tot_vol_res] + [ring_RF_section_res] + [slice_beam_res] \
 #     + [bunchmonitor_res] + [plots_res]
 
 
-# map_ = [ring_RF_section, slice_beam]
 # TRACKING + PLOTS-------------------------------------------------------------
 print('Map set')
 
@@ -339,7 +300,24 @@ vars_dict = {
 master.multi_scatter(vars_dict)
 master.logger.debug('Scattered initial coordinates')
 slice_beam_freq.track()
-# slice_beam_res.track()
+
+
+
+master.switch_context(2)
+init_dict = {
+    'bin_centers': slice_beam_res.bin_centers
+}
+master.logger.debug('Broadcasted initial variables')
+master.multi_bcast(init_dict)
+
+vars_dict = {
+    'dt': my_beam_res.dt,
+    'dE': my_beam_res.dE
+}
+master.multi_scatter(vars_dict)
+master.logger.debug('Scattered initial coordinates')
+slice_beam_res.track()
+
 
 # print('dE std: ', np.std(my_beam.dE))
 
@@ -347,7 +325,6 @@ slice_beam_freq.track()
 # print('dt std: ', np.std(my_beam.dt))
 
 for i in np.arange(1, n_turns+1):
-
 
     if i % 200 == 0:
         print(i)
@@ -360,8 +337,9 @@ for i in np.arange(1, n_turns+1):
     for m in map_freq:
         m.track()
 
-    # for m in map_res:
-    #     m.track()
+    master.switch_context(2)
+    for m in map_res:
+        m.track()
 
     # Plots
     # if (i % dt_plt) == 0:
@@ -387,6 +365,14 @@ vars_dict = {
 }
 master.multi_gather(vars_dict)
 
+master.switch_context(2)
+vars_dict = {
+    'dt': my_beam_res.dt,
+    'dE': my_beam_res.dE
+}
+master.multi_gather(vars_dict)
+
+
 
 master.stop()
 master.disconnect()
@@ -396,6 +382,7 @@ print(datetime.datetime.now().time())
 
 print('dE mean: ', np.mean(my_beam.dE))
 print('dE freq mean: ', np.mean(my_beam_freq.dE))
+print('dE res mean: ', np.mean(my_beam_res.dE))
 
 # print('dE mean: ', np.mean(my_beam.dE))
 # print('dE std: ', np.std(my_beam.dE))
