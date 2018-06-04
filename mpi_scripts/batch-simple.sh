@@ -12,20 +12,24 @@
 #SBATCH --hint=nomultithread
 #SBATCH --export=ALL
 
-source $HOME/.bashrc
+# source $HOME/.bashrc
 
 BLOND=$HOME/git/BLonD-mpi
 # echo $BLOND
 
-# python --version
+which python
+python --version
+
+which mpirun
+mpirun --version
 # mpicc --version
 
 # python setup_cpp.py -p
 export PYTHONPATH=$BLOND:$PYTHONPATH
 # export OMP_NUM_THREADS=$OMP_NUM_THREADS
-echo $PYTHONPATH
-echo "OMP_NUM_THREADS=${OMP_NUM_THREADS}"
+# echo $PYTHONPATH
+# echo "OMP_NUM_THREADS=${OMP_NUM_THREADS}"
 # export OMP_NUM_THREADS=2
 # mpiexec -n 1 python -m mpi4py $BLOND/mpi/EX_01_Acceleration-master.py
 # mpiexec -n 1 python -m mpi4py $@
-mpiexec $@
+mpirun $@

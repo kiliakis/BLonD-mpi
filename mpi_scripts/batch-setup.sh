@@ -7,7 +7,7 @@
 #SBATCH --error=setup-job.txt
 #SBATCH --job-name=setup-job
 
-source $HOME/.bashrc
+# source $HOME/.bashrc
 
 BLOND=$HOME/git/BLonD-mpi
 cd $BLOND

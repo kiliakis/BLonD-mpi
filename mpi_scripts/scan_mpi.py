@@ -12,9 +12,9 @@ import random
 home = os.environ['HOME'] + '/git/BLonD-mpi'
 result_dir = home + '/results/raw/{}/{}/{}'
 
-exe = home + '/mpi/EX_01_Acceleration-master.py'
-batch_script = home + '/mpi/batch-simple.sh'
-setup_script = home + '/mpi/batch-setup.sh'
+exe = home + '/__EXAMPLES/mpi_main_files/EX_01_Acceleration-master.py'
+batch_script = home + '/mpi_scripts/batch-simple.sh'
+setup_script = home + '/mpi_scripts/batch-setup.sh'
 job_name_form = '{}/_p{}_s{}_t{}_w{}_o{}_N{}_'
 
 configs = {
@@ -99,39 +99,39 @@ configs = {
     #                                 'partition': cycle(['be-long'])
     #                                 }
 
-    # 'strong_scale_hybrid_four_node': {'p': cycle([20000000]),
-    #                                   's': cycle([10000]),
-    #                                   't': cycle([2000]),
-    #                                   'w': list(np.arange(3, 8, 1))
-    #                                   + list(np.arange(3, 16, 2))
-    #                                   + list(np.arange(3, 20, 2))
-    #                                   + list(np.arange(3, 40, 4)),
-    #                                   'o': [10]*5 + [5]*7 + [4]*9 + [2]*10,
-    #                                   'N': [2, 3, 3, 4, 4]
-    #                                   + [1, 2, 2, 3, 3, 4, 4]
-    #                                   + [1, 2, 2, 2, 3, 3, 4, 4, 4]
-    #                                   + [1, 1, 2, 2, 2, 3, 3, 4, 4, 4],
-    #                                   'time': cycle([60]),
-    #                                   'partition': cycle(['be-long'])
-    #                                   }
+    'strong_scale_hybrid_four_node': {'p': cycle([20000000]),
+                                      's': cycle([10000]),
+                                      't': cycle([2000]),
+                                      'w': list(np.arange(3, 8, 1))
+                                      + list(np.arange(3, 16, 2))
+                                      + list(np.arange(3, 20, 2))
+                                      + list(np.arange(3, 40, 4)),
+                                      'o': [10]*5 + [5]*7 + [4]*9 + [2]*10,
+                                      'N': [2, 3, 3, 4, 4]
+                                      + [1, 2, 2, 3, 3, 4, 4]
+                                      + [1, 2, 2, 2, 3, 3, 4, 4, 4]
+                                      + [1, 1, 2, 2, 2, 3, 3, 4, 4, 4],
+                                      'time': cycle([60]),
+                                      'partition': cycle(['be-long'])
+                                      }
 
 
-    'strong_scale_hybrid_four_node-2': {'p': cycle([20000000]),
-                                        's': cycle([10000]),
-                                        't': cycle([2000]),
-                                        'w': [1, 2, 3, 4],
-                                        'o': cycle([20]),
-                                        'N': [2, 3, 4, 5],
-                                        'time': cycle([60]),
-                                        'partition': cycle(['be-long'])
-                                        }
+    # 'strong_scale_hybrid_four_node-2': {'p': cycle([20000000]),
+    #                                     's': cycle([10000]),
+    #                                     't': cycle([2000]),
+    #                                     'w': [1, 2, 3, 4],
+    #                                     'o': cycle([20]),
+    #                                     'N': [2, 3, 4, 5],
+    #                                     'time': cycle([60]),
+    #                                     'partition': cycle(['be-long'])
+    #                                     }
 
 
 
 
 }
 
-repeats = 1
+repeats = 4
 
 
 total_sims = repeats * \
@@ -159,7 +159,7 @@ for analysis, config in configs.items():
     for p, s, t, w, o, N, time, partition in zip(ps, ss, ts, ws,
                                                  oss, Ns, times, partitions):
         job_name = job_name_form.format(analysis, p, s, t, w, o, N)
-        os.environ['OMP_NUM_THREADS'] = str(o)
+        # os.environ['OMP_NUM_THREADS'] = str(o)
         for i in range(repeats):
             timestr = datetime.now().strftime('%d%b%y.%H-%M-%S')
             timestr = timestr + '-' + str(random.randint(0, 100))
@@ -172,7 +172,7 @@ for analysis, config in configs.items():
                     os.makedirs(d)
             exe_args = ['-n', str(w+1), 'python', exe,
                         '-p', str(p), '-s', str(s),
-                        '-t', str(t), '-w', str(w),
+                        '-t', str(t), '-time',
                         '-o', str(o), '-r', report_dir]
             print(job_name, timestr)
             batch_args = ['-N', str(N), '-n', str(w+1),
