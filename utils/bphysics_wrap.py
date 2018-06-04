@@ -9,9 +9,8 @@ import ctypes as ct
 import numpy as np
 from setup_cpp import libblondphysics as __lib
 
-# from pyprof import timing
-from pyprof import timing as mpiprof
-# from pyprof import mpiprof as mpiprof
+from pyprof import timing
+# from pyprof import mpiprof
 
 
 def __getPointer(x):
@@ -56,7 +55,7 @@ def kick_mpi(ring, turn):
 
     import utils.mpi_config as mpiconf
     from mpi4py import MPI
-    with mpiprof.timed_region('master:kick') as tr:
+    with timing.timed_region('master:kick') as tr:
 
         master = mpiconf.master
         voltage_kick = np.ascontiguousarray(ring.charge*ring.voltage[:, turn])

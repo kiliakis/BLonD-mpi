@@ -2,8 +2,8 @@ import sys
 from mpi4py import MPI
 import numpy as np
 import logging
-from pyprof import timing as mpiprof
-# from pyprof import mpiprof as mpiprof
+from pyprof import timing
+# from pyprof import mpiprof
 import os
 from utils import worker
 
@@ -52,7 +52,7 @@ def init(track=False):
 
 
 class Master:
-    # @mpiprof.timeit(key='master:init')
+    # @timing.timeit(key='master:init')
     def __init__(self, log=None):
         global master
 
@@ -76,7 +76,7 @@ class Master:
         master = self
 
 
-    @mpiprof.timeit(key='master:multi_scatter')
+    @timing.timeit(key='master:multi_scatter')
     def multi_scatter(self, vars):
         self.intercomm.Bcast(task_id['scatter'], root=MPI.ROOT)
 
@@ -101,7 +101,7 @@ class Master:
 
     # args are the buffers to fill with the gathered values
     # e.g. (comm, beam.dt, beam.dE)
-    @mpiprof.timeit(key='master:multi_gather')
+    @timing.timeit(key='master:multi_gather')
     def multi_gather(self, gather_dict):
         self.intercomm.Bcast(task_id['gather'], root=MPI.ROOT)
         keys = list(gather_dict.keys())
@@ -118,37 +118,37 @@ class Master:
             self.intercomm.Gatherv(sendbuf, [v, counts, displs, mpi_type[v.dtype.char]],
                                    root=MPI.ROOT)
 
-    @mpiprof.timeit(key='master:multi_bcast')
+    @timing.timeit(key='master:multi_bcast')
     def multi_bcast(self, vars):
         self.logger.debug('Broadcasting variables')
         self.intercomm.Bcast(task_id['bcast'], root=MPI.ROOT)
         self.intercomm.bcast(vars, root=MPI.ROOT)
 
-    @mpiprof.timeit(key='master:bcast')
+    @timing.timeit(key='master:bcast')
     def bcast(self, cmd):
         self.intercomm.Bcast(task_id[cmd], root=MPI.ROOT)
 
-    @mpiprof.timeit(key='master:reduce')
+    @timing.timeit(key='master:reduce')
     def reduce(self, x, y, op=MPI.SUM):
         self.intercomm.Reduce(x, y, op=op, root=MPI.ROOT)
 
-    # @mpiprof.timeit(key='master:stop')
+    # @timing.timeit(key='master:stop')
     def stop(self):
         self.logger.debug('Sending a stop signal')
         self.intercomm.Bcast(task_id['stop'], root=MPI.ROOT)
         # self.logger.debug('Waiting on the barrier')
         # self.intercomm.Barrier()
 
-    @mpiprof.timeit(key='master:sync')
+    @timing.timeit(key='master:sync')
     def sync(self):
         self.intercomm.Bcast(task_id['barrier'], root=MPI.ROOT)
         self.intercomm.Barrier()
 
-    # @mpiprof.timeit(key='master:disconnect')
+    # @timing.timeit(key='master:disconnect')
     def disconnect(self):
         self.intercomm.Disconnect()
 
-    # @mpiprof.timeit(key='master:quit')
+    # @timing.timeit(key='master:quit')
     def quit(self):
         self.intercomm.Bcast(task_id['quit'], root=MPI.ROOT)
 

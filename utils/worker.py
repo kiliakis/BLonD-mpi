@@ -4,11 +4,10 @@ import numpy as np
 import sys
 import os
 import logging
-from pyprof import timing as mpiprof
-# from pyprof import mpiprof as mpiprof
+from pyprof import timing
+# from pyprof import mpiprof
 from utils.bphysics_wrap import __kick, __drift, __slice, __linear_interp_kick, __rf_volt_comp
 from utils import mpi_config as mpiconf
-# from pyprof import timing
 # import argparse
 from toolbox.input_parser import parse
 
@@ -19,7 +18,7 @@ class Worker:
 
     def __init__(self, log=None):
         rank = MPI.COMM_WORLD.rank
-        self.contexts = {0: globals()}
+        self.contexts = {0: {}}
         self.active = self.contexts[0]
         self.intracomm = MPI.COMM_WORLD.Split(rank == 0, rank)
         self.intercomm = self.intracomm.Create_intercomm(0, MPI.COMM_WORLD, 0)
@@ -34,7 +33,7 @@ class Worker:
         self.logger.debug('Hostname: %s' % self.hostname)
         self.taskbuf = np.array(0, np.uint8)
 
-    # @mpiprof.timeit(key='comm:multi_scatter')
+    # @timing.timeit(key='comm:multi_scatter')
     def multi_scatter(self):
         var_list = None
         var_list = self.intercomm.bcast(var_list, root=0)
@@ -49,7 +48,7 @@ class Worker:
         return vals
         # self.intercomm.Barrier()
 
-    # @mpiprof.timeit(key='comm:multi_gather')
+    # @timing.timeit(key='comm:multi_gather')
     def multi_gather(self):
         globals().update(self.active)
         _vars = []
@@ -58,13 +57,13 @@ class Worker:
         for v in _vars:
             self.intercomm.Gatherv(globals()[v], recvbuf, root=0)
 
-    # @mpiprof.timeit(key='comm:multi_bcast')
+    # @timing.timeit(key='comm:multi_bcast')
     def multi_bcast(self):
         _vars = None
         _vars = self.intercomm.bcast(_vars, root=0)
         return _vars
 
-    @mpiprof.timeit(key='comm:recv_task')
+    @timing.timeit(key='comm:recv_task')
     def recv_task(self):
         self.intercomm.Bcast(self.taskbuf, root=0)
         task = np.uint8(self.taskbuf)
@@ -72,14 +71,14 @@ class Worker:
         return task
 
 
-@mpiprof.timeit(key='comp:kick')
+@timing.timeit(key='comp:kick')
 def kick():
     globals().update(worker.active)
     __kick(dt, dE, voltage, omegarf, phirf, n_rf, acc_kick)
     # comm.Barrier()
 
 
-@mpiprof.timeit(key='comp:drift')
+@timing.timeit(key='comp:drift')
 def drift():
     globals().update(worker.active)
     __drift(dt, dE, solver, t_rev, length_ratio, alpha_order,
@@ -87,19 +86,19 @@ def drift():
     # comm.Barrier()
 
 
-# @mpiprof.timeit('comp:histo')
+# @timing.timeit('comp:histo')
 def histo():
     globals().update(worker.active)
-    with mpiprof.timed_region('comp:histo') as tr:
+    with timing.timed_region('comp:histo') as tr:
         # global profile
         profile = np.empty(n_slices, dtype='d')
         __slice(dt, profile, cut_left, cut_right)
 
-    # with mpiprof.timed_region('histo_extra') as tr:
+    # with timing.timed_region('histo_extra') as tr:
     #     new_profile = np.empty(len(profile), dtype='d')
     #     worker.intercomm.Allreduce(profile, new_profile, op=MPI.SUM)
     #     profile = new_profile
-    with mpiprof.timed_region('comm:histo_extra') as tr:
+    with timing.timed_region('comm:histo_extra') as tr:
         # new_profile = np.empty(len(profile), dtype='d')
         # worker.intracomm.Allreduce(MPI.IN_PLACE, profile, op=MPI.SUM)
         recvbuf = None
@@ -109,7 +108,7 @@ def histo():
     # Or even better, allreduce it
 
 
-@mpiprof.timeit(key='comp:LIKick')
+@timing.timeit(key='comp:LIKick')
 def LIKick():
     globals().update(worker.active)
     # print(dE, total_voltage, bin_centers, charge, acc_kick)
@@ -118,26 +117,26 @@ def LIKick():
     # print(dE, total_voltage, bin_centers, charge, acc_kick)
 
 
-@mpiprof.timeit(key='comp:SR')
+@timing.timeit(key='comp:SR')
 def SR():
     globals().update(worker.active)
     __sync_rad_full(dE, U0, tau_z, n_kicks, sigma_dE, energy)
 
 
 # Perhaps this is not big enough to use mpi, an omp might be better
-@mpiprof.timeit(key='comp:RFVCalc')
+@timing.timeit(key='comp:RFVCalc')
 def RFVCalc():
     globals().update(worker.active)
     __rf_volt_comp(voltage, omegarf, phirf, bin_centers,
                    rf_voltage)
 
 
-@mpiprof.timeit(key='comm:gather')
+@timing.timeit(key='comm:gather')
 def gather():
     worker.multi_gather()
 
 
-@mpiprof.timeit(key='comm:bcast')
+@timing.timeit(key='comm:bcast')
 def bcast():
     # new_vars = worker.multi_bcast()
     # if '__id__' in new_vars:
@@ -148,24 +147,24 @@ def bcast():
     worker.active.update(worker.multi_bcast())
 
 
-@mpiprof.timeit(key='comm:scatter')
+@timing.timeit(key='comm:scatter')
 def scatter():
     worker.active.update(worker.multi_scatter())
 
 
-@mpiprof.timeit(key='comm:barrier')
+@timing.timeit(key='comm:barrier')
 def barrier():
     worker.intercomm.Barrier()
 
 
-# @mpiprof.timeit(key='comm:quit')
+# @timing.timeit(key='comm:quit')
 def quit():
     sys.stdout.flush()
     sys.stderr.flush()
     worker.logger.debug('Going to disconnect()')
 
     worker.intercomm.Disconnect()
-    sys.exit(0)
+    exit(0)
 
 
 def switch_context():
@@ -177,7 +176,7 @@ def switch_context():
     worker.active = worker.contexts[context]
 
 
-# @mpiprof.timeit(key='comm:stop')
+# @timing.timeit(key='comm:stop')
 def stop():
     pass
     # worker.logger.debug('Wating on the final barrier.')
@@ -226,8 +225,8 @@ def main():
         # worker.logger.debug(worker.contexts)
 
         if args.get('report', None):
-            mpiprof.finalize()
-            mpiprof.report(total_time=1e3*(end_t-start_t),
+            timing.finalize()
+            timing.report(total_time=1e3*(end_t-start_t),
                            out_dir=args['report'],
                            out_file='worker-%d.csv' % worker.rank)
     # Shutdown
