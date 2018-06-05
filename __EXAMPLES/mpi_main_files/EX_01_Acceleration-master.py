@@ -32,7 +32,7 @@ import sys
 import matplotlib.pyplot as plt
 import time
 import datetime
-from toolbox.input_parser import parse
+from utils.input_parser import parse
 from utils import mpi_config as mpiconf
 from pyprof import timing
 from pyprof import mpiprof
@@ -69,14 +69,13 @@ log = None
 report = None
 
 
-if 'turns' in args:
-    N_t = args['turns']
-if 'particles' in args:
-    N_p = args['particles']
-if 'slices' in args:
-    N_slices = args['slices']
 
-if 'omp' in args:
+if args.get('turns', None):
+    N_t = args['turns']
+if args.get('particles', None):
+    N_p = args['particles']
+
+if args.get('omp', None):
     os.environ['OMP_NUM_THREADS'] = str(args['omp'])
 if 'log' in args:
     log = args['log']

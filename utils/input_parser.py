@@ -7,13 +7,11 @@ parser = argparse.ArgumentParser(description='BLonD simulation mainfile.')
 #                     help='Number of worker processes to spawn.'
 #                     '\nDefault: 3 (3 workers + 1 master)')
 
-parser.add_argument('-p', '--particles', type=int, default=1000000,
-                    help='Number of macro-particles.'
-                    '\nDefault: 1 million')
+parser.add_argument('-p', '--particles', type=int,
+                    help='Number of macro-particles.')
 
-parser.add_argument('-s', '--slices', type=int, default=500,
-                    help='Number of slices.'
-                    '\nDefault: 500')
+parser.add_argument('-s', '--slices', type=int,
+                    help='Number of slices.')
 
 
 parser.add_argument('-t', '--turns', type=int, default=2000,

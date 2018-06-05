@@ -8,7 +8,7 @@ from pyprof import timing
 from pyprof import mpiprof
 from utils import bphysics_wrap as bph
 from utils import mpi_config as mpiconf
-from toolbox.input_parser import parse
+from utils.input_parser import parse
 
 worker = None
 

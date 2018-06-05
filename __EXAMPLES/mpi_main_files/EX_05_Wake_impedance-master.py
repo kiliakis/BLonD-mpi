@@ -38,7 +38,7 @@ import os
 
 import time
 import datetime
-from toolbox.input_parser import parse
+from utils.input_parser import parse
 from utils import mpi_config as mpiconf
 from pyprof import timing
 from pyprof import mpiprof
@@ -87,15 +87,20 @@ number_slices = 2**8
 log = None
 report = None
 
-if 'turns' in args:
+
+
+if args.get('turns', None):
     n_turns = args['turns']
-if 'particles' in args:
+
+if args.get('particles', None):
     n_macroparticles = args['particles']
-if 'slices' in args:
+
+if args.get('slices', None):
     number_slices = args['slices']
 
-if 'omp' in args:
+if args.get('omp', None):
     os.environ['OMP_NUM_THREADS'] = str(args['omp'])
+
 if 'log' in args:
     log = args['log']
 if 'report' in args:
