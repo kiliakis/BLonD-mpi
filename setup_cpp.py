@@ -176,11 +176,13 @@ if (__name__ == "__main__"):
 path = os.path.realpath(__file__)
 parent_path = os.sep.join(path.split(os.sep)[:-1])
 if ('posix' in os.name):
-    libblond = ctypes.CDLL(parent_path+'/cpp_routines/result.so')
-    libsrqe = ctypes.CDLL(parent_path+'/synchrotron_radiation/sync_rad.so')
+    # libblond = ctypes.CDLL(parent_path+'/cpp_routines/result.so')
+    # libsrqe = ctypes.CDLL(parent_path+'/synchrotron_radiation/sync_rad.so')
     libblondmath = ctypes.CDLL(parent_path+'/cpp_routines/libblondmath.so')
     libblondphysics = ctypes.CDLL(
         parent_path+'/cpp_routines/libblondphysics.so')
+    libblond = libblondphysics
+    libsrqe = libblondphysics
 elif ('win' in sys.platform):
     libblond = ctypes.CDLL(parent_path+'\\cpp_routines\\result.dll')
     libsrqe = ctypes.CDLL(parent_path+'\\synchrotron_radiation\\sync_rad.dll')

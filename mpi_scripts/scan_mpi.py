@@ -7,6 +7,7 @@ from math import ceil
 from datetime import datetime
 import numpy as np
 import random
+from time import sleep
 
 # home = '/afs/cern.ch/work/k/kiliakis/git/BLonD-mpi'
 home = os.environ['HOME'] + '/git/BLonD-mpi'
@@ -26,17 +27,17 @@ configs = {
     #                                'N': cycle([1]),
     #                                'time': cycle([45]),
     #                                'partition': cycle(['be-short'])
-    #                                },
+    #                                }
 
-    # 'strong_scale_mpi_single_node': {'p': cycle([10000000]),
-    #                                  's': cycle([5000]),
-    #                                  't': cycle([2000]),
-    #                                  'w': np.arange(1, 20, 1),
-    #                                  'o': cycle([1]),
-    #                                  'N': cycle([1]),
-    #                                  'time': cycle([60]),
-    #                                  'partition': cycle(['be-short'])
-    #                                  },
+    'strong_scale_mpi_single_node': {'p': cycle([10000000]),
+                                     's': cycle([5000]),
+                                     't': cycle([2000]),
+                                     'w': np.arange(1, 20, 1),
+                                     'o': cycle([1]),
+                                     'N': cycle([1]),
+                                     'time': cycle([60]),
+                                     'partition': cycle(['be-short'])
+                                     }
 
     # 'weak_scale_mpi_dual_node': {'p': np.arange(1000000, 39000001, 2000000),
     #                              's': np.arange(500, 19501, 1000),
@@ -99,21 +100,21 @@ configs = {
     #                                 'partition': cycle(['be-long'])
     #                                 }
 
-    'strong_scale_hybrid_four_node': {'p': cycle([20000000]),
-                                      's': cycle([10000]),
-                                      't': cycle([2000]),
-                                      'w': list(np.arange(3, 8, 1))
-                                      + list(np.arange(3, 16, 2))
-                                      + list(np.arange(3, 20, 2))
-                                      + list(np.arange(3, 40, 4)),
-                                      'o': [10]*5 + [5]*7 + [4]*9 + [2]*10,
-                                      'N': [2, 3, 3, 4, 4]
-                                      + [1, 2, 2, 3, 3, 4, 4]
-                                      + [1, 2, 2, 2, 3, 3, 4, 4, 4]
-                                      + [1, 1, 2, 2, 2, 3, 3, 4, 4, 4],
-                                      'time': cycle([60]),
-                                      'partition': cycle(['be-long'])
-                                      }
+    # 'strong_scale_hybrid_four_node': {'p': cycle([20000000]),
+    #                                   's': cycle([10000]),
+    #                                   't': cycle([2000]),
+    #                                   'w': list(np.arange(3, 8, 1))
+    #                                   + list(np.arange(3, 16, 2))
+    #                                   + list(np.arange(3, 20, 2))
+    #                                   + list(np.arange(3, 40, 4)),
+    #                                   'o': [10]*5 + [5]*7 + [4]*9 + [2]*10,
+    #                                   'N': [2, 3, 3, 4, 4]
+    #                                   + [1, 2, 2, 3, 3, 4, 4]
+    #                                   + [1, 2, 2, 2, 3, 3, 4, 4, 4]
+    #                                   + [1, 1, 2, 2, 2, 3, 3, 4, 4, 4],
+    #                                   'time': cycle([60]),
+    #                                   'partition': cycle(['be-long'])
+    #                                   }
 
 
     # 'strong_scale_hybrid_four_node-2': {'p': cycle([20000000]),
@@ -131,7 +132,7 @@ configs = {
 
 }
 
-repeats = 4
+repeats = 1
 
 
 total_sims = repeats * \
@@ -186,6 +187,7 @@ for analysis, config in configs.items():
             all_args = ['sbatch'] + batch_args + [batch_script] + exe_args
             subprocess.call(all_args, stdout=stdout,
                             stderr=stdout, env=os.environ.copy())
+            # sleep(5)
             current_sim += 1
             print("%lf %% is completed" % (100.0 * current_sim /
                                            total_sims))

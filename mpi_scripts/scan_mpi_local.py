@@ -12,7 +12,7 @@ home = '/afs/cern.ch/work/k/kiliakis/git/BLonD-mpi'
 # home = os.environ['HOME'] + '/git/BLonD-kiliakis'
 result_dir = home + '/results/raw/{}/{}/{}'
 
-exe = home + '/mpi/EX_01_Acceleration-master.py'
+exe = home + '/__EXAMPLES/mpi_main_files/EX_01_Acceleration-master.py'
 # batch_script = home + '/mpi/batch-simple.sh'
 # setup_script = home + '/mpi/batch-setup.sh'
 job_name_form = '{}/_p{}_s{}_t{}_w{}_o{}_N{}_'
@@ -28,16 +28,16 @@ configs = {
     #                          'partition': cycle(['be-short'])
     #                          }
 
-    'strong_scale_mpi_local': {'p': cycle([1000000]),
-                               's': cycle([500]),
-                               't': cycle([2000]),
-                               # 'w': np.arange(1, 8, 1),
-                               'w': np.arange(1, 2, 1),
-                               'o': cycle([7]),
-                               'N': cycle([1]),
-                               'time': cycle([60]),
-                               'partition': cycle(['be-short'])
-                               }
+    'strong_scale_mpi_local-3': {'p': cycle([10000000]),
+                                 's': cycle([500]),
+                                 't': cycle([2000]),
+                                 'w': np.arange(2, 10, 1),
+                                 # 'w': np.arange(1, 2, 1),
+                                 'o': cycle([1]),
+                                 'N': cycle([1]),
+                                 'time': cycle([60]),
+                                 'partition': cycle(['be-short'])
+                                 }
 
     # 'strong_scale_omp_local': {'p': cycle([10000000]),
     #                            's': cycle([5000]),
@@ -63,7 +63,7 @@ os.chdir(home)
 
 # compile first
 os.environ['PYTHONPATH'] = home + ':' + os.environ['PYTHONPATH']
-subprocess.call(['python', 'setup_cpp.py', '-p'])
+# subprocess.call(['python', 'setup_cpp.py', '-p'])
 for analysis, config in configs.items():
     ps = config['p']
     ss = config['s']
@@ -90,8 +90,8 @@ for analysis, config in configs.items():
                 if not os.path.exists(d):
                     os.makedirs(d)
             exe_args = ['-p', str(p), '-s', str(s),
-                        '-t', str(t), '-w', str(w),
-                        '-o', str(o), '-r', report_dir]
+                        '-t', str(t), '-o', str(o),
+                        '-r', report_dir, '-time']
             print(job_name, timestr)
             # batch_args = ['-N', str(N), '-n', str(w),
             #               '--ntasks-per-node', str(ceil((w)/N)),
@@ -101,10 +101,12 @@ for analysis, config in configs.items():
             #               '-e', error,
             #               '-J', job_name + '-' + str(i)]
 
-            all_args = ['mpiexec', '-n', '1',
-                        'python', '-m', 'mpi4py', exe] + exe_args
-            subprocess.call(all_args, stdout=output,
-                            stderr=error, env=os.environ.copy())
+            all_args = ['mpirun', '-n', str(w),
+                        'python', exe] + exe_args
+            subprocess.call(all_args,
+                            stdout=open(output, 'w'),
+                            stderr=open(error, 'w'),
+                            env=os.environ.copy())
             current_sim += 1
             print("%lf %% is completed" % (100.0 * current_sim /
                                            total_sims))

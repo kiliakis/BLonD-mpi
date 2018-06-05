@@ -165,6 +165,7 @@ master.multi_scatter(vars_dict)
 # print('dE mean: ', np.mean(beam.dE))
 # print('dE std: ', np.std(beam.dE))
 
+# N_t=1
 # Tracking --------------------------------------------------------------------
 for i in range(1, N_t+1):
     # print('Turn: ', i)

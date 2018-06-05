@@ -120,14 +120,16 @@ class Master:
 
     @timing.timeit(key='master:multi_bcast')
     # @mpiprof.traceit(key='multi_bcast')
-    def multi_bcast(self, vars):
+    def multi_bcast(self, vars, msg=True):
         self.logger.debug('Broadcasting variables')
-        self.intercomm.Bcast(task_id['bcast'], root=MPI.ROOT)
+        if msg == True:
+            self.intercomm.Bcast(task_id['bcast'], root=MPI.ROOT)
         self.intercomm.bcast(vars, root=MPI.ROOT)
 
     @timing.timeit(key='master:bcast')
     # @mpiprof.traceit(key='recv_task')
     def bcast(self, cmd):
+        self.logger.debug('Broadcasting a %s task' % cmd)
         self.intercomm.Bcast(task_id[cmd], root=MPI.ROOT)
 
     @timing.timeit(key='master:reduce')
