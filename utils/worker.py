@@ -71,80 +71,77 @@ class Worker:
         self.logger.debug('Received a %d task.' % task)
         return task
 
-
     # @timing.timeit(key='comp:kick')
-    @mpiprof.traceit(key='kick')
+    # @mpiprof.traceit(key='kick')
     def kick(self):
         self.bcast()
         with timing.timed_region('comp:kick') as tr:
-            bph._kick(dt, dE, voltage, omegarf, phirf, n_rf, acc_kick)
-
+            with mpiprof.traced_region('kick') as tr:
+                bph._kick(dt, dE, voltage, omegarf, phirf, n_rf, acc_kick)
 
     # @timing.timeit(key='comp:drift')
-    @mpiprof.traceit(key='drift')
+    # @mpiprof.traceit(key='drift')
     def drift(self):
         self.bcast()
         with timing.timed_region('comp:drift') as tr:
-            bph._drift(dt, dE, solver, t_rev, length_ratio, alpha_order,
-                    eta_0, eta_1, eta_2, beta, energy)
-
+            with mpiprof.traced_region('drift') as tr:
+                bph._drift(dt, dE, solver, t_rev, length_ratio, alpha_order,
+                           eta_0, eta_1, eta_2, beta, energy)
 
     # @timing.timeit('comp:histo')
-    @mpiprof.traceit(key='histo')
+    # @mpiprof.traceit(key='histo')
     def histo(self):
         self.bcast()
         with timing.timed_region('comp:histo') as tr:
-            # global profile
-            profile = np.empty(n_slices, dtype='d')
-            bph._slice(dt, profile, cut_left, cut_right)
+            with mpiprof.traced_region('histo') as tr:
+                profile = np.empty(n_slices, dtype='d')
+                bph._slice(dt, profile, cut_left, cut_right)
 
         with timing.timed_region('comm:histo_extra') as tr:
+            with mpiprof.traced_region('histo_reduce') as tr:
+                recvbuf = None
+                self.intercomm.Reduce(profile, recvbuf, op=MPI.SUM, root=0)
+            # global profile
             # new_profile = np.empty(len(profile), dtype='d')
             # worker.intracomm.Allreduce(MPI.IN_PLACE, profile, op=MPI.SUM)
-            recvbuf = None
-            self.intercomm.Reduce(profile, recvbuf, op=MPI.SUM, root=0)
             # profile = new_profile
 
         # Or even better, allreduce it
 
-
     # @timing.timeit(key='comp:LIKick')
-    @mpiprof.traceit(key='LIKick')
+    # @mpiprof.traceit(key='LIKick')
     def LIKick(self):
         self.bcast()
         with timing.timed_region('comp:LIKick') as tr:
-            bph._linear_interp_kick(dt, dE, total_voltage, bin_centers,
-                             charge, acc_kick)
-
+            with mpiprof.traced_region('LIKick') as tr:
+                bph._linear_interp_kick(dt, dE, total_voltage, bin_centers,
+                                        charge, acc_kick)
 
     # @timing.timeit(key='comp:SR')
     def SR(self):
         self.bcast()
         with timing.timed_region('comp:SR') as tr:
-            bph._sync_rad_full(dE, U0, tau_z, n_kicks, sigma_dE, energy)
-
+            with mpiprof.traced_region('SR') as tr:
+                bph._sync_rad_full(dE, U0, tau_z, n_kicks, sigma_dE, energy)
 
     # Perhaps this is not big enough to use mpi, an omp might be better
     # @timing.timeit(key='comp:RFVCalc')
     def RFVCalc(self):
         self.bcast()
-        bph._rf_volt_comp(voltage, omegarf, phirf, bin_centers,
-                       rf_voltage)
-
+        with mpiprof.traced_region('RFVCalc') as tr:
+            bph._rf_volt_comp(voltage, omegarf, phirf, bin_centers,
+                              rf_voltage)
 
     @timing.timeit(key='comm:gather')
     @mpiprof.traceit(key='gather')
     def gather(self):
         self.multi_gather()
 
-
-    # @mpiprof.traceit(key='multi_bcast')
     @timing.timeit(key='comm:bcast')
+    @mpiprof.traceit(key='bcast')
     def bcast(self):
         self.active.update(self.multi_bcast())
         globals().update(self.active)
-
-
 
     @mpiprof.traceit(key='scatter')
     @timing.timeit(key='comm:scatter')
@@ -152,11 +149,9 @@ class Worker:
         self.active.update(self.multi_scatter())
         globals().update(self.active)
 
-
     @timing.timeit(key='comm:barrier')
     def barrier(self):
         self.intercomm.Barrier()
-
 
     # @timing.timeit(key='comm:quit')
     def quit(self):
@@ -165,7 +160,6 @@ class Worker:
         self.logger.debug('Going to disconnect()')
         self.intercomm.Disconnect()
         exit(0)
-
 
     @mpiprof.traceit(key='switch_context')
     @timing.timeit(key='comm:switch_context')
@@ -178,14 +172,11 @@ class Worker:
         self.active = self.contexts[context]
         globals().update(self.active)
 
-
     # @timing.timeit(key='comm:stop')
     def stop(self):
         pass
         # worker.logger.debug('Wating on the final barrier.')
         # worker.intercomm.Barrier()
-
-
 
 
 def main():
@@ -195,9 +186,12 @@ def main():
 
         if 'omp' in args:
             os.environ['OMP_NUM_THREADS'] = str(args['omp'])
-        
+
         if args.get('time', False) == True:
             timing.mode = 'timing'
+
+        if args.get('trace', False) == True:
+            mpiprof.mode = 'tracing'
 
         worker = Worker(log=args.get('log', None))
         task_dir = {
@@ -233,13 +227,13 @@ def main():
         end_t = time.time()
 
         # worker.logger.debug(worker.contexts)
-        if args.get('trace', False) == True:
-            mpiprof.finalize()
+        # if args.get('trace', False) == True:
+        mpiprof.finalize()
 
-        if args.get('time', False) == True:
-            timing.report(total_time=1e3*(end_t-start_t),
-                          out_dir=args['report'],
-                          out_file='worker-%d.csv' % worker.rank)
+        # if args.get('time', False) == True:
+        timing.report(total_time=1e3*(end_t-start_t),
+                      out_dir=args['report'],
+                      out_file='worker-%d.csv' % worker.rank)
     # Shutdown
     finally:
         sys.stdout.flush()

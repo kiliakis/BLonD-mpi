@@ -147,8 +147,8 @@ def LIKick_mpi(ring, turn):
 
     vars_dict = {
         'total_voltage': ring.total_voltage,
-        'bin_centers': ring.profile.bin_centers,
-        'charge': ring.beam.Particle.charge,
+        # 'bin_centers': ring.profile.bin_centers,
+        # 'charge': ring.beam.Particle.charge,
         'acc_kick': ring.acceleration_kick[turn]
     }
 

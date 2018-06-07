@@ -25,8 +25,8 @@ from setup_cpp import libblond
 
 linear_interp_kick = libblond.linear_interp_kick
 
-from pyprof import timing as mpiprof
-# from pyprof import mpiprof as mpiprof
+from pyprof import timing
+from pyprof import mpiprof
 
 
 class TotalInducedVoltage(object):
@@ -89,6 +89,7 @@ class TotalInducedVoltage(object):
             induced_voltage_object.process()
         
 
+    @timing.timeit('ind_volt_sum')
     def induced_voltage_sum(self):
         """
         Method to sum all the induced voltages in one single array.
@@ -111,8 +112,8 @@ class TotalInducedVoltage(object):
         import utils.mpi_config as mpiconf
         master = mpiconf.master
 
-        with mpiprof.timed_region('master:ind_volt_sum') as tr:
-            self.induced_voltage_sum()
+        # with mpiprof.timed_region('master:ind_volt_sum') as tr:
+        self.induced_voltage_sum()
 
         # with mpiprof.timed_region('master:LIKick') as tr:
         # print('Master ind volt:', self.induced_voltage)

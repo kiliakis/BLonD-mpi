@@ -27,8 +27,7 @@ parser.add_argument('-l', '--log', type=str, default=None,
                     help='Directory to store the log files.'
                     '\nDefault: Do not generate log files.')
 
-parser.add_argument('-r', '--report', type=str, default='reports',
-                    nargs='?', const='reports',
+parser.add_argument('-r', '--report', type=str, default='./',
                     help='Directory to store the timing reports.'
                     '\nDefault: Do not generate timing reports.')
 

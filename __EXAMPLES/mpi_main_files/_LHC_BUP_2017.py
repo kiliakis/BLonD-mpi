@@ -42,11 +42,11 @@ from utils.input_parser import parse
 from utils import mpi_config as mpiconf
 from pyprof import timing
 from pyprof import mpiprof
+import os
 
 args = parse()
 mpiconf.init(trace=args['trace'], logfile=args['tracefile'])
 print(args)
-
 
 
 # Simulation parameters --------------------------------------------------------
@@ -82,11 +82,9 @@ if args.get('omp', None):
     os.environ['OMP_NUM_THREADS'] = str(args['omp'])
 if 'log' in args:
     log = args['log']
-if 'report' in args:
-    report = args['report']
-    if args['time'] == True:
-        timing.mode = 'timing'
 
+if args.get('time', False) == True:
+    timing.mode = 'timing'
 
 
 # Simulation setup -------------------------------------------------------------
@@ -133,7 +131,7 @@ print("RF phase noise loaded...")
 # FULL BEAM
 bunch = Beam(ring, N_p, N_b)
 beam = Beam(ring, N_p*NB, N_b)
-bigaussian(ring, rf, bunch, 0.3e-9, reinsertion=True)
+bigaussian(ring, rf, bunch, 0.3e-9, reinsertion=True, seed=1)
 for i in np.arange(NB):
     beam.dt[i*N_p:(i+1)*N_p] = bunch.dt[0:N_p] + i*25.e-9
     beam.dE[i*N_p:(i+1)*N_p] = bunch.dE[0:N_p]
@@ -168,9 +166,6 @@ print("   SL a_i = %.4f a_f = %.4f" % (PL.lhc_a[0], PL.lhc_a[N_t]))
 print("   SL t_i = %.4f t_f = %.4f" % (PL.lhc_t[0], PL.lhc_t[N_t]))
 
 # Injecting noise in the cavity, PL on
-tracker = RingAndRFTracker(rf, beam, BeamFeedback=PL, Profile=profile,
-                           interpolation=True)
-print("PL, SL, and tracker set...")
 
 # Define machine impedance from http://impedance.web.cern.ch/impedance/
 ZTot = np.loadtxt(r'/afs/cern.ch/user/h/htimko/public/LHC/input/Zlong_Allthemachine_450GeV_B1_LHC_inj_450GeV_B1.dat',
@@ -180,6 +175,9 @@ indVoltage = InducedVoltageFreq(
     beam, profile, [ZTable], frequency_resolution=5.e5)
 totVoltage = TotalInducedVoltage(beam, profile, [indVoltage])
 
+tracker = RingAndRFTracker(rf, beam, BeamFeedback=PL, Profile=profile,
+                           interpolation=True, TotalInducedVoltage=totVoltage)
+print("PL, SL, and tracker set...")
 # Fill beam distribution
 fullring = FullRingAndRF([tracker])
 # Juan's fit to LHC profiles: binomial w/ exponent 1.5
@@ -191,7 +189,6 @@ fullring = FullRingAndRF([tracker])
 
 # Initial losses, slicing, statistics
 beam.losses_separatrix(ring, rf)
-profile.track()
 print("Statistics set...")
 
 # Define what to save in file
@@ -226,69 +223,98 @@ print('dE std: ', np.std(beam.dE))
 
 master = mpiconf.Master(log=log)
 start_t = time.time()
+try:
 
+    init_dict = {
+        'n_rf': tracker.n_rf,
+        'solver': tracker.solver,
+        'length_ratio': tracker.length_ratio,
+        'alpha_order': tracker.alpha_order,
+        'n_slices': profile.n_slices,
+        'bin_centers': profile.bin_centers,
+        'charge': beam.Particle.charge
+    }
+    master.multi_bcast(init_dict)
 
-print("Ready for tracking!")
-print("")
+    vars_dict = {
+        'dt': beam.dt,
+        'dE': beam.dE
+    }
+    master.multi_scatter(vars_dict)
 
+    profile.track()
 
-# Tracking --------------------------------------------------------------------
-# for i in range(N_t):
-for i in range(turns):
-    t0 = time.clock()
+    print("Ready for tracking!")
+    print("")
 
-    # Remove lost particles to obtain a correct r.m.s. value
-    if (i % 1000) == 0:  # reduce computational costs
-        beam.losses_separatrix(ring, rf)
+    # Tracking --------------------------------------------------------------------
+    # for i in range(N_t):
+    for i in range(turns):
+        t0 = time.clock()
 
-    # After the first 2/3 of the ramp, regulate down the bunch length
-    if i == 9042249:
-        noiseFB.bl_targ = 1.1e-9
+        # Remove lost particles to obtain a correct r.m.s. value
+        if (i % 1000) == 0:  # reduce computational costs
+            master.multi_gather({'dt': beam.dt, 'dE': beam.dE})
+            beam.losses_separatrix(ring, rf)
 
-    # Track
-    for m in map_:
-        m.track()
+        # After the first 2/3 of the ramp, regulate down the bunch length
+        if i == 9042249:
+            noiseFB.bl_targ = 1.1e-9
 
-    # Plots and outputting
-    # if MONITORING and (i % dt_plt) == 0:
-    if (i % dt_plt) == 0:
-        print("Outputting at time step %d, tracking time %.4e s..." % (i, t0))
-        print("RF tracker counter is %d" % rf.counter[0])
-        print("   Beam momentum %0.6e eV" % beam.momentum)
-        print("   Beam energy %.6e eV" % beam.energy)
-        print("   Design RF revolution frequency %.10e Hz" %
-              rf.omega_rf_d[0, i])
-        print("   RF revolution frequency %.10e Hz" % rf.omega_rf[0, i])
-        print("   RF phase %.4f rad" % rf.phi_rf[0, i])
-        print("   Beam phase %.4f rad" % PL.phi_beam)
-        print("   Phase noise %.4f rad" % (noiseFB.x*LHCnoise.dphi[i]))
-        print("   PL phase error %.4f rad" % PL.RFnoise.dphi[i])
-        print("   Synchronous phase %.4f rad" % rf.phi_s[i])
-        print("   PL phase correction %.4f rad" % PL.dphi)
-        print("   SL recursion variable %.4e" % PL.lhc_y)
-        print("   Mean bunch position %.4e s" % (beam.mean_dt))
-        print("   Four-times r.m.s. bunch length %.4e s" % (4.*beam.sigma_dt))
-        print("   FWHM bunch length %.4e s" % noiseFB.bl_meas)
-        print("")
-        sys.stdout.flush()
+        totVoltage.induced_voltage_sum()
 
-    # Save phase space data
-    if MONITORING and (i % dt_save) == 0:
-        np.savetxt('out/coords_' "%d" % rf.counter[0] + '.dat',
-                   np.c_[beam.dt, beam.dE, beam.id], fmt='%.10e')
+        profile.track()
 
+        tracker.track()
 
-master.multi_gather(vars_dict)
-master.stop()
-master.disconnect()
+        noiseFB.track()
+        # Track
+        # for m in map_:
+        #     m.track()
 
+        # Plots and outputting
+        # if MONITORING and (i % dt_plt) == 0:
+        if (i % dt_plt) == 0:
+            print("Outputting at time step %d, tracking time %.4e s..." % (i, t0))
+            print("RF tracker counter is %d" % rf.counter[0])
+            print("   Beam momentum %0.6e eV" % beam.momentum)
+            print("   Beam energy %.6e eV" % beam.energy)
+            print("   Design RF revolution frequency %.10e Hz" %
+                  rf.omega_rf_d[0, i])
+            print("   RF revolution frequency %.10e Hz" % rf.omega_rf[0, i])
+            print("   RF phase %.4f rad" % rf.phi_rf[0, i])
+            print("   Beam phase %.4f rad" % PL.phi_beam)
+            print("   Phase noise %.4f rad" % (noiseFB.x*LHCnoise.dphi[i]))
+            print("   PL phase error %.4f rad" % PL.RFnoise.dphi[i])
+            print("   Synchronous phase %.4f rad" % rf.phi_s[i])
+            print("   PL phase correction %.4f rad" % PL.dphi)
+            print("   SL recursion variable %.4e" % PL.lhc_y)
+            print("   Mean bunch position %.4e s" % (beam.mean_dt))
+            print("   Four-times r.m.s. bunch length %.4e s" %
+                  (4.*beam.sigma_dt))
+            print("   FWHM bunch length %.4e s" % noiseFB.bl_meas)
+            print("")
+            sys.stdout.flush()
+
+        # Save phase space data
+        if MONITORING and (i % dt_save) == 0:
+            np.savetxt('out/coords_' "%d" % rf.counter[0] + '.dat',
+                       np.c_[beam.dt, beam.dE, beam.id], fmt='%.10e')
+
+    master.multi_gather(vars_dict)
+    master.stop()
+    master.disconnect()
+except Exception as e:
+    print(e)
+    master.quit()
+    master.dicsonnect()
 
 end_t = time.time()
 print('Total time: ', end_t - start_t)
 # if report:
 mpiprof.finalize()
 timing.report(total_time=1e3*(end_t-start_t),
-              out_dir=report,
+              out_dir=args['report'],
               out_file='master.csv')
 
 print('dE mean: ', np.mean(beam.dE))
