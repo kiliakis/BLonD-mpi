@@ -77,9 +77,10 @@ class Master:
 
 
     @timing.timeit(key='master:multi_scatter')
+    # @mpiprof.traceit(key='multi_scatter')
     def multi_scatter(self, vars):
-        self.intercomm.Bcast(task_id['scatter'], root=MPI.ROOT)
-
+        # self.intercomm.Bcast(task_id['scatter'], root=MPI.ROOT)
+        self.bcast('scatter')
         var_list = [(k, v.dtype.char) for k, v in vars.items()]
         self.intercomm.bcast(var_list, root=MPI.ROOT)
 
@@ -102,8 +103,10 @@ class Master:
     # args are the buffers to fill with the gathered values
     # e.g. (comm, beam.dt, beam.dE)
     @timing.timeit(key='master:multi_gather')
+    # @mpiprof.traceit(key='multi_gather')
     def multi_gather(self, gather_dict):
-        self.intercomm.Bcast(task_id['gather'], root=MPI.ROOT)
+        self.bcast('gather')
+        # self.intercomm.Bcast(task_id['gather'], root=MPI.ROOT)
         keys = list(gather_dict.keys())
         self.intercomm.bcast(keys, root=MPI.ROOT)
         sendbuf = None
@@ -123,11 +126,11 @@ class Master:
     def multi_bcast(self, vars, msg=True):
         self.logger.debug('Broadcasting variables')
         if msg == True:
-            self.intercomm.Bcast(task_id['bcast'], root=MPI.ROOT)
+            self.bcast('bcast')
         self.intercomm.bcast(vars, root=MPI.ROOT)
 
     @timing.timeit(key='master:bcast')
-    # @mpiprof.traceit(key='recv_task')
+    # @mpiprof.traceit(key='bcast')
     def bcast(self, cmd):
         self.logger.debug('Broadcasting a %s task' % cmd)
         self.intercomm.Bcast(task_id[cmd], root=MPI.ROOT)
@@ -139,14 +142,12 @@ class Master:
 
     # @timing.timeit(key='master:stop')
     def stop(self):
-        self.logger.debug('Sending a stop signal')
-        self.intercomm.Bcast(task_id['stop'], root=MPI.ROOT)
-        # self.logger.debug('Waiting on the barrier')
+        self.bcast('stop')
         # self.intercomm.Barrier()
 
-    @timing.timeit(key='master:sync')
+    # @timing.timeit(key='master:sync')
     def sync(self):
-        self.intercomm.Bcast(task_id['barrier'], root=MPI.ROOT)
+        self.bcast('barrier')
         self.intercomm.Barrier()
 
     # @timing.timeit(key='master:disconnect')
@@ -155,7 +156,7 @@ class Master:
 
     # @timing.timeit(key='master:quit')
     def quit(self):
-        self.intercomm.Bcast(task_id['quit'], root=MPI.ROOT)
+        self.bcast('quit')
 
     # @mpiprof.traceit(key='reduce')
     def switch_context(self, context):

@@ -10,8 +10,6 @@ from utils import bphysics_wrap as bph
 from utils import mpi_config as mpiconf
 from utils.input_parser import parse
 
-worker = None
-
 
 class Worker:
 
@@ -63,8 +61,8 @@ class Worker:
         _vars = self.intercomm.bcast(_vars, root=0)
         return _vars
 
-    @mpiprof.traceit(key='recv_task')
     @timing.timeit(key='comm:recv_task')
+    @mpiprof.traceit(key='comm:recv_task')
     def recv_task(self):
         self.intercomm.Bcast(self.taskbuf, root=0)
         task = np.uint8(self.taskbuf)
@@ -76,7 +74,7 @@ class Worker:
     def kick(self):
         self.bcast()
         with timing.timed_region('comp:kick') as tr:
-            with mpiprof.traced_region('kick') as tr:
+            with mpiprof.traced_region('comp:kick') as tr:
                 bph._kick(dt, dE, voltage, omegarf, phirf, n_rf, acc_kick)
 
     # @timing.timeit(key='comp:drift')
@@ -84,7 +82,7 @@ class Worker:
     def drift(self):
         self.bcast()
         with timing.timed_region('comp:drift') as tr:
-            with mpiprof.traced_region('drift') as tr:
+            with mpiprof.traced_region('comp:drift') as tr:
                 bph._drift(dt, dE, solver, t_rev, length_ratio, alpha_order,
                            eta_0, eta_1, eta_2, beta, energy)
 
@@ -93,12 +91,12 @@ class Worker:
     def histo(self):
         self.bcast()
         with timing.timed_region('comp:histo') as tr:
-            with mpiprof.traced_region('histo') as tr:
+            with mpiprof.traced_region('comp:histo') as tr:
                 profile = np.empty(n_slices, dtype='d')
                 bph._slice(dt, profile, cut_left, cut_right)
 
         with timing.timed_region('comm:histo_extra') as tr:
-            with mpiprof.traced_region('histo_reduce') as tr:
+            with mpiprof.traced_region('comm:histo_reduce') as tr:
                 recvbuf = None
                 self.intercomm.Reduce(profile, recvbuf, op=MPI.SUM, root=0)
             # global profile
@@ -113,7 +111,7 @@ class Worker:
     def LIKick(self):
         self.bcast()
         with timing.timed_region('comp:LIKick') as tr:
-            with mpiprof.traced_region('LIKick') as tr:
+            with mpiprof.traced_region('comp:LIKick') as tr:
                 bph._linear_interp_kick(dt, dE, total_voltage, bin_centers,
                                         charge, acc_kick)
 
@@ -121,30 +119,30 @@ class Worker:
     def SR(self):
         self.bcast()
         with timing.timed_region('comp:SR') as tr:
-            with mpiprof.traced_region('SR') as tr:
+            with mpiprof.traced_region('comp:SR') as tr:
                 bph._sync_rad_full(dE, U0, tau_z, n_kicks, sigma_dE, energy)
 
     # Perhaps this is not big enough to use mpi, an omp might be better
     # @timing.timeit(key='comp:RFVCalc')
     def RFVCalc(self):
         self.bcast()
-        with mpiprof.traced_region('RFVCalc') as tr:
+        with mpiprof.traced_region('comp:RFVCalc') as tr:
             bph._rf_volt_comp(voltage, omegarf, phirf, bin_centers,
                               rf_voltage)
 
     @timing.timeit(key='comm:gather')
-    @mpiprof.traceit(key='gather')
+    @mpiprof.traceit(key='comm:gather')
     def gather(self):
         self.multi_gather()
 
     @timing.timeit(key='comm:bcast')
-    @mpiprof.traceit(key='bcast')
+    @mpiprof.traceit(key='comm:bcast')
     def bcast(self):
         self.active.update(self.multi_bcast())
         globals().update(self.active)
 
-    @mpiprof.traceit(key='scatter')
     @timing.timeit(key='comm:scatter')
+    @mpiprof.traceit(key='comm:scatter')
     def scatter(self):
         self.active.update(self.multi_scatter())
         globals().update(self.active)
@@ -161,8 +159,8 @@ class Worker:
         self.intercomm.Disconnect()
         exit(0)
 
-    @mpiprof.traceit(key='switch_context')
     @timing.timeit(key='comm:switch_context')
+    @mpiprof.traceit(key='comm:switch_context')
     def switch_context(self):
         recvbuf = np.array(0, dtype='i')
         self.intercomm.Bcast(recvbuf, root=0)
@@ -180,7 +178,7 @@ class Worker:
 
 
 def main():
-    global worker
+    # global worker
     try:
         args = parse()
 
