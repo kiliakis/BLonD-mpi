@@ -29,15 +29,15 @@ configs = {
     #                                'partition': cycle(['be-short'])
     #                                }
 
-    'strong_scale_mpi_single_node': {'p': cycle([10000000]),
-                                     's': cycle([5000]),
-                                     't': cycle([2000]),
-                                     'w': np.arange(1, 20, 1),
-                                     'o': cycle([1]),
-                                     'N': cycle([1]),
-                                     'time': cycle([60]),
-                                     'partition': cycle(['be-short'])
-                                     }
+    # 'strong_scale_mpi_single_node-2': {'p': cycle([10000000]),
+    #                                  's': cycle([5000]),
+    #                                  't': cycle([2000]),
+    #                                  'w': np.arange(2, 21, 1),
+    #                                  'o': cycle([1]),
+    #                                  'N': cycle([1]),
+    #                                  'time': cycle([60]),
+    #                                  'partition': cycle(['be-short'])
+    #                                  },
 
     # 'weak_scale_mpi_dual_node': {'p': np.arange(1000000, 39000001, 2000000),
     #                              's': np.arange(500, 19501, 1000),
@@ -100,21 +100,26 @@ configs = {
     #                                 'partition': cycle(['be-long'])
     #                                 }
 
-    # 'strong_scale_hybrid_four_node': {'p': cycle([20000000]),
-    #                                   's': cycle([10000]),
-    #                                   't': cycle([2000]),
-    #                                   'w': list(np.arange(3, 8, 1))
-    #                                   + list(np.arange(3, 16, 2))
-    #                                   + list(np.arange(3, 20, 2))
-    #                                   + list(np.arange(3, 40, 4)),
-    #                                   'o': [10]*5 + [5]*7 + [4]*9 + [2]*10,
-    #                                   'N': [2, 3, 3, 4, 4]
-    #                                   + [1, 2, 2, 3, 3, 4, 4]
-    #                                   + [1, 2, 2, 2, 3, 3, 4, 4, 4]
-    #                                   + [1, 1, 2, 2, 2, 3, 3, 4, 4, 4],
-    #                                   'time': cycle([60]),
-    #                                   'partition': cycle(['be-long'])
-    #                                   }
+    'strong_scale_hybrid_four_node-4': {'p': cycle([20000000]),
+                                        's': cycle([10000]),
+                                        't': cycle([2000]),
+                                        'w': list(np.arange(2, 21, 1))
+                                        + list(np.arange(2, 41, 1))
+                                        + list(np.arange(2, 17, 1)),
+                                        # list(np.arange(2, 9, 1))
+                                        # + list(np.arange(3, 20, 2))
+                                        'o': [4]*19 + [2]*39 + [5]*15,
+                                        # [10]*7 + [5]*8,
+                                        # + [4]*9 + [2]*10,
+                                        'N': [1]*4 + [2]*5 + [3]*5 + [4]*5
+                                        + [1]*9 + [2]*10 + [3]*10 + [4]*10
+                                        + [1]*3 + [2]*4 + [3]*4 + [4]*4,
+                                        # [1, 1, 2, 2, 2, 3, 3, 4, 4, 4],
+                                        # [1, 2, 2, 3, 3, 4, 4]
+                                        # + [1, 2, 2, 2, 3, 3, 4, 4, 4]
+                                        'time': cycle([60]),
+                                        'partition': cycle(['be-long'])
+                                        }
 
 
     # 'strong_scale_hybrid_four_node-2': {'p': cycle([20000000]),
@@ -171,13 +176,14 @@ for analysis, config in configs.items():
             for d in [log_dir, report_dir]:
                 if not os.path.exists(d):
                     os.makedirs(d)
-            exe_args = ['-n', str(w+1), 'python', exe,
+            # exe_args = ['-n', str('python', exe,
+            exe_args = ['-n', str(w), 'python', exe,
                         '-p', str(p), '-s', str(s),
                         '-t', str(t), '-time',
                         '-o', str(o), '-r', report_dir]
             print(job_name, timestr)
-            batch_args = ['-N', str(N), '-n', str(w+1),
-                          '--ntasks-per-node', str(ceil((w+1)/N)),
+            batch_args = ['-N', str(N), '-n', str(w),
+                          '--ntasks-per-node', str(ceil(w/N)),
                           '-c', str(o),
                           '-t', str(time), '-p', partition,
                           '-o', output,

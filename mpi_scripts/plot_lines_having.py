@@ -135,9 +135,14 @@ plots_config = {
             #               'type': ['total'],
             #               'N': ['2']}
             # },
-            res_dir+'raw/strong_scale_hybrid_four_node-2/comm-comp-report.csv': {
+            # res_dir+'raw/strong_scale_hybrid_four_node-2/comm-comp-report.csv': {
+            #     'lines': {'parts': ['20000000'],
+            #               'omp': ['2', '4', '5', '10', '20'],
+            #               'type': ['total']}
+            # },
+            res_dir+'raw/strong_scale_hybrid_four_node-4/comm-comp-report.csv': {
                 'lines': {'parts': ['20000000'],
-                          'omp': ['2', '4', '5', '10', '20'],
+                          'omp': ['5', '10'],
                           'type': ['total']}
             },
             res_dir+'raw/strong_scale_mpi_four_node/comm-comp-report.csv': {
@@ -165,7 +170,7 @@ plots_config = {
         'title': '',
         # 'ylim': [0, 16000],
         'figsize': (6, 3),
-        'image_name': images_dir + 'mpi-hybrid-throughtput.pdf'
+        'image_name': images_dir + 'mpi-hybrid-throughtput-4.pdf'
 
     }
 

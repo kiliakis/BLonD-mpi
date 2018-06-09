@@ -32,4 +32,5 @@ export PYTHONPATH=$BLOND:$PYTHONPATH
 # export OMP_NUM_THREADS=2
 # mpiexec -n 1 python -m mpi4py $BLOND/mpi/EX_01_Acceleration-master.py
 # mpiexec -n 1 python -m mpi4py $@
-mpirun $@
+# mpirun $@
+srun $@
