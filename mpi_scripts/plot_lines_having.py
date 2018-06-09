@@ -140,16 +140,17 @@ plots_config = {
             #               'omp': ['2', '4', '5', '10', '20'],
             #               'type': ['total']}
             # },
-            res_dir+'raw/strong_scale_hybrid_four_node-4/comm-comp-report.csv': {
+            res_dir+'raw-hpcbatch/strong_scale_hybrid_four_node-4/comm-comp-report.csv': {
                 'lines': {'parts': ['20000000'],
-                          'omp': ['5', '10'],
+                          'omp': ['2', '4', '5', '10'],
                           'type': ['total']}
-            },
-            res_dir+'raw/strong_scale_mpi_four_node/comm-comp-report.csv': {
-                'lines': {'parts': ['20000000'],
-                          'type': ['total'],
-                          'N': ['4']}
             }
+            # ,
+            # res_dir+'raw/strong_scale_mpi_four_node/comm-comp-report.csv': {
+            #     'lines': {'parts': ['20000000'],
+            #               'type': ['total'],
+            #               'N': ['4']}
+            # }
 
         },
         'labels': {'20000000-total-4': '20M-strong-N2',
@@ -160,7 +161,7 @@ plots_config = {
                    '20000000-20-total': '20M-hybrid-T20'
                    },
         # 'exclude': [['v1', 'notcm'], ['v2', 'notcm'], ['v4', 'notcm']],
-        'ideal': '20000000-total-4',
+        'ideal': '20000000-2-total',
         'x_name': 'n',
         'omp_name': 'omp',
         'y_name': 'avg_time(sec)',
@@ -220,8 +221,9 @@ if __name__ == '__main__':
                 x = np.array(values[:, header.index('omp')], float)
             else:
                 x = np.array(values[:, header.index(config['x_name'])], float)
-                omp = np.array(values[:, header.index(config['omp_name'])], float)
-                x = x * omp
+                omp = np.array(
+                    values[:, header.index(config['omp_name'])], float)
+                x = (x-1) * omp
 
             y = np.array(values[:, header.index(config['y_name'])], float)
             parts = np.array(values[:, header.index('parts')], float)
@@ -232,7 +234,7 @@ if __name__ == '__main__':
             # y_err = y_err * y / 100.
             # print(label, x, y)
             plt.errorbar(x, y, yerr=None, label=label,
-                         capsize=2, marker='.',markersize=5, linewidth=1.5)
+                         capsize=2, marker='.', markersize=5, linewidth=1.5)
         if 'extra' in config:
             for c in config['extra']:
                 exec(c)
@@ -240,16 +242,28 @@ if __name__ == '__main__':
         if config.get('ideal', ''):
             # Ideal line
             ylims = plt.gca().get_ylim()
+            xlims = plt.gca().get_xlim()
 
-            x = np.array(plots_dir[config['ideal']]
-                         [:, header.index(config['x_name'])], float)
-            y = float(plots_dir[config['ideal']]
-                      [0, header.index(config['y_name'])])
-            parts = float(plots_dir[config['ideal']][0, header.index('parts')])
-            turns = float(plots_dir[config['ideal']][0, header.index('turns')])
-            y = x * (parts * turns) / (y* x[0])
-            # print(y)
-            plt.plot(x, y, color='black', linestyle='--')
+            x0 = np.array(plots_dir[config['ideal']]
+                          [:, header.index(config['x_name'])], float)[0]
+            omp0 = np.array(plots_dir[config['ideal']]
+                            [:, header.index(config['omp_name'])], float)[0]
+            x0 = (x0-1) * omp0
+            y0 = float(plots_dir[config['ideal']]
+                       [0, header.index(config['y_name'])])
+            print(x0)
+            print(y0)
+
+            parts0 = float(plots_dir[config['ideal']]
+                           [0, header.index('parts')])
+            turns0 = float(plots_dir[config['ideal']]
+                           [0, header.index('turns')])
+            print(parts0)
+            print(turns0)
+            x = np.arange(x0, xlims[1], 1)
+            y = x * (parts0 * turns0) / (y0 * x0)
+            print(y)
+            plt.plot(x, y, color='black', linestyle='--', label='ideal')
             plt.ylim(ylims)
 
         # plt.yticks(np.linspace(ylims[0], ylims[1], 5))

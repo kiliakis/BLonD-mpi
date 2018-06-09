@@ -83,31 +83,36 @@ plots_config = {
 
     'plot1': {
         'files': {
-
-            res_dir+'raw/strong_scale_mpi_four_node/comm-comp-report.csv': {
+            res_dir+'raw-hpcbatch/strong_scale_hybrid_four_node-4/comm-comp-report.csv': {
                 'lines': {'parts': ['20000000'],
-                          'type': ['comp'],
-                          'N': ['4']}
-            },
-            res_dir+'raw/strong_scale_hybrid_four_node-2/comm-comp-report.csv': {
-                'lines': {'parts': ['20000000'],
-                          'omp': ['4', '5', '10', '20'],
+                          'omp': ['2', '4', '5', '10'],
                           'type': ['comp']}
             }
+            # res_dir+'raw/strong_scale_mpi_four_node/comm-comp-report.csv': {
+            #     'lines': {'parts': ['20000000'],
+            #               'type': ['comp'],
+            #               'N': ['4']}
+            # },
+            # res_dir+'raw/strong_scale_hybrid_four_node-2/comm-comp-report.csv': {
+            #     'lines': {'parts': ['20000000'],
+            #               'omp': ['4', '5', '10', '20'],
+            #               'type': ['comp']}
+            # }
 
         },
         'labels': {'20000000-comp-4': '20M-strong-N2',
                    '20000000-2-comp': '20M-hybrid-T2',
                    '20000000-4-comp': '20M-hybrid-T4',
                    '20000000-5-comp': '20M-hybrid-T5',
-                   '20000000-10-comp': '20M-hybrid-T10',
-                   '20000000-20-comp': '20M-hybrid-T20'
+                   '20000000-10-comp': '20M-hybrid-T10'
+                   # '20000000-20-comp': '20M-hybrid-T20'
                    },
         'colors': {'20000000-comp-4': 'tab:blue',
+                   '20000000-2-comp': 'tab:purple',
                    '20000000-4-comp': 'tab:orange',
                    '20000000-5-comp': 'tab:green',
-                   '20000000-10-comp': 'tab:red',
-                   '20000000-20-comp': 'tab:purple'
+                   '20000000-10-comp': 'tab:red'
+                   # '20000000-20-comp': 'tab:purple'
                    },
         # 'exclude': [['v1', 'notcm'], ['v2', 'notcm'], ['v4', 'notcm']],
         'x_name': 'n',
@@ -119,7 +124,7 @@ plots_config = {
         'title': 'Computation',
         'ylim': [30, 100],
         'figsize': (6, 3),
-        'image_name': images_dir + 'time-breakdown-hybrid.pdf'
+        'image_name': images_dir + 'time-breakdown-hybrid-2.pdf'
 
     }
 
@@ -166,7 +171,7 @@ if __name__ == '__main__':
             # print(values)
             x = np.array(values[:, header.index(config['x_name'])], float)
             omp = np.array(values[:, header.index(config['omp_name'])], float)
-            x = x * omp
+            x = (x-1) * omp
             y = np.array(values[:, header.index(config['y_name'])], float)
             # parts = np.array(values[:, header.index('parts')], float)
             # turns = np.array(values[:, header.index('turns')], float)
