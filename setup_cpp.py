@@ -57,7 +57,8 @@ boost_path = None
 
 # EXAMPLE FLAGS: -Ofast -std=c++11 -fopt-info-vec -march=native
 #                -mfma4 -fopenmp -ftree-vectorizer-verbose=1
-cflags = ['-Ofast', '-std=c++11']
+cflags = ['-Ofast', '-std=c++11', '-march=native']
+libs = ['-lfftw3', '-lm']
 
 cpp_files = ['cpp_routines/mean_std_whereint.cpp',
              'cpp_routines/kick.cpp',
@@ -71,6 +72,7 @@ cpp_files = ['cpp_routines/mean_std_whereint.cpp',
 
 # Select the right
 cpp_files_SR = ['synchrotron_radiation/synchrotron_radiation.cpp']
+cpp_files_fft = ['cpp_routines/fft.cpp']
 
 
 if (__name__ == "__main__"):
@@ -127,6 +129,11 @@ if (__name__ == "__main__"):
             ['cpp_routines/blondmath.cpp']
         subprocess.call(command)
 
+        command = [compiler] + cflags + \
+            ['-o', 'cpp_routines/fft.so'] + cpp_files_fft + libs
+        subprocess.call(command)
+
+
         print('\nIF THE COMPILATION IS CORRECT A FILE NAMED result.so SHOULD'
               ' APPEAR IN THE cpp_routines FOLDER. OTHERWISE YOU HAVE TO'
               ' CORRECT THE ERRORS AND COMPILE AGAIN.')
@@ -181,6 +188,8 @@ if ('posix' in os.name):
     libblondmath = ctypes.CDLL(parent_path+'/cpp_routines/libblondmath.so')
     libblondphysics = ctypes.CDLL(
         parent_path+'/cpp_routines/libblondphysics.so')
+    libfft = ctypes.CDLL(parent_path+'/cpp_routines/fft.so')
+    
     # libblond = libblondphysics
     # libsrqe = libblondphysics
 elif ('win' in sys.platform):
