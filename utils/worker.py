@@ -101,12 +101,13 @@ class Worker:
 
         with timing.timed_region('comm:histo_extra') as tr:
             with mpiprof.traced_region('comm:histo_reduce') as tr:
-                # recvbuf = None
-                # self.intercomm.Reduce(profile, recvbuf, op=MPI.SUM, root=0)
+                recvbuf = None
+                self.intercomm.Reduce(profile, recvbuf, op=MPI.SUM, root=0)
+        self.bcast()
                 # new_profile = np.empty(len(profile), dtype='d')
-                self.intracomm.Allreduce(MPI.IN_PLACE, profile, op=MPI.SUM)
-            # profile = new_profile
-        self.active.update({'profile': profile})
+                # self.intracomm.Allreduce(MPI.IN_PLACE, profile, op=MPI.SUM)
+                # profile = new_profile
+                # self.active.update({'profile': profile})
         # Or even better, allreduce it
 
     def induced_voltage_1turn(self):
@@ -124,7 +125,7 @@ class Worker:
                 induced_voltage = induced_voltage[:n_induced_voltage]
 
                 total_voltage += induced_voltage[:n_slices]
-        self.active.update({'total_voltage':total_voltage})
+                self.active.update({'total_voltage':total_voltage})
 
     # @timing.timeit(key='comp:LIKick')
     # @mpiprof.traceit(key='LIKick')
