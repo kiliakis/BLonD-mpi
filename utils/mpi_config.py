@@ -34,6 +34,7 @@ task_id = {
     'barrier': np.array(8, np.uint8),
     'quit': np.array(9, np.uint8),
     'switch_context': np.array(10, np.uint8),
+    'induced_voltage_1turn': np.array(11, np.uint8),
     'stop': np.array(255, np.uint8)
 }
 

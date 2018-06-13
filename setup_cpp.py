@@ -45,6 +45,9 @@ parser.add_argument('-c', '--compiler', type=str, default='g++',
                     help='C++ compiler that will be used to compile the'
                     ' source files. Default: g++')
 
+parser.add_argument('-l', '--libs', type=str, default='',
+                    help='Any extra libraries needed to compile')
+
 # If True you can launch with 'OMP_NUM_THREADS=xx python MAIN_FILE.py'
 # where xx is the number of threads that you want to launch
 parallel = False
@@ -58,7 +61,9 @@ boost_path = None
 # EXAMPLE FLAGS: -Ofast -std=c++11 -fopt-info-vec -march=native
 #                -mfma4 -fopenmp -ftree-vectorizer-verbose=1
 cflags = ['-Ofast', '-std=c++11', '-march=native']
-libs = ['-lfftw3', '-lm']
+# cflags = ['-Ofast', '-std=c++11']
+# libs = ['-L/afs/cern.ch/work/k/kiliakis/install/','-lfftw3', '-lm']
+libs = []
 
 cpp_files = ['cpp_routines/mean_std_whereint.cpp',
              'cpp_routines/kick.cpp',
@@ -86,10 +91,15 @@ if (__name__ == "__main__"):
             boost_path = ''
     compiler = args.compiler
 
+    if (args.libs):
+        libs = args.libs.split()
+
     print('Produce Multi-threaded code: ', parallel)
     print('Use of boost: ', boost)
     print('Boost installation path: ', boost_path)
     print('C++ Compiler: ', compiler)
+    print('Extra libraries: ', libs)
+
 
     if (boost):
         cpp_files_SR += ['synchrotron_radiation/quantum_excitation_boost.cpp']
@@ -189,7 +199,7 @@ if ('posix' in os.name):
     libblondphysics = ctypes.CDLL(
         parent_path+'/cpp_routines/libblondphysics.so')
     libfft = ctypes.CDLL(parent_path+'/cpp_routines/fft.so')
-    
+
     # libblond = libblondphysics
     # libsrqe = libblondphysics
 elif ('win' in sys.platform):

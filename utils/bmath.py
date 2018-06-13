@@ -8,6 +8,8 @@ BLonD math and physics core functions
 import numpy as np
 from utils import butils_wrap
 from utils import bphysics_wrap
+# from numpy.fft import  rfft, irfft
+import numpy.fft
 
 # dictionary storing the CPU versions of the desired functions #
 _CPU_func_dict = {
@@ -26,6 +28,10 @@ _CPU_func_dict = {
     'arange': butils_wrap.arange,
     'sum': butils_wrap.sum,
     'sort': butils_wrap.sort,
+    'rfft': butils_wrap.rfft,
+    'irfft': butils_wrap.irfft,
+    # 'rfft': np.fft.rfft,
+    # 'irfft': np.fft.irfft,
     'kick': bphysics_wrap.kick,
     'kick_mpi': bphysics_wrap.kick_mpi,
     'rf_volt_comp': bphysics_wrap.rf_volt_comp,

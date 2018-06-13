@@ -16,6 +16,7 @@ import matplotlib as mpl
 mpl.use('Agg')
 import sys
 
+
 REAL_RAMP = False    # track full ramp
 MONITORING = False   # turn off plots and monitors
 
@@ -233,8 +234,11 @@ try:
         'alpha_order': tracker.alpha_order,
         'n_slices': profile.n_slices,
         'bin_centers': profile.bin_centers,
-        'charge': beam.Particle.charge
+        'charge': beam.Particle.charge,
+        'beam_ratio': beam.ratio,
+        'total_impedance': indVoltage.total_impedance
     }
+
     master.multi_bcast(init_dict)
 
     vars_dict = {
@@ -250,7 +254,7 @@ try:
 
     # Tracking --------------------------------------------------------------------
     for i in range(N_t):
-    # for i in range(turns):
+        # for i in range(turns):
         t0 = time.clock()
 
         # Remove lost particles to obtain a correct r.m.s. value

@@ -4,11 +4,13 @@ import numpy as np
 import sys
 import os
 import logging
+from scipy.constants import e
 from pyprof import timing
 from pyprof import mpiprof
 from utils import bphysics_wrap as bph
 from utils import mpi_config as mpiconf
 from utils.input_parser import parse
+from utils import bmath as bm
 
 
 class Worker:
@@ -90,6 +92,8 @@ class Worker:
     # @mpiprof.traceit(key='histo')
     def histo(self):
         self.bcast()
+        global profile
+
         with timing.timed_region('comp:histo') as tr:
             with mpiprof.traced_region('comp:histo') as tr:
                 profile = np.empty(n_slices, dtype='d')
@@ -97,14 +101,30 @@ class Worker:
 
         with timing.timed_region('comm:histo_extra') as tr:
             with mpiprof.traced_region('comm:histo_reduce') as tr:
-                recvbuf = None
-                self.intercomm.Reduce(profile, recvbuf, op=MPI.SUM, root=0)
-            # global profile
-            # new_profile = np.empty(len(profile), dtype='d')
-            # worker.intracomm.Allreduce(MPI.IN_PLACE, profile, op=MPI.SUM)
+                # recvbuf = None
+                # self.intercomm.Reduce(profile, recvbuf, op=MPI.SUM, root=0)
+                # new_profile = np.empty(len(profile), dtype='d')
+                self.intracomm.Allreduce(MPI.IN_PLACE, profile, op=MPI.SUM)
             # profile = new_profile
-
+        self.active.update({'profile': profile})
         # Or even better, allreduce it
+
+    def induced_voltage_1turn(self):
+        # for any per-turn updated variables
+        global total_voltage
+        self.bcast()
+
+        with timing.timed_region('comp:indVolt1Turn') as tr:
+            with mpiprof.traced_region('comp:indVolt1Turn') as tr:
+                # Beam_spectrum_generation
+                beam_spectrum = bm.rfft(profile, n_fft)
+
+                induced_voltage = - (charge * e * beam_ratio *
+                                     bm.irfft(total_impedance * beam_spectrum))
+                induced_voltage = induced_voltage[:n_induced_voltage]
+
+                total_voltage += induced_voltage[:n_slices]
+        self.active.update({'total_voltage':total_voltage})
 
     # @timing.timeit(key='comp:LIKick')
     # @mpiprof.traceit(key='LIKick')
@@ -204,6 +224,7 @@ def main():
             8: worker.barrier,
             9: worker.quit,
             10: worker.switch_context,
+            11: worker.induced_voltage_1turn,
             255: worker.stop
         }
 

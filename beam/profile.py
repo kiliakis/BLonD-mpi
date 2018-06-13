@@ -540,8 +540,8 @@ class Profile(object):
         """
         Beam spectrum calculation
         """
-        
-        self.beam_spectrum = rfft(self.n_macroparticles, n_sampling_fft)         
+        self.beam_spectrum = bm.rfft(self.n_macroparticles, n_sampling_fft)
+        # self.beam_spectrum = rfft(self.n_macroparticles, n_sampling_fft)      
      
      
     def beam_profile_derivative(self, mode = 'gradient'):      

@@ -8,6 +8,7 @@ BLonD math wrapper functions
 import ctypes as ct
 import numpy as np
 from setup_cpp import libblondmath as __lib
+from setup_cpp import libfft
 
 
 def __getPointer(x):
@@ -26,6 +27,33 @@ def convolve(signal, kernel, mode='full', result=None):
     __lib.convolution(__getPointer(signal), __getLen(signal),
                       __getPointer(kernel), __getLen(kernel),
                       __getPointer(result))
+    return result
+
+
+def rfft(signal, fftsize=0, result=None):
+    if (fftsize == 0) and (result == None):
+        result = np.empty(len(signal)//2 + 1, dtype=np.complex128)
+    elif (fftsize != 0) and (result == None):
+        result = np.empty(fftsize//2 + 1, dtype=np.complex128)
+
+    libfft.rfft(__getPointer(signal),
+                __getLen(signal),
+                __getPointer(result),
+                fftsize)
+    return result
+
+
+def irfft(signal, fftsize=0, result=None):
+
+    if (fftsize == 0) and (result == None):
+        result = np.empty(2*len(signal)-1, dtype=np.float64)
+    elif (fftsize != 0) and (result == None):
+        result = np.empty(fftsize, dtype=np.float64)
+
+    libfft.irfft(__getPointer(signal),
+                 __getLen(signal),
+                 __getPointer(result),
+                 fftsize)
     return result
 
 

@@ -146,7 +146,7 @@ def LIKick_mpi(ring, turn):
     master.bcast('LIKick')
 
     vars_dict = {
-        'total_voltage': ring.total_voltage,
+        # 'total_voltage': ring.total_voltage,
         # 'bin_centers': ring.profile.bin_centers,
         # 'charge': ring.beam.Particle.charge,
         'acc_kick': ring.acceleration_kick[turn]
@@ -192,8 +192,10 @@ def slice_mpi(profile):
     }
 
     master.multi_bcast(vars_dict, msg=False)
-    zero = np.zeros(profile.n_slices, dtype='d')
-    master.reduce(zero, profile.n_macroparticles)
+    # zero = np.zeros(profile.n_slices, dtype='d')
+    # master.reduce(zero, profile.n_macroparticles)
+
+
     # zero = np.zeros(profile.n_slices, dtype='d')
     # profile.n_macroparticles = np.zeros(profile.n_slices, dtype='d')
     # master.intracomm.Allreduce(
