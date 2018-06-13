@@ -11,3 +11,5 @@
 *__EXAMPLES/output_files/
 *.log
 *results/raw*
+*.clog*
+*.slog*

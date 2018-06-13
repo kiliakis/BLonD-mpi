@@ -207,11 +207,18 @@ def main():
             255: worker.stop
         }
 
-        worker.logger.debug('OMP_NUM_THREADS=%s' %
-                            os.environ['OMP_NUM_THREADS'])
+        # worker.logger.debug('OMP_NUM_THREADS=%s' %
+        #                     os.environ['OMP_NUM_THREADS'])
+
+        # Doing the first task receive manually to exclude the initialization
+        # time
+
+        worker.intercomm.Bcast(worker.taskbuf, root=0)
+        task = np.uint8(worker.taskbuf)
+        # task = worker.recv_task()
+
         start_t = time.time()
 
-        task = worker.recv_task()
         # This is the main loop
         while task != 255:
             try:

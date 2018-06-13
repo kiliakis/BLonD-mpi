@@ -74,7 +74,7 @@ bl_target = 1.25e-9  # 4 sigma r.m.s. target bunch length in [ns]
 
 
 if args.get('turns', None):
-    turns = args['turns']
+    N_t = args['turns']
 if args.get('particles', None):
     N_p = args['particles']
 
@@ -124,7 +124,8 @@ LHCnoise = FlatSpectrum(ring, rf, fmin_s0=0.8571, fmax_s0=1.001,
 LHCnoise.dphi = np.genfromtxt(
     # wrkDir+r'input/LHCNoise_fmin0.8571_fmax1.001_ampl1e-5_weightfct_6.5TeV.dat',
     wrkDir+r'input/LHCNoise_fmin0.8571_fmax1.001_ampl1e-5_weightfct.dat',
-    unpack=True)
+    unpack=True,
+    max_rows=N_t+1)
 LHCnoise.dphi = np.ascontiguousarray(LHCnoise.dphi[0:N_t+1])
 print("RF phase noise loaded...")
 
@@ -248,8 +249,8 @@ try:
     print("")
 
     # Tracking --------------------------------------------------------------------
-    # for i in range(N_t):
-    for i in range(turns):
+    for i in range(N_t):
+    # for i in range(turns):
         t0 = time.clock()
 
         # Remove lost particles to obtain a correct r.m.s. value
