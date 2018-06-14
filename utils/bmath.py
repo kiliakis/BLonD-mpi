@@ -32,6 +32,7 @@ _CPU_func_dict = {
     'irfft': butils_wrap.irfft,
     # 'rfft': np.fft.rfft,
     # 'irfft': np.fft.irfft,
+    'beam_phase': bphysics_wrap.beam_phase,
     'kick': bphysics_wrap.kick,
     'kick_mpi': bphysics_wrap.kick_mpi,
     'rf_volt_comp': bphysics_wrap.rf_volt_comp,

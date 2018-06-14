@@ -105,14 +105,46 @@ class TotalInducedVoltage(object):
         # self.induced_voltage = temp_induced_voltage
         import utils.mpi_config as mpiconf
         master = mpiconf.master
-        
+
         master.multi_bcast({'total_voltage': float(0.)})
 
+    
         for induced_voltage_object in self.induced_voltage_list:
             master.bcast('induced_voltage_1turn')
             master.multi_bcast({'n_fft': induced_voltage_object.n_fft,
                                 'n_induced_voltage': induced_voltage_object.n_induced_voltage},
                                msg=False)
+
+
+    @timing.timeit('ind_volt_sum_and_histo')
+    def induced_voltage_sum_and_histo(self):
+        """
+        Method to sum all the induced voltages in one single array.
+        """
+
+        # temp_induced_voltage = 0
+
+        # for induced_voltage_object in self.induced_voltage_list:
+        #     induced_voltage_object.induced_voltage_generation()
+        #     temp_induced_voltage += \
+        #           induced_voltage_object.induced_voltage[:self.profile.n_slices]
+
+        # self.induced_voltage = temp_induced_voltage
+        import utils.mpi_config as mpiconf
+        master = mpiconf.master
+
+        master.multi_bcast({'total_voltage': float(0.)})
+
+        master.bcast('histo_and_induced_voltage')
+    
+        for induced_voltage_object in self.induced_voltage_list:
+            master.multi_bcast({'n_fft': induced_voltage_object.n_fft,
+                                'n_induced_voltage': induced_voltage_object.n_induced_voltage,
+                                'cut_left': self.profile.cut_left,
+                                'cut_right': self.profile.cut_right},
+                               msg=False)
+        master.gather_single('profile', self.profile.n_macroparticles)
+
 
             # induced_voltage_object.induced_voltage_generation()
             # temp_induced_voltage += \

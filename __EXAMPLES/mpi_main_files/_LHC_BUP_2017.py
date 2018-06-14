@@ -236,7 +236,9 @@ try:
         'bin_centers': profile.bin_centers,
         'charge': beam.Particle.charge,
         'beam_ratio': beam.ratio,
-        'total_impedance': indVoltage.total_impedance
+        'total_impedance': indVoltage.total_impedance,
+        'n_fft': indVoltage.n_fft,
+        'n_induced_voltage': indVoltage.n_induced_voltage
     }
 
     master.multi_bcast(init_dict)
@@ -258,21 +260,23 @@ try:
         t0 = time.clock()
 
         # Remove lost particles to obtain a correct r.m.s. value
-        if (i % 1000) == 0:  # reduce computational costs
-            master.multi_gather({'dt': beam.dt, 'dE': beam.dE})
-            beam.losses_separatrix(ring, rf)
+        # if (i % 1000) == 0:  # reduce computational costs
+        #     master.multi_gather({'dt': beam.dt, 'dE': beam.dE})
+        #     beam.losses_separatrix(ring, rf)
 
         # After the first 2/3 of the ramp, regulate down the bunch length
         if i == 9042249:
             noiseFB.bl_targ = 1.1e-9
 
+        # totVoltage.induced_voltage_sum_and_histo()
         totVoltage.induced_voltage_sum()
 
         profile.track()
 
         tracker.track()
 
-        noiseFB.track()
+        # noiseFB.track()
+        
         # Track
         # for m in map_:
         #     m.track()

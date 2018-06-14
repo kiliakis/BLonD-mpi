@@ -107,14 +107,14 @@ class Worker:
                 # self.bcast()
                 # new_profile = np.empty(len(profile), dtype='d')
                 self.intracomm.Allreduce(MPI.IN_PLACE, profile, op=MPI.SUM)
-                recvbuf = None
-                basesize = len(profile) // self.workers
-                start = self.rank * basesize
-                end = (self.rank+1) * basesize
-                if end >= len(profile):
-                    end = len(profile)
+                # recvbuf = None
+                # basesize = len(profile) // self.workers
+                # start = self.rank * basesize
+                # end = (self.rank+1) * basesize
+                # if end >= len(profile):
+                #     end = len(profile)
 
-                self.intercomm.Gatherv(profile[start:end], recvbuf, root=0)
+                # self.intercomm.Gatherv(profile[start:end], recvbuf, root=0)
         
                 # profile = new_profile
                 # self.active.update({'profile': profile})
@@ -136,6 +136,50 @@ class Worker:
 
                 total_voltage += induced_voltage[:n_slices]
                 self.active.update({'total_voltage':total_voltage})
+
+
+    def histo_and_induced_voltage(self):
+        self.bcast()
+        global profile
+        global total_voltage
+
+        with timing.timed_region('comp:histo') as tr:
+            with mpiprof.traced_region('comp:histo') as tr:
+                profile = np.empty(n_slices, dtype='d')
+                bph._slice(dt, profile, cut_left, cut_right)
+
+        with timing.timed_region('comm:histo_extra') as tr:
+            with mpiprof.traced_region('comm:histo_reduce') as tr:
+                # recvbuf = None
+                # self.intercomm.Reduce(profile, recvbuf, op=MPI.SUM, root=0)
+                # self.bcast()
+                # new_profile = np.empty(len(profile), dtype='d')
+                self.intracomm.Allreduce(MPI.IN_PLACE, profile, op=MPI.SUM)
+                recvbuf = None
+                basesize = len(profile) // self.workers
+                start = self.rank * basesize
+                end = min((self.rank+1) * basesize, len(profile))
+                self.intercomm.Gatherv(profile[start:end], recvbuf, root=0)
+        
+        with timing.timed_region('comp:indVolt1Turn') as tr:
+            with mpiprof.traced_region('comp:indVolt1Turn') as tr:
+                # Beam_spectrum_generation
+                beam_spectrum = bm.rfft(profile, n_fft)
+
+                induced_voltage = - (charge * e * beam_ratio *
+                                     bm.irfft(total_impedance * beam_spectrum))
+                induced_voltage = induced_voltage[:n_induced_voltage]
+
+                total_voltage += induced_voltage[:n_slices]
+                self.active.update({'total_voltage':total_voltage})
+
+                # profile = new_profile
+                # self.active.update({'profile': profile})
+        # Or even better, allreduce it
+
+        # for any per-turn updated variables
+        # self.bcast()
+
 
     # @timing.timeit(key='comp:LIKick')
     # @mpiprof.traceit(key='LIKick')
@@ -165,6 +209,21 @@ class Worker:
     @mpiprof.traceit(key='comm:gather')
     def gather(self):
         self.multi_gather()
+
+
+    @timing.timeit(key='comm:gather_single')
+    @mpiprof.traceit(key='comm:gather_single')
+    def gather_single(self):
+        globals().update(self.active)
+        _vars = []
+        _vars = self.intercomm.bcast(_vars, root=0)
+        recvbuf = None
+        for v in _vars:
+            basesize = len(globals()[v]) // self.workers
+            start = self.rank * basesize
+            end = min((self.rank+1) * basesize, len(globals()[v]))
+            self.intercomm.Gatherv(globals()[v][start:end], recvbuf, root=0)
+
 
     @timing.timeit(key='comm:bcast')
     @mpiprof.traceit(key='comm:bcast')
@@ -236,6 +295,8 @@ def main():
             9: worker.quit,
             10: worker.switch_context,
             11: worker.induced_voltage_1turn,
+            12: worker.histo_and_induced_voltage,
+            13: worker.gather_single,
             255: worker.stop
         }
 

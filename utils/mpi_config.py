@@ -35,6 +35,8 @@ task_id = {
     'quit': np.array(9, np.uint8),
     'switch_context': np.array(10, np.uint8),
     'induced_voltage_1turn': np.array(11, np.uint8),
+    'histo_and_induced_voltage': np.array(12, np.uint8),
+    'gather_single': np.array(13, np.uint8),
     'stop': np.array(255, np.uint8)
 }
 
@@ -124,16 +126,22 @@ class Master:
 
     @timing.timeit(key='master:gather_single')
     # @mpiprof.traceit(key='gather_single')
-    def gather_single(self, k, v):
-        sendbuf = None
-        basesize = len(v) // self.workers
-        plusone = len(v) - basesize * self.workers
-        counts = np.array([basesize+1]*plusone + [basesize] *
-                          (self.workers-plusone), dtype='i')
-        displs = np.append([0], np.cumsum(counts[:-1]))
+    def gather_single(self, gather_dict):
+        self.bcast('gather_single')
 
-        self.intercomm.Gatherv(sendbuf, [v, counts, displs, mpi_type[v.dtype.char]],
-                               root=MPI.ROOT)
+        keys = list(gather_dict.keys())
+        self.intercomm.bcast(keys, root=MPI.ROOT)
+        sendbuf = None
+        for k in gather_dict.keys():
+            v = gather_dict[k]
+            basesize = len(v) // self.workers
+            plusone = len(v) - basesize * self.workers
+            counts = np.array([basesize+1]*plusone + [basesize] *
+                              (self.workers-plusone), dtype='i')
+            displs = np.append([0], np.cumsum(counts[:-1]))
+
+            self.intercomm.Gatherv(sendbuf, [v, counts, displs, mpi_type[v.dtype.char]],
+                                   root=MPI.ROOT)
 
     @timing.timeit(key='master:multi_bcast')
     # @mpiprof.traceit(key='multi_bcast')

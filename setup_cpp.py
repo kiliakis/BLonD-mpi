@@ -65,15 +65,18 @@ cflags = ['-Ofast', '-std=c++11', '-march=native']
 # libs = ['-L/afs/cern.ch/work/k/kiliakis/install/','-lfftw3', '-lm']
 libs = []
 
-cpp_files = ['cpp_routines/mean_std_whereint.cpp',
+cpp_files = [
+             # 'cpp_routines/mean_std_whereint.cpp',
              'cpp_routines/kick.cpp',
              'cpp_routines/drift.cpp',
              'cpp_routines/linear_interp_kick.cpp',
              'toolbox/tomoscope.cpp',
-             'cpp_routines/convolution.cpp',
+             # 'cpp_routines/convolution.cpp',
+             'cpp_routines/blondmath.cpp',
              'cpp_routines/music_track.cpp',
              'cpp_routines/fast_resonator.cpp',
-             'beam/sparse_histogram.cpp']
+             'beam/sparse_histogram.cpp',
+             'cpp_routines/beam_phase.cpp']
 
 # Select the right
 cpp_files_SR = ['synchrotron_radiation/synchrotron_radiation.cpp']
@@ -122,13 +125,13 @@ if (__name__ == "__main__"):
         subprocess.call('rm -rf synchrotron_radiation/*.so',
                          shell=True, executable='/bin/bash')
 
-        command = [compiler] + cflags + \
-            ['-o', 'cpp_routines/result.so'] + cpp_files
-        subprocess.call(command)
+        # command = [compiler] + cflags + \
+        #     ['-o', 'cpp_routines/result.so'] + cpp_files
+        # subprocess.call(command)
 
-        command = [compiler] + cflags + \
-            ['-o', 'synchrotron_radiation/sync_rad.so'] + cpp_files_SR
-        subprocess.call(command)
+        # command = [compiler] + cflags + \
+        #     ['-o', 'synchrotron_radiation/sync_rad.so'] + cpp_files_SR
+        # subprocess.call(command)
 
         command = [compiler] + cflags + \
             ['-o', 'cpp_routines/libblondphysics.so'] + cpp_files_SR + cpp_files
@@ -193,15 +196,15 @@ if (__name__ == "__main__"):
 path = os.path.realpath(__file__)
 parent_path = os.sep.join(path.split(os.sep)[:-1])
 if ('posix' in os.name):
-    libblond = ctypes.CDLL(parent_path+'/cpp_routines/result.so')
-    libsrqe = ctypes.CDLL(parent_path+'/synchrotron_radiation/sync_rad.so')
+    # libblond = ctypes.CDLL(parent_path+'/cpp_routines/result.so')
+    # libsrqe = ctypes.CDLL(parent_path+'/synchrotron_radiation/sync_rad.so')
     libblondmath = ctypes.CDLL(parent_path+'/cpp_routines/libblondmath.so')
     libblondphysics = ctypes.CDLL(
         parent_path+'/cpp_routines/libblondphysics.so')
     libfft = ctypes.CDLL(parent_path+'/cpp_routines/fft.so')
 
-    # libblond = libblondphysics
-    # libsrqe = libblondphysics
+    libblond = libblondphysics
+    libsrqe = libblondphysics
 elif ('win' in sys.platform):
     libblond = ctypes.CDLL(parent_path+'\\cpp_routines\\result.dll')
     libsrqe = ctypes.CDLL(parent_path+'\\synchrotron_radiation\\sync_rad.dll')

@@ -21,6 +21,22 @@ def __getLen(x):
     return ct.c_int(len(x))
 
 
+def beam_phase(beamFB, omegarf, phirf):
+    return _beam_phase(beamFB.profile.bin_centers,
+                       beamFB.profile.n_macroparticles,
+                       beamFB.alpha, omegarf, phirf)
+    
+def _beam_phase(bin_centers, profile, alpha, omegarf, phirf):
+    __lib.beam_phase.restype = ct.c_double
+    coeff = __lib.beam_phase(__getPointer(bin_centers),
+                             __getPointer(profile),
+                             ct.c_double(alpha),
+                             ct.c_double(omegarf),
+                             ct.c_double(phirf),
+                             __getLen(profile))
+    return coeff
+
+
 def rf_volt_comp(voltages, omega_rf, phi_rf, ring):
 
     rf_voltage = np.zeros(len(ring.profile.bin_centers))
@@ -195,7 +211,7 @@ def slice_mpi(profile):
     # zero = np.zeros(profile.n_slices, dtype='d')
     # master.reduce(zero, profile.n_macroparticles)
     # master.multi_bcast({'profile': profile.n_macroparticles}, msg=False)
-    master.gather_single('profile', profile.n_macroparticles)
+    master.gather_single({'profile': profile.n_macroparticles})
     # zero = np.zeros(profile.n_slices, dtype='d')
     # profile.n_macroparticles = np.zeros(profile.n_slices, dtype='d')
     # master.intracomm.Allreduce(

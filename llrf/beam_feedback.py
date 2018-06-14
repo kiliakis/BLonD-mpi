@@ -18,6 +18,7 @@ from __future__ import division
 from builtins import object
 import numpy as np
 import sys
+from utils import bmath as bm
 
 
 
@@ -249,16 +250,20 @@ class BeamFeedback(object):
         omega_rf = self.rf_params.omega_rf[0,self.rf_params.counter[0]]
         phi_rf = self.rf_params.phi_rf[0,self.rf_params.counter[0]]
 
+
+        coeff = bm.beam_phase(self, omega_rf, phi_rf)
+        self.phi_beam = np.arctan(coeff) + np.pi
+
         # Convolve with window function
-        scoeff = np.trapz( np.exp(self.alpha*self.profile.bin_centers) \
-                           *np.sin(omega_rf*self.profile.bin_centers + phi_rf) \
-                           *self.profile.n_macroparticles, self.profile.bin_centers )
-        ccoeff = np.trapz( np.exp(self.alpha*self.profile.bin_centers) \
-                           *np.cos(omega_rf*self.profile.bin_centers + phi_rf) \
-                           *self.profile.n_macroparticles, self.profile.bin_centers )
+        # scoeff = np.trapz( np.exp(self.alpha*self.profile.bin_centers) \
+        #                    *np.sin(omega_rf*self.profile.bin_centers + phi_rf) \
+        #                    *self.profile.n_macroparticles, self.profile.bin_centers )
+        # ccoeff = np.trapz( np.exp(self.alpha*self.profile.bin_centers) \
+        #                    *np.cos(omega_rf*self.profile.bin_centers + phi_rf) \
+        #                    *self.profile.n_macroparticles, self.profile.bin_centers )
 
         # Project beam phase to (pi/2,3pi/2) range
-        self.phi_beam = np.arctan(scoeff/ccoeff) + np.pi
+        # self.phi_beam = np.arctan(scoeff/ccoeff) + np.pi
 
     def phase_difference(self):               
         '''

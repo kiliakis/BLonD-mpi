@@ -20,6 +20,7 @@ C++ Math library
 #include <cmath>
 #include <algorithm>
 #include <functional>
+#include "blondmath.h"
 
 #ifdef PARALLEL
 #include <omp.h>
