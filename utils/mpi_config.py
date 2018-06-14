@@ -122,6 +122,19 @@ class Master:
             self.intercomm.Gatherv(sendbuf, [v, counts, displs, mpi_type[v.dtype.char]],
                                    root=MPI.ROOT)
 
+    @timing.timeit(key='master:gather_single')
+    # @mpiprof.traceit(key='gather_single')
+    def gather_single(self, k, v):
+        sendbuf = None
+        basesize = len(v) // self.workers
+        plusone = len(v) - basesize * self.workers
+        counts = np.array([basesize+1]*plusone + [basesize] *
+                          (self.workers-plusone), dtype='i')
+        displs = np.append([0], np.cumsum(counts[:-1]))
+
+        self.intercomm.Gatherv(sendbuf, [v, counts, displs, mpi_type[v.dtype.char]],
+                               root=MPI.ROOT)
+
     @timing.timeit(key='master:multi_bcast')
     # @mpiprof.traceit(key='multi_bcast')
     def multi_bcast(self, vars, msg=True):

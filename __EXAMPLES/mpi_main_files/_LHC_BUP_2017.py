@@ -312,7 +312,7 @@ try:
 except Exception as e:
     print(e)
     master.quit()
-    master.dicsonnect()
+    master.disconnect()
 
 end_t = time.time()
 print('Total time: ', end_t - start_t)

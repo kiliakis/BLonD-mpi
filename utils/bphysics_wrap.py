@@ -192,10 +192,10 @@ def slice_mpi(profile):
     }
 
     master.multi_bcast(vars_dict, msg=False)
-    zero = np.zeros(profile.n_slices, dtype='d')
-    master.reduce(zero, profile.n_macroparticles)
-    master.multi_bcast({'profile': profile.n_macroparticles}, msg=False)
-
+    # zero = np.zeros(profile.n_slices, dtype='d')
+    # master.reduce(zero, profile.n_macroparticles)
+    # master.multi_bcast({'profile': profile.n_macroparticles}, msg=False)
+    master.gather_single('profile', profile.n_macroparticles)
     # zero = np.zeros(profile.n_slices, dtype='d')
     # profile.n_macroparticles = np.zeros(profile.n_slices, dtype='d')
     # master.intracomm.Allreduce(

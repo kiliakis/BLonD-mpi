@@ -23,6 +23,7 @@ class Worker:
         self.intercomm = self.intracomm.Create_intercomm(0, MPI.COMM_WORLD, 0)
         self.rank = self.intracomm.rank
         self.hostname = MPI.Get_processor_name()
+        self.workers = self.intracomm.size 
         if log:
             self.logger = mpiconf.MPILog(log_dir=log, rank=self.rank)
         else:
@@ -101,11 +102,20 @@ class Worker:
 
         with timing.timed_region('comm:histo_extra') as tr:
             with mpiprof.traced_region('comm:histo_reduce') as tr:
-                recvbuf = None
-                self.intercomm.Reduce(profile, recvbuf, op=MPI.SUM, root=0)
-        self.bcast()
+                # recvbuf = None
+                # self.intercomm.Reduce(profile, recvbuf, op=MPI.SUM, root=0)
+                # self.bcast()
                 # new_profile = np.empty(len(profile), dtype='d')
-                # self.intracomm.Allreduce(MPI.IN_PLACE, profile, op=MPI.SUM)
+                self.intracomm.Allreduce(MPI.IN_PLACE, profile, op=MPI.SUM)
+                recvbuf = None
+                basesize = len(profile) // self.workers
+                start = self.rank * basesize
+                end = (self.rank+1) * basesize
+                if end >= len(profile):
+                    end = len(profile)
+
+                self.intercomm.Gatherv(profile[start:end], recvbuf, root=0)
+        
                 # profile = new_profile
                 # self.active.update({'profile': profile})
         # Or even better, allreduce it
