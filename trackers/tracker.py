@@ -306,6 +306,12 @@ class RingAndRFTracker(object):
             \Delta E^{n+1} = \Delta E^n + \sum_{k=0}^{n_{\mathsf{rf}}-1}{e V_k^n \\sin{\\left(\omega_{\mathsf{rf,k}}^n \\Delta t^n + \phi_{\mathsf{rf,k}}^n \\right)}} - (E_s^{n+1} - E_s^n) 
 
         """
+
+        voltage_kick = np.ascontiguousarray(self.charge*self.voltage[:, turn])
+        omegarf_kick = np.ascontiguousarray(self.omega_rf[:, turn])
+        phirf_kick = np.ascontiguousarray(self.phi_rf[:, turn])
+
+
         libblond.kick(beam_dt.ctypes.data_as(ctypes.c_void_p),
                       beam_dE.ctypes.data_as(ctypes.c_void_p),
                       ctypes.c_int(self.n_rf),
@@ -358,7 +364,8 @@ class RingAndRFTracker(object):
                        phi_rf[0] + self.cavityFB.phi_corr) + \
                 bm.rf_volt_comp(voltages[1:], omega_rf[1:], phi_rf[1:], self)
         else:
-            self.rf_voltage = bm.rf_volt_comp(voltages, omega_rf, phi_rf, self)
+            # self.rf_voltage = bm.rf_volt_comp(voltages, omega_rf, phi_rf, self)
+            bm.rf_volt_comp_mpi(voltages, omega_rf, phi_rf, self)
 
 
     def track(self):
@@ -440,11 +447,12 @@ class RingAndRFTracker(object):
             if self.rf_params.empty is False:
                 if self.interpolation:
                     self.rf_voltage_calculation()
-                    if self.totalInducedVoltage is not None:
-                        self.total_voltage = self.rf_voltage \
-                            + self.totalInducedVoltage.induced_voltage
-                    else:
-                        self.total_voltage = self.rf_voltage
+
+                    # if self.totalInducedVoltage is not None:
+                    #     self.total_voltage = self.rf_voltage \
+                    #         + self.totalInducedVoltage.induced_voltage
+                    # else:
+                    #     self.total_voltage = self.rf_voltage
 
                     bm.LIKick_mpi(self, self.counter[0])
                     # libblond.linear_interp_kick(

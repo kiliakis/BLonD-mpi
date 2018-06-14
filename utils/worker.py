@@ -23,7 +23,7 @@ class Worker:
         self.intercomm = self.intracomm.Create_intercomm(0, MPI.COMM_WORLD, 0)
         self.rank = self.intracomm.rank
         self.hostname = MPI.Get_processor_name()
-        self.workers = self.intracomm.size 
+        self.workers = self.intracomm.size
         if log:
             self.logger = mpiconf.MPILog(log_dir=log, rank=self.rank)
         else:
@@ -115,7 +115,7 @@ class Worker:
                 #     end = len(profile)
 
                 # self.intercomm.Gatherv(profile[start:end], recvbuf, root=0)
-        
+
                 # profile = new_profile
                 # self.active.update({'profile': profile})
         # Or even better, allreduce it
@@ -135,8 +135,7 @@ class Worker:
                 induced_voltage = induced_voltage[:n_induced_voltage]
 
                 total_voltage += induced_voltage[:n_slices]
-                self.active.update({'total_voltage':total_voltage})
-
+                self.active.update({'total_voltage': total_voltage})
 
     def histo_and_induced_voltage(self):
         self.bcast()
@@ -160,7 +159,7 @@ class Worker:
                 start = self.rank * basesize
                 end = min((self.rank+1) * basesize, len(profile))
                 self.intercomm.Gatherv(profile[start:end], recvbuf, root=0)
-        
+
         with timing.timed_region('comp:indVolt1Turn') as tr:
             with mpiprof.traced_region('comp:indVolt1Turn') as tr:
                 # Beam_spectrum_generation
@@ -171,7 +170,7 @@ class Worker:
                 induced_voltage = induced_voltage[:n_induced_voltage]
 
                 total_voltage += induced_voltage[:n_slices]
-                self.active.update({'total_voltage':total_voltage})
+                self.active.update({'total_voltage': total_voltage})
 
                 # profile = new_profile
                 # self.active.update({'profile': profile})
@@ -179,7 +178,6 @@ class Worker:
 
         # for any per-turn updated variables
         # self.bcast()
-
 
     # @timing.timeit(key='comp:LIKick')
     # @mpiprof.traceit(key='LIKick')
@@ -201,15 +199,19 @@ class Worker:
     # @timing.timeit(key='comp:RFVCalc')
     def RFVCalc(self):
         self.bcast()
-        with mpiprof.traced_region('comp:RFVCalc') as tr:
-            bph._rf_volt_comp(voltage, omegarf, phirf, bin_centers,
-                              rf_voltage)
+        global total_voltage
+        with timing.timed_region('comp:RFVCalc') as tr:
+            with mpiprof.traced_region('comp:RFVCalc') as tr:
+                rf_voltage = np.empty(len(bin_centers), dtype='d')
+                bph._rf_volt_comp(voltages, omega_rf, phi_rf, bin_centers,
+                                  rf_voltage)
+
+                total_voltage += rf_voltage
 
     @timing.timeit(key='comm:gather')
     @mpiprof.traceit(key='comm:gather')
     def gather(self):
         self.multi_gather()
-
 
     @timing.timeit(key='comm:gather_single')
     @mpiprof.traceit(key='comm:gather_single')
@@ -223,7 +225,6 @@ class Worker:
             start = self.rank * basesize
             end = min((self.rank+1) * basesize, len(globals()[v]))
             self.intercomm.Gatherv(globals()[v][start:end], recvbuf, root=0)
-
 
     @timing.timeit(key='comm:bcast')
     @mpiprof.traceit(key='comm:bcast')

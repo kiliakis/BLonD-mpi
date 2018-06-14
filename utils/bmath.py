@@ -36,6 +36,7 @@ _CPU_func_dict = {
     'kick': bphysics_wrap.kick,
     'kick_mpi': bphysics_wrap.kick_mpi,
     'rf_volt_comp': bphysics_wrap.rf_volt_comp,
+    'rf_volt_comp_mpi': bphysics_wrap.rf_volt_comp_mpi,
     'drift': bphysics_wrap.drift,
     'drift_mpi': bphysics_wrap.drift_mpi,
     'LIKick': bphysics_wrap.LIKick,

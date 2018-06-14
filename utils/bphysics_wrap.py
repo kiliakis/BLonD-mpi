@@ -37,6 +37,21 @@ def _beam_phase(bin_centers, profile, alpha, omegarf, phirf):
     return coeff
 
 
+def rf_volt_comp_mpi(voltages, omega_rf, phi_rf, ring):
+    import utils.mpi_config as mpiconf
+    from mpi4py import MPI
+    master = mpiconf.master
+    master.bcast('RFVCalc')
+
+    vars_dict = {
+        'voltages': voltages,
+        'omega_rf': omega_rf,
+        'phi_rf': phi_rf
+    }
+
+    master.multi_bcast(vars_dict, msg=False)
+
+
 def rf_volt_comp(voltages, omega_rf, phi_rf, ring):
 
     rf_voltage = np.zeros(len(ring.profile.bin_centers))
