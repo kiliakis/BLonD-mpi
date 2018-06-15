@@ -24,15 +24,17 @@ def __getLen(x):
 def beam_phase(beamFB, omegarf, phirf):
     return _beam_phase(beamFB.profile.bin_centers,
                        beamFB.profile.n_macroparticles,
-                       beamFB.alpha, omegarf, phirf)
+                       beamFB.alpha, omegarf, phirf,
+                       beamFB.profile.bin_size)
     
-def _beam_phase(bin_centers, profile, alpha, omegarf, phirf):
+def _beam_phase(bin_centers, profile, alpha, omegarf, phirf, bin_size):
     __lib.beam_phase.restype = ct.c_double
     coeff = __lib.beam_phase(__getPointer(bin_centers),
                              __getPointer(profile),
                              ct.c_double(alpha),
                              ct.c_double(omegarf),
                              ct.c_double(phirf),
+                             ct.c_double(bin_size),
                              __getLen(profile))
     return coeff
 

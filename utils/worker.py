@@ -82,7 +82,8 @@ class Worker:
                 voltage = np.ascontiguousarray(charge * rfp_voltage[:, turn])
                 omegarf = np.ascontiguousarray(rfp_omega_rf[:, turn])
                 phirf = np.ascontiguousarray(rfp_phi_rf[:, turn])
-                bph._kick(dt, dE, voltage, omegarf, phirf, n_rf, tracker_acc_kick[turn])
+                bph._kick(dt, dE, voltage, omegarf, phirf,
+                          n_rf, tracker_acc_kick[turn])
         self.update()
 
     # @timing.timeit(key='comp:drift')
@@ -106,7 +107,7 @@ class Worker:
                 profile = np.empty(n_slices, dtype='d')
                 bph._slice(dt, profile, cut_left, cut_right)
 
-        with timing.timed_region('comm:histo_extra') as tr:
+        with timing.timed_region('comm:histo_reduce') as tr:
             with mpiprof.traced_region('comm:histo_reduce') as tr:
                 # recvbuf = None
                 # self.intercomm.Reduce(profile, recvbuf, op=MPI.SUM, root=0)
@@ -129,7 +130,7 @@ class Worker:
 
     def induced_voltage_1turn(self):
         # for any per-turn updated variables
-        global total_voltage
+        global induced_voltage
         self.bcast()
 
         with timing.timed_region('serial:indVolt1Turn') as tr:
@@ -141,14 +142,14 @@ class Worker:
                                      bm.irfft(total_impedance * beam_spectrum))
                 induced_voltage = induced_voltage[:n_induced_voltage]
 
-                total_voltage += induced_voltage[:n_slices]
+                induced_voltage = induced_voltage[:n_slices]
                 # self.active.update({'total_voltage': total_voltage})
         self.update()
 
     def histo_and_induced_voltage(self):
         self.bcast()
         global profile
-        global total_voltage
+        global induced_voltage
 
         with timing.timed_region('comp:histo') as tr:
             with mpiprof.traced_region('comp:histo') as tr:
@@ -177,10 +178,9 @@ class Worker:
                                      bm.irfft(total_impedance * beam_spectrum))
                 induced_voltage = induced_voltage[:n_induced_voltage]
 
-                total_voltage += induced_voltage[:n_slices]
+                induced_voltage = induced_voltage[:n_slices]
 
         self.update()
-
 
     # @timing.timeit(key='comp:LIKick')
     # @mpiprof.traceit(key='LIKick')
@@ -204,18 +204,18 @@ class Worker:
     # @timing.timeit(key='comp:RFVCalc')
     def RFVCalc(self):
         self.bcast()
-        global total_voltage, turn
+        global total_voltage, induced_voltage, turn
         with timing.timed_region('serial:RFVCalc') as tr:
             with mpiprof.traced_region('serial:RFVCalc') as tr:
                 voltages = np.ascontiguousarray(rfp_voltage[:, turn])
                 omega_rf = np.ascontiguousarray(rfp_omega_rf[:, turn])
                 phi_rf = np.ascontiguousarray(rfp_phi_rf[:, turn])
-                rf_voltage = np.empty(len(bin_centers), dtype='d')
-                
+                rf_voltage = np.zeros(len(bin_centers), dtype='d')
+
                 bph._rf_volt_comp(voltages, omega_rf, phi_rf, bin_centers,
                                   rf_voltage)
 
-                total_voltage += rf_voltage
+                total_voltage = rf_voltage + induced_voltage
         self.update()
 
     def beamFB(self):
@@ -226,11 +226,15 @@ class Worker:
                 coeff = bph._beam_phase(
                     bin_centers, profile, alpha,
                     rfp_omega_rf[0, turn],
-                    rfp_phi_rf[0, turn])
+                    rfp_phi_rf[0, turn],
+                    bin_size)
 
                 phi_beam = np.arctan(coeff) + np.pi
 
                 dphi = phi_beam - rfp_phi_s[turn]
+
+                if len(globals().get('lhc_noise_dphi', [])) > 0:
+                    dphi += lhc_noise_dphi[turn]
 
                 domega_rf = - gain*dphi - gain2 * \
                     (lhc_y + lhc_a[turn] *
@@ -259,7 +263,7 @@ class Worker:
         self.update()
 
     @timing.timeit(key='overhead:update')
-    @mpiprof.traceit(key='overhead:update')        
+    @mpiprof.traceit(key='overhead:update')
     def update(self):
         self.active.update(globals())
 

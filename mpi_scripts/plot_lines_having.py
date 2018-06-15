@@ -15,56 +15,9 @@ if not os.path.exists(images_dir):
 # csv_file = res_dir + 'csv/interp-kick1/all_results2.csv'
 
 plots_config = {
-    # 'plot1': {
-    #     'files': {
-    #         # res_dir+'raw/strong_scale_mpi_single_node/comm-comp-report.csv': {
-    #         #     'lines': {'parts': ['10000000'],
-    #         #               'type': ['total'],
-    #         #               'N': ['1']}
-    #         # },
-    #         res_dir+'raw/strong_scale_mpi_dual_node/comm-comp-report.csv': {
-    #             'lines': {'parts': ['20000000'],
-    #                       'type': ['total'],
-    #                       'N': ['2']}
-    #         },
-    #         res_dir+'raw/strong_scale_mpi_four_node/comm-comp-report.csv': {
-    #             'lines': {'parts': ['20000000'],
-    #                       'type': ['total'],
-    #                       'N': ['4']}
-    #         },
-    #         # res_dir+'raw/weak_scale_mpi_single_node/comm-comp-report.csv': {
-    #         #     'lines': {'type': ['total'],
-    #         #               'N': ['1']}
-    #         # },
-    #         res_dir+'raw/weak_scale_mpi_dual_node/comm-comp-report.csv': {
-    #             'lines': {'type': ['total'],
-    #                       'N': ['2']}
-    #         },
-    #         res_dir+'raw/weak_scale_mpi_four_node/comm-comp-report.csv': {
-    #             'lines': {'type': ['total'],
-    #                       'N': ['4']}
-    #         }
-    #     },
-    #     'labels': {'10000000-total-1': '10M-strong-N1',
-    #                '20000000-total-2': '20M-strong-N2',
-    #                '20000000-total-4': '20M-strong-N4',
-    #                'total-1': '1M-weak-N1',
-    #                'total-4': '1M-weak-N4',
-    #                'total-2': '1M-weak-N2'},
-    #     # 'exclude': [['v1', 'notcm'], ['v2', 'notcm'], ['v4', 'notcm']],
-    #     'ideal': 'total-4',
-    #     'x_name': 'n',
-    #     'y_name': 'avg_time(sec)',
-    #     # 'y_err_name': 'std',
-    #     'xlabel': 'MPI Tasks',
-    #     'ylabel': 'Throughput (Particles/sec)',
-    #     'title': '',
-    #     # 'ylim': [0, 16000],
-    #     'figsize': (6, 2.5),
-    #     'image_name': images_dir + 'mpi-multi-node-throughput.pdf'
 
-    # },
-    # 'plot2': {
+
+    # 'plot3': {
     #     'files': {
     #         # res_dir+'raw/strong_scale_mpi_single_node/comm-comp-report.csv': {
     #         #     'lines': {'parts': ['10000000'],
@@ -76,92 +29,64 @@ plots_config = {
     #         #               'type': ['total'],
     #         #               'N': ['2']}
     #         # },
-    #         res_dir+'raw/weak_scale_mpi_single_node/comm-comp-report.csv': {
-    #             'lines': {'type': ['total'],
-    #                       'N': ['1']}
-    #         },
-    #         res_dir+'raw/weak_scale_mpi_dual_node/comm-comp-report.csv': {
-    #             'lines': {'type': ['total'],
-    #                       'N': ['2']}
-    #         },
-    #         project_dir+'../BLonD-kiliakis/results/raw/weak_scale_omp_single_node/comm-comp-report.csv': {
-    #             'lines': {'type': ['total'],
-    #                       'N': ['1'],
-    #                       'n': ['1']}
-    #         },
-    #         project_dir+'../BLonD-kiliakis/results/raw/weak_scale_omp_local/comm-comp-report.csv': {
-    #             'lines': {'type': ['total'],
-    #                       'N': ['1'],
-    #                       'n': ['1'],
-    #                       'turns': ['2000']}
+    #         # res_dir+'raw/strong_scale_hybrid_four_node-2/comm-comp-report.csv': {
+    #         #     'lines': {'parts': ['20000000'],
+    #         #               'omp': ['2', '4', '5', '10', '20'],
+    #         #               'type': ['total']}
+    #         # },
+    #         res_dir+'raw-hpcbatch/strong_scale_hybrid_four_node-4/comm-comp-report.csv': {
+    #             'lines': {'parts': ['20000000'],
+    #                       'omp': ['2', '4', '5', '10'],
+    #                       'type': ['total']}
     #         }
-    #         # project_dir+'../BLonD-kiliakis/results/raw/strong_scale_omp_single_node/comm-comp-report.csv': {
-    #         #     'lines': {'parts': ['10000000'],
+    #         # ,
+    #         # res_dir+'raw/strong_scale_mpi_four_node/comm-comp-report.csv': {
+    #         #     'lines': {'parts': ['20000000'],
     #         #               'type': ['total'],
-    #         #               'N': ['1'],
-    #         #               'n': ['1']}
+    #         #               'N': ['4']}
     #         # }
+
     #     },
-    #     'labels': {'10000000-total-1': '10M-strong-N1',
-    #                '10000000-total-1-1': '10M-strong-omp',
-    #                '20000000-total-2': '20M-strong-N2',
-    #                'total-1': '1M-weak-N1',
-    #                'total-1-1': '1M-weak-omp',
-    #                'total-1-1-2000': '1M-weak-omp-haswell',
-    #                'total-2': '1M-weak-N2'},
+    #     'labels': {'20000000-total-4': '20M-strong-N2',
+    #                '20000000-2-total': '20M-hybrid-T2',
+    #                '20000000-4-total': '20M-hybrid-T4',
+    #                '20000000-5-total': '20M-hybrid-T5',
+    #                '20000000-10-total': '20M-hybrid-T10',
+    #                '20000000-20-total': '20M-hybrid-T20'
+    #                },
     #     # 'exclude': [['v1', 'notcm'], ['v2', 'notcm'], ['v4', 'notcm']],
-    #     'ideal': 'total-2',
+    #     'ideal': '20000000-2-total',
     #     'x_name': 'n',
+    #     'omp_name': 'omp',
     #     'y_name': 'avg_time(sec)',
     #     # 'y_err_name': 'std',
     #     'xlabel': 'MPI Tasks/OMP Threads',
     #     'ylabel': 'Throughput (Particles/sec)',
     #     'title': '',
     #     # 'ylim': [0, 16000],
-    #     'figsize': (6, 2.5),
-    #     'image_name': images_dir + 'mpi-vs-omp-throughput.pdf'
+    #     'figsize': (6, 3),
+    #     'image_name': images_dir + 'mpi-hybrid-throughtput-4.pdf'
 
-    # },
+    # }
 
-    'plot3': {
+    'plot4': {
         'files': {
-            # res_dir+'raw/strong_scale_mpi_single_node/comm-comp-report.csv': {
-            #     'lines': {'parts': ['10000000'],
-            #               'type': ['total'],
-            #               'N': ['1']}
-            # },
-            # res_dir+'raw/strong_scale_mpi_dual_node/comm-comp-report.csv': {
-            #     'lines': {'parts': ['20000000'],
-            #               'type': ['total'],
-            #               'N': ['2']}
-            # },
-            # res_dir+'raw/strong_scale_hybrid_four_node-2/comm-comp-report.csv': {
-            #     'lines': {'parts': ['20000000'],
-            #               'omp': ['2', '4', '5', '10', '20'],
-            #               'type': ['total']}
-            # },
-            res_dir+'raw-hpcbatch/strong_scale_hybrid_four_node-4/comm-comp-report.csv': {
-                'lines': {'parts': ['20000000'],
+            res_dir+'raw/LHC-hybrid-4nodes/comm-comp-report.csv': {
+                'lines': {
                           'omp': ['2', '4', '5', '10'],
                           'type': ['total']}
             }
-            # ,
-            # res_dir+'raw/strong_scale_mpi_four_node/comm-comp-report.csv': {
-            #     'lines': {'parts': ['20000000'],
-            #               'type': ['total'],
-            #               'N': ['4']}
-            # }
 
         },
-        'labels': {'20000000-total-4': '20M-strong-N2',
-                   '20000000-2-total': '20M-hybrid-T2',
-                   '20000000-4-total': '20M-hybrid-T4',
-                   '20000000-5-total': '20M-hybrid-T5',
-                   '20000000-10-total': '20M-hybrid-T10',
-                   '20000000-20-total': '20M-hybrid-T20'
+        'labels': {
+                   '2-total': 'hybrid-T2',
+                   '4-total': 'hybrid-T4',
+                   '5-total': 'hybrid-T5',
+                   '10-total': 'hybrid-T10',
+                   '20-total': 'hybrid-T20'
                    },
         # 'exclude': [['v1', 'notcm'], ['v2', 'notcm'], ['v4', 'notcm']],
-        'ideal': '20000000-2-total',
+        'ideal': '2-total',
         'x_name': 'n',
         'omp_name': 'omp',
         'y_name': 'avg_time(sec)',
@@ -171,24 +96,10 @@ plots_config = {
         'title': '',
         # 'ylim': [0, 16000],
         'figsize': (6, 3),
-        'image_name': images_dir + 'mpi-hybrid-throughtput-4.pdf'
+        'image_name': images_dir + 'LHC-hybrid-throughtput.pdf'
 
     }
 
-    # 'plot6': {'lines': {'version': ['v9', 'v4', 'v9-p100'],
-    #                     'cc': ['nvcc', 'g++'],
-    #                     'tcm': ['tcm', 'na'],
-    #                     'vec': ['vec', 'na']},
-    #           'exclude': [],
-    #           'x_name': 'points',
-    #           'y_name': 'time(ms)',
-    #           'y_err_name': 'std(%)',
-    #           'xlabel': 'Points',
-    #           'ylabel': 'Run-time (ms)',
-    #           'title': 'GPU vs CPU',
-    #           'extra': ['plt.xscale(\'log\', basex=2)'],
-    #           'image_name': images_dir + 'gpu_vs_cpu.pdf'
-    #           }
 
 }
 

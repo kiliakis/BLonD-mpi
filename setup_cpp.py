@@ -62,7 +62,7 @@ boost_path = None
 #                -mfma4 -fopenmp -ftree-vectorizer-verbose=1
 cflags = ['-Ofast', '-std=c++11', '-march=native']
 # cflags = ['-Ofast', '-std=c++11']
-# libs = ['-L/afs/cern.ch/work/k/kiliakis/install/','-lfftw3', '-lm']
+# libs = ['-L/afs/cern.ch/work/k/kiliakis/install/lib','-lfftw3', '-lm']
 libs = []
 
 cpp_files = [

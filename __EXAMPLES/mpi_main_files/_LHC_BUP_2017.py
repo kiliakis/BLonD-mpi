@@ -138,6 +138,7 @@ for i in np.arange(NB):
     beam.dt[i*N_p:(i+1)*N_p] = bunch.dt[0:N_p] + i*25.e-9
     beam.dE[i*N_p:(i+1)*N_p] = bunch.dE[0:N_p]
 
+
 # Profile required for PL
 cutRange = (NB-1)*25.e-9+3.5e-9
 nSlices = np.int(cutRange/0.025e-9 + 1)
@@ -157,8 +158,8 @@ SL_gain = PL_gain/10.
 
 # Noise injected in the PL delayed by one turn and opposite sign
 config = {'machine': 'LHC', 'PL_gain': PL_gain, 'SL_gain': SL_gain}
-PL = BeamFeedback(ring, rf, profile, config, PhaseNoise=LHCnoise,
-                  LHCNoiseFB=noiseFB)
+PL = BeamFeedback(ring, rf, profile, config, PhaseNoise=LHCnoise)
+                  # LHCNoiseFB=noiseFB)
 print("   PL gain is %.4e 1/s for initial turn T0 = %.4e s" % (PL.gain,
                                                                ring.t_rev[0]))
 print("   SL gain is %.4e turns" % PL.gain2)
@@ -170,7 +171,7 @@ print("   SL t_i = %.4f t_f = %.4f" % (PL.lhc_t[0], PL.lhc_t[N_t]))
 # Injecting noise in the cavity, PL on
 
 # Define machine impedance from http://impedance.web.cern.ch/impedance/
-ZTot = np.loadtxt(r'/afs/cern.ch/user/h/htimko/public/LHC/input/Zlong_Allthemachine_450GeV_B1_LHC_inj_450GeV_B1.dat',
+ZTot = np.loadtxt(wrkDir + r'input/Zlong_Allthemachine_450GeV_B1_LHC_inj_450GeV_B1.dat',
                   skiprows=1)
 ZTable = InputTable(ZTot[:, 0], ZTot[:, 1], ZTot[:, 2])
 indVoltage = InducedVoltageFreq(
@@ -233,10 +234,13 @@ try:
         'length_ratio': tracker.length_ratio,
         'alpha_order': tracker.alpha_order,
         'n_slices': profile.n_slices,
+        'bin_size': profile.bin_size,
         'bin_centers': profile.bin_centers,
         'charge': beam.Particle.charge,
         'beam_ratio': beam.ratio,
         'total_impedance': indVoltage.total_impedance,
+        'total_voltage': 0., 
+        'induced_voltage': 0., 
         'n_fft': indVoltage.n_fft,
         'n_induced_voltage': indVoltage.n_induced_voltage,
         'rfp_omega_rf': rf.omega_rf,
@@ -247,6 +251,7 @@ try:
         'rfp_voltage': rf.voltage,
         'rfp_phi_s': rf.phi_s,
         'tracker_acc_kick': tracker.acceleration_kick,
+        'lhc_noise_dphi': LHCnoise.dphi,
         'gain': PL.gain,
         'gain2': PL.gain2,
         'lhc_a': PL.lhc_a,

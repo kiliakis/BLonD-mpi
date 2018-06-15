@@ -84,6 +84,8 @@ def report_comm_comp(indir, files, outfile):
     comp_l = []
     other_l = []
     total_l = []
+    serial_l = []
+    overhead_l = []
     for f in files:
         # print(f)
         data = np.genfromtxt(indir+'/'+f, dtype=str, delimiter='\t')
@@ -95,6 +97,10 @@ def report_comm_comp(indir, files, outfile):
                        for r in data if 'comm' in r[0]], axis=0)
         comp = np.sum([(float(r[-1]), float(r[1]))
                        for r in data if 'comp' in r[0]], axis=0)
+        overhead = np.sum([(float(r[-1]), float(r[1]))
+                           for r in data if 'overhead' in r[0]], axis=0)
+        serial = np.sum([(float(r[-1]), float(r[1]))
+                         for r in data if 'serial' in r[0]], axis=0)
         other = np.sum([(float(r[-1]), float(r[1]))
                         for r in data if 'Other' in r[0]], axis=0)
         total = np.sum([(float(r[-1]), float(r[1]))
@@ -105,22 +111,54 @@ def report_comm_comp(indir, files, outfile):
         comm_l.append(comm)
         comp_l.append(comp)
         other_l.append(other)
+        serial_l.append(serial)
+        overhead_l.append(overhead)
         total_l.append(total)
     string = 'type\tavg_time(sec)\tavg_percent\tmin\tmax\tstd\n'
-    string += ('%s\t%.2f\t%.2f\t%.2f\t%.2f\t%.2f\n' %
-               ('comm', np.mean(comm_l, axis=0)[1], np.mean(comm_l, axis=0)[0],
-                np.min(comm_l, axis=0)[0], np.max(comm_l, axis=0)[0], np.std(comm_l, axis=0)[0]))
-    string += ('%s\t%.2f\t%.2f\t%.2f\t%.2f\t%.2f\n' %
-               ('comp', np.mean(comp_l, axis=0)[1], np.mean(comp_l, axis=0)[0],
-                np.min(comp_l, axis=0)[0], np.max(comp_l, axis=0)[0], np.std(comp_l, axis=0)[0]))
-    string += ('%s\t%.2f\t%.2f\t%.2f\t%.2f\t%.2f\n' %
-               ('other', np.mean(other_l, axis=0)[1], np.mean(other_l, axis=0)[0],
-                np.min(other_l, axis=0)[0], np.max(other_l, axis=0)[0], np.std(other_l, axis=0)[0]))
-    string += ('%s\t%.2f\t%.2f\t%.2f\t%.2f\t%.2f\n' %
-               ('total', np.mean(total_l, axis=0)[1], np.mean(total_l, axis=0)[0],
-                np.min(total_l, axis=0)[0], np.max(total_l, axis=0)[0], np.std(total_l, axis=0)[0]))
+    try:
+        string += ('%s\t%.2f\t%.2f\t%.2f\t%.2f\t%.2f\n' %
+                   ('comm', np.mean(comm_l, axis=0)[1], np.mean(comm_l, axis=0)[0],
+                    np.min(comm_l, axis=0)[0], np.max(comm_l, axis=0)[0], np.std(comm_l, axis=0)[0]))
+    except:
+        pass
+
+    try:
+        string += ('%s\t%.2f\t%.2f\t%.2f\t%.2f\t%.2f\n' %
+                   ('comp', np.mean(comp_l, axis=0)[1], np.mean(comp_l, axis=0)[0],
+                    np.min(comp_l, axis=0)[0], np.max(comp_l, axis=0)[0], np.std(comp_l, axis=0)[0]))
+    except:
+        pass
+
+    try:
+        string += ('%s\t%.2f\t%.2f\t%.2f\t%.2f\t%.2f\n' %
+                   ('serial', np.mean(serial_l, axis=0)[1], np.mean(serial_l, axis=0)[0],
+                    np.min(serial_l, axis=0)[0], np.max(serial_l, axis=0)[0], np.std(serial_l, axis=0)[0]))
+    except:
+        pass
+
+    try:
+        string += ('%s\t%.2f\t%.2f\t%.2f\t%.2f\t%.2f\n' %
+                   ('overhead', np.mean(overhead_l, axis=0)[1], np.mean(overhead_l, axis=0)[0],
+                    np.min(overhead_l, axis=0)[0], np.max(overhead_l, axis=0)[0], np.std(overhead_l, axis=0)[0]))
+    except:
+        pass
+
+    try:
+        string += ('%s\t%.2f\t%.2f\t%.2f\t%.2f\t%.2f\n' %
+                   ('other', np.mean(other_l, axis=0)[1], np.mean(other_l, axis=0)[0],
+                    np.min(other_l, axis=0)[0], np.max(other_l, axis=0)[0], np.std(other_l, axis=0)[0]))
+    except:
+        pass
+    
+    try:
+        string += ('%s\t%.2f\t%.2f\t%.2f\t%.2f\t%.2f\n' %
+                   ('total', np.mean(total_l, axis=0)[1], np.mean(total_l, axis=0)[0],
+                    np.min(total_l, axis=0)[0], np.max(total_l, axis=0)[0], np.std(total_l, axis=0)[0]))
+    except:
+        pass
 
     outfile.write(string)
+
 
 def report_avg(indir, files, outfile):
     default_funcs = []
@@ -159,7 +197,7 @@ def report_avg(indir, files, outfile):
     for f, r in zip(default_funcs, acc_data):
         writer.writerow([f]+list(r))
 
-        
+
 if __name__ == '__main__':
     args = parser.parse_args()
     # print(args)

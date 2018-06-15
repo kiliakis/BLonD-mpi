@@ -13,7 +13,7 @@ from time import sleep
 home = os.environ['HOME'] + '/git/BLonD-mpi'
 result_dir = home + '/results/raw/{}/{}/{}'
 
-exe = home + '/__EXAMPLES/mpi_main_files/EX_01_Acceleration-master.py'
+exe = home + '/__EXAMPLES/mpi_main_files/_LHC_BUP_2017.py'
 batch_script = home + '/mpi_scripts/batch-simple.sh'
 setup_script = home + '/mpi_scripts/batch-setup.sh'
 job_name_form = '{}/_p{}_s{}_t{}_w{}_o{}_N{}_'
@@ -100,26 +100,48 @@ configs = {
     #                                 'partition': cycle(['be-long'])
     #                                 }
 
-    'strong_scale_hybrid_four_node-4': {'p': cycle([20000000]),
-                                        's': cycle([10000]),
-                                        't': cycle([2000]),
-                                        'w': list(np.arange(2, 21, 1))
-                                        + list(np.arange(2, 41, 1))
-                                        + list(np.arange(2, 17, 1)),
-                                        # list(np.arange(2, 9, 1))
-                                        # + list(np.arange(3, 20, 2))
-                                        'o': [4]*19 + [2]*39 + [5]*15,
-                                        # [10]*7 + [5]*8,
-                                        # + [4]*9 + [2]*10,
-                                        'N': [1]*4 + [2]*5 + [3]*5 + [4]*5
-                                        + [1]*9 + [2]*10 + [3]*10 + [4]*10
-                                        + [1]*3 + [2]*4 + [3]*4 + [4]*4,
-                                        # [1, 1, 2, 2, 2, 3, 3, 4, 4, 4],
-                                        # [1, 2, 2, 3, 3, 4, 4]
-                                        # + [1, 2, 2, 2, 3, 3, 4, 4, 4]
-                                        'time': cycle([60]),
-                                        'partition': cycle(['be-long'])
-                                        }
+    # 'strong_scale_hybrid_four_node-4': {'p': cycle([20000000]),
+    #                                     's': cycle([10000]),
+    #                                     't': cycle([2000]),
+    #                                     'w': list(np.arange(2, 21, 1))
+    #                                     + list(np.arange(2, 41, 1))
+    #                                     + list(np.arange(2, 17, 1)),
+    #                                     # list(np.arange(2, 9, 1))
+    #                                     # + list(np.arange(3, 20, 2))
+    #                                     'o': [4]*19 + [2]*39 + [5]*15,
+    #                                     # [10]*7 + [5]*8,
+    #                                     # + [4]*9 + [2]*10,
+    #                                     'N': [1]*4 + [2]*5 + [3]*5 + [4]*5
+    #                                     + [1]*9 + [2]*10 + [3]*10 + [4]*10
+    #                                     + [1]*3 + [2]*4 + [3]*4 + [4]*4,
+    #                                     # [1, 1, 2, 2, 2, 3, 3, 4, 4, 4],
+    #                                     # [1, 2, 2, 3, 3, 4, 4]
+    #                                     # + [1, 2, 2, 2, 3, 3, 4, 4, 4]
+    #                                     'time': cycle([60]),
+    #                                     'partition': cycle(['be-long'])
+    #                                     }
+
+
+    'LHC-hybrid-4nodes': {'p': cycle([1000000]),
+                          's': cycle([1000]),
+                          't': cycle([10000]),
+                          'w': list(np.arange(4, 41, 4))
+                          + list(np.arange(2, 21, 2))
+                          + list(np.arange(2, 17, 2))
+                          + list(np.arange(2, 9, 1)),
+                          # + list(np.arange(3, 20, 2))
+                          'o': [2]*10 + [4]*10 + [5]*8 + [10]*7,
+                          'N': [1, 1, 2, 2, 2, 3, 3, 4, 4, 4]
+                          + [1, 1, 2, 2, 2, 3, 3, 4, 4, 4]
+                          + [1, 1, 2, 2, 3, 3, 4, 4]
+                          + [1, 2, 2, 3, 3, 4, 4],
+                          # + [1]*4 + [2]*5 + [3]*5 + [4]*5
+                          # + [1]*9 + [2]*10 + [3]*10 + [4]*10
+                          # + [1]*3 + [2]*4 + [3]*4 + [4]*4,
+                          'time': cycle([60]),
+                          'partition': cycle(['be-long'])
+                          }
+
 
 
     # 'strong_scale_hybrid_four_node-2': {'p': cycle([20000000]),
