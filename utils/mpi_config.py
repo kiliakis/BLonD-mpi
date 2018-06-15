@@ -37,6 +37,7 @@ task_id = {
     'induced_voltage_1turn': np.array(11, np.uint8),
     'histo_and_induced_voltage': np.array(12, np.uint8),
     'gather_single': np.array(13, np.uint8),
+    'beamFB': np.array(14, np.uint8),
     'stop': np.array(255, np.uint8)
 }
 

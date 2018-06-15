@@ -44,9 +44,10 @@ def rf_volt_comp_mpi(voltages, omega_rf, phi_rf, ring):
     master.bcast('RFVCalc')
 
     vars_dict = {
-        'voltages': voltages,
-        'omega_rf': omega_rf,
-        'phi_rf': phi_rf
+        # 'voltages': voltages,
+        # 'omega_rf': omega_rf,
+        # 'phi_rf': phi_rf
+        'turn': ring.counter[0]
     }
 
     master.multi_bcast(vars_dict, msg=False)
@@ -89,16 +90,17 @@ def kick_mpi(ring, turn):
     master = mpiconf.master
     master.bcast('kick')
 
-    with timing.timed_region('master:kick') as tr:
-        voltage_kick = np.ascontiguousarray(ring.charge*ring.voltage[:, turn])
-        omegarf_kick = np.ascontiguousarray(ring.omega_rf[:, turn])
-        phirf_kick = np.ascontiguousarray(ring.phi_rf[:, turn])
+    # with timing.timed_region('master:kick') as tr:
+    #     voltage_kick = np.ascontiguousarray(ring.charge*ring.voltage[:, turn])
+    #     omegarf_kick = np.ascontiguousarray(ring.omega_rf[:, turn])
+    #     phirf_kick = np.ascontiguousarray(ring.phi_rf[:, turn])
 
     vars_dict = {
-        'voltage': voltage_kick,
-        'omegarf': omegarf_kick,
-        'phirf': phirf_kick,
-        'acc_kick': ring.acceleration_kick[turn]
+        # 'voltage': voltage_kick,
+        # 'omegarf': omegarf_kick,
+        # 'phirf': phirf_kick,
+        'turn': turn
+        # 'acc_kick': ring.acceleration_kick[turn]
     }
 
     master.multi_bcast(vars_dict, msg=False)

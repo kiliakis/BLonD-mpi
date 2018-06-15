@@ -76,9 +76,14 @@ class Worker:
     # @mpiprof.traceit(key='kick')
     def kick(self):
         self.bcast()
+        global turn
         with timing.timed_region('comp:kick') as tr:
             with mpiprof.traced_region('comp:kick') as tr:
-                bph._kick(dt, dE, voltage, omegarf, phirf, n_rf, acc_kick)
+                voltage = np.ascontiguousarray(charge * rfp_voltage[:, turn])
+                omegarf = np.ascontiguousarray(rfp_omega_rf[:, turn])
+                phirf = np.ascontiguousarray(rfp_phi_rf[:, turn])
+                bph._kick(dt, dE, voltage, omegarf, phirf, n_rf, tracker_acc_kick[turn])
+        self.update()
 
     # @timing.timeit(key='comp:drift')
     # @mpiprof.traceit(key='drift')
@@ -88,6 +93,7 @@ class Worker:
             with mpiprof.traced_region('comp:drift') as tr:
                 bph._drift(dt, dE, solver, t_rev, length_ratio, alpha_order,
                            eta_0, eta_1, eta_2, beta, energy)
+        self.update()
 
     # @timing.timeit('comp:histo')
     # @mpiprof.traceit(key='histo')
@@ -119,14 +125,15 @@ class Worker:
                 # profile = new_profile
                 # self.active.update({'profile': profile})
         # Or even better, allreduce it
+        self.update()
 
     def induced_voltage_1turn(self):
         # for any per-turn updated variables
         global total_voltage
         self.bcast()
 
-        with timing.timed_region('comp:indVolt1Turn') as tr:
-            with mpiprof.traced_region('comp:indVolt1Turn') as tr:
+        with timing.timed_region('serial:indVolt1Turn') as tr:
+            with mpiprof.traced_region('serial:indVolt1Turn') as tr:
                 # Beam_spectrum_generation
                 beam_spectrum = bm.rfft(profile, n_fft)
 
@@ -135,7 +142,8 @@ class Worker:
                 induced_voltage = induced_voltage[:n_induced_voltage]
 
                 total_voltage += induced_voltage[:n_slices]
-                self.active.update({'total_voltage': total_voltage})
+                # self.active.update({'total_voltage': total_voltage})
+        self.update()
 
     def histo_and_induced_voltage(self):
         self.bcast()
@@ -160,8 +168,8 @@ class Worker:
                 end = min((self.rank+1) * basesize, len(profile))
                 self.intercomm.Gatherv(profile[start:end], recvbuf, root=0)
 
-        with timing.timed_region('comp:indVolt1Turn') as tr:
-            with mpiprof.traced_region('comp:indVolt1Turn') as tr:
+        with timing.timed_region('serial:indVolt1Turn') as tr:
+            with mpiprof.traced_region('serial:indVolt1Turn') as tr:
                 # Beam_spectrum_generation
                 beam_spectrum = bm.rfft(profile, n_fft)
 
@@ -170,14 +178,9 @@ class Worker:
                 induced_voltage = induced_voltage[:n_induced_voltage]
 
                 total_voltage += induced_voltage[:n_slices]
-                self.active.update({'total_voltage': total_voltage})
 
-                # profile = new_profile
-                # self.active.update({'profile': profile})
-        # Or even better, allreduce it
+        self.update()
 
-        # for any per-turn updated variables
-        # self.bcast()
 
     # @timing.timeit(key='comp:LIKick')
     # @mpiprof.traceit(key='LIKick')
@@ -187,6 +190,7 @@ class Worker:
             with mpiprof.traced_region('comp:LIKick') as tr:
                 bph._linear_interp_kick(dt, dE, total_voltage, bin_centers,
                                         charge, acc_kick)
+        self.update()
 
     # @timing.timeit(key='comp:SR')
     def SR(self):
@@ -194,19 +198,70 @@ class Worker:
         with timing.timed_region('comp:SR') as tr:
             with mpiprof.traced_region('comp:SR') as tr:
                 bph._sync_rad_full(dE, U0, tau_z, n_kicks, sigma_dE, energy)
+        self.update()
 
     # Perhaps this is not big enough to use mpi, an omp might be better
     # @timing.timeit(key='comp:RFVCalc')
     def RFVCalc(self):
         self.bcast()
-        global total_voltage
-        with timing.timed_region('comp:RFVCalc') as tr:
-            with mpiprof.traced_region('comp:RFVCalc') as tr:
+        global total_voltage, turn
+        with timing.timed_region('serial:RFVCalc') as tr:
+            with mpiprof.traced_region('serial:RFVCalc') as tr:
+                voltages = np.ascontiguousarray(rfp_voltage[:, turn])
+                omega_rf = np.ascontiguousarray(rfp_omega_rf[:, turn])
+                phi_rf = np.ascontiguousarray(rfp_phi_rf[:, turn])
                 rf_voltage = np.empty(len(bin_centers), dtype='d')
+                
                 bph._rf_volt_comp(voltages, omega_rf, phi_rf, bin_centers,
                                   rf_voltage)
 
                 total_voltage += rf_voltage
+        self.update()
+
+    def beamFB(self):
+        self.bcast()
+        global turn, lhc_y, rfp_dphi_rf, rfp_omega_rf, rfp_phi_rf
+        with timing.timed_region('serial:beamFB') as tr:
+            with mpiprof.traced_region('serial:beamFB') as tr:
+                coeff = bph._beam_phase(
+                    bin_centers, profile, alpha,
+                    rfp_omega_rf[0, turn],
+                    rfp_phi_rf[0, turn])
+
+                phi_beam = np.arctan(coeff) + np.pi
+
+                dphi = phi_beam - rfp_phi_s[turn]
+
+                domega_rf = - gain*dphi - gain2 * \
+                    (lhc_y + lhc_a[turn] *
+                     (rfp_dphi_rf[0] + reference))
+
+                lhc_y = (1 - lhc_t[turn]) * lhc_y + \
+                        (1 - lhc_a[turn]) * lhc_t[turn] * \
+                        (rfp_dphi_rf[0] + reference)
+
+                # # Update the RF frequency of all systems for the next turn
+                turn = turn + 1
+                rfp_omega_rf[:, turn] += domega_rf * \
+                    rfp_harmonic[:, turn] / \
+                    rfp_harmonic[0, turn]
+
+                # Update the RF phase of all systems for the next turn
+                # Accumulated phase offset due to PL in each RF system
+                rfp_dphi_rf += 2.*np.pi*rfp_harmonic[:, turn] * \
+                    (rfp_omega_rf[:, turn] -
+                     rfp_omega_rf_d[:, turn]) / \
+                    rfp_omega_rf_d[:, turn]
+
+                # Total phase offset
+                rfp_phi_rf[:, turn] += rfp_dphi_rf
+
+        self.update()
+
+    @timing.timeit(key='overhead:update')
+    @mpiprof.traceit(key='overhead:update')        
+    def update(self):
+        self.active.update(globals())
 
     @timing.timeit(key='comm:gather')
     @mpiprof.traceit(key='comm:gather')
@@ -250,8 +305,8 @@ class Worker:
         self.intercomm.Disconnect()
         exit(0)
 
-    @timing.timeit(key='comm:switch_context')
-    @mpiprof.traceit(key='comm:switch_context')
+    @timing.timeit(key='overhead:switch_context')
+    @mpiprof.traceit(key='overhead:switch_context')
     def switch_context(self):
         recvbuf = np.array(0, dtype='i')
         self.intercomm.Bcast(recvbuf, root=0)
@@ -298,6 +353,7 @@ def main():
             11: worker.induced_voltage_1turn,
             12: worker.histo_and_induced_voltage,
             13: worker.gather_single,
+            14: worker.beamFB,
             255: worker.stop
         }
 

@@ -238,7 +238,22 @@ try:
         'beam_ratio': beam.ratio,
         'total_impedance': indVoltage.total_impedance,
         'n_fft': indVoltage.n_fft,
-        'n_induced_voltage': indVoltage.n_induced_voltage
+        'n_induced_voltage': indVoltage.n_induced_voltage,
+        'rfp_omega_rf': rf.omega_rf,
+        'rfp_omega_rf_d': rf.omega_rf_d,
+        'rfp_phi_rf': rf.phi_rf,
+        'rfp_dphi_rf': rf.dphi_rf,
+        'rfp_harmonic': rf.harmonic,
+        'rfp_voltage': rf.voltage,
+        'rfp_phi_s': rf.phi_s,
+        'tracker_acc_kick': tracker.acceleration_kick,
+        'gain': PL.gain,
+        'gain2': PL.gain2,
+        'lhc_a': PL.lhc_a,
+        'lhc_t': PL.lhc_t,
+        'lhc_y': PL.lhc_y,
+        'alpha': PL.alpha,
+        'reference': PL.reference
     }
 
     master.multi_bcast(init_dict)
@@ -276,7 +291,7 @@ try:
         tracker.track()
 
         # noiseFB.track()
-        
+
         # Track
         # for m in map_:
         #     m.track()

@@ -194,24 +194,31 @@ class BeamFeedback(object):
         Calculate PL correction on main RF frequency depending on machine.
         Update the RF phase and frequency of the next turn for all systems.
         '''    
+
+        import utils.mpi_config as mpiconf
+        master = mpiconf.master
+        master.bcast('beamFB')
+
+        master.multi_bcast({'turn': int(self.rf_params.counter[0])}, msg=False)
+
         
         # Calculate PL correction on RF frequency    
-        getattr(self, self.machine)()
+        # getattr(self, self.machine)()
 
-        # Update the RF frequency of all systems for the next turn
-        counter = self.rf_params.counter[0] + 1
-        self.rf_params.omega_rf[:,counter] += self.domega_rf* \
-            self.rf_params.harmonic[:,counter]/self.rf_params.harmonic[0,counter]  
+        # # Update the RF frequency of all systems for the next turn
+        # counter = self.rf_params.counter[0] + 1
+        # self.rf_params.omega_rf[:,counter] += self.domega_rf* \
+        #     self.rf_params.harmonic[:,counter]/self.rf_params.harmonic[0,counter]  
 
-        # Update the RF phase of all systems for the next turn
-        # Accumulated phase offset due to PL in each RF system
-        self.rf_params.dphi_rf += 2.*np.pi*self.rf_params.harmonic[:,counter]* \
-            (self.rf_params.omega_rf[:,counter] - 
-             self.rf_params.omega_rf_d[:,counter])/ \
-             self.rf_params.omega_rf_d[:,counter] 
+        # # Update the RF phase of all systems for the next turn
+        # # Accumulated phase offset due to PL in each RF system
+        # self.rf_params.dphi_rf += 2.*np.pi*self.rf_params.harmonic[:,counter]* \
+        #     (self.rf_params.omega_rf[:,counter] - 
+        #      self.rf_params.omega_rf_d[:,counter])/ \
+        #      self.rf_params.omega_rf_d[:,counter] 
 
-        # Total phase offset
-        self.rf_params.phi_rf[:,counter] += self.rf_params.dphi_rf
+        # # Total phase offset
+        # self.rf_params.phi_rf[:,counter] += self.rf_params.dphi_rf
         
 
     def precalculate_time(self, Ring):
