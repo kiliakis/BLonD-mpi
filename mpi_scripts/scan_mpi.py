@@ -16,7 +16,7 @@ result_dir = home + '/results/raw/{}/{}/{}'
 exe = home + '/__EXAMPLES/mpi_main_files/_LHC_BUP_2017.py'
 batch_script = home + '/mpi_scripts/batch-simple.sh'
 setup_script = home + '/mpi_scripts/batch-setup.sh'
-job_name_form = '{}/_p{}_s{}_t{}_w{}_o{}_N{}_'
+job_name_form = '{}/_p{}_b{}_s{}_t{}_w{}_o{}_N{}_'
 
 configs = {
     # 'weak_scale_mpi_single_node': {'p': np.arange(1000000, 19000001, 1000000),
@@ -142,25 +142,26 @@ configs = {
     #                       'partition': cycle(['be-long'])
     #                       }
 
-    'LHC-hybrid-4nodes': {'p': cycle([1000000]),
-                          's': cycle([1000]),
-                          't': cycle([10000]),
-                          'w': list(np.arange(2, 81, 2)), 
-                          # list(np.arange(4, 41, 4))
-                          # + list(np.arange(2, 21, 2))
-                          # + list(np.arange(2, 17, 2))
-                          # + list(np.arange(2, 9, 1)),
-                          # + list(np.arange(3, 20, 2))
-                          'o': [1] * 40,
-                          # [2]*10 + [4]*10 + [5]*8 + [10]*7,
-                          'N': [1] * 10 + [2] * 10 + [3] * 10 + [4] * 10,
-                          # + [1, 1, 2, 2, 2, 3, 3, 4, 4, 4]
-                          # + [1, 1, 2, 2, 2, 3, 3, 4, 4, 4]
-                          # + [1, 1, 2, 2, 3, 3, 4, 4]
-                          # + [1, 2, 2, 3, 3, 4, 4],
-                          'time': cycle([120]),
-                          'partition': cycle(['be-long'])
-                          }
+    'LHC-hybrid-4nodes-96B': {'p': cycle([1000000]),
+                              'b': cycle([96]),
+                              's': cycle([1000]),
+                              't': cycle([10000]),
+                              'w': list(np.arange(4, 41, 4))
+                              + list(np.arange(2, 21, 2))
+                              + list(np.arange(2, 17, 2))
+                              + list(np.arange(2, 9, 1)),
+                              # list(np.arange(2, 81, 2)),
+                              # + list(np.arange(3, 20, 2))
+                              'o': [2]*10 + [4]*10 + [5]*8 + [10]*7,
+                              # [1] * 40,
+                              'N': [1, 1, 2, 2, 2, 3, 3, 4, 4, 4]
+                              + [1, 1, 2, 2, 2, 3, 3, 4, 4, 4]
+                              + [1, 1, 2, 2, 3, 3, 4, 4]
+                              + [1, 2, 2, 3, 3, 4, 4],
+                              # [1] * 10 + [2] * 10 + [3] * 10 + [4] * 10,
+                              'time': cycle([240]),
+                              'partition': cycle(['be-long'])
+                              }
 
 
     # 'strong_scale_hybrid_four_node-2': {'p': cycle([20000000]),
@@ -194,6 +195,7 @@ os.chdir(home)
 
 for analysis, config in configs.items():
     ps = config['p']
+    bs = config['b']
     ss = config['s']
     ts = config['t']
     ws = config['w']
@@ -203,9 +205,9 @@ for analysis, config in configs.items():
     partitions = config['partition']
     stdout = open(analysis + '.txt', 'w')
 
-    for p, s, t, w, o, N, time, partition in zip(ps, ss, ts, ws,
+    for p, b, s, t, w, o, N, time, partition in zip(ps, bs, ss, ts, ws,
                                                  oss, Ns, times, partitions):
-        job_name = job_name_form.format(analysis, p, s, t, w, o, N)
+        job_name = job_name_form.format(analysis, p, b, s, t, w, o, N)
         # os.environ['OMP_NUM_THREADS'] = str(o)
         for i in range(repeats):
             timestr = datetime.now().strftime('%d%b%y.%H-%M-%S')
@@ -220,6 +222,7 @@ for analysis, config in configs.items():
             # exe_args = ['-n', str('python', exe,
             exe_args = ['-n', str(w), 'python', exe,
                         '-p', str(p), '-s', str(s),
+                        '-b', str(b),
                         '-t', str(t), '-time',
                         '-o', str(o), '-r', report_dir]
             print(job_name, timestr)

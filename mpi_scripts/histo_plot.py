@@ -20,12 +20,13 @@ plots_config = {
         'files': {
             res_dir+'raw/LHC-hybrid-4nodes/comm-comp-report.csv': {
                 'lines': {
-                    'omp': ['2', '4', '5', '10'],
-                    'type': ['comp', 'serial', 'comm', 'overhead']}
+                    'omp': ['1', '2', '4', '5', '10'],
+                    'type': ['comp', 'serial', 'comm', 'other', 'overhead']}
             }
 
         },
         'labels': {
+            '1': 'hyb-T1',
             '2': 'hyb-T2',
             '4': 'hyb-T4',
             '5': 'hyb-T5',
@@ -33,6 +34,7 @@ plots_config = {
             # '20': 'hybrid-T20'
         },
         'colors': {
+            '1': 'tab:purple',
             '2': 'tab:blue',
             '4': 'tab:orange',
             '5': 'tab:green',
@@ -43,7 +45,7 @@ plots_config = {
             'comm': 'o',
             'comp': 'x',
             'serial': '^',
-            'overhead': 's'
+            'other': 's'
         },
         # 'exclude': [['v1', 'notcm'], ['v2', 'notcm'], ['v4', 'notcm']],
         'x_name': 'n',
@@ -76,7 +78,7 @@ if __name__ == '__main__':
         fig = plt.figure(figsize=config['figsize'])
         plt.grid(True, which='major', alpha=0.6)
         plt.grid(True, which='minor', alpha=0.6, linestyle=':')
-        plt.minorticks_on()
+        # plt.minorticks_on()
         plt.title(config['title'])
         plt.xlabel(config['xlabel'])
         plt.ylabel(config['ylabel'])
@@ -86,6 +88,8 @@ if __name__ == '__main__':
 
         for label, values in plots_dir.items():
             # print(values)
+            if ('overhead' in label):
+                continue
             x = np.array(values[:, header.index(config['x_name'])], float)
             omp = np.array(values[:, header.index(config['omp_name'])], float)
             x = (x-1) * omp
@@ -99,6 +103,12 @@ if __name__ == '__main__':
             print(label, x, y)
             # label = config['labels'][label]
             label = label.split('-')
+
+            if (label[1] == 'others'):
+                y += np.array(plots_dir[label[0]+ '-overhead'][:, header.index(config['y_name'])], float)
+                y_err = np.array(
+                    plots_dir[label[0]+ '-overhead'][:, header.index(config['y_err_name'])], float)
+
             # if config['labels'][label[0]] in plt.gca().get_legend_handles_labels()[1]:
             plt.errorbar(x, y, yerr=y_err,
                          capsize=1, marker=config['markers'][label[1]], linewidth=1.5, elinewidth=1,

@@ -13,6 +13,10 @@ parser.add_argument('-p', '--particles', type=int,
 parser.add_argument('-s', '--slices', type=int,
                     help='Number of slices.')
 
+parser.add_argument('-b', '--bunches', type=int,
+                    help='Number of bunches.')
+
+
 
 parser.add_argument('-t', '--turns', type=int, default=2000,
                     help='Number of simulation turns.'

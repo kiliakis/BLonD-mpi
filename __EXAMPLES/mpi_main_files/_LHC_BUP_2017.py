@@ -79,6 +79,9 @@ if args.get('turns', None):
 if args.get('particles', None):
     N_p = args['particles']
 
+if args.get('bunches', None):
+    NB = args['bunches']
+
 if args.get('omp', None):
     os.environ['OMP_NUM_THREADS'] = str(args['omp'])
 if 'log' in args:

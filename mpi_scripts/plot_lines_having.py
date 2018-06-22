@@ -73,12 +73,13 @@ plots_config = {
         'files': {
             res_dir+'raw/LHC-hybrid-4nodes/comm-comp-report.csv': {
                 'lines': {
-                          'omp': ['2', '4', '5', '10'],
+                          'omp': ['1', '2', '4', '5', '10'],
                           'type': ['total']}
             }
 
         },
         'labels': {
+                   '1-total': 'hybrid-T1',
                    '2-total': 'hybrid-T2',
                    '4-total': 'hybrid-T4',
                    '5-total': 'hybrid-T5',
@@ -117,7 +118,7 @@ if __name__ == '__main__':
         fig = plt.figure(figsize=config['figsize'])
         plt.grid(True, which='major', alpha=0.6)
         plt.grid(True, which='minor', alpha=0.6, linestyle=':')
-        plt.minorticks_on()
+        # plt.minorticks_on()
         plt.title(config['title'])
         plt.xlabel(config['xlabel'])
         plt.ylabel(config['ylabel'])

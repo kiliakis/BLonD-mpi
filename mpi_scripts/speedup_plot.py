@@ -20,19 +20,20 @@ plots_config = {
         'files': {
             res_dir+'raw/LHC-hybrid-4nodes/comm-comp-report.csv': {
                 'lines': {
-                          'omp': ['2', '4', '5', '10'],
+                          'omp': ['1', '2', '4', '5', '10'],
                           'type': ['total']}
             }
 
         },
         'labels': {
+                   '1-total': 'hybrid-T1',
                    '2-total': 'hybrid-T2',
                    '4-total': 'hybrid-T4',
                    '5-total': 'hybrid-T5',
                    '10-total': 'hybrid-T10',
                    '20-total': 'hybrid-T20'
                    },
-        'reference': { 'time': 3445., 'parts': 1000000, 'turns':10000},
+        'reference': { 'time': 4057. , 'parts': 1000000, 'turns':10000},
         # 'exclude': [['v1', 'notcm'], ['v2', 'notcm'], ['v4', 'notcm']],
         'ideal': '2-total',
         'x_name': 'n',
@@ -45,6 +46,39 @@ plots_config = {
         # 'ylim': [0, 16000],
         'figsize': (6, 3),
         'image_name': images_dir + 'LHC-hybrid-speedup.pdf'
+
+    },
+
+    'plot1': {
+        'files': {
+            res_dir+'raw/LHC_omp_single_node/comm-comp-report.csv': {
+                'lines': {
+                          # 'omp': ['1', '2', '4', '5', '10'],
+                          'type': ['total']}
+            }
+
+        },
+        'labels': {
+                   'total': 'OMP-only-cluster'
+                   # '2-total': 'hybrid-T2',
+                   # '4-total': 'hybrid-T4',
+                   # '5-total': 'hybrid-T5',
+                   # '10-total': 'hybrid-T10',
+                   # '20-total': 'hybrid-T20'
+                   },
+        'reference': { 'time': 4057. , 'parts': 1000000, 'turns':10000},
+        # 'exclude': [['v1', 'notcm'], ['v2', 'notcm'], ['v4', 'notcm']],
+        # 'ideal': '2-total',
+        'x_name': 'omp',
+        'omp_name': 'n',
+        'y_name': 'avg_time(sec)',
+        # 'y_err_name': 'std',
+        'xlabel': 'MPI Tasks/OMP Threads',
+        'ylabel': 'Speedup',
+        'title': '',
+        # 'ylim': [0, 16000],
+        'figsize': (6, 3),
+        'image_name': images_dir + 'LHC-omp-only-speedup.pdf'
 
     }
 
@@ -65,7 +99,7 @@ if __name__ == '__main__':
         fig = plt.figure(figsize=config['figsize'])
         plt.grid(True, which='major', alpha=0.6)
         plt.grid(True, which='minor', alpha=0.6, linestyle=':')
-        plt.minorticks_on()
+        # plt.minorticks_on()
         plt.title(config['title'])
         plt.xlabel(config['xlabel'])
         plt.ylabel(config['ylabel'])
@@ -80,7 +114,8 @@ if __name__ == '__main__':
             omp = np.array(
                 values[:, header.index(config['omp_name'])], float)
             # sub 1 due to the master
-            x = (x-1) * omp
+            if (plot_key != 'plot1'):
+                x = (x-1) * omp
 
             y = np.array(values[:, header.index(config['y_name'])], float)
             parts = np.array(values[:, header.index('parts')], float)
