@@ -135,7 +135,7 @@ def drift_mpi(ring, turn):
     # with mpiprof.timed_region('master:drift') as tr:
 
     master = mpiconf.master
-    master.bcast('drift')
+    # master.bcast('drift')
     vars_dict = {
         't_rev': ring.t_rev[turn],
         'eta_0': ring.eta_0[turn],
@@ -178,7 +178,7 @@ def LIKick_mpi(ring, turn):
     # with mpiprof.timed_region('master:LIKick') as tr:
 
     master = mpiconf.master
-    master.bcast('LIKick')
+    # master.bcast('LIKick')
 
     vars_dict = {
         # 'total_voltage': ring.total_voltage,
@@ -219,7 +219,7 @@ def slice_mpi(profile):
     # with mpiprof.timed_region('master:histo') as tr:
 
     master = mpiconf.master
-    master.bcast('histo')
+    # master.bcast('histo')
 
     vars_dict = {
         'cut_left': profile.cut_left,
@@ -230,7 +230,7 @@ def slice_mpi(profile):
     # zero = np.zeros(profile.n_slices, dtype='d')
     # master.reduce(zero, profile.n_macroparticles)
     # master.multi_bcast({'profile': profile.n_macroparticles}, msg=False)
-    master.gather_single({'profile': profile.n_macroparticles})
+    master.gather_single({'profile': profile.n_macroparticles}, msg=False)
     # zero = np.zeros(profile.n_slices, dtype='d')
     # profile.n_macroparticles = np.zeros(profile.n_slices, dtype='d')
     # master.intracomm.Allreduce(

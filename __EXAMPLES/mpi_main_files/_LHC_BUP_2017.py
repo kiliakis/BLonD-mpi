@@ -162,7 +162,7 @@ SL_gain = PL_gain/10.
 # Noise injected in the PL delayed by one turn and opposite sign
 config = {'machine': 'LHC', 'PL_gain': PL_gain, 'SL_gain': SL_gain}
 PL = BeamFeedback(ring, rf, profile, config, PhaseNoise=LHCnoise)
-                  # LHCNoiseFB=noiseFB)
+# LHCNoiseFB=noiseFB)
 print("   PL gain is %.4e 1/s for initial turn T0 = %.4e s" % (PL.gain,
                                                                ring.t_rev[0]))
 print("   SL gain is %.4e turns" % PL.gain2)
@@ -242,8 +242,8 @@ try:
         'charge': beam.Particle.charge,
         'beam_ratio': beam.ratio,
         'total_impedance': indVoltage.total_impedance,
-        'total_voltage': 0., 
-        'induced_voltage': 0., 
+        'total_voltage': 0.,
+        'induced_voltage': 0.,
         'n_fft': indVoltage.n_fft,
         'n_induced_voltage': indVoltage.n_induced_voltage,
         'rfp_omega_rf': rf.omega_rf,
@@ -271,7 +271,7 @@ try:
         'dE': beam.dE
     }
     master.multi_scatter(vars_dict)
-
+    master.bcast(['histo', 'gather_single'])
     profile.track()
 
     print("Ready for tracking!")
@@ -281,6 +281,10 @@ try:
     for i in range(N_t):
         # for i in range(turns):
         t0 = time.clock()
+        master.bcast(['bcast', 'induced_voltage_1turn',
+                      'histo', 'gather_single',
+                      'beamFB', 'RFVCalc',
+                      'LIKick', 'drift'])
 
         # Remove lost particles to obtain a correct r.m.s. value
         # if (i % 1000) == 0:  # reduce computational costs

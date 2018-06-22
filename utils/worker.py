@@ -4,6 +4,8 @@ import numpy as np
 import sys
 import os
 import logging
+from collections import deque
+
 from scipy.constants import e
 from pyprof import timing
 from pyprof import mpiprof
@@ -31,7 +33,8 @@ class Worker:
             self.logger.disable()
 
         self.logger.debug('Hostname: %s' % self.hostname)
-        self.taskbuf = np.array(0, np.uint8)
+        # self.taskbuf = np.array(0, np.uint8)
+        self.task_queue = deque()
 
     # @timing.timeit(key='comm:multi_scatter')
     def multi_scatter(self):
@@ -67,9 +70,16 @@ class Worker:
     @timing.timeit(key='comm:recv_task')
     @mpiprof.traceit(key='comm:recv_task')
     def recv_task(self):
-        self.intercomm.Bcast(self.taskbuf, root=0)
-        task = np.uint8(self.taskbuf)
-        self.logger.debug('Received a %d task.' % task)
+        if(len(self.task_queue) == 0):
+            # receive new tasks
+            tasks = None
+            tasks = self.intercomm.bcast(tasks, root=0)
+            # task = np.uint8(self.taskbuf)
+            self.task_queue.extend(tasks)
+            # self.logger.debug('Received a %d task.' % task)
+
+        task = self.task_queue.popleft()
+        self.logger.debug('Returning a %d task.' % task)
         return task
 
     # @timing.timeit(key='comp:kick')
@@ -114,17 +124,7 @@ class Worker:
                 # self.bcast()
                 # new_profile = np.empty(len(profile), dtype='d')
                 self.intracomm.Allreduce(MPI.IN_PLACE, profile, op=MPI.SUM)
-                # recvbuf = None
-                # basesize = len(profile) // self.workers
-                # start = self.rank * basesize
-                # end = (self.rank+1) * basesize
-                # if end >= len(profile):
-                #     end = len(profile)
 
-                # self.intercomm.Gatherv(profile[start:end], recvbuf, root=0)
-
-                # profile = new_profile
-                # self.active.update({'profile': profile})
         # Or even better, allreduce it
         self.update()
 
@@ -367,9 +367,10 @@ def main():
         # Doing the first task receive manually to exclude the initialization
         # time
 
-        worker.intercomm.Bcast(worker.taskbuf, root=0)
-        task = np.uint8(worker.taskbuf)
-        # task = worker.recv_task()
+        
+        # task = worker.intercomm.bcast(worker.taskbuf, root=0)
+        # task = np.uint8(worker.taskbuf)
+        task = worker.recv_task()
 
         start_t = time.time()
 

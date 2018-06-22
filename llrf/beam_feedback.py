@@ -197,7 +197,7 @@ class BeamFeedback(object):
 
         import utils.mpi_config as mpiconf
         master = mpiconf.master
-        master.bcast('beamFB')
+        # master.bcast('beamFB')
 
         master.multi_bcast({'turn': int(self.rf_params.counter[0])}, msg=False)
 

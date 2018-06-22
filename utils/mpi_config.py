@@ -22,23 +22,42 @@ mpi_type = {
 }
 
 
+# task_id = {
+#     'kick': np.array(0, np.uint8),
+#     'drift': np.array(1, np.uint8),
+#     'histo': np.array(2, np.uint8),
+#     'LIKick': np.array(3, np.uint8),
+#     'RFVCalc': np.array(4, np.uint8),
+#     'gather': np.array(5, np.uint8),
+#     'bcast': np.array(6, np.uint8),
+#     'scatter': np.array(7, np.uint8),
+#     'barrier': np.array(8, np.uint8),
+#     'quit': np.array(9, np.uint8),
+#     'switch_context': np.array(10, np.uint8),
+#     'induced_voltage_1turn': np.array(11, np.uint8),
+#     'histo_and_induced_voltage': np.array(12, np.uint8),
+#     'gather_single': np.array(13, np.uint8),
+#     'beamFB': np.array(14, np.uint8),
+#     'stop': np.array(255, np.uint8)
+# }
+
 task_id = {
-    'kick': np.array(0, np.uint8),
-    'drift': np.array(1, np.uint8),
-    'histo': np.array(2, np.uint8),
-    'LIKick': np.array(3, np.uint8),
-    'RFVCalc': np.array(4, np.uint8),
-    'gather': np.array(5, np.uint8),
-    'bcast': np.array(6, np.uint8),
-    'scatter': np.array(7, np.uint8),
-    'barrier': np.array(8, np.uint8),
-    'quit': np.array(9, np.uint8),
-    'switch_context': np.array(10, np.uint8),
-    'induced_voltage_1turn': np.array(11, np.uint8),
-    'histo_and_induced_voltage': np.array(12, np.uint8),
-    'gather_single': np.array(13, np.uint8),
-    'beamFB': np.array(14, np.uint8),
-    'stop': np.array(255, np.uint8)
+    'kick': np.uint8(0),
+    'drift': np.uint8(1),
+    'histo': np.uint8(2),
+    'LIKick': np.uint8(3),
+    'RFVCalc': np.uint8(4),
+    'gather': np.uint8(5),
+    'bcast': np.uint8(6),
+    'scatter': np.uint8(7),
+    'barrier': np.uint8(8),
+    'quit': np.uint8(9),
+    'switch_context': np.uint8(10),
+    'induced_voltage_1turn': np.uint8(11),
+    'histo_and_induced_voltage': np.uint8(12),
+    'gather_single': np.uint8(13),
+    'beamFB': np.uint8(14),
+    'stop': np.uint8(255)
 }
 
 master = None
@@ -127,8 +146,9 @@ class Master:
 
     @timing.timeit(key='master:gather_single')
     # @mpiprof.traceit(key='gather_single')
-    def gather_single(self, gather_dict):
-        self.bcast('gather_single')
+    def gather_single(self, gather_dict, msg=True):
+        if msg == True:
+            self.bcast('gather_single')
 
         keys = list(gather_dict.keys())
         self.intercomm.bcast(keys, root=MPI.ROOT)
@@ -155,8 +175,11 @@ class Master:
     @timing.timeit(key='master:bcast')
     # @mpiprof.traceit(key='bcast')
     def bcast(self, cmd):
-        self.logger.debug('Broadcasting a %s task' % cmd)
-        self.intercomm.Bcast(task_id[cmd], root=MPI.ROOT)
+        # self.logger.debug('Broadcasting a %s task' % cmd)
+        if(isinstance(cmd, str)):
+            cmd = [cmd]
+        cmd = [task_id[c] for c in cmd]
+        self.intercomm.bcast(cmd, root=MPI.ROOT)
 
     @timing.timeit(key='master:reduce')
     # @mpiprof.traceit(key='reduce')
