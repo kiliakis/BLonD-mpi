@@ -100,7 +100,7 @@ def aggregate_reports(input):
 
 def collect_reports(input, outfile, filename):
     # pass
-    header = ['parts', 'slices', 'turns', 'n', 'omp', 'N']
+    header = ['parts', 'bunches', 'slices', 'turns', 'n', 'omp', 'N']
     records = []
     for dirs, subdirs, files in os.walk(input):
         if filename not in files:
@@ -110,6 +110,7 @@ def collect_reports(input, outfile, filename):
         config = dirs.split('/')[-1]
         ts = config.split('_t')[1].split('_')[0]
         ps = config.split('_p')[1].split('_')[0]
+        bs = config.split('_b')[1].split('_')[0]
         ss = config.split('_s')[1].split('_')[0]
         ws = config.split('_w')[1].split('_')[0]
         oss = config.split('_o')[1].split('_')[0]
@@ -121,10 +122,10 @@ def collect_reports(input, outfile, filename):
         data_head = data[0]
         data = data[1:]
         for r in data:
-            records.append([ps, ss, ts, ws, oss, Ns] + list(r))
+            records.append([ps, bs, ss, ts, ws, oss, Ns] + list(r))
 
     records.sort(key=lambda a: (int(a[0]), int(a[1]), int(a[2]),
-                                int(a[3]), int(a[4]), int(a[5])))
+                                int(a[3]), int(a[4]), int(a[5]), int(a[6])))
     writer = csv.writer(outfile, delimiter='\t')
     writer.writerow(header + list(data_head))
     writer.writerows(records)

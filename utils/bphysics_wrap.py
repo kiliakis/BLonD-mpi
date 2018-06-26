@@ -43,7 +43,7 @@ def rf_volt_comp_mpi(voltages, omega_rf, phi_rf, ring):
     import utils.mpi_config as mpiconf
     from mpi4py import MPI
     master = mpiconf.master
-    master.bcast('RFVCalc')
+    # master.bcast('RFVCalc')
 
     vars_dict = {
         # 'voltages': voltages,
@@ -227,10 +227,11 @@ def slice_mpi(profile):
     }
 
     master.multi_bcast(vars_dict, msg=False)
+    master.gather_single({'profile': profile.n_macroparticles}, msg=False)
+    
     # zero = np.zeros(profile.n_slices, dtype='d')
     # master.reduce(zero, profile.n_macroparticles)
     # master.multi_bcast({'profile': profile.n_macroparticles}, msg=False)
-    master.gather_single({'profile': profile.n_macroparticles}, msg=False)
     # zero = np.zeros(profile.n_slices, dtype='d')
     # profile.n_macroparticles = np.zeros(profile.n_slices, dtype='d')
     # master.intracomm.Allreduce(

@@ -116,14 +116,27 @@ class Worker:
             with mpiprof.traced_region('comp:histo') as tr:
                 profile = np.empty(n_slices, dtype='d')
                 bph._slice(dt, profile, cut_left, cut_right)
+                # try:
+                #     if len(new_profile) != n_slices:
+                #         new_profile = np.empty(n_slices, dtype='d')
+                # except Exception as e:
+                #     new_profile = np.empty(n_slices, dtype='d')
+                    
+                # new_profile = np.empty(n_slices, dtype='d')
+                # bph._slice(dt, new_profile, cut_left, cut_right)
 
         with timing.timed_region('comm:histo_reduce') as tr:
             with mpiprof.traced_region('comm:histo_reduce') as tr:
-                # recvbuf = None
-                # self.intercomm.Reduce(profile, recvbuf, op=MPI.SUM, root=0)
-                # self.bcast()
-                # new_profile = np.empty(len(profile), dtype='d')
-                self.intracomm.Allreduce(MPI.IN_PLACE, profile, op=MPI.SUM)
+                pass
+                # self.intracomm.Allreduce(MPI.IN_PLACE, profile, op=MPI.SUM)
+                # try:
+                #     if len(profile) != n_slices:
+                #         profile = np.empty(n_slices, dtype='d')
+                # except Exception as e:
+                #     profile = np.empty(n_slices, dtype='d')
+                # profile = np.empty(n_slices, dtype='d')
+                # self.intracomm.Allreduce(new_profile, profile, op=MPI.SUM)
+                # self.intracomm.Allreduce(new_profile, profile, op=MPI.SUM)
 
         # Or even better, allreduce it
         self.update()
@@ -367,7 +380,7 @@ def main():
         # Doing the first task receive manually to exclude the initialization
         # time
 
-        
+
         # task = worker.intercomm.bcast(worker.taskbuf, root=0)
         # task = np.uint8(worker.taskbuf)
         task = worker.recv_task()

@@ -178,7 +178,7 @@ ZTot = np.loadtxt(wrkDir + r'input/Zlong_Allthemachine_450GeV_B1_LHC_inj_450GeV_
                   skiprows=1)
 ZTable = InputTable(ZTot[:, 0], ZTot[:, 1], ZTot[:, 2])
 indVoltage = InducedVoltageFreq(
-    beam, profile, [ZTable], frequency_resolution=5.e5)
+    beam, profile, [ZTable], frequency_resolution=4.e5)
 totVoltage = TotalInducedVoltage(beam, profile, [indVoltage])
 
 tracker = RingAndRFTracker(rf, beam, BeamFeedback=PL, Profile=profile,
@@ -272,6 +272,7 @@ try:
     }
     master.multi_scatter(vars_dict)
     master.bcast(['histo', 'gather_single'])
+    # master.bcast(['histo'])
     profile.track()
 
     print("Ready for tracking!")
@@ -283,6 +284,7 @@ try:
         t0 = time.clock()
         master.bcast(['bcast', 'induced_voltage_1turn',
                       'histo', 'gather_single',
+                      # 'histo',
                       'beamFB', 'RFVCalc',
                       'LIKick', 'drift'])
 

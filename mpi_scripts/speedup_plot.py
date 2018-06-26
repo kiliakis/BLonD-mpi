@@ -15,12 +15,43 @@ if not os.path.exists(images_dir):
 
 plots_config = {
 
+    # 'plot4': {
+    #     'files': {
+    #         res_dir+'raw/LHC-hybrid-4nodes-96B/comm-comp-report.csv': {
+    #             'lines': {
+    #                       'omp': ['2', '4', '5', '10'],
+    #                       'type': ['total']}
+    #         }
 
-    'plot4': {
+    #     },
+    #     'labels': {
+    #                '1-total': 'hybrid-T1',
+    #                '2-total': 'hybrid-T2',
+    #                '4-total': 'hybrid-T4',
+    #                '5-total': 'hybrid-T5',
+    #                '10-total': 'hybrid-T10',
+    #                '20-total': 'hybrid-T20'
+    #                },
+    #     'reference': { 'time': 2.2 * 4057. , 'parts': 1000000, 'turns':10000},
+    #     # 'exclude': [['v1', 'notcm'], ['v2', 'notcm'], ['v4', 'notcm']],
+    #     'ideal': '2-total',
+    #     'x_name': 'n',
+    #     'omp_name': 'omp',
+    #     'y_name': 'avg_time(sec)',
+    #     # 'y_err_name': 'std',
+    #     'xlabel': 'MPI Tasks/OMP Threads',
+    #     'ylabel': 'Speedup',
+    #     'title': '',
+    #     # 'ylim': [0, 16000],
+    #     'figsize': (6, 3),
+    #     'image_name': images_dir + 'LHC-hybrid-speedup-96B.pdf'
+
+    # }
+   'plot3': {
         'files': {
-            res_dir+'raw/LHC-hybrid-4nodes/comm-comp-report.csv': {
+            res_dir+'raw/LHC-hybrid-4nodes-96B-less-tasks/comm-comp-report.csv': {
                 'lines': {
-                          'omp': ['1', '2', '4', '5', '10'],
+                          'omp': ['2', '4', '5', '10'],
                           'type': ['total']}
             }
 
@@ -33,7 +64,7 @@ plots_config = {
                    '10-total': 'hybrid-T10',
                    '20-total': 'hybrid-T20'
                    },
-        'reference': { 'time': 4057. , 'parts': 1000000, 'turns':10000},
+        'reference': { 'time': 8213. , 'parts': 1000000, 'turns':10000},
         # 'exclude': [['v1', 'notcm'], ['v2', 'notcm'], ['v4', 'notcm']],
         'ideal': '2-total',
         'x_name': 'n',
@@ -45,32 +76,31 @@ plots_config = {
         'title': '',
         # 'ylim': [0, 16000],
         'figsize': (6, 3),
-        'image_name': images_dir + 'LHC-hybrid-speedup.pdf'
+        'image_name': images_dir + 'LHC-hybrid-speedup-96B-lt.pdf'
 
     },
-
-    'plot1': {
+    'plot4': {
         'files': {
-            res_dir+'raw/LHC_omp_single_node/comm-comp-report.csv': {
+            res_dir+'raw/LHC-hybrid-4nodes-96B-lt-nogather/comm-comp-report.csv': {
                 'lines': {
-                          # 'omp': ['1', '2', '4', '5', '10'],
+                          'omp': ['5', '10'],
                           'type': ['total']}
             }
 
         },
         'labels': {
-                   'total': 'OMP-only-cluster'
-                   # '2-total': 'hybrid-T2',
-                   # '4-total': 'hybrid-T4',
-                   # '5-total': 'hybrid-T5',
-                   # '10-total': 'hybrid-T10',
-                   # '20-total': 'hybrid-T20'
+                   '1-total': 'hybrid-T1',
+                   '2-total': 'hybrid-T2',
+                   '4-total': 'hybrid-T4',
+                   '5-total': 'hybrid-T5',
+                   '10-total': 'hybrid-T10',
+                   '20-total': 'hybrid-T20'
                    },
-        'reference': { 'time': 4057. , 'parts': 1000000, 'turns':10000},
+        'reference': { 'time': 8213. , 'parts': 1000000, 'turns':10000},
         # 'exclude': [['v1', 'notcm'], ['v2', 'notcm'], ['v4', 'notcm']],
-        # 'ideal': '2-total',
-        'x_name': 'omp',
-        'omp_name': 'n',
+        'ideal': '2-total',
+        'x_name': 'n',
+        'omp_name': 'omp',
         'y_name': 'avg_time(sec)',
         # 'y_err_name': 'std',
         'xlabel': 'MPI Tasks/OMP Threads',
@@ -78,9 +108,74 @@ plots_config = {
         'title': '',
         # 'ylim': [0, 16000],
         'figsize': (6, 3),
-        'image_name': images_dir + 'LHC-omp-only-speedup.pdf'
+        'image_name': images_dir + 'LHC-hybrid-speedup-96B-lt-nogather.pdf'
 
     }
+    # 'plot4': {
+    #     'files': {
+    #         res_dir+'raw/LHC-hybrid-4nodes/comm-comp-report.csv': {
+    #             'lines': {
+    #                       'omp': ['1', '2', '4', '5', '10'],
+    #                       'type': ['total']}
+    #         }
+
+    #     },
+    #     'labels': {
+    #                '1-total': 'hybrid-T1',
+    #                '2-total': 'hybrid-T2',
+    #                '4-total': 'hybrid-T4',
+    #                '5-total': 'hybrid-T5',
+    #                '10-total': 'hybrid-T10',
+    #                '20-total': 'hybrid-T20'
+    #                },
+    #     'reference': { 'time': 4057. , 'parts': 1000000, 'turns':10000},
+    #     # 'exclude': [['v1', 'notcm'], ['v2', 'notcm'], ['v4', 'notcm']],
+    #     'ideal': '2-total',
+    #     'x_name': 'n',
+    #     'omp_name': 'omp',
+    #     'y_name': 'avg_time(sec)',
+    #     # 'y_err_name': 'std',
+    #     'xlabel': 'MPI Tasks/OMP Threads',
+    #     'ylabel': 'Speedup',
+    #     'title': '',
+    #     # 'ylim': [0, 16000],
+    #     'figsize': (6, 3),
+    #     'image_name': images_dir + 'LHC-hybrid-speedup.pdf'
+
+    # },
+
+    # 'plot1': {
+    #     'files': {
+    #         res_dir+'raw/LHC_omp_single_node/comm-comp-report.csv': {
+    #             'lines': {
+    #                       # 'omp': ['1', '2', '4', '5', '10'],
+    #                       'type': ['total']}
+    #         }
+
+    #     },
+    #     'labels': {
+    #                'total': 'OMP-only-cluster'
+    #                # '2-total': 'hybrid-T2',
+    #                # '4-total': 'hybrid-T4',
+    #                # '5-total': 'hybrid-T5',
+    #                # '10-total': 'hybrid-T10',
+    #                # '20-total': 'hybrid-T20'
+    #                },
+    #     'reference': { 'time': 4057. , 'parts': 1000000, 'turns':10000},
+    #     # 'exclude': [['v1', 'notcm'], ['v2', 'notcm'], ['v4', 'notcm']],
+    #     # 'ideal': '2-total',
+    #     'x_name': 'omp',
+    #     'omp_name': 'n',
+    #     'y_name': 'avg_time(sec)',
+    #     # 'y_err_name': 'std',
+    #     'xlabel': 'MPI Tasks/OMP Threads',
+    #     'ylabel': 'Speedup',
+    #     'title': '',
+    #     # 'ylim': [0, 16000],
+    #     'figsize': (6, 3),
+    #     'image_name': images_dir + 'LHC-omp-only-speedup.pdf'
+
+    # }
 
 
 }
