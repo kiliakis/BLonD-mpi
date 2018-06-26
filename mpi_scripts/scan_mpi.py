@@ -142,29 +142,30 @@ configs = {
     #                       'partition': cycle(['be-long'])
     #                       }
 
-    'LHC-hybrid-4nodes-96B-lt-no-reduce': {'p': cycle([1000000]),
-                                           'b': cycle([96]),
-                                           's': cycle([1000]),
-                                           't': cycle([10000]),
-                                           'w': []
-                                           + list(np.arange(8, 41, 4))
-                                           + list(np.arange(4, 21, 2))
-                                           + list(np.arange(2, 17, 2))
-                                           + list(np.arange(2, 9, 1)),
-                                           # list(np.arange(2, 81, 2)),
-                                           # + list(np.arange(3, 20, 2))
-                                           'o': [2]*9 + [4]*9 + [5]*8 + [10]*7,
-                                           # [5]*5 + [10]*2,
-                                           # [1] * 40,
-                                           'N': []
-                                           + [1, 2, 2, 2, 3, 3, 4, 4, 4]
-                                           + [1, 2, 2, 2, 3, 3, 4, 4, 4]
-                                           + [1, 1, 2, 2, 3, 3, 4, 4]
-                                           + [1, 2, 2, 3, 3, 4, 4],
-                                           # [1] * 10 + [2] * 10 + [3] * 10 + [4] * 10,
-                                           'time': cycle([180]),
-                                           'partition': cycle(['be-long'])
-                                           }
+    'LHC-4n-96B-lt-nored-nogat-lessbcast': {'p': cycle([1000000]),
+                                            'b': cycle([96]),
+                                            's': cycle([1000]),
+                                            't': cycle([10000]),
+                                            'w': []
+                                            # + list(np.arange(8, 41, 4))
+                                            # + list(np.arange(4, 21, 2))
+                                            + list(np.arange(2, 17, 2))
+                                            + list(np.arange(2, 9, 1)),
+                                            # list(np.arange(2, 81, 2)),
+                                            # + list(np.arange(3, 20, 2))
+                                            'o': [5]*8 + [10]*7,
+                                            # [2]*9 + [4]*9 + [5]*8 + [10]*7,
+                                            # [5]*5 + [10]*2,
+                                            # [1] * 40,
+                                            'N': []
+                                            # + [1, 2, 2, 2, 3, 3, 4, 4, 4]
+                                            # + [1, 2, 2, 2, 3, 3, 4, 4, 4]
+                                            + [1, 1, 2, 2, 3, 3, 4, 4]
+                                            + [1, 2, 2, 3, 3, 4, 4],
+                                            # [1] * 10 + [2] * 10 + [3] * 10 + [4] * 10,
+                                            'time': cycle([180]),
+                                            'partition': cycle(['be-long'])
+                                            }
 
 
     # 'strong_scale_hybrid_four_node-2': {'p': cycle([20000000]),

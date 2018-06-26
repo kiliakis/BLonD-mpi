@@ -26,7 +26,8 @@ def beam_phase(beamFB, omegarf, phirf):
                        beamFB.profile.n_macroparticles,
                        beamFB.alpha, omegarf, phirf,
                        beamFB.profile.bin_size)
-    
+
+
 def _beam_phase(bin_centers, profile, alpha, omegarf, phirf, bin_size):
     __lib.beam_phase.restype = ct.c_double
     coeff = __lib.beam_phase(__getPointer(bin_centers),
@@ -136,15 +137,15 @@ def drift_mpi(ring, turn):
 
     master = mpiconf.master
     # master.bcast('drift')
-    vars_dict = {
-        't_rev': ring.t_rev[turn],
-        'eta_0': ring.eta_0[turn],
-        'eta_1': ring.eta_1[turn],
-        'eta_2': ring.eta_2[turn],
-        'beta': ring.rf_params.beta[turn],
-        'energy': ring.rf_params.energy[turn]
-    }
-    master.multi_bcast(vars_dict, msg=False)
+    # vars_dict = {
+    #     't_rev': ring.t_rev[turn],
+    #     'eta_0': ring.eta_0[turn],
+    #     'eta_1': ring.eta_1[turn],
+    #     'eta_2': ring.eta_2[turn],
+    #     'beta': ring.rf_params.beta[turn],
+    #     'energy': ring.rf_params.energy[turn]
+    # }
+    master.multi_bcast({'turn': turn}, msg=False)
 
 
 def _drift(dt, dE, solver,
@@ -221,14 +222,14 @@ def slice_mpi(profile):
     master = mpiconf.master
     # master.bcast('histo')
 
-    vars_dict = {
-        'cut_left': profile.cut_left,
-        'cut_right': profile.cut_right
-    }
+    # vars_dict = {
+    #     'cut_left': profile.cut_left,
+    #     'cut_right': profile.cut_right
+    # }
 
-    master.multi_bcast(vars_dict, msg=False)
-    master.gather_single({'profile': profile.n_macroparticles}, msg=False)
-    
+    # master.multi_bcast(vars_dict, msg=False)
+    # master.gather_single({'profile': profile.n_macroparticles}, msg=False)
+
     # zero = np.zeros(profile.n_slices, dtype='d')
     # master.reduce(zero, profile.n_macroparticles)
     # master.multi_bcast({'profile': profile.n_macroparticles}, msg=False)

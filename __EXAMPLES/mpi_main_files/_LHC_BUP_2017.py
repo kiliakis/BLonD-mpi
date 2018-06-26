@@ -232,6 +232,12 @@ start_t = time.time()
 try:
 
     init_dict = {
+        'tracker_t_rev': tracker.t_rev,
+        'tracker_eta_0': tracker.eta_0,
+        'tracker_eta_1': tracker.eta_1,
+        'tracker_eta_2': tracker.eta_2,
+        'rfp_beta': rf.beta,
+        'rfp_energy': rf.energy,
         'n_rf': tracker.n_rf,
         'solver': tracker.solver,
         'length_ratio': tracker.length_ratio,
@@ -239,6 +245,8 @@ try:
         'n_slices': profile.n_slices,
         'bin_size': profile.bin_size,
         'bin_centers': profile.bin_centers,
+        'cut_left': profile.cut_left,
+        'cut_right': profile.cut_right,
         'charge': beam.Particle.charge,
         'beam_ratio': beam.ratio,
         'total_impedance': indVoltage.total_impedance,
@@ -271,8 +279,8 @@ try:
         'dE': beam.dE
     }
     master.multi_scatter(vars_dict)
-    master.bcast(['histo', 'gather_single'])
-    # master.bcast(['histo'])
+    # master.bcast(['histo', 'gather_single'])
+    master.bcast(['histo'])
     profile.track()
 
     print("Ready for tracking!")
@@ -283,8 +291,8 @@ try:
         # for i in range(turns):
         t0 = time.clock()
         master.bcast(['bcast', 'induced_voltage_1turn',
-                      'histo', 'gather_single',
-                      # 'histo',
+                      # 'histo', 'gather_single',
+                      'histo',
                       'beamFB', 'RFVCalc',
                       'LIKick', 'drift'])
 

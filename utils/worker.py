@@ -100,16 +100,19 @@ class Worker:
     # @mpiprof.traceit(key='drift')
     def drift(self):
         self.bcast()
+        global turn
         with timing.timed_region('comp:drift') as tr:
             with mpiprof.traced_region('comp:drift') as tr:
-                bph._drift(dt, dE, solver, t_rev, length_ratio, alpha_order,
-                           eta_0, eta_1, eta_2, beta, energy)
+                bph._drift(dt, dE, solver, tracker_t_rev[turn],
+                           length_ratio, alpha_order,
+                           tracker_eta_0[turn], tracker_eta_1[turn],
+                           tracker_eta_2[turn], rfp_beta[turn], rfp_energy[turn])
         self.update()
 
     # @timing.timeit('comp:histo')
     # @mpiprof.traceit(key='histo')
     def histo(self):
-        self.bcast()
+        # self.bcast()
         global profile
 
         with timing.timed_region('comp:histo') as tr:
@@ -121,7 +124,7 @@ class Worker:
                 #         new_profile = np.empty(n_slices, dtype='d')
                 # except Exception as e:
                 #     new_profile = np.empty(n_slices, dtype='d')
-                    
+
                 # new_profile = np.empty(n_slices, dtype='d')
                 # bph._slice(dt, new_profile, cut_left, cut_right)
 
@@ -379,7 +382,6 @@ def main():
 
         # Doing the first task receive manually to exclude the initialization
         # time
-
 
         # task = worker.intercomm.bcast(worker.taskbuf, root=0)
         # task = np.uint8(worker.taskbuf)
