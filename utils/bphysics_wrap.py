@@ -207,6 +207,41 @@ def linear_interp_time_translation(ring, dt, dE, turn):
     pass
 
 
+def LIKick_n_drift_mpi(ring, turn):
+    import utils.mpi_config as mpiconf
+    from mpi4py import MPI
+    master = mpiconf.master
+
+    vars_dict = {
+        'turn': turn,
+        'acc_kick': ring.acceleration_kick[turn]
+    }
+
+    master.multi_bcast(vars_dict, msg=False)
+
+
+def _LIKick_n_drift(dt, dE, total_voltage, bin_centers, charge, acc_kick,
+                    solver, t_rev, length_ratio, alpha_order, eta_0, eta_1,
+                    eta_2, beta, energy):
+    __lib.linear_interp_kick_n_drift(__getPointer(dt),
+                                     __getPointer(dE),
+                                     __getPointer(total_voltage),
+                                     __getPointer(bin_centers),
+                                     __getLen(bin_centers),
+                                     __getLen(dt),
+                                     ct.c_double(acc_kick),
+                                     ct.c_char_p(solver),
+                                     ct.c_double(t_rev),
+                                     ct.c_double(length_ratio),
+                                     ct.c_double(alpha_order),
+                                     ct.c_double(eta_0),
+                                     ct.c_double(eta_1),
+                                     ct.c_double(eta_2),
+                                     ct.c_double(beta),
+                                     ct.c_double(energy),
+                                     ct.c_double(charge))
+
+
 def slice(profile):
     _slice(__getPointer(profile.Beam.dt),
            __getPointer(profile.n_macroparticles),

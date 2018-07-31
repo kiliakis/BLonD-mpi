@@ -454,7 +454,8 @@ class RingAndRFTracker(object):
                     # else:
                     #     self.total_voltage = self.rf_voltage
 
-                    bm.LIKick_mpi(self, self.counter[0])
+                    # bm.LIKick_mpi(self, self.counter[0])
+                    bm.LIKick_n_drift_mpi(self, self.counter[0])
                     # libblond.linear_interp_kick(
                     #     self.beam.dt.ctypes.data_as(ctypes.c_void_p),
                     #     self.beam.dE.ctypes.data_as(ctypes.c_void_p),
@@ -471,10 +472,10 @@ class RingAndRFTracker(object):
                     # self.kick(self.beam.dt, self.beam.dE, self.counter[0])
                     # with timing.timed_region('kick') as tr:
                     bm.kick_mpi(self, self.counter[0])
+                    bm.drift_mpi(self, self.counter[0] + 1)
 
             # self.drift(self.beam.dt, self.beam.dE, self.counter[0] + 1)
             # with timing.timed_region('drift') as tr:
-            bm.drift_mpi(self, self.counter[0] + 1)
 
         # Increment by one the turn counter
         self.counter[0] += 1

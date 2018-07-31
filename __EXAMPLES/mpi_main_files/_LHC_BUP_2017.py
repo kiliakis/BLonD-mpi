@@ -74,6 +74,8 @@ else:
 bl_target = 1.25e-9  # 4 sigma r.m.s. target bunch length in [ns]
 
 
+N_t_reduce = 1
+
 if args.get('turns', None):
     N_t = args['turns']
 if args.get('particles', None):
@@ -81,6 +83,10 @@ if args.get('particles', None):
 
 if args.get('bunches', None):
     NB = args['bunches']
+
+if args.get('reduce', None):
+    N_t_reduce = args['reduce']
+
 
 if args.get('omp', None):
     os.environ['OMP_NUM_THREADS'] = str(args['omp'])
@@ -280,7 +286,7 @@ try:
     }
     master.multi_scatter(vars_dict)
     # master.bcast(['histo', 'gather_single'])
-    master.bcast(['histo'])
+    master.bcast(['histo', 'reduce_histo'])
     profile.track()
 
     print("Ready for tracking!")
@@ -290,11 +296,19 @@ try:
     for i in range(N_t):
         # for i in range(turns):
         t0 = time.clock()
-        master.bcast(['bcast', 'induced_voltage_1turn',
-                      # 'histo', 'gather_single',
-                      'histo',
-                      'beamFB', 'RFVCalc',
-                      'LIKick', 'drift'])
+        if (i % N_t_reduce == 0):
+            master.bcast(['bcast', 'induced_voltage_1turn',
+                          # 'histo', 'gather_single',
+                          'histo', 'reduce_histo',
+                          'beamFB', 'RFVCalc',
+                          'LIKick_n_drift'])
+        else:
+            master.bcast(['bcast', 
+                            # 'induced_voltage_1turn',
+                          # 'histo', 'gather_single',
+                          # 'histo', 'scale_histo',
+                          'beamFB', 'RFVCalc',
+                          'LIKick_n_drift'])
 
         # Remove lost particles to obtain a correct r.m.s. value
         # if (i % 1000) == 0:  # reduce computational costs
@@ -366,9 +380,9 @@ timing.report(total_time=1e3*(end_t-start_t),
 print('dE mean: ', np.mean(beam.dE))
 print('dE std: ', np.std(beam.dE))
 
+# np.savetxt('out/coords_' "%d" % rf.counter[0] + '.dat',
+           # np.c_[beam.dt, beam.dE], fmt='%.10e')
 if MONITORING:
-    np.savetxt('out/coords_' "%d" % rf.counter[0] + '.dat',
-               np.c_[beam.dt, beam.dE, beam.id], fmt='%.10e')
     plots.track()
 
 print("Done!")

@@ -142,30 +142,34 @@ configs = {
     #                       'partition': cycle(['be-long'])
     #                       }
 
-    'LHC-4n-96B-lt-nored-nogat-lessbcast': {'p': cycle([1000000]),
-                                            'b': cycle([96]),
-                                            's': cycle([1000]),
-                                            't': cycle([10000]),
-                                            'w': []
-                                            # + list(np.arange(8, 41, 4))
-                                            # + list(np.arange(4, 21, 2))
-                                            + list(np.arange(2, 17, 2))
-                                            + list(np.arange(2, 9, 1)),
-                                            # list(np.arange(2, 81, 2)),
-                                            # + list(np.arange(3, 20, 2))
-                                            'o': [5]*8 + [10]*7,
-                                            # [2]*9 + [4]*9 + [5]*8 + [10]*7,
-                                            # [5]*5 + [10]*2,
-                                            # [1] * 40,
-                                            'N': []
-                                            # + [1, 2, 2, 2, 3, 3, 4, 4, 4]
-                                            # + [1, 2, 2, 2, 3, 3, 4, 4, 4]
-                                            + [1, 1, 2, 2, 3, 3, 4, 4]
-                                            + [1, 2, 2, 3, 3, 4, 4],
-                                            # [1] * 10 + [2] * 10 + [3] * 10 + [4] * 10,
-                                            'time': cycle([180]),
-                                            'partition': cycle(['be-long'])
-                                            }
+    'LHC-4n-96B-lt-lb-nogat-int-op-knd-r5-10kt': {'p': cycle([1000000]),
+                                             'b': cycle([96]),
+                                             's': cycle([1000]),
+                                             't': cycle([10000]),
+                                             'reduce': cycle([5]),
+                                             'w': []
+                                             # + list(np.arange(4, 41, 4))
+                                             + list(np.arange(22, 41, 2))
+                                             + list(np.arange(18, 33, 2))
+                                             + list(np.arange(9, 17, 1)),
+
+                                             # + list(np.arange(4, 21, 2))
+                                             # + list(np.arange(2, 17, 2))
+                                             # + list(np.arange(2, 9, 1)),
+                                             # list(np.arange(2, 81, 2)),
+                                             # + list(np.arange(3, 20, 2))
+                                             'o': [4]*10 + [5]*8 + [10] * 8,
+                                             # [5]*5 + [10]*2,
+                                             # [1] * 40,
+                                             # 'N': []
+                                             # + [1, 1, 2, 2, 2, 3, 3, 4, 4, 4]
+                                             # + [1, 2, 2, 2, 3, 3, 4, 4, 4]
+                                             # + [1, 1, 2, 2, 3, 3, 4, 4]
+                                             # + [1, 2, 2, 3, 3, 4, 4],
+                                             # [1] * 10 + [2] * 10 + [3] * 10 + [4] * 10,
+                                             'time': cycle([60]),
+                                             'partition': cycle(['be-long'])
+                                             }
 
 
     # 'strong_scale_hybrid_four_node-2': {'p': cycle([20000000]),
@@ -204,14 +208,22 @@ for analysis, config in configs.items():
     ts = config['t']
     ws = config['w']
     oss = config['o']
-    Ns = config['N']
+    rs = config['reduce']
+    # Ns = config['N']
     times = config['time']
     partitions = config['partition']
     stdout = open(analysis + '.txt', 'w')
 
-    for p, b, s, t, w, o, N, time, partition in zip(ps, bs, ss, ts, ws,
-                                                    oss, Ns, times, partitions):
+    for p, b, s, t, r, w, o, time, partition in zip(ps, bs, ss, ts, rs, ws,
+                                                    oss, times, partitions):
+        N = (w * o + 20-1) // 20
+
         job_name = job_name_form.format(analysis, p, b, s, t, w, o, N)
+        if(N < 3):
+            partition = 'be-short'
+            # continue
+        else:
+            partition = 'be-long'
         # os.environ['OMP_NUM_THREADS'] = str(o)
         for i in range(repeats):
             timestr = datetime.now().strftime('%d%b%y.%H-%M-%S')
@@ -228,7 +240,8 @@ for analysis, config in configs.items():
                         '-p', str(p), '-s', str(s),
                         '-b', str(b),
                         '-t', str(t), '-time',
-                        '-o', str(o), '-r', report_dir]
+                        '-o', str(o), '-r', report_dir,
+                        '--reduce', str(r)]
             print(job_name, timestr)
             batch_args = ['-N', str(N), '-n', str(w),
                           '--ntasks-per-node', str(ceil(w/N)),

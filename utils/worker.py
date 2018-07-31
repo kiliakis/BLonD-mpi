@@ -15,6 +15,15 @@ from utils.input_parser import parse
 from utils import bmath as bm
 
 
+def c_add(xmem, ymem, dt):
+    x = np.frombuffer(xmem, dtype=np.int32)
+    y = np.frombuffer(ymem, dtype=np.int32)
+    y[:] = bm.add(x, y)
+
+
+add_op = MPI.Op.Create(c_add, commute=True)
+
+
 class Worker:
 
     def __init__(self, log=None):
@@ -119,35 +128,40 @@ class Worker:
             with mpiprof.traced_region('comp:histo') as tr:
                 profile = np.empty(n_slices, dtype='d')
                 bph._slice(dt, profile, cut_left, cut_right)
-                # try:
-                #     if len(new_profile) != n_slices:
-                #         new_profile = np.empty(n_slices, dtype='d')
-                # except Exception as e:
-                #     new_profile = np.empty(n_slices, dtype='d')
+        # Or even better, allreduce it
+        self.update()
 
-                # new_profile = np.empty(n_slices, dtype='d')
-                # bph._slice(dt, new_profile, cut_left, cut_right)
+    # @timing.timeit(key='comm:histo_reduce')
+    # @mpiprof.traceit(key='comm:histo_reduce')
+    def reduce_histo(self):
+
+        global profile
+        with timing.timed_region('comm:conversions') as tr:
+            with mpiprof.traced_region('comm:conversions') as tr:
+                profile = profile.astype(np.int32, order='C')
 
         with timing.timed_region('comm:histo_reduce') as tr:
             with mpiprof.traced_region('comm:histo_reduce') as tr:
-                pass
+                self.intracomm.Allreduce(MPI.IN_PLACE, profile, op=add_op)
                 # self.intracomm.Allreduce(MPI.IN_PLACE, profile, op=MPI.SUM)
-                # try:
-                #     if len(profile) != n_slices:
-                #         profile = np.empty(n_slices, dtype='d')
-                # except Exception as e:
-                #     profile = np.empty(n_slices, dtype='d')
-                # profile = np.empty(n_slices, dtype='d')
-                # self.intracomm.Allreduce(new_profile, profile, op=MPI.SUM)
-                # self.intracomm.Allreduce(new_profile, profile, op=MPI.SUM)
 
-        # Or even better, allreduce it
+        with timing.timed_region('comm:conversions') as tr:
+            with mpiprof.traced_region('comm:conversions') as tr:
+                profile = profile.astype(np.float64, order='C')
+
         self.update()
+
+    @timing.timeit(key='comm:histo_scale')
+    @mpiprof.traceit(key='comm:histo_scale')
+    def scale_histo(self):
+        global profile
+        profile *= self.workers
+        # self.intracomm.Allreduce(MPI.IN_PLACE, profile, op=MPI.SUM)
 
     def induced_voltage_1turn(self):
         # for any per-turn updated variables
         global induced_voltage
-        self.bcast()
+        # self.bcast()
 
         with timing.timed_region('serial:indVolt1Turn') as tr:
             with mpiprof.traced_region('serial:indVolt1Turn') as tr:
@@ -208,6 +222,21 @@ class Worker:
                                         charge, acc_kick)
         self.update()
 
+
+    def LIKick_n_drift(self):
+        self.bcast()
+        global turn
+        with timing.timed_region('comp:LIKick_n_drift') as tr:
+            with mpiprof.traced_region('comp:LIKick_n_drift') as tr:
+                bph._LIKick_n_drift(dt, dE, total_voltage, bin_centers,
+                                    charge, acc_kick, solver,
+                                    tracker_t_rev[turn], length_ratio,
+                                    alpha_order, tracker_eta_0[turn],
+                                    tracker_eta_1[turn], tracker_eta_2[turn],
+                                    rfp_beta[turn], rfp_energy[turn])
+        self.update()
+
+
     # @timing.timeit(key='comp:SR')
     def SR(self):
         self.bcast()
@@ -233,6 +262,7 @@ class Worker:
 
                 total_voltage = rf_voltage + induced_voltage
         self.update()
+
 
     def beamFB(self):
         self.bcast()
@@ -374,6 +404,9 @@ def main():
             12: worker.histo_and_induced_voltage,
             13: worker.gather_single,
             14: worker.beamFB,
+            15: worker.reduce_histo,
+            16: worker.scale_histo,
+            17: worker.LIKick_n_drift,
             255: worker.stop
         }
 

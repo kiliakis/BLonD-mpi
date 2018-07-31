@@ -29,6 +29,42 @@ C++ Math library
 
 extern "C" {
 
+    void add_int_vector(const int *__restrict__ a,
+                        const int *__restrict__ b,
+                        const int size,
+                        int *__restrict__ result)
+    {
+        #pragma omp parallel for
+        for (int i = 0; i < size; ++i) {
+            result[i] = a[i] + b[i];
+        }
+    }
+
+
+    void add_longint_vector(const long *__restrict__ a,
+                            const long *__restrict__ b,
+                            const int size,
+                            long *__restrict__ result)
+    {
+        #pragma omp parallel for
+        for (int i = 0; i < size; ++i) {
+            result[i] = a[i] + b[i];
+        }
+    }
+    
+
+    void add_double_vector(const double * __restrict__ a,
+                           const double * __restrict__ b,
+                           const int size,
+                           double * __restrict__ result)
+    {
+        #pragma omp parallel for
+        for (int i = 0; i < size; ++i) {
+            result[i] = a[i] + b[i];
+        }
+    }
+    
+
     void convolution(const double * __restrict__ signal,
                      const int SignalLen,
                      const double * __restrict__ kernel,
@@ -232,7 +268,7 @@ extern "C" {
 
 
     void linspace(const double start, const double end, const int n,
-                  double *__restrict__ out)
+                  double * __restrict__ out)
     {
         const double step = (end - start) / (n - 1);
         #pragma omp parallel for
@@ -268,20 +304,20 @@ extern "C" {
 
     void sort_double(double * __restrict__ in, const int n, bool reverse)
     {
-        if(reverse) std::sort(in, in + n, std::greater<double>());
+        if (reverse) std::sort(in, in + n, std::greater<double>());
         else std::sort(in, in + n);
     }
 
     void sort_int(int * __restrict__ in, const int n, bool reverse)
     {
-        if(reverse) std::sort(in, in + n, std::greater<int>());
+        if (reverse) std::sort(in, in + n, std::greater<int>());
         else std::sort(in, in + n);
     }
 
 
     void sort_longint(long int * __restrict__ in, const int n, bool reverse)
     {
-        if(reverse) std::sort(in, in + n, std::greater<long int>());
+        if (reverse) std::sort(in, in + n, std::greater<long int>());
         else std::sort(in, in + n);
     }
 

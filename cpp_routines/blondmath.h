@@ -38,6 +38,18 @@ extern "C" {
     void fast_expv(const double * __restrict__ in,
                    const int size,
                    double * __restrict__ out);
+    void add_int_vector(const int *__restrict__ a,
+                        const int *__restrict__ b,
+                        const int size,
+                        int *__restrict__ result);
+    void add_longint_vector(const long *__restrict__ a,
+                            const long *__restrict__ b,
+                            const int size,
+                            long *__restrict__ result);
+    void add_double_vector(const double *__restrict__ a,
+                           const double *__restrict__ b,
+                           const int size,
+                           double *__restrict__ result);
 
     /**
     Parameters are like python's np.interp

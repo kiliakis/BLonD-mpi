@@ -57,6 +57,9 @@ task_id = {
     'histo_and_induced_voltage': np.uint8(12),
     'gather_single': np.uint8(13),
     'beamFB': np.uint8(14),
+    'reduce_histo': np.uint8(15),
+    'scale_histo': np.uint8(16),
+    'LIKick_n_drift': np.uint8(17),
     'stop': np.uint8(255)
 }
 

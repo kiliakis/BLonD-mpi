@@ -19,6 +19,33 @@ def __getLen(x):
     return ct.c_int(len(x))
 
 
+def add(a, b, result=None):
+    if(len(a) != len(b)):
+        raise ValueError(
+            'operands could not be broadcast together with shapes ',
+            a.shape, b.shape)
+    if a.dtype != b.dtype:
+        raise TypeError(
+            'given arrays not of the same type ', a.dtype(), b.dtype())
+
+    if result is None:
+        result = np.empty_like(a, order='C')
+
+    if (a.dtype == 'int32'):
+        __lib.add_int_vector(__getPointer(a), __getPointer(b),
+                             __getLen(a), __getPointer(result))
+    elif (a.dtype == 'int64'):
+        __lib.add_longint_vector(__getPointer(a), __getPointer(b),
+                                 __getLen(a), __getPointer(result))
+    elif (a.dtype == 'float64'):
+        __lib.add_double_vector(__getPointer(a), __getPointer(b),
+                                __getLen(a), __getPointer(result))
+    else:
+        raise TypeError('type ', a.dtype, ' is not supported')
+
+    return result
+
+
 def convolve(signal, kernel, mode='full', result=None):
     if mode != 'full':
         raise RuntimeError('[convolve] Only full mode is supported')

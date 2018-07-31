@@ -16,6 +16,8 @@ parser.add_argument('-s', '--slices', type=int,
 parser.add_argument('-b', '--bunches', type=int,
                     help='Number of bunches.')
 
+parser.add_argument('--reduce', type=int,
+                    help='Number of turns to reduce.')
 
 
 parser.add_argument('-t', '--turns', type=int, default=2000,

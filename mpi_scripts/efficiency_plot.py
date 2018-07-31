@@ -14,19 +14,17 @@ if not os.path.exists(images_dir):
 
 
 plots_config = {
-
-
-    'plot4': {
+     'plot3': {
         'files': {
-            res_dir+'raw/LHC-hybrid-4nodes/comm-comp-report.csv': {
+            res_dir+'raw/LHC-4n-96B-lt-lb-nogat-int-op-knd-r2-10kt/comm-comp-report.csv': {
                 'lines': {
-                    'omp': ['1', '2', '4', '5', '10'],
+                    'omp': ['2', '4', '5', '10'],
                     'type': ['total']}
             }
 
         },
         'labels': {
-            '1-total': 'hybrid-T1',
+            # '1-total': 'hybrid-T1',
             '2-total': 'hybrid-T2',
             '4-total': 'hybrid-T4',
             '5-total': 'hybrid-T5',
@@ -39,15 +37,49 @@ plots_config = {
         'x_name': 'n',
         'omp_name': 'omp',
         'y_name': 'avg_time(sec)',
+        'reference': { 'time': 8213. , 'parts': 1000000, 'turns':10000},
         # 'y_err_name': 'std',
         'xlabel': 'MPI Tasks/OMP Threads',
         'ylabel': 'Efficiency Percent',
         'title': '',
         # 'ylim': [0, 16000],
         'figsize': (6, 3),
-        'image_name': images_dir + 'LHC-hybrid-efficiency.pdf'
+        'image_name': images_dir + 'LHC-4n-96B-lt-lb-nogat-int-op-knd-r2-10kt-efficiency.pdf'
 
     }
+
+    # 'plot4': {
+    #     'files': {
+    #         res_dir+'raw/LHC-hybrid-4nodes/comm-comp-report.csv': {
+    #             'lines': {
+    #                 'omp': ['1', '2', '4', '5', '10'],
+    #                 'type': ['total']}
+    #         }
+
+    #     },
+    #     'labels': {
+    #         '1-total': 'hybrid-T1',
+    #         '2-total': 'hybrid-T2',
+    #         '4-total': 'hybrid-T4',
+    #         '5-total': 'hybrid-T5',
+    #         '10-total': 'hybrid-T10',
+    #         '20-total': 'hybrid-T20'
+    #     },
+    #     # 'reference': { 'time': 10000, 'parts': 1000000, 'turns':10000},
+    #     # 'exclude': [['v1', 'notcm'], ['v2', 'notcm'], ['v4', 'notcm']],
+    #     # 'reference': '2-total',
+    #     'x_name': 'n',
+    #     'omp_name': 'omp',
+    #     'y_name': 'avg_time(sec)',
+    #     # 'y_err_name': 'std',
+    #     'xlabel': 'MPI Tasks/OMP Threads',
+    #     'ylabel': 'Efficiency Percent',
+    #     'title': '',
+    #     # 'ylim': [0, 16000],
+    #     'figsize': (6, 3),
+    #     'image_name': images_dir + 'LHC-hybrid-efficiency.pdf'
+
+    # }
 
 
 }
@@ -90,10 +122,16 @@ if __name__ == '__main__':
             y = parts * turns / y
 
             # Now the reference, 1thread
-            yref = y[0]
-            xref = x[0]
+            yref = config['reference']['time']
+            pref = config['reference']['parts']
+            turnsref = config['reference']['turns']
+            yref = pref * turnsref / yref
 
-            y = 100. * (y / yref) * (xref / x)
+            speedup = y / yref
+            y = 100 * speedup / x
+            # y = 100. * (y)/ (yref * x * xref)
+
+            # y = 100. * (y / yref) * (xref / x)
 
             # We want speedup, compared to 1 worker with 1 thread
             plt.errorbar(x, y, yerr=None, label=label,
