@@ -91,6 +91,72 @@ class Worker:
         self.logger.debug('Returning a %d task.' % task)
         return task
 
+
+        @timing.timeit(key='overhead:update')
+    @mpiprof.traceit(key='overhead:update')
+    def update(self):
+        self.active.update(globals())
+
+    @timing.timeit(key='comm:gather')
+    @mpiprof.traceit(key='comm:gather')
+    def gather(self):
+        self.multi_gather()
+
+    @timing.timeit(key='comm:gather_single')
+    @mpiprof.traceit(key='comm:gather_single')
+    def gather_single(self):
+        globals().update(self.active)
+        _vars = []
+        _vars = self.intercomm.bcast(_vars, root=0)
+        recvbuf = None
+        for v in _vars:
+            basesize = len(globals()[v]) // self.workers
+            start = self.rank * basesize
+            end = min((self.rank+1) * basesize, len(globals()[v]))
+            self.intercomm.Gatherv(globals()[v][start:end], recvbuf, root=0)
+
+    @timing.timeit(key='comm:bcast')
+    @mpiprof.traceit(key='comm:bcast')
+    def bcast(self):
+        self.active.update(self.multi_bcast())
+        globals().update(self.active)
+
+    @timing.timeit(key='comm:scatter')
+    @mpiprof.traceit(key='comm:scatter')
+    def scatter(self):
+        self.active.update(self.multi_scatter())
+        globals().update(self.active)
+
+    @timing.timeit(key='comm:barrier')
+    def barrier(self):
+        self.intercomm.Barrier()
+
+    # @timing.timeit(key='comm:quit')
+    def quit(self):
+        sys.stdout.flush()
+        sys.stderr.flush()
+        self.logger.debug('Going to disconnect()')
+        self.intercomm.Disconnect()
+        exit(0)
+
+    @timing.timeit(key='overhead:switch_context')
+    @mpiprof.traceit(key='overhead:switch_context')
+    def switch_context(self):
+        recvbuf = np.array(0, dtype='i')
+        self.intercomm.Bcast(recvbuf, root=0)
+        context = np.int32(recvbuf)
+        if context not in self.contexts:
+            self.contexts[context] = {}
+        self.active = self.contexts[context]
+        globals().update(self.active)
+
+    # @timing.timeit(key='comm:stop')
+    def stop(self):
+        pass
+        # worker.logger.debug('Wating on the final barrier.')
+        # worker.intercomm.Barrier()
+
+
     # @timing.timeit(key='comp:kick')
     # @mpiprof.traceit(key='kick')
     def kick(self):
@@ -308,69 +374,7 @@ class Worker:
 
         self.update()
 
-    @timing.timeit(key='overhead:update')
-    @mpiprof.traceit(key='overhead:update')
-    def update(self):
-        self.active.update(globals())
 
-    @timing.timeit(key='comm:gather')
-    @mpiprof.traceit(key='comm:gather')
-    def gather(self):
-        self.multi_gather()
-
-    @timing.timeit(key='comm:gather_single')
-    @mpiprof.traceit(key='comm:gather_single')
-    def gather_single(self):
-        globals().update(self.active)
-        _vars = []
-        _vars = self.intercomm.bcast(_vars, root=0)
-        recvbuf = None
-        for v in _vars:
-            basesize = len(globals()[v]) // self.workers
-            start = self.rank * basesize
-            end = min((self.rank+1) * basesize, len(globals()[v]))
-            self.intercomm.Gatherv(globals()[v][start:end], recvbuf, root=0)
-
-    @timing.timeit(key='comm:bcast')
-    @mpiprof.traceit(key='comm:bcast')
-    def bcast(self):
-        self.active.update(self.multi_bcast())
-        globals().update(self.active)
-
-    @timing.timeit(key='comm:scatter')
-    @mpiprof.traceit(key='comm:scatter')
-    def scatter(self):
-        self.active.update(self.multi_scatter())
-        globals().update(self.active)
-
-    @timing.timeit(key='comm:barrier')
-    def barrier(self):
-        self.intercomm.Barrier()
-
-    # @timing.timeit(key='comm:quit')
-    def quit(self):
-        sys.stdout.flush()
-        sys.stderr.flush()
-        self.logger.debug('Going to disconnect()')
-        self.intercomm.Disconnect()
-        exit(0)
-
-    @timing.timeit(key='overhead:switch_context')
-    @mpiprof.traceit(key='overhead:switch_context')
-    def switch_context(self):
-        recvbuf = np.array(0, dtype='i')
-        self.intercomm.Bcast(recvbuf, root=0)
-        context = np.int32(recvbuf)
-        if context not in self.contexts:
-            self.contexts[context] = {}
-        self.active = self.contexts[context]
-        globals().update(self.active)
-
-    # @timing.timeit(key='comm:stop')
-    def stop(self):
-        pass
-        # worker.logger.debug('Wating on the final barrier.')
-        # worker.intercomm.Barrier()
 
 
 def main():
@@ -413,25 +417,18 @@ def main():
         # worker.logger.debug('OMP_NUM_THREADS=%s' %
         #                     os.environ['OMP_NUM_THREADS'])
 
-        # Doing the first task receive manually to exclude the initialization
-        # time
-
-        # task = worker.intercomm.bcast(worker.taskbuf, root=0)
-        # task = np.uint8(worker.taskbuf)
         task = worker.recv_task()
 
-        start_t = time.time()
 
         # This is the main loop
+        start_t = time.time()
         while task != 255:
             try:
-                # getattr(worker, task_dir[task])()
                 task_dir[task]()
             except Exception as e:
                 print(e)
                 raise AttributeError('Invalid task: %d.' % task)
             task = worker.recv_task()
-
         end_t = time.time()
 
         # worker.logger.debug(worker.contexts)

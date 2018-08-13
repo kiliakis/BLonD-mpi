@@ -22,25 +22,6 @@ mpi_type = {
 }
 
 
-# task_id = {
-#     'kick': np.array(0, np.uint8),
-#     'drift': np.array(1, np.uint8),
-#     'histo': np.array(2, np.uint8),
-#     'LIKick': np.array(3, np.uint8),
-#     'RFVCalc': np.array(4, np.uint8),
-#     'gather': np.array(5, np.uint8),
-#     'bcast': np.array(6, np.uint8),
-#     'scatter': np.array(7, np.uint8),
-#     'barrier': np.array(8, np.uint8),
-#     'quit': np.array(9, np.uint8),
-#     'switch_context': np.array(10, np.uint8),
-#     'induced_voltage_1turn': np.array(11, np.uint8),
-#     'histo_and_induced_voltage': np.array(12, np.uint8),
-#     'gather_single': np.array(13, np.uint8),
-#     'beamFB': np.array(14, np.uint8),
-#     'stop': np.array(255, np.uint8)
-# }
-
 task_id = {
     'kick': np.uint8(0),
     'drift': np.uint8(1),
