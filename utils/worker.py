@@ -89,7 +89,6 @@ class Worker:
         self.logger.debug('Returning a %d task.' % task)
         return task
 
-
     @timing.timeit(key='overhead:update')
     @mpiprof.traceit(key='overhead:update')
     def update(self):
@@ -153,7 +152,6 @@ class Worker:
         pass
         # worker.logger.debug('Wating on the final barrier.')
         # worker.intercomm.Barrier()
-
 
     # @timing.timeit(key='comp:kick')
     # @mpiprof.traceit(key='kick')
@@ -240,42 +238,6 @@ class Worker:
                 # self.active.update({'total_voltage': total_voltage})
         self.update()
 
-    # def histo_and_induced_voltage(self):
-    #     self.bcast()
-    #     global profile
-    #     global induced_voltage
-
-    #     with timing.timed_region('comp:histo') as tr:
-    #         with mpiprof.traced_region('comp:histo') as tr:
-    #             profile = np.empty(n_slices, dtype='d')
-    #             bph._slice(dt, profile, cut_left, cut_right)
-
-    #     with timing.timed_region('comm:histo_extra') as tr:
-    #         with mpiprof.traced_region('comm:histo_reduce') as tr:
-    #             # recvbuf = None
-    #             # self.intercomm.Reduce(profile, recvbuf, op=MPI.SUM, root=0)
-    #             # self.bcast()
-    #             # new_profile = np.empty(len(profile), dtype='d')
-    #             self.intracomm.Allreduce(MPI.IN_PLACE, profile, op=MPI.SUM)
-    #             recvbuf = None
-    #             basesize = len(profile) // self.workers
-    #             start = self.rank * basesize
-    #             end = min((self.rank+1) * basesize, len(profile))
-    #             self.intercomm.Gatherv(profile[start:end], recvbuf, root=0)
-
-    #     with timing.timed_region('serial:indVolt1Turn') as tr:
-    #         with mpiprof.traced_region('serial:indVolt1Turn') as tr:
-    #             # Beam_spectrum_generation
-    #             beam_spectrum = bm.rfft(profile, n_fft)
-
-    #             induced_voltage = - (charge * e * beam_ratio *
-    #                                  bm.irfft(total_impedance * beam_spectrum))
-    #             induced_voltage = induced_voltage[:n_induced_voltage]
-
-    #             induced_voltage = induced_voltage[:n_slices]
-
-    #     self.update()
-
     # @timing.timeit(key='comp:LIKick')
     # @mpiprof.traceit(key='LIKick')
     def LIKick(self):
@@ -285,7 +247,6 @@ class Worker:
                 bph._linear_interp_kick(dt, dE, total_voltage, bin_centers,
                                         charge, acc_kick)
         self.update()
-
 
     def LIKick_n_drift(self):
         self.bcast()
@@ -299,7 +260,6 @@ class Worker:
                                     tracker_eta_1[turn], tracker_eta_2[turn],
                                     rfp_beta[turn], rfp_energy[turn])
         self.update()
-
 
     # @timing.timeit(key='comp:SR')
     def SR(self):
@@ -327,52 +287,106 @@ class Worker:
                 total_voltage = rf_voltage + induced_voltage
         self.update()
 
-
     def beamFB(self):
         self.bcast()
-        global turn, lhc_y, rfp_dphi_rf, rfp_omega_rf, rfp_phi_rf
+        global turn, lhc_y, rfp_dphi_rf, rfp_omega_rf, rfp_phi_rf, machine, time_offset
+
         with timing.timed_region('serial:beamFB') as tr:
             with mpiprof.traced_region('serial:beamFB') as tr:
-                coeff = bph._beam_phase(
-                    bin_centers, profile, alpha,
-                    rfp_omega_rf[0, turn],
-                    rfp_phi_rf[0, turn],
-                    bin_size)
+                if machine == 'LHC':
+                    coeff = bph._beam_phase(
+                        bin_centers, profile, alpha,
+                        rfp_omega_rf[0, turn],
+                        rfp_phi_rf[0, turn],
+                        bin_size)
 
-                phi_beam = np.arctan(coeff) + np.pi
+                    phi_beam = np.arctan(coeff) + np.pi
 
-                dphi = phi_beam - rfp_phi_s[turn]
+                    dphi = phi_beam - rfp_phi_s[turn]
 
-                if len(globals().get('lhc_noise_dphi', [])) > 0:
-                    dphi += lhc_noise_dphi[turn]
+                    if len(globals().get('lhc_noise_dphi', [])) > 0:
+                        dphi += lhc_noise_dphi[turn]
 
-                domega_rf = - gain*dphi - gain2 * \
-                    (lhc_y + lhc_a[turn] *
-                     (rfp_dphi_rf[0] + reference))
+                    domega_rf = - gain*dphi - gain2 * \
+                        (lhc_y + lhc_a[turn] *
+                         (rfp_dphi_rf[0] + reference))
 
-                lhc_y = (1 - lhc_t[turn]) * lhc_y + \
-                        (1 - lhc_a[turn]) * lhc_t[turn] * \
-                        (rfp_dphi_rf[0] + reference)
+                    lhc_y = (1 - lhc_t[turn]) * lhc_y + \
+                            (1 - lhc_a[turn]) * lhc_t[turn] * \
+                            (rfp_dphi_rf[0] + reference)
 
-                # # Update the RF frequency of all systems for the next turn
-                turn = turn + 1
-                rfp_omega_rf[:, turn] += domega_rf * \
-                    rfp_harmonic[:, turn] / \
-                    rfp_harmonic[0, turn]
+                    # Update the RF frequency of all systems for the next turn
+                    turn = turn + 1
+                    rfp_omega_rf[:, turn] += domega_rf * \
+                        rfp_harmonic[:, turn] / \
+                        rfp_harmonic[0, turn]
 
-                # Update the RF phase of all systems for the next turn
-                # Accumulated phase offset due to PL in each RF system
-                rfp_dphi_rf += 2.*np.pi*rfp_harmonic[:, turn] * \
-                    (rfp_omega_rf[:, turn] -
-                     rfp_omega_rf_d[:, turn]) / \
-                    rfp_omega_rf_d[:, turn]
+                    # Update the RF phase of all systems for the next turn
+                    # Accumulated phase offset due to PL in each RF system
+                    rfp_dphi_rf += 2.*np.pi*rfp_harmonic[:, turn] * \
+                        (rfp_omega_rf[:, turn] -
+                         rfp_omega_rf_d[:, turn]) / \
+                        rfp_omega_rf_d[:, turn]
 
-                # Total phase offset
-                rfp_phi_rf[:, turn] += rfp_dphi_rf
+                    # Total phase offset
+                    rfp_phi_rf[:, turn] += rfp_dphi_rf
+                elif machine == 'SPS_F':
+                    if alpha != 0.0:
+                        # left_bound = (time_offset - np.pi /
+                        #               rfp_omega_rf[0, turn]) <= bin_centers
+                        # right_bound = bin_centers <= (-1/alpha + time_offset -
+                        #                               2 * np.pi / rfp_omega_rf[0, turn])
+                        # indexes = left_bound*right_bound
+                        indexes = np.logical_and(
+                            (time_offset - np.pi /
+                             rfp_omega_rf[0, turn]) <= bin_centers,
+                            bin_centers <= (-1/alpha + time_offset -
+                                            2 * np.pi / rfp_omega_rf[0, turn]))
+                        # indexes = ((time_offset - np.pi/rfp_omega_rf[0, turn]) <= bin_centers) and \
+                        #     (bin_centers <= (-1/alpha +
+                        #                      time_offset - 2 * np.pi / rfp_omega_rf[0, turn]))
+                    else:
+                        indexes = np.ones(n_slices, dtype=bool)
+
+                    scoeff = np.trapz(np.sin(rfp_omega_rf[0, turn]*bin_centers[indexes]
+                                             + rfp_phi_rf[0, turn])
+                                      * profile[indexes], dx=bin_size)
+
+                    ccoeff = np.trapz(np.cos(rfp_omega_rf[0, turn]*bin_centers[indexes]
+                                             + rfp_phi_rf[0, turn])
+                                      * profile[indexes], dx=bin_size)
+
+                    # Project beam phase to (pi/2,3pi/2) range
+                    phi_beam = np.arctan(scoeff/ccoeff) + np.pi
+
+                    dphi = phi_beam - rfp_phi_s[turn]
+
+                    domega_dphi = - gain * dphi
+                    domega_df = -gain2*(rfp_omega_rf[0, turn]
+                                        - rfp_omega_rf_d[0, turn])
+
+                    domega_rf = domega_dphi + domega_df
+
+                    # Update the RF frequency of all systems for the next turn
+                    turn = turn + 1
+                    rfp_omega_rf[:, turn] += domega_rf * \
+                        rfp_harmonic[:, turn] / \
+                        rfp_harmonic[0, turn]
+
+                    # Update the RF phase of all systems for the next turn
+                    # Accumulated phase offset due to PL in each RF system
+                    rfp_dphi_rf += 2.*np.pi*rfp_harmonic[:, turn] * \
+                        (rfp_omega_rf[:, turn] -
+                         rfp_omega_rf_d[:, turn]) / \
+                        rfp_omega_rf_d[:, turn]
+
+                    # Total phase offset
+                    rfp_phi_rf[:, turn] += rfp_dphi_rf
+
+                else:
+                    self.logger.debug('Unrecognized machine type: %s' % machine)
 
         self.update()
-
-
 
 
 def main():
@@ -389,7 +403,7 @@ def main():
             mpiprof.mode = 'tracing'
 
         worker = Worker(log=args.get('log', None))
-        
+
         task_dir = {
             0: worker.kick,
             1: worker.drift,
@@ -416,7 +430,6 @@ def main():
         #                     os.environ['OMP_NUM_THREADS'])
 
         task = worker.recv_task()
-
 
         # This is the main loop
         start_t = time.time()

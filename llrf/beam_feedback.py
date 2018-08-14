@@ -60,6 +60,12 @@ class BeamFeedback(object):
         else: 
             self.alpha = self.config['window_coefficient'] 
 
+        # determines from which RF-buckets the band-pass filter starts to acts
+        if 'time_offset' not in self.config:
+            self.time_offset = None
+        else:
+            self.time_offset = self.config['time_offset']
+
         #: | *Phase loop gain. Implementation depends on machine.*        
         try:
             self.gain = self.config['PL_gain'] 
@@ -111,6 +117,13 @@ class BeamFeedback(object):
                 self.gain2 = 0.
             else: 
                 self.gain2 = self.config['RL_gain'] 
+
+        elif self.machine == 'SPS_F':
+            #: | *Frequency loop gain.*            
+            if 'FL_gain' not in self.config:  
+                self.gain2 = 0.
+            else: 
+                self.gain2 = self.config['FL_gain']
                 
                 
         # PSB CONFIGURATION        

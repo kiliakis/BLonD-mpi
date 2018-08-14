@@ -287,7 +287,8 @@ try:
         'lhc_t': PL.lhc_t,
         'lhc_y': PL.lhc_y,
         'alpha': PL.alpha,
-        'reference': PL.reference
+        'reference': PL.reference,
+        'machine': PL.machine
     }
 
     master.multi_bcast(init_dict)
