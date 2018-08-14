@@ -220,22 +220,42 @@ class Worker:
         profile *= self.workers
         # self.intracomm.Allreduce(MPI.IN_PLACE, profile, op=MPI.SUM)
 
-    def induced_voltage_1turn(self):
+    # def induced_voltage_1turn(self):
+    #     # for any per-turn updated variables
+    #     global induced_voltage
+    #     # self.bcast()
+
+    #     with timing.timed_region('serial:indVolt1Turn') as tr:
+    #         with mpiprof.traced_region('serial:indVolt1Turn') as tr:
+    #             # Beam_spectrum_generation
+    #             beam_spectrum = bm.rfft(profile, n_fft)
+
+    #             induced_voltage = - (charge * e * beam_ratio *
+    #                                  bm.irfft(total_impedance * beam_spectrum))
+    #             induced_voltage = induced_voltage[:n_induced_voltage]
+
+    #             induced_voltage = induced_voltage[:n_slices]
+    #             # self.active.update({'total_voltage': total_voltage})
+    #     self.update()
+
+    def induced_voltage_sum(self):
         # for any per-turn updated variables
         global induced_voltage
-        # self.bcast()
+        self.bcast()
+        temp_induced_voltage = 0
+        with timing.timed_region('serial:indVoltSum') as tr:
+            with mpiprof.traced_region('serial:indVoltSum') as tr:
+                for imped in impedance_list:
+                    # Beam_spectrum_generation
+                    beam_spectrum = bm.rfft(profile, imped['n_fft'])
 
-        with timing.timed_region('serial:indVolt1Turn') as tr:
-            with mpiprof.traced_region('serial:indVolt1Turn') as tr:
-                # Beam_spectrum_generation
-                beam_spectrum = bm.rfft(profile, n_fft)
+                    induced_voltage = - (charge * e * beam_ratio *
+                                         bm.irfft(imped['total_impedance'] * beam_spectrum))
+                    induced_voltage = induced_voltage[:imped['n_induced_voltage']]
 
-                induced_voltage = - (charge * e * beam_ratio *
-                                     bm.irfft(total_impedance * beam_spectrum))
-                induced_voltage = induced_voltage[:n_induced_voltage]
+                    temp_induced_voltage += induced_voltage[:n_slices]
 
-                induced_voltage = induced_voltage[:n_slices]
-                # self.active.update({'total_voltage': total_voltage})
+        induced_voltage = temp_induced_voltage
         self.update()
 
     # @timing.timeit(key='comp:LIKick')
@@ -250,7 +270,7 @@ class Worker:
 
     def LIKick_n_drift(self):
         self.bcast()
-        global turn
+        global turn, acc_kick
         with timing.timed_region('comp:LIKick_n_drift') as tr:
             with mpiprof.traced_region('comp:LIKick_n_drift') as tr:
                 bph._LIKick_n_drift(dt, dE, total_voltage, bin_centers,
@@ -416,7 +436,7 @@ def main():
             8: worker.barrier,
             9: worker.quit,
             10: worker.switch_context,
-            11: worker.induced_voltage_1turn,
+            11: worker.induced_voltage_sum,
             # 12: worker.histo_and_induced_voltage,
             13: worker.gather_single,
             14: worker.beamFB,

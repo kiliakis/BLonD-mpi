@@ -124,7 +124,7 @@ else:
     save_folder += str(n_turns)+'turns/'
 
 case = 'int'+str(intensity_pb/1e11)+'_'+'V' + \
-                 str(V1/1e6)+'_'+str(n_bunches)+'Nbun'
+    str(V1/1e6)+'_'+str(n_bunches)+'Nbun'
 
 if bunch_shift != 0:
     case += '_'+str(bunch_shift)+'deg'
@@ -151,7 +151,7 @@ if BUNCHLENGTH_MODULATION:
 # SPS --- Ring Parameters -------------------------------------------
 
 bunch_spacing = 5   # how many SPS RF buckets between bunches in the SPS
-                        # 5*t_rf_SPS spacing = 5*5ns = 25ns
+# 5*t_rf_SPS spacing = 5*5ns = 25ns
 
 intensity = n_bunches * intensity_pb     # total intensity SPS
 
@@ -222,7 +222,7 @@ PS_folder = currdir+'/../input_files/'
 if BUNCHLENGTH_MODULATION is False:
     print('Loading PS beam')
     with h5py.File(PS_folder+'bunch_rotation_'+PS_case
-              + '_bunch_rotation/after_rotation_PS_beam.hd5', "r") as h5file:
+                   + '_bunch_rotation/after_rotation_PS_beam.hd5', "r") as h5file:
         PS_dt = h5file['PS_dt'].value
         # place PS beam in SPS RF-bucket 0
         PS_dt += 0.5*t_rf - np.mean(PS_dt)
@@ -249,7 +249,7 @@ if BUNCHLENGTH_MODULATION is False:
         # randomly select macroparticles from PS bunch according to
         # intensity modulation
         numSelectedMPs = int(np.round(n_bunches*n_macroparticles_pb/PS_bunchCopies
-                             * intensityModulation[copy]))
+                                      * intensityModulation[copy]))
         indices = np.zeros(len(PS_dt), dtype=bool)
         randices = np.random.choice(len(indices), numSelectedMPs, replace=False)
         indices[randices] = True
@@ -266,12 +266,12 @@ if BUNCHLENGTH_MODULATION is False:
 else:  # use bunch length modulation
     print('creating SPS beam')
     PS_cases = ['rms13.5ns_full20ns', 'rms13.4ns_full20ns', 'rms13.0ns_full20ns',
-            'rms12.6ns_full20ns']
+                'rms12.6ns_full20ns']
 
     beginIndex = 0
     for case, PS_case in enumerate(PS_cases):
         with h5py.File(PS_folder+'bunch_rotation_'+PS_case
-              + '_bunch_rotation/after_rotation_PS_beam.hd5', "r") as h5file:
+                       + '_bunch_rotation/after_rotation_PS_beam.hd5', "r") as h5file:
             PS_dt = h5file['PS_dt'].value
             # place PS beam in SPS RF-bucket 0
             PS_dt += 0.5*t_rf - np.mean(PS_dt)
@@ -315,11 +315,11 @@ cut_right = t_batch_end + profile_margin
 # number of rf-buckets of the beam
 # + rf-buckets before the beam + rf-buckets after the beam
 n_slices = n_bins_rf * (bunch_spacing * (n_bunches-1) + 1
-            + int(np.round((t_batch_begin - cut_left)/t_rf))
-            + int(np.round((cut_right - t_batch_end)/t_rf)))
+                        + int(np.round((t_batch_begin - cut_left)/t_rf))
+                        + int(np.round((cut_right - t_batch_end)/t_rf)))
 
 profile = Profile(beam, CutOptions=CutOptions(cut_left=cut_left,
-                                    cut_right=cut_right, n_slices=n_slices))
+                                              cut_right=cut_right, n_slices=n_slices))
 
 # do profile on inital beam
 profile.track()
@@ -346,7 +346,7 @@ if SPS_IMPEDANCE == True:
 
     # Induced voltage calculated by the 'frequency' method
     SPS_freq = InducedVoltageFreq(beam, profile,
-                         impedance_model.impedanceListToPlot, frequency_step)
+                                  impedance_model.impedanceListToPlot, frequency_step)
 
 #    induced_voltage = TotalInducedVoltage(beam, profile, [SPS_freq])
 
@@ -382,13 +382,13 @@ elif cavities == 'future':
 longCavity = TravelingWaveCavity(n_cav_long*R_shunt_long, fr,
                                  damping_time_long)
 longCavityFreq = InducedVoltageFreq(beam, profile, [longCavity],
-                                      frequency_step)
+                                    frequency_step)
 longCavityIntensity = TotalInducedVoltage(beam, profile, [longCavityFreq])
 
 shortCavity = TravelingWaveCavity(n_cav_short*R_shunt_short, fr,
                                   damping_time_short)
 shortCavityFreq = InducedVoltageFreq(beam, profile, [shortCavity],
-                                      frequency_step)
+                                     frequency_step)
 shortCavityIntensity = TotalInducedVoltage(beam, profile, [shortCavityFreq])
 
 # FB parameters
@@ -405,16 +405,16 @@ filter_bandwidth = 2e6  # filter bandwidth [Hz]
 
 # bandwidth should be 3MHz, but then 'reduction' is greater 1...
 longCavityImpedanceReduction = ImpedanceReduction(ring, rf_station, longCavityFreq,
-                    filter_type, filter_center_frequency, filter_bandwidth,
-                    2*tRev, L_long, start_time=2*tRev, FB_strength=FBstrengthLong)
+                                                  filter_type, filter_center_frequency, filter_bandwidth,
+                                                  2*tRev, L_long, start_time=2*tRev, FB_strength=FBstrengthLong)
 
 shortCavityImpedanceReduction = ImpedanceReduction(ring, rf_station, shortCavityFreq,
-                    filter_type, filter_center_frequency, filter_bandwidth,
-                    2*tRev, L_short, start_time=2*tRev, FB_strength=FBstrengthShort)
+                                                   filter_type, filter_center_frequency, filter_bandwidth,
+                                                   2*tRev, L_short, start_time=2*tRev, FB_strength=FBstrengthShort)
 
 if SPS_IMPEDANCE:
     inducedVoltage = TotalInducedVoltage(beam, profile,
-                                [longCavityFreq, shortCavityFreq, SPS_freq])
+                                         [longCavityFreq, shortCavityFreq, SPS_freq])
 else:
     inducedVoltage = TotalInducedVoltage(beam, profile,
                                          [longCavityFreq, shortCavityFreq])
@@ -451,8 +451,8 @@ if SPS_PHASELOOP is True:
 
 print('Setting up tracker')
 tracker = RingAndRFTracker(rf_station, beam, Profile=profile,
-                                   TotalInducedVoltage=inducedVoltage,
-                                   interpolation=True)
+                           TotalInducedVoltage=inducedVoltage,
+                           interpolation=True)
 # tracker = FullRingAndRF([section_tracker])
 
 
@@ -496,6 +496,27 @@ try:
         'cut_right': profile.cut_right,
         'charge': beam.Particle.charge,
         'beam_ratio': beam.ratio,
+        # 'impedance_list': [(longCavityFreq.total_impedance,
+        #                     longCavityFreq.n_fft,
+        #                     longCavityFreq.n_induced_voltage),
+        #                    (shortCavityFreq.total_impedance,
+        #                     shortCavityFreq.n_fft,
+        #                     shortCavityFreq.n_induced_voltage),
+        #                    (SPS_freq.total_impedance,
+        #                     SPS_freq.n_fft,
+        #                     SPS_freq.n_induced_voltage)
+        #                    ],
+        'impedance_list': [{'total_impedance': longCavityFreq.total_impedance,
+                            'n_fft': longCavityFreq.n_fft,
+                            'n_induced_voltage': longCavityFreq.n_induced_voltage},
+                           {'total_impedance': shortCavityFreq.total_impedance,
+                            'n_fft': shortCavityFreq.n_fft,
+                            'n_induced_voltage': shortCavityFreq.n_induced_voltage},
+                           {'total_impedance': SPS_freq.total_impedance,
+                            'n_fft': SPS_freq.n_fft,
+                            'n_induced_voltage': SPS_freq.n_induced_voltage}
+                           ],
+
         # 'total_impedance': inducedVoltage.total_impedance,
         'total_voltage': 0.,
         'induced_voltage': 0.,
@@ -530,7 +551,7 @@ try:
     # for turn in range(ring.n_turns):
     for turn in range(N_t):
 
-        if ring.n_turns <= 450 and turn%10==0:
+        if ring.n_turns <= 450 and turn % 10 == 0:
             print('turn: '+str(turn))
         elif turn % 1000 == 0:
             print('turn: '+str(turn))
@@ -547,8 +568,8 @@ try:
         # if (turn < 8*int(FBtime)):
         #     task_list += ['longCavityImpedRed', 'shortCavityImpedRed']
 
-        # if (turn % N_t_reduce == 0):
-        #     task_list += ['induced_voltage_sum']
+        if (turn % N_t_reduce == 0):
+            task_list += ['induced_voltage_sum']
 
         task_list += ['RFVCalc', 'LIKick_n_drift']
 
@@ -560,20 +581,19 @@ try:
             master.gather_single(
                 {'profile': profile.n_macroparticles}, msg=False)
             slicesMonitor.track(turn)
-        
+
         if SPS_PHASELOOP is True:
             phaseLoop.track()
-        
+
         # reduce impedance, poor man's feedback
         # if (turn < 8*int(FBtime)):
         #     longCavityImpedanceReduction.track()
         #     shortCavityImpedanceReduction.track()
-        
+
         # applying this voltage is done by tracker if interpolation=True
-        # inducedVoltage.induced_voltage_sum()
+        inducedVoltage.induced_voltage_sum()
 
         tracker.track()
-
 
     master.multi_gather(vars_dict)
     master.stop()

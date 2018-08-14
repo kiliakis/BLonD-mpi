@@ -267,11 +267,15 @@ try:
         'cut_right': profile.cut_right,
         'charge': beam.Particle.charge,
         'beam_ratio': beam.ratio,
-        'total_impedance': indVoltage.total_impedance,
         'total_voltage': 0.,
         'induced_voltage': 0.,
-        'n_fft': indVoltage.n_fft,
-        'n_induced_voltage': indVoltage.n_induced_voltage,
+        # 'total_impedance': indVoltage.total_impedance,
+        # 'n_fft': indVoltage.n_fft,
+        # 'n_induced_voltage': indVoltage.n_induced_voltage,
+        'impedance_list': [{'total_impedance': indVoltage.total_impedance,
+                            'n_fft': indVoltage.n_fft,
+                            'n_induced_voltage': indVoltage.n_induced_voltage}
+                           ],
         'rfp_omega_rf': rf.omega_rf,
         'rfp_omega_rf_d': rf.omega_rf_d,
         'rfp_phi_rf': rf.phi_rf,
@@ -312,7 +316,7 @@ try:
         task_list = ['bcast']
 
         if (i % N_t_reduce == 0):
-            task_list += ['induced_voltage_1turn', 'histo', 'reduce_histo']
+            task_list += ['induced_voltage_sum', 'histo', 'reduce_histo']
 
         if (N_t_monitor > 0) and (i % N_t_monitor == 0):
             task_list += ['gather_single']
@@ -321,14 +325,14 @@ try:
         master.bcast(task_list)
 
         # if (i % N_t_reduce == 0):
-        #     master.bcast(['bcast', 'induced_voltage_1turn',
+        #     master.bcast(['bcast', 'induced_voltage_sum',
         #                   # 'histo', 'gather_single',
         #                   'histo', 'reduce_histo', 'gather_single',
         #                   'beamFB', 'RFVCalc',
         #                   'LIKick_n_drift'])
         # else:
         #     master.bcast(['bcast',
-        #                   # 'induced_voltage_1turn',
+        #                   # 'induced_voltage_sum',
         #                   # 'histo', 'gather_single',
         #                   # 'histo', 'scale_histo',
         #                   'beamFB', 'RFVCalc',
