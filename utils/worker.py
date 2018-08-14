@@ -42,7 +42,6 @@ class Worker:
             self.logger.disable()
 
         self.logger.debug('Hostname: %s' % self.hostname)
-        # self.taskbuf = np.array(0, np.uint8)
         self.task_queue = deque()
 
     # @timing.timeit(key='comm:multi_scatter')
@@ -83,7 +82,6 @@ class Worker:
             # receive new tasks
             tasks = None
             tasks = self.intercomm.bcast(tasks, root=0)
-            # task = np.uint8(self.taskbuf)
             self.task_queue.extend(tasks)
             # self.logger.debug('Received a %d task.' % task)
 
@@ -92,7 +90,7 @@ class Worker:
         return task
 
 
-        @timing.timeit(key='overhead:update')
+    @timing.timeit(key='overhead:update')
     @mpiprof.traceit(key='overhead:update')
     def update(self):
         self.active.update(globals())
@@ -242,41 +240,41 @@ class Worker:
                 # self.active.update({'total_voltage': total_voltage})
         self.update()
 
-    def histo_and_induced_voltage(self):
-        self.bcast()
-        global profile
-        global induced_voltage
+    # def histo_and_induced_voltage(self):
+    #     self.bcast()
+    #     global profile
+    #     global induced_voltage
 
-        with timing.timed_region('comp:histo') as tr:
-            with mpiprof.traced_region('comp:histo') as tr:
-                profile = np.empty(n_slices, dtype='d')
-                bph._slice(dt, profile, cut_left, cut_right)
+    #     with timing.timed_region('comp:histo') as tr:
+    #         with mpiprof.traced_region('comp:histo') as tr:
+    #             profile = np.empty(n_slices, dtype='d')
+    #             bph._slice(dt, profile, cut_left, cut_right)
 
-        with timing.timed_region('comm:histo_extra') as tr:
-            with mpiprof.traced_region('comm:histo_reduce') as tr:
-                # recvbuf = None
-                # self.intercomm.Reduce(profile, recvbuf, op=MPI.SUM, root=0)
-                # self.bcast()
-                # new_profile = np.empty(len(profile), dtype='d')
-                self.intracomm.Allreduce(MPI.IN_PLACE, profile, op=MPI.SUM)
-                recvbuf = None
-                basesize = len(profile) // self.workers
-                start = self.rank * basesize
-                end = min((self.rank+1) * basesize, len(profile))
-                self.intercomm.Gatherv(profile[start:end], recvbuf, root=0)
+    #     with timing.timed_region('comm:histo_extra') as tr:
+    #         with mpiprof.traced_region('comm:histo_reduce') as tr:
+    #             # recvbuf = None
+    #             # self.intercomm.Reduce(profile, recvbuf, op=MPI.SUM, root=0)
+    #             # self.bcast()
+    #             # new_profile = np.empty(len(profile), dtype='d')
+    #             self.intracomm.Allreduce(MPI.IN_PLACE, profile, op=MPI.SUM)
+    #             recvbuf = None
+    #             basesize = len(profile) // self.workers
+    #             start = self.rank * basesize
+    #             end = min((self.rank+1) * basesize, len(profile))
+    #             self.intercomm.Gatherv(profile[start:end], recvbuf, root=0)
 
-        with timing.timed_region('serial:indVolt1Turn') as tr:
-            with mpiprof.traced_region('serial:indVolt1Turn') as tr:
-                # Beam_spectrum_generation
-                beam_spectrum = bm.rfft(profile, n_fft)
+    #     with timing.timed_region('serial:indVolt1Turn') as tr:
+    #         with mpiprof.traced_region('serial:indVolt1Turn') as tr:
+    #             # Beam_spectrum_generation
+    #             beam_spectrum = bm.rfft(profile, n_fft)
 
-                induced_voltage = - (charge * e * beam_ratio *
-                                     bm.irfft(total_impedance * beam_spectrum))
-                induced_voltage = induced_voltage[:n_induced_voltage]
+    #             induced_voltage = - (charge * e * beam_ratio *
+    #                                  bm.irfft(total_impedance * beam_spectrum))
+    #             induced_voltage = induced_voltage[:n_induced_voltage]
 
-                induced_voltage = induced_voltage[:n_slices]
+    #             induced_voltage = induced_voltage[:n_slices]
 
-        self.update()
+    #     self.update()
 
     # @timing.timeit(key='comp:LIKick')
     # @mpiprof.traceit(key='LIKick')
@@ -378,7 +376,6 @@ class Worker:
 
 
 def main():
-    # global worker
     try:
         args = parse()
 
@@ -392,6 +389,7 @@ def main():
             mpiprof.mode = 'tracing'
 
         worker = Worker(log=args.get('log', None))
+        
         task_dir = {
             0: worker.kick,
             1: worker.drift,
@@ -405,7 +403,7 @@ def main():
             9: worker.quit,
             10: worker.switch_context,
             11: worker.induced_voltage_1turn,
-            12: worker.histo_and_induced_voltage,
+            # 12: worker.histo_and_induced_voltage,
             13: worker.gather_single,
             14: worker.beamFB,
             15: worker.reduce_histo,

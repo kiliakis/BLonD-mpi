@@ -24,6 +24,8 @@ parser.add_argument('-t', '--turns', type=int, default=2000,
                     help='Number of simulation turns.'
                     '\nDefault: 2000')
 
+
+
 parser.add_argument('-o', '--omp', type=int, default=1,
                     help='Number of openmp threads to use.'
                     '\nDefault: 1')
@@ -37,6 +39,9 @@ parser.add_argument('-r', '--report', type=str, default='./',
                     help='Directory to store the timing reports.'
                     '\nDefault: Do not generate timing reports.')
 
+parser.add_argument('-m', '--monitor', type=int, default=0,
+                    help='Monitoring interval (0: no monitor).'
+                    '\nDefault: 0')
 
 parser.add_argument('-time', '--time', action='store_true',
                     help='Time the specified regions of interest.'

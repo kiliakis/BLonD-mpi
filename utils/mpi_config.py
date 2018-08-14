@@ -49,7 +49,7 @@ master = None
 
 def init(trace=False, logfile='mpe-trace'):
     rank = MPI.COMM_WORLD.rank
-    if trace==True:
+    if trace == True:
         mpiprof.mode = 'tracing'
         mpiprof.init(logfile=logfile)
 
@@ -65,7 +65,7 @@ class Master:
 
         self.vars = {}
         rank = MPI.COMM_WORLD.rank
-        self.intracomm = MPI.COMM_WORLD.Split(rank==0, rank)
+        self.intracomm = MPI.COMM_WORLD.Split(rank == 0, rank)
         self.intercomm = self.intracomm.Create_intercomm(0, MPI.COMM_WORLD, 1)
         self.workers = self.intercomm.Get_remote_size()
         self.rank = self.intracomm.rank
@@ -107,6 +107,7 @@ class Master:
             self.intercomm.Scatterv([val, counts, displs, mpi_type[dtype]],
                                     recvbuf, root=MPI.ROOT)
 
+
     # args are the buffers to fill with the gathered values
     # e.g. (comm, beam.dt, beam.dE)
     @timing.timeit(key='master:multi_gather')
@@ -125,7 +126,8 @@ class Master:
                               (self.workers-plusone), dtype='i')
             displs = np.append([0], np.cumsum(counts[:-1]))
 
-            self.intercomm.Gatherv(sendbuf, [v, counts, displs, mpi_type[v.dtype.char]],
+            self.intercomm.Gatherv(sendbuf,
+                                   [v, counts, displs, mpi_type[v.dtype.char]],
                                    root=MPI.ROOT)
 
     @timing.timeit(key='master:gather_single')
@@ -145,7 +147,8 @@ class Master:
                               (self.workers-plusone), dtype='i')
             displs = np.append([0], np.cumsum(counts[:-1]))
 
-            self.intercomm.Gatherv(sendbuf, [v, counts, displs, mpi_type[v.dtype.char]],
+            self.intercomm.Gatherv(sendbuf,
+                                   [v, counts, displs, mpi_type[v.dtype.char]],
                                    root=MPI.ROOT)
 
     @timing.timeit(key='master:multi_bcast')

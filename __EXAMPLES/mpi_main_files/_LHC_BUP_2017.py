@@ -38,6 +38,8 @@ if MONITORING:
     from plots.plot_beams import plot_long_phase_space
     from plots.plot_slices import plot_beam_profile
 
+from monitors.monitors import SlicesMonitor
+
 import datetime
 from utils.input_parser import parse
 from utils import mpi_config as mpiconf
@@ -75,6 +77,7 @@ bl_target = 1.25e-9  # 4 sigma r.m.s. target bunch length in [ns]
 
 
 N_t_reduce = 1
+N_t_monitor = 0
 
 if args.get('turns', None):
     N_t = args['turns']
@@ -87,6 +90,8 @@ if args.get('bunches', None):
 if args.get('reduce', None):
     N_t_reduce = args['reduce']
 
+if args.get('monitor', None):
+    N_t_monitor = args['monitor']
 
 if args.get('omp', None):
     os.environ['OMP_NUM_THREADS'] = str(args['omp'])
@@ -233,6 +238,13 @@ print("Map set")
 print('dE mean: ', np.mean(beam.dE))
 print('dE std: ', np.std(beam.dE))
 
+if N_t_monitor > 0:
+    filename = 'profile-t{}-b{}-s{}-r{}-m{}-'.format(
+        N_t, NB, nSlices, N_t_reduce, N_t_monitor)
+    slicesMonitor = SlicesMonitor(filename=filename,
+                                  n_turns=np.ceil(1.0 * N_t / N_t_monitor),
+                                  profile=profile)
+
 master = mpiconf.Master(log=log)
 start_t = time.time()
 try:
@@ -288,7 +300,6 @@ try:
     # master.bcast(['histo', 'gather_single'])
     master.bcast(['histo', 'reduce_histo'])
     profile.track()
-
     print("Ready for tracking!")
     print("")
 
@@ -296,19 +307,31 @@ try:
     for i in range(N_t):
         # for i in range(turns):
         t0 = time.clock()
+
+        task_list = ['bcast']
+
         if (i % N_t_reduce == 0):
-            master.bcast(['bcast', 'induced_voltage_1turn',
-                          # 'histo', 'gather_single',
-                          'histo', 'reduce_histo',
-                          'beamFB', 'RFVCalc',
-                          'LIKick_n_drift'])
-        else:
-            master.bcast(['bcast', 
-                            # 'induced_voltage_1turn',
-                          # 'histo', 'gather_single',
-                          # 'histo', 'scale_histo',
-                          'beamFB', 'RFVCalc',
-                          'LIKick_n_drift'])
+            task_list += ['induced_voltage_1turn', 'histo', 'reduce_histo']
+
+        if (N_t_monitor > 0) and (i % N_t_monitor == 0):
+            task_list += ['gather_single']
+
+        task_list += ['beamFB', 'RFVCalc', 'LIKick_n_drift']
+        master.bcast(task_list)
+
+        # if (i % N_t_reduce == 0):
+        #     master.bcast(['bcast', 'induced_voltage_1turn',
+        #                   # 'histo', 'gather_single',
+        #                   'histo', 'reduce_histo', 'gather_single',
+        #                   'beamFB', 'RFVCalc',
+        #                   'LIKick_n_drift'])
+        # else:
+        #     master.bcast(['bcast',
+        #                   # 'induced_voltage_1turn',
+        #                   # 'histo', 'gather_single',
+        #                   # 'histo', 'scale_histo',
+        #                   'beamFB', 'RFVCalc',
+        #                   'LIKick_n_drift'])
 
         # Remove lost particles to obtain a correct r.m.s. value
         # if (i % 1000) == 0:  # reduce computational costs
@@ -323,6 +346,11 @@ try:
         totVoltage.induced_voltage_sum()
 
         profile.track()
+
+        if (N_t_monitor > 0) and (i % N_t_monitor == 0):
+            master.gather_single(
+                {'profile': profile.n_macroparticles}, msg=False)
+            slicesMonitor.track(i)
 
         tracker.track()
 
@@ -381,7 +409,7 @@ print('dE mean: ', np.mean(beam.dE))
 print('dE std: ', np.std(beam.dE))
 
 # np.savetxt('out/coords_' "%d" % rf.counter[0] + '.dat',
-           # np.c_[beam.dt, beam.dE], fmt='%.10e')
+# np.c_[beam.dt, beam.dE], fmt='%.10e')
 if MONITORING:
     plots.track()
 
