@@ -243,11 +243,13 @@ class Worker:
         global induced_voltage
         self.bcast()
         temp_induced_voltage = 0
+        beam_spectrum = None
         with timing.timed_region('serial:indVoltSum') as tr:
             with mpiprof.traced_region('serial:indVoltSum') as tr:
-                for imped in impedance_list:
+                for imped in impedList.values():
                     # Beam_spectrum_generation
-                    beam_spectrum = bm.rfft(profile, imped['n_fft'])
+                    if beam_spectrum is None:
+                        beam_spectrum = bm.rfft(profile, imped['n_fft'])
 
                     induced_voltage = - (charge * e * beam_ratio *
                                          bm.irfft(imped['total_impedance'] * beam_spectrum))
@@ -305,6 +307,20 @@ class Worker:
                                   rf_voltage)
 
                 total_voltage = rf_voltage + induced_voltage
+        self.update()
+
+    # @timing.timeit(key='comp:RFVCalc')
+    def impedance_reduction(self):
+        self.bcast()
+        global turn
+        with timing.timed_region('serial:imped_red') as tr:
+            with mpiprof.traced_region('serial:imped_red') as tr:
+                for impRed in impedanceReduction:
+                    impedList[impRed['impedance']]['total_impedance'][impRed['affected_indices']] = \
+                        impRed['initial_impedance'][impRed['affected_indices']] \
+                        * impRed['filter_func']**(impRed['reduction_factor'][turn]
+                                                  * impRed['FB_strength'])
+
         self.update()
 
     def beamFB(self):
@@ -443,6 +459,7 @@ def main():
             15: worker.reduce_histo,
             16: worker.scale_histo,
             17: worker.LIKick_n_drift,
+            18: worker.impedance_reduction,
             255: worker.stop
         }
 

@@ -496,32 +496,38 @@ try:
         'cut_right': profile.cut_right,
         'charge': beam.Particle.charge,
         'beam_ratio': beam.ratio,
-        # 'impedance_list': [(longCavityFreq.total_impedance,
-        #                     longCavityFreq.n_fft,
-        #                     longCavityFreq.n_induced_voltage),
-        #                    (shortCavityFreq.total_impedance,
-        #                     shortCavityFreq.n_fft,
-        #                     shortCavityFreq.n_induced_voltage),
-        #                    (SPS_freq.total_impedance,
-        #                     SPS_freq.n_fft,
-        #                     SPS_freq.n_induced_voltage)
-        #                    ],
-        'impedance_list': [{'total_impedance': longCavityFreq.total_impedance,
-                            'n_fft': longCavityFreq.n_fft,
-                            'n_induced_voltage': longCavityFreq.n_induced_voltage},
-                           {'total_impedance': shortCavityFreq.total_impedance,
-                            'n_fft': shortCavityFreq.n_fft,
-                            'n_induced_voltage': shortCavityFreq.n_induced_voltage},
-                           {'total_impedance': SPS_freq.total_impedance,
-                            'n_fft': SPS_freq.n_fft,
-                            'n_induced_voltage': SPS_freq.n_induced_voltage}
-                           ],
-
-        # 'total_impedance': inducedVoltage.total_impedance,
+        'impedList': {
+            'longCavityFreq': {'total_impedance': longCavityFreq.total_impedance,
+                               'n_fft': longCavityFreq.n_fft,
+                               'n_induced_voltage': longCavityFreq.n_induced_voltage},
+            'shortCavityFreq': {'total_impedance': shortCavityFreq.total_impedance,
+                                'n_fft': shortCavityFreq.n_fft,
+                                'n_induced_voltage': shortCavityFreq.n_induced_voltage},
+            'SPS_freq': {'total_impedance': SPS_freq.total_impedance,
+                         'n_fft': SPS_freq.n_fft,
+                         'n_induced_voltage': SPS_freq.n_induced_voltage}
+        },
         'total_voltage': 0.,
         'induced_voltage': 0.,
-        # 'n_fft': inducedVoltage.n_fft,
-        # 'n_induced_voltage': inducedVoltage.n_induced_voltage,
+        'impedanceReduction': [
+            {
+                'impedance': 'longCavityFreq',
+                'initial_impedance': longCavityImpedanceReduction.initial_impedance,
+                'affected_indices': longCavityImpedanceReduction.affected_indices,
+                'filter_func': longCavityImpedanceReduction.filter_func,
+                'reduction_factor': longCavityImpedanceReduction.reduction_factor,
+                'FB_strength': longCavityImpedanceReduction.FB_strength
+            },
+            {
+                'impedance': 'shortCavityFreq',
+                'initial_impedance': shortCavityImpedanceReduction.initial_impedance,
+                'affected_indices': shortCavityImpedanceReduction.affected_indices,
+                'filter_func': shortCavityImpedanceReduction.filter_func,
+                'reduction_factor': shortCavityImpedanceReduction.reduction_factor,
+                'FB_strength': shortCavityImpedanceReduction.FB_strength
+            }
+
+        ],
         'rfp_omega_rf': rf_station.omega_rf,
         'rfp_omega_rf_d': rf_station.omega_rf_d,
         'rfp_phi_rf': rf_station.phi_rf,
@@ -565,8 +571,8 @@ try:
             task_list += ['gather_single']
 
         task_list += ['beamFB']
-        # if (turn < 8*int(FBtime)):
-        #     task_list += ['longCavityImpedRed', 'shortCavityImpedRed']
+        if (turn < 8*int(FBtime)):
+            task_list += ['impedance_reduction']
 
         if (turn % N_t_reduce == 0):
             task_list += ['induced_voltage_sum']
@@ -586,9 +592,9 @@ try:
             phaseLoop.track()
 
         # reduce impedance, poor man's feedback
-        # if (turn < 8*int(FBtime)):
-        #     longCavityImpedanceReduction.track()
-        #     shortCavityImpedanceReduction.track()
+        if (turn < 8*int(FBtime)):
+            longCavityImpedanceReduction.track()
+            # shortCavityImpedanceReduction.track()
 
         # applying this voltage is done by tracker if interpolation=True
         inducedVoltage.induced_voltage_sum()

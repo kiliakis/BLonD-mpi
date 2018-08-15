@@ -272,10 +272,11 @@ try:
         # 'total_impedance': indVoltage.total_impedance,
         # 'n_fft': indVoltage.n_fft,
         # 'n_induced_voltage': indVoltage.n_induced_voltage,
-        'impedance_list': [{'total_impedance': indVoltage.total_impedance,
-                            'n_fft': indVoltage.n_fft,
-                            'n_induced_voltage': indVoltage.n_induced_voltage}
-                           ],
+        'impedList': {
+            'indVoltage': {'total_impedance': indVoltage.total_impedance,
+                           'n_fft': indVoltage.n_fft,
+                           'n_induced_voltage': indVoltage.n_induced_voltage}
+        },
         'rfp_omega_rf': rf.omega_rf,
         'rfp_omega_rf_d': rf.omega_rf_d,
         'rfp_phi_rf': rf.phi_rf,

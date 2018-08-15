@@ -41,6 +41,7 @@ task_id = {
     'reduce_histo': np.uint8(15),
     'scale_histo': np.uint8(16),
     'LIKick_n_drift': np.uint8(17),
+    'impedance_reduction': np.uint8(18),
     'stop': np.uint8(255)
 }
 
