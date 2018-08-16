@@ -30,6 +30,7 @@ _CPU_func_dict = {
     'sort': butils_wrap.sort,
     'rfft': butils_wrap.rfft,
     'irfft': butils_wrap.irfft,
+    # 'irfft2d': butils_wrap.irfft2d,
     'add': butils_wrap.add,
     # 'rfft': np.fft.rfft,
     # 'irfft': np.fft.irfft,

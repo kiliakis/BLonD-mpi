@@ -19,6 +19,7 @@ struct fft_plan_t {
     fftw_plan p; // fftw_plan
     int inSize;      // input size
     int fftSize;    // fft size
+    int n1=0;
     fft_type_t type;
     void *in;
     void *out;
@@ -61,6 +62,10 @@ extern "C" {
     void irfft(complex_t *in, const int inSize,
                double *out, int fftSize = 0,
                const int threads = 1);
+
+    // void irfft2d(complex_t *in, const int n0, const int n1,
+    //              double *out, int fftSize = 0,
+    //              const int threads = 1);
 
 
 // Same as python's numpy.fft.rfftfreq

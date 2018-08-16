@@ -554,16 +554,11 @@ try:
 
     print("Ready for tracking!\n")
 
-    # for turn in range(ring.n_turns):
+
+    # task_list generation
+    
+    task_list = []
     for turn in range(N_t):
-
-        if ring.n_turns <= 450 and turn % 10 == 0:
-            print('turn: '+str(turn))
-        elif turn % 1000 == 0:
-            print('turn: '+str(turn))
-
-        task_list = []
-
         if (turn % N_t_reduce == 0):
             task_list += ['histo', 'reduce_histo']
 
@@ -578,8 +573,17 @@ try:
             task_list += ['induced_voltage_sum']
 
         task_list += ['RFVCalc', 'LIKick_n_drift']
+     
+    master.bcast(task_list)
 
-        master.bcast(task_list)
+
+    # for turn in range(ring.n_turns):
+    for turn in range(N_t):
+
+        if ring.n_turns <= 450 and turn % 10 == 0:
+            print('turn: '+str(turn))
+        elif turn % 1000 == 0:
+            print('turn: '+str(turn))
 
         # Update profile
         profile.track()

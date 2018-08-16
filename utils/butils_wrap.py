@@ -84,6 +84,29 @@ def irfft(signal, fftsize=0, result=None):
     return result
 
 
+# def irfft2d(signal, fftsize=0, result=None):
+
+#     n0 = len(signal[0])
+#     n1 = len(signal)
+
+#     signal = np.ascontiguousarray(np.reshape(signal, -1))
+
+#     if (fftsize == 0) and (result == None):
+#         result = np.empty(n1 * (2*n0-1), dtype=np.float64)
+#     elif (fftsize != 0) and (result == None):
+#         result = np.empty(n1 * fftsize, dtype=np.float64)
+
+#     libfft.irfft2d(__getPointer(signal),
+#                    n0,
+#                    n1,
+#                    __getPointer(result),
+#                    fftsize)
+
+#     result = np.reshape(result, (n1, -1))
+
+#     return result
+
+
 def mean(x):
     __lib.mean.restype = ct.c_double
     return __lib.mean(__getPointer(x), __getLen(x))

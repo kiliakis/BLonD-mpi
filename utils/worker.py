@@ -220,23 +220,6 @@ class Worker:
         profile *= self.workers
         # self.intracomm.Allreduce(MPI.IN_PLACE, profile, op=MPI.SUM)
 
-    # def induced_voltage_1turn(self):
-    #     # for any per-turn updated variables
-    #     global induced_voltage
-    #     # self.bcast()
-
-    #     with timing.timed_region('serial:indVolt1Turn') as tr:
-    #         with mpiprof.traced_region('serial:indVolt1Turn') as tr:
-    #             # Beam_spectrum_generation
-    #             beam_spectrum = bm.rfft(profile, n_fft)
-
-    #             induced_voltage = - (charge * e * beam_ratio *
-    #                                  bm.irfft(total_impedance * beam_spectrum))
-    #             induced_voltage = induced_voltage[:n_induced_voltage]
-
-    #             induced_voltage = induced_voltage[:n_slices]
-    #             # self.active.update({'total_voltage': total_voltage})
-    #     self.update()
 
     def induced_voltage_sum(self):
         # for any per-turn updated variables
@@ -253,12 +236,13 @@ class Worker:
 
                     induced_voltage = - (charge * e * beam_ratio *
                                          bm.irfft(imped['total_impedance'] * beam_spectrum))
-                    induced_voltage = induced_voltage[:imped['n_induced_voltage']]
-
-                    temp_induced_voltage += induced_voltage[:n_slices]
+                    # induced_voltage = induced_voltage[:imped['n_induced_voltage']]
+                    max_idx = min(imped['n_induced_voltage'], n_slices)
+                    temp_induced_voltage += induced_voltage[:max_idx]
 
         induced_voltage = temp_induced_voltage
         self.update()
+
 
     # @timing.timeit(key='comp:LIKick')
     # @mpiprof.traceit(key='LIKick')
@@ -368,19 +352,11 @@ class Worker:
                     rfp_phi_rf[:, turn] += rfp_dphi_rf
                 elif machine == 'SPS_F':
                     if alpha != 0.0:
-                        # left_bound = (time_offset - np.pi /
-                        #               rfp_omega_rf[0, turn]) <= bin_centers
-                        # right_bound = bin_centers <= (-1/alpha + time_offset -
-                        #                               2 * np.pi / rfp_omega_rf[0, turn])
-                        # indexes = left_bound*right_bound
                         indexes = np.logical_and(
                             (time_offset - np.pi /
                              rfp_omega_rf[0, turn]) <= bin_centers,
                             bin_centers <= (-1/alpha + time_offset -
                                             2 * np.pi / rfp_omega_rf[0, turn]))
-                        # indexes = ((time_offset - np.pi/rfp_omega_rf[0, turn]) <= bin_centers) and \
-                        #     (bin_centers <= (-1/alpha +
-                        #                      time_offset - 2 * np.pi / rfp_omega_rf[0, turn]))
                     else:
                         indexes = np.ones(n_slices, dtype=bool)
 
@@ -460,6 +436,7 @@ def main():
             16: worker.scale_histo,
             17: worker.LIKick_n_drift,
             18: worker.impedance_reduction,
+            # 19: worker.induced_voltage_sum_packed,
             255: worker.stop
         }
 
