@@ -570,7 +570,7 @@ try:
             task_list += ['impedance_reduction']
 
         if (turn % N_t_reduce == 0):
-            task_list += ['induced_voltage_sum']
+            task_list += ['induced_voltage_sum_packed']
 
         task_list += ['RFVCalc', 'LIKick_n_drift']
      

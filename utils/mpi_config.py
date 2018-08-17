@@ -42,7 +42,7 @@ task_id = {
     'scale_histo': np.uint8(16),
     'LIKick_n_drift': np.uint8(17),
     'impedance_reduction': np.uint8(18),
-    # 'induced_voltage_sum_packed': np.uint8(19),
+    'induced_voltage_sum_packed': np.uint8(19),
     'stop': np.uint8(255)
 }
 

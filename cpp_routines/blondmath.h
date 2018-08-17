@@ -13,7 +13,7 @@ C++ Math library
 @Date: 20.10.2017
 */
 
-
+#include <complex>
 
 extern "C" {
 
@@ -112,4 +112,45 @@ extern "C" {
     void sort_double(double * __restrict__ in, const int n, bool reverse);
     void sort_int(int * __restrict__ in, const int n, bool reverse);
     void sort_longint(long int * __restrict__ in, const int n, bool reverse);
+
+    void scalar_mul_int32(const int * __restrict__ a, const int b,
+                          const int n, int * __restrict__ res);
+
+    void scalar_mul_int64(const long * __restrict__ a, const long b,
+                          const int n, long * __restrict__ res);
+
+    void scalar_mul_float32(const float * __restrict__ a, const float b,
+                            const int n, float * __restrict__ res);
+
+    void scalar_mul_float64(const double * __restrict__ a, const double b,
+                            const int n, double * __restrict__ res);
+
+    void scalar_mul_complex64(const std::complex<float> * __restrict__ a,
+                              const std::complex<float> b,
+                              const int n, std::complex<float> * __restrict__ res);
+
+    void scalar_mul_complex128(const std::complex<double> * __restrict__ a,
+                               const std::complex<double> b,
+                               const int n, std::complex<double> * __restrict__ res);
+
+    void vector_mul_int32(const int * __restrict__ a, const int *__restrict__ b,
+                          const int n, int * __restrict__ res);
+
+    void vector_mul_int64(const long * __restrict__ a, const long *__restrict__ b,
+                          const int n, long * __restrict__ res);
+
+    void vector_mul_float32(const float * __restrict__ a, const float *__restrict__ b,
+                            const int n, float * __restrict__ res);
+
+    void vector_mul_float64(const double * __restrict__ a, const double *__restrict__ b,
+                            const int n, double * __restrict__ res);
+
+    void vector_mul_complex64(const std::complex<float> * __restrict__ a,
+                              const std::complex<float> *__restrict__ b,
+                              const int n, std::complex<float> * __restrict__ res);
+
+    void vector_mul_complex128(const std::complex<double> * __restrict__ a,
+                               const std::complex<double> *__restrict__ b,
+                               const int n, std::complex<double> * __restrict__ res);
+
 }

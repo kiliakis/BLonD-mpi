@@ -220,13 +220,14 @@ class Worker:
         profile *= self.workers
         # self.intracomm.Allreduce(MPI.IN_PLACE, profile, op=MPI.SUM)
 
-
     def induced_voltage_sum(self):
         # for any per-turn updated variables
         global induced_voltage
         self.bcast()
         temp_induced_voltage = 0
         beam_spectrum = None
+        min_idx = n_slices
+
         with timing.timed_region('serial:indVoltSum') as tr:
             with mpiprof.traced_region('serial:indVoltSum') as tr:
                 for imped in impedList.values():
@@ -237,12 +238,74 @@ class Worker:
                     induced_voltage = - (charge * e * beam_ratio *
                                          bm.irfft(imped['total_impedance'] * beam_spectrum))
                     # induced_voltage = induced_voltage[:imped['n_induced_voltage']]
-                    max_idx = min(imped['n_induced_voltage'], n_slices)
-                    temp_induced_voltage += induced_voltage[:max_idx]
+                    min_idx = min(imped['n_induced_voltage'], min_idx)
+                    temp_induced_voltage += induced_voltage[:min_idx]
 
         induced_voltage = temp_induced_voltage
         self.update()
 
+
+    # def induced_voltage_sum(self):
+    #     # for any per-turn updated variables
+    #     global induced_voltage
+    #     self.bcast()
+    #     temp_induced_voltage = 0
+    #     beam_spectrum = None
+    #     min_idx = n_slices
+
+    #     # with timing.timed_region('serial:indVoltSum') as tr:
+    #     #     with mpiprof.traced_region('serial:indVoltSum') as tr:
+    #     for imped in impedList.values():
+    #         # Beam_spectrum_generation
+    #         if beam_spectrum is None:
+    #             with timing.timed_region('serial:indVoltRfft') as tr:
+    #                 beam_spectrum = bm.rfft(profile, imped['n_fft'])
+            
+    #         with timing.timed_region('serial:indVoltMul1') as tr:
+    #             temp = imped['total_impedance'] * beam_spectrum
+
+    #         with timing.timed_region('serial:indVoltIrfft') as tr:
+    #             temp = bm.irfft(temp)
+
+    #         with timing.timed_region('serial:indVoltMul2') as tr:
+    #             induced_voltage = - charge * e * beam_ratio * temp
+
+    #         # induced_voltage = - (charge * e * beam_ratio *
+    #         #                      bm.irfft(imped['total_impedance'] * beam_spectrum))
+    #         # induced_voltage = induced_voltage[:imped['n_induced_voltage']]
+    #         with timing.timed_region('serial:indVoltAcc') as tr:
+    #             min_idx = min(imped['n_induced_voltage'], min_idx)
+    #             temp_induced_voltage += induced_voltage[:min_idx]
+
+    #     induced_voltage = temp_induced_voltage
+    #     self.update()
+
+    def induced_voltage_sum_packed(self):
+        # for any per-turn updated variables
+        global induced_voltage
+        self.bcast()
+        beam_spectrum = None
+        induced_voltage = []
+        min_idx = n_slices
+
+        for imped in impedList.values():
+            # Beam_spectrum_generation
+            if beam_spectrum is None:
+                with timing.timed_region('serial:indVoltRfft') as tr:
+                    beam_spectrum = bm.rfft(profile, imped['n_fft'])
+            
+            with timing.timed_region('serial:indVoltMul1') as tr:
+                induced_voltage.append(imped['total_impedance'] * beam_spectrum)
+                min_idx = min(imped['n_induced_voltage'], min_idx)
+
+        with timing.timed_region('serial:indVoltIrfft') as tr:
+            induced_voltage = bm.irfft_packed(induced_voltage)
+        with timing.timed_region('serial:indVoltMul2') as tr:
+            induced_voltage = -charge * e * beam_ratio * induced_voltage[:, :min_idx]
+        with timing.timed_region('serial:indVoltAcc') as tr:
+            induced_voltage = np.sum(induced_voltage, axis=0)
+
+        self.update()
 
     # @timing.timeit(key='comp:LIKick')
     # @mpiprof.traceit(key='LIKick')
@@ -436,7 +499,7 @@ def main():
             16: worker.scale_histo,
             17: worker.LIKick_n_drift,
             18: worker.impedance_reduction,
-            # 19: worker.induced_voltage_sum_packed,
+            19: worker.induced_voltage_sum_packed,
             255: worker.stop
         }
 

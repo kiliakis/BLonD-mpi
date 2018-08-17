@@ -11,6 +11,34 @@ from setup_cpp import libblondmath as __lib
 from setup_cpp import libfft
 
 
+class c_complex128(ct.Structure):
+    # Complex number, compatible with std::complex layout
+    _fields_ = [("real", ct.c_double), ("imag", ct.c_double)]
+
+    def __init__(self, pycomplex):
+        # Init from Python complex
+        self.real = pycomplex.real.astype(np.float64, order='C')
+        self.imag = pycomplex.imag.astype(np.float64, order='C')
+
+    def to_complex(self):
+        # Convert to Python complex
+        return self.real + (1.j) * self.imag
+
+
+class c_complex64(ct.Structure):
+    # Complex number, compatible with std::complex layout
+    _fields_ = [("real", ct.c_float), ("imag", ct.c_float)]
+
+    def __init__(self, pycomplex):
+        # Init from Python complex
+        self.real = pycomplex.real.astype(np.float32, order='C')
+        self.imag = pycomplex.imag.astype(np.float32, order='C')
+
+    def to_complex(self):
+        # Convert to Python complex
+        return self.real + (1.j) * self.imag
+
+
 def __getPointer(x):
     return x.ctypes.data_as(ct.c_void_p)
 
@@ -43,6 +71,60 @@ def add(a, b, result=None):
     else:
         raise TypeError('type ', a.dtype, ' is not supported')
 
+    return result
+
+
+def mul(a, b, result=None):
+    if(type(a) == numpy.ndarray and type(b) != numpy.ndarray):
+        if result is None:
+            result = np.empty_like(a, order='C')
+
+        if (a.dtype == 'int32'):
+            __lib.scalar_mul_int32(__getPointer(a), ct.c_int32(b),
+                                   __getLen(a), __getPointer(result))
+        elif (a.dtype == 'int64'):
+            __lib.scalar_mul_int64(__getPointer(a), ct.c_int64(b),
+                                   __getLen(a), __getPointer(result))
+        elif (a.dtype == 'float32'):
+            __lib.scalar_mul_float64(__getPointer(a), ct.c_float(b),
+                                     __getLen(a), __getPointer(result))
+        elif (a.dtype == 'float64'):
+            __lib.scalar_mul_float64(__getPointer(a), ct.c_double(b),
+                                     __getLen(a), __getPointer(result))
+        elif (a.dtype == 'complex64'):
+            __lib.scalar_mul_compex64(__getPointer(a), c_complex64(b),
+                                      __getLen(a), __getPointer(result))
+        elif (a.dtype == 'complex128'):
+            __lib.scalar_mul_complex128(__getPointer(a), c_complex128(b),
+                                        __getLen(a), __getPointer(result))
+        else:
+            raise TypeError('type ', a.dtype, ' is not supported')
+
+    elif(type(b) == numpy.ndarray and type(a) != numpy.ndarray):
+        return mul(b, a, result)
+    elif(type(a) == numpy.ndarray and type(b) == numpy.ndarray):
+        if (a.dtype == 'int32'):
+            __lib.vector_mul_int32(__getPointer(a), __getPointer(b),
+                                   __getLen(a), __getPointer(result))
+        elif (a.dtype == 'int64'):
+            __lib.vector_mul_int64(__getPointer(a), __getPointer(b),
+                                   __getLen(a), __getPointer(result))
+        elif (a.dtype == 'float32'):
+            __lib.vector_mul_float64(__getPointer(a), __getPointer(b),
+                                     __getLen(a), __getPointer(result))
+        elif (a.dtype == 'float64'):
+            __lib.vector_mul_float64(__getPointer(a), __getPointer(b),
+                                     __getLen(a), __getPointer(result))
+        elif (a.dtype == 'complex64'):
+            __lib.vector_mul_compex64(__getPointer(a), __getPointer(b),
+                                      __getLen(a), __getPointer(result))
+        elif (a.dtype == 'complex128'):
+            __lib.vector_mul_complex128(__getPointer(a), __getPointer(b),
+                                        __getLen(a), __getPointer(result))
+        else:
+            raise TypeError('type ', a.dtype, ' is not supported')
+    else:
+        raise TypeError('types {} and {} are not supported'.format(type(a), type(b)))
     return result
 
 
@@ -84,27 +166,27 @@ def irfft(signal, fftsize=0, result=None):
     return result
 
 
-# def irfft2d(signal, fftsize=0, result=None):
+def irfft_packed(signal, fftsize=0, result=None):
 
-#     n0 = len(signal[0])
-#     n1 = len(signal)
+    n0 = len(signal[0])
+    howmany = len(signal)
 
-#     signal = np.ascontiguousarray(np.reshape(signal, -1))
+    signal = np.ascontiguousarray(np.reshape(signal, -1))
 
-#     if (fftsize == 0) and (result == None):
-#         result = np.empty(n1 * (2*n0-1), dtype=np.float64)
-#     elif (fftsize != 0) and (result == None):
-#         result = np.empty(n1 * fftsize, dtype=np.float64)
+    if (fftsize == 0) and (result == None):
+        result = np.empty(howmany * 2*(n0-1), dtype=np.float64)
+    elif (fftsize != 0) and (result == None):
+        result = np.empty(howmany * fftsize, dtype=np.float64)
 
-#     libfft.irfft2d(__getPointer(signal),
-#                    n0,
-#                    n1,
-#                    __getPointer(result),
-#                    fftsize)
+    libfft.irfft_packed(__getPointer(signal),
+                        n0,
+                        howmany,
+                        __getPointer(result),
+                        fftsize)
 
-#     result = np.reshape(result, (n1, -1))
+    result = np.reshape(result, (howmany, -1))
 
-#     return result
+    return result
 
 
 def mean(x):
