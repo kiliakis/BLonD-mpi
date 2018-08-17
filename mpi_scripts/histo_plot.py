@@ -19,7 +19,7 @@ plots_config = {
 
         'plot5': {
             'files': {
-                res_dir+'raw/SPS-8n-72B-imped/comm-comp-report.csv': {
+                res_dir+'raw/SPS-8n-72B-packed/comm-comp-report.csv': {
                     'lines': {
                         'omp': ['2', '5', '10'],
                         'type': ['comp', 'serial', 'comm', 'other', 'overhead']}
@@ -58,7 +58,7 @@ plots_config = {
             'title': 'MPI Time breakdown',
             'ylim': [0, 100],
             'figsize': (6, 3),
-            'image_name': images_dir + 'SPS-8n-72B-imped-histo.pdf'
+            'image_name': images_dir + 'SPS-8n-72B-packed-histo.pdf'
 
         }
 

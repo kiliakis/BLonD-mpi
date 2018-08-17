@@ -51,7 +51,7 @@ plots_config = {
 
 'plot4': {
         'files': {
-            res_dir+'raw/SPS-8n-72B-imped/comm-comp-report.csv': {
+            res_dir+'raw/SPS-8n-72B-packed/comm-comp-report.csv': {
                 'lines': {
                           'omp': ['2', '5', '10'],
                           'type': ['total']}
@@ -78,7 +78,7 @@ plots_config = {
         'title': '',
         # 'ylim': [0, 16000],
         'figsize': (6, 3),
-        'image_name': images_dir + 'SPS-8n-72B-imped-speedup.pdf'
+        'image_name': images_dir + 'SPS-8n-72B-packed-speedup.pdf'
 
     },
 

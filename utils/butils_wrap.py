@@ -75,34 +75,37 @@ def add(a, b, result=None):
 
 
 def mul(a, b, result=None):
-    if(type(a) == numpy.ndarray and type(b) != numpy.ndarray):
+    if(type(a) == np.ndarray and type(b) != np.ndarray):
         if result is None:
             result = np.empty_like(a, order='C')
 
         if (a.dtype == 'int32'):
-            __lib.scalar_mul_int32(__getPointer(a), ct.c_int32(b),
+            __lib.scalar_mul_int32(__getPointer(a), ct.c_int32(np.int32(b)),
                                    __getLen(a), __getPointer(result))
         elif (a.dtype == 'int64'):
-            __lib.scalar_mul_int64(__getPointer(a), ct.c_int64(b),
+            __lib.scalar_mul_int64(__getPointer(a), ct.c_int64(np.int64(b)),
                                    __getLen(a), __getPointer(result))
         elif (a.dtype == 'float32'):
-            __lib.scalar_mul_float64(__getPointer(a), ct.c_float(b),
+            __lib.scalar_mul_float64(__getPointer(a), ct.c_float(np.float32(b)),
                                      __getLen(a), __getPointer(result))
         elif (a.dtype == 'float64'):
-            __lib.scalar_mul_float64(__getPointer(a), ct.c_double(b),
+            __lib.scalar_mul_float64(__getPointer(a), ct.c_double(np.float64(b)),
                                      __getLen(a), __getPointer(result))
         elif (a.dtype == 'complex64'):
-            __lib.scalar_mul_compex64(__getPointer(a), c_complex64(b),
+            __lib.scalar_mul_compex64(__getPointer(a), c_complex64(np.complex64(b)),
                                       __getLen(a), __getPointer(result))
         elif (a.dtype == 'complex128'):
-            __lib.scalar_mul_complex128(__getPointer(a), c_complex128(b),
+            __lib.scalar_mul_complex128(__getPointer(a), c_complex128(np.complex128(b)),
                                         __getLen(a), __getPointer(result))
         else:
             raise TypeError('type ', a.dtype, ' is not supported')
 
-    elif(type(b) == numpy.ndarray and type(a) != numpy.ndarray):
+    elif(type(b) == np.ndarray and type(a) != np.ndarray):
         return mul(b, a, result)
-    elif(type(a) == numpy.ndarray and type(b) == numpy.ndarray):
+    elif(type(a) == np.ndarray and type(b) == np.ndarray):
+        if result is None:
+            result = np.empty_like(a, order='C')
+
         if (a.dtype == 'int32'):
             __lib.vector_mul_int32(__getPointer(a), __getPointer(b),
                                    __getLen(a), __getPointer(result))

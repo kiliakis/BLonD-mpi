@@ -21,7 +21,7 @@ C++ Math library
 #include <algorithm>
 #include <functional>
 #include "blondmath.h"
-
+#include <iostream>
 #ifdef PARALLEL
 #include <omp.h>
 #endif
@@ -370,7 +370,6 @@ extern "C" {
                           const int n, long * __restrict__ res)
     {
         std::transform(a, a + n, b, res, multiplies<long>());
-
     }
 
     void vector_mul_float32(const float * __restrict__ a, const float *__restrict__ b,

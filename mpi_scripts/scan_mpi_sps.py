@@ -20,22 +20,26 @@ job_name_form = '{}/_p{}_b{}_s{}_t{}_w{}_o{}_N{}_'
 
 configs = {
 
-    'SPS-8n-72B-imped': {'p': cycle([4000000]),
-                         'b': cycle([72]),
-                         's': cycle([1408]),
-                         't': cycle([4000]),
-                         'reduce': cycle([1]),
-                         'w': []
-                         + list(np.arange(2, 81, 2))
-                         # + list(np.arange(2, 41, 2))
-                         + list(np.arange(2, 33, 1))
-                         + list(np.arange(2, 17, 1)),
+    'SPS-8n-72B-packed-mul': {'p': cycle([4000000]),
+                              'b': cycle([72]),
+                              's': cycle([1408]),
+                              't': cycle([4000]),
+                              'reduce': cycle([1]),
+                              'w': []
+                              # + list(np.arange(2, 81, 2))
+                              # + list(np.arange(2, 41, 2))
+                              # + list(np.arange(2, 33, 1))
+                              # + list(np.arange(2, 17, 1))
+                              + list(np.arange(2, 9, 1)),
 
-                         'o': [2]*40 + [5]*31 + [10]*15,
+                              'o': []
+                              # + [5]*31
+                              # + [10]*15
+                              + [20]*7,
 
-                         'time': cycle([40]),
-                         'partition': cycle(['be-long'])
-                         }
+                              'time': cycle([40]),
+                              'partition': cycle(['be-long'])
+                              }
 
 
 }
@@ -72,7 +76,7 @@ for analysis, config in configs.items():
         N = (w * o + 20-1) // 20
 
         job_name = job_name_form.format(analysis, p, b, s, t, w, o, N)
-        if(N < 3):
+        if(N < 4):
             partition = 'be-short'
             # continue
         else:
@@ -90,7 +94,7 @@ for analysis, config in configs.items():
                     os.makedirs(d)
             # exe_args = ['-n', str('python', exe,
             exe_args = ['-n', str(w), 'python', exe,
-                        '-p', str(p), 
+                        '-p', str(p),
                         # '-s', str(s),
                         '-b', str(b),
                         '-t', str(t), '-time',

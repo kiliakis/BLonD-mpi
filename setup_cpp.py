@@ -60,7 +60,7 @@ boost_path = None
 
 # EXAMPLE FLAGS: -Ofast -std=c++11 -fopt-info-vec -march=native
 #                -mfma4 -fopenmp -ftree-vectorizer-verbose=1
-cflags = ['-Ofast', '-g', '-std=c++11', '-march=native']
+cflags = ['-Ofast', '-g', '-std=c++11', '-march=native', '-Wno-psabi']
 # cflags = ['-Ofast', '-std=c++11']
 # libs = ['-L/afs/cern.ch/work/k/kiliakis/install/lib','-lfftw3', '-lm']
 libs = []
