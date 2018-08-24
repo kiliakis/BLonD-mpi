@@ -368,7 +368,7 @@ class SlicesMonitor(object):
     def create_data(self, name, h5group, dims, dtype):
 
         h5group.create_dataset(name, dims, compression="gzip",
-                               compression_opts=9, dtype=dtype)
+                               compression_opts=4, dtype=dtype, shuffle=True)
 
     # def write_data(self, name, h5group, i_turn):
 

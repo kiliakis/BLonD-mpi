@@ -15,7 +15,7 @@ if not os.path.exists(images_dir):
 
 plots_config = {
 
-  
+
     #   'plot3': {
     #     'files': {
     #         res_dir+'raw/LHC-4n-96B-lt-lb-nogat-int-op-knd-r5-10kt/comm-comp-report.csv': {
@@ -49,23 +49,23 @@ plots_config = {
 
     # },
 
-'plot4': {
+    'plot4': {
         'files': {
-            res_dir+'raw/SPS-8n-72B-packed/comm-comp-report.csv': {
+            res_dir+'raw/SPS-8n-72B-packed-mul-r1/comm-comp-report.csv': {
                 'lines': {
-                          'omp': ['2', '5', '10'],
-                          'type': ['total']}
+                    'omp': ['2', '5', '10', '20'],
+                    'type': ['total']}
             }
 
         },
         'labels': {
-                   '1-total': 'hybrid-T1',
-                   '2-total': 'hybrid-T2',
-                   '4-total': 'hybrid-T4',
-                   '5-total': 'hybrid-T5',
-                   '10-total': 'hybrid-T10',
-                   '20-total': 'hybrid-T20'
-                   },
+            '1-total': 'hybrid-T1',
+            '2-total': 'hybrid-T2',
+            '4-total': 'hybrid-T4',
+            '5-total': 'hybrid-T5',
+            '10-total': 'hybrid-T10',
+            '20-total': 'hybrid-T20'
+        },
         # 'exclude': [['v1', 'notcm'], ['v2', 'notcm'], ['v4', 'notcm']],
         'ideal': '2-total',
         'x_name': 'n',
@@ -77,9 +77,73 @@ plots_config = {
         'title': '',
         # 'ylim': [0, 16000],
         'figsize': (6, 3),
-        'image_name': images_dir + 'SPS-8n-72B-packed-throughput.pdf'
+        'image_name': images_dir + 'SPS-8n-72B-packed-mul-r1-throughput.pdf'
 
     },
+
+    # 'plot3': {
+    #     'files': {
+    #         res_dir+'raw/SPS-8n-72B-packed-mul-r2/comm-comp-report.csv': {
+    #             'lines': {
+    #                 'omp': ['2', '5', '10', '20'],
+    #                 'type': ['total']}
+    #         }
+
+    #     },
+    #     'labels': {
+    #         '1-total': 'hybrid-T1',
+    #         '2-total': 'hybrid-T2',
+    #         '4-total': 'hybrid-T4',
+    #         '5-total': 'hybrid-T5',
+    #         '10-total': 'hybrid-T10',
+    #         '20-total': 'hybrid-T20'
+    #     },
+    #     # 'exclude': [['v1', 'notcm'], ['v2', 'notcm'], ['v4', 'notcm']],
+    #     'ideal': '2-total',
+    #     'x_name': 'n',
+    #     'omp_name': 'omp',
+    #     'y_name': 'avg_time(sec)',
+    #     # 'y_err_name': 'std',
+    #     'xlabel': 'MPI Tasks/OMP Threads',
+    #     'ylabel': 'Turns/ sec',
+    #     'title': '',
+    #     # 'ylim': [0, 16000],
+    #     'figsize': (6, 3),
+    #     'image_name': images_dir + 'SPS-8n-72B-packed-mul-r2-throughput.pdf'
+
+    # },
+
+    # 'plot2': {
+    #     'files': {
+    #         res_dir+'raw/SPS-8n-72B-packed-mul-r5/comm-comp-report.csv': {
+    #             'lines': {
+    #                 'omp': ['2', '5', '10', '20'],
+    #                 'type': ['total']}
+    #         }
+
+    #     },
+    #     'labels': {
+    #         '1-total': 'hybrid-T1',
+    #         '2-total': 'hybrid-T2',
+    #         '4-total': 'hybrid-T4',
+    #         '5-total': 'hybrid-T5',
+    #         '10-total': 'hybrid-T10',
+    #         '20-total': 'hybrid-T20'
+    #     },
+    #     # 'exclude': [['v1', 'notcm'], ['v2', 'notcm'], ['v4', 'notcm']],
+    #     'ideal': '2-total',
+    #     'x_name': 'n',
+    #     'omp_name': 'omp',
+    #     'y_name': 'avg_time(sec)',
+    #     # 'y_err_name': 'std',
+    #     'xlabel': 'MPI Tasks/OMP Threads',
+    #     'ylabel': 'Turns/ sec',
+    #     'title': '',
+    #     # 'ylim': [0, 16000],
+    #     'figsize': (6, 3),
+    #     'image_name': images_dir + 'SPS-8n-72B-packed-mul-r5-throughput.pdf'
+
+    # },
 
 
 }
@@ -138,4 +202,3 @@ if __name__ == '__main__':
         # subprocess.call
         plt.show()
         plt.close()
-

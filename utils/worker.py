@@ -293,20 +293,20 @@ class Worker:
                 for imped in impedList.values():
                     # Beam_spectrum_generation
                     if beam_spectrum is None:
-                        # with timing.timed_region('serial:indVoltRfft') as tr:
+                        #  with timing.timed_region('serial:indVoltRfft') as tr:
                         beam_spectrum = bm.rfft(profile, imped['n_fft'])
                     
-                    # with timing.timed_region('serial:indVoltMul1') as tr:
+                    #  with timing.timed_region('serial:indVoltMul1') as tr:
                     induced_voltage.append(bm.mul(imped['total_impedance'], beam_spectrum))
                     min_idx = min(imped['n_induced_voltage'], min_idx)
 
-                # with timing.timed_region('serial:indVoltIrfft') as tr:
+                #  with timing.timed_region('serial:indVoltIrfft') as tr:
                 induced_voltage = bm.irfft_packed(induced_voltage)[:, :min_idx]
-                # with timing.timed_region('serial:indVoltMul2') as tr:
+                #  with timing.timed_region('serial:indVoltMul2') as tr:
                 induced_voltage = -charge * e * beam_ratio * induced_voltage
                     # for i in range(len(induced_voltage)):
                     #     induced_voltage[i] = bm.mul(induced_voltage[i], -charge * e * beam_ratio)
-                # with timing.timed_region('serial:indVoltAcc') as tr:
+                #  with timing.timed_region('serial:indVoltAcc') as tr:
                 induced_voltage = np.sum(induced_voltage, axis=0)
 
         self.update()

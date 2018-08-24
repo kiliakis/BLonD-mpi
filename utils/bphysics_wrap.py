@@ -91,22 +91,14 @@ def kick_mpi(ring, turn):
     import utils.mpi_config as mpiconf
     from mpi4py import MPI
     master = mpiconf.master
-    master.bcast('kick')
+    # master.bcast('kick')
 
     # with timing.timed_region('master:kick') as tr:
     #     voltage_kick = np.ascontiguousarray(ring.charge*ring.voltage[:, turn])
     #     omegarf_kick = np.ascontiguousarray(ring.omega_rf[:, turn])
     #     phirf_kick = np.ascontiguousarray(ring.phi_rf[:, turn])
 
-    vars_dict = {
-        # 'voltage': voltage_kick,
-        # 'omegarf': omegarf_kick,
-        # 'phirf': phirf_kick,
-        'turn': turn
-        # 'acc_kick': ring.acceleration_kick[turn]
-    }
-
-    master.multi_bcast(vars_dict, msg=False)
+    master.multi_bcast({'turn': turn}, msg=False)
     # workercomm.Barrier()
 
 
@@ -137,14 +129,6 @@ def drift_mpi(ring, turn):
 
     master = mpiconf.master
     # master.bcast('drift')
-    # vars_dict = {
-    #     't_rev': ring.t_rev[turn],
-    #     'eta_0': ring.eta_0[turn],
-    #     'eta_1': ring.eta_1[turn],
-    #     'eta_2': ring.eta_2[turn],
-    #     'beta': ring.rf_params.beta[turn],
-    #     'energy': ring.rf_params.energy[turn]
-    # }
     master.multi_bcast({'turn': turn}, msg=False)
 
 

@@ -16,7 +16,7 @@ parser.add_argument('-s', '--slices', type=int,
 parser.add_argument('-b', '--bunches', type=int,
                     help='Number of bunches.')
 
-parser.add_argument('--reduce', type=int,
+parser.add_argument('-reduce', '--reduce', type=int,
                     help='Number of turns to reduce.')
 
 
@@ -41,6 +41,10 @@ parser.add_argument('-r', '--report', type=str, default='./',
 
 parser.add_argument('-m', '--monitor', type=int, default=0,
                     help='Monitoring interval (0: no monitor).'
+                    '\nDefault: 0')
+
+parser.add_argument('-seed', '--seed', type=int, default=0,
+                    help='Seed value for the particle distribution generation.'
                     '\nDefault: 0')
 
 parser.add_argument('-time', '--time', action='store_true',

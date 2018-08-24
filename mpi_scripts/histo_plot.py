@@ -17,95 +17,185 @@ if not os.path.exists(images_dir):
 
 plots_config = {
 
-        'plot5': {
-            'files': {
-                res_dir+'raw/SPS-8n-72B-packed/comm-comp-report.csv': {
+    'plot5': {
+        'files': {
+            res_dir+'raw/SPS-8n-72B-packed-mul-r1/comm-comp-report.csv': {
                     'lines': {
-                        'omp': ['2', '5', '10'],
+                        'omp': ['2', '5', '10', '20'],
                         'type': ['comp', 'serial', 'comm', 'other', 'overhead']}
-                }
+            }
 
-            },
-            'labels': {
-                # '1': 'hyb-T1',
-                '2': 'hyb-T2',
-                # '4': 'hyb-T4',
-                '5': 'hyb-T5',
-                '10': 'hyb-T10',
-                # '20': 'hybrid-T20'
-            },
-            'colors': {
-                '1': 'tab:purple',
-                '2': 'tab:blue',
-                '4': 'tab:orange',
-                '5': 'tab:green',
-                '10': 'tab:red'
-                # '20000000-20-comp': 'tab:purple'
-            },
-            'markers': {
-                'comm': 'o',
-                'comp': 'x',
-                'serial': '^',
-                'other': 's'
-            },
-            # 'exclude': [['v1', 'notcm'], ['v2', 'notcm'], ['v4', 'notcm']],
-            'x_name': 'n',
-            'omp_name': 'omp',
-            'y_name': 'avg_percent',
-            'y_err_name': 'std',
-            'xlabel': 'MPI Tasks/Threads',
-            'ylabel': 'Run-time percent',
-            'title': 'MPI Time breakdown',
-            'ylim': [0, 100],
-            'figsize': (6, 3),
-            'image_name': images_dir + 'SPS-8n-72B-packed-histo.pdf'
+        },
+        'labels': {
+            # '1': 'hyb-T1',
+            # '2': 'hyb-T2',
+            # '4': 'hyb-T4',
+            '5': 'hyb-T5',
+            '10': 'hyb-T10',
+            '20': 'hybrid-T20'
+        },
+        'colors': {
+            '1': 'tab:purple',
+            '20': 'tab:blue',
+            '4': 'tab:orange',
+            '5': 'tab:green',
+            '10': 'tab:red'
+            # '20000000-20-comp': 'tab:purple'
+        },
+        'markers': {
+            'comm': 'o',
+            'comp': 'x',
+            'serial': '^',
+            'other': 's'
+        },
+        # 'exclude': [['v1', 'notcm'], ['v2', 'notcm'], ['v4', 'notcm']],
+        'x_name': 'n',
+        'omp_name': 'omp',
+        'y_name': 'avg_percent',
+        'y_err_name': 'std',
+        'xlabel': 'MPI Tasks/Threads',
+        'ylabel': 'Run-time percent',
+        'title': 'MPI Time breakdown',
+        'ylim': [0, 100],
+        'figsize': (6, 3),
+        'image_name': images_dir + 'SPS-8n-72B-packed-mul-r1-histo.pdf'
 
-        }
+    },
 
-        # 'plot5': {
-        #     'files': {
-        #         res_dir+'raw/LHC-4n-96B-lt-lb-nogat-int-op-knd-r5-10kt/comm-comp-report.csv': {
-        #             'lines': {
-        #                 'omp': ['2', '4', '5', '10'],
-        #                 'type': ['comp', 'serial', 'comm', 'other', 'overhead']}
-        #         }
+    'plot4': {
+        'files': {
+            res_dir+'raw/SPS-8n-72B-packed-mul-r2/comm-comp-report.csv': {
+                    'lines': {
+                        'omp': ['2', '5', '10', '20'],
+                        'type': ['comp', 'serial', 'comm', 'other', 'overhead']}
+            }
 
-        #     },
-        #     'labels': {
-        #         # '1': 'hyb-T1',
-        #         # '2': 'hyb-T2',
-        #         '4': 'hyb-T4',
-        #         '5': 'hyb-T5',
-        #         '10': 'hyb-T10',
-        #         # '20': 'hybrid-T20'
-        #     },
-        #     'colors': {
-        #         '1': 'tab:purple',
-        #         '2': 'tab:blue',
-        #         '4': 'tab:orange',
-        #         '5': 'tab:green',
-        #         '10': 'tab:red'
-        #         # '20000000-20-comp': 'tab:purple'
-        #     },
-        #     'markers': {
-        #         'comm': 'o',
-        #         'comp': 'x',
-        #         'serial': '^',
-        #         'other': 's'
-        #     },
-        #     # 'exclude': [['v1', 'notcm'], ['v2', 'notcm'], ['v4', 'notcm']],
-        #     'x_name': 'n',
-        #     'omp_name': 'omp',
-        #     'y_name': 'avg_percent',
-        #     'y_err_name': 'std',
-        #     'xlabel': 'MPI Tasks/Threads',
-        #     'ylabel': 'Run-time percent',
-        #     'title': 'MPI Time breakdown',
-        #     'ylim': [0, 100],
-        #     'figsize': (6, 3),
-        #     'image_name': images_dir + 'LHC-histo-96B-lt-lb-nogat-int-op-knd-r5-10kt.pdf'
+        },
+        'labels': {
+            # '1': 'hyb-T1',
+            # '2': 'hyb-T2',
+            # '4': 'hyb-T4',
+            '5': 'hyb-T5',
+            '10': 'hyb-T10',
+            '20': 'hybrid-T20'
+        },
+        'colors': {
+            '1': 'tab:purple',
+            '20': 'tab:blue',
+            '4': 'tab:orange',
+            '5': 'tab:green',
+            '10': 'tab:red'
+            # '20000000-20-comp': 'tab:purple'
+        },
+        'markers': {
+            'comm': 'o',
+            'comp': 'x',
+            'serial': '^',
+            'other': 's'
+        },
+        # 'exclude': [['v1', 'notcm'], ['v2', 'notcm'], ['v4', 'notcm']],
+        'x_name': 'n',
+        'omp_name': 'omp',
+        'y_name': 'avg_percent',
+        'y_err_name': 'std',
+        'xlabel': 'MPI Tasks/Threads',
+        'ylabel': 'Run-time percent',
+        'title': 'MPI Time breakdown',
+        'ylim': [0, 100],
+        'figsize': (6, 3),
+        'image_name': images_dir + 'SPS-8n-72B-packed-mul-r2-histo.pdf'
 
-        # }
+    },
+
+    'plot3': {
+        'files': {
+            res_dir+'raw/SPS-8n-72B-packed-mul-r5/comm-comp-report.csv': {
+                    'lines': {
+                        'omp': ['2', '5', '10', '20'],
+                        'type': ['comp', 'serial', 'comm', 'other', 'overhead']}
+            }
+
+        },
+        'labels': {
+            # '1': 'hyb-T1',
+            # '2': 'hyb-T2',
+            # '4': 'hyb-T4',
+            '5': 'hyb-T5',
+            '10': 'hyb-T10',
+            '20': 'hybrid-T20'
+        },
+        'colors': {
+            '1': 'tab:purple',
+            '20': 'tab:blue',
+            '4': 'tab:orange',
+            '5': 'tab:green',
+            '10': 'tab:red'
+            # '20000000-20-comp': 'tab:purple'
+        },
+        'markers': {
+            'comm': 'o',
+            'comp': 'x',
+            'serial': '^',
+            'other': 's'
+        },
+        # 'exclude': [['v1', 'notcm'], ['v2', 'notcm'], ['v4', 'notcm']],
+        'x_name': 'n',
+        'omp_name': 'omp',
+        'y_name': 'avg_percent',
+        'y_err_name': 'std',
+        'xlabel': 'MPI Tasks/Threads',
+        'ylabel': 'Run-time percent',
+        'title': 'MPI Time breakdown',
+        'ylim': [0, 100],
+        'figsize': (6, 3),
+        'image_name': images_dir + 'SPS-8n-72B-packed-mul-r5-histo.pdf'
+
+    }
+
+    # 'plot5': {
+    #     'files': {
+    #         res_dir+'raw/LHC-4n-96B-lt-lb-nogat-int-op-knd-r5-10kt/comm-comp-report.csv': {
+    #             'lines': {
+    #                 'omp': ['2', '4', '5', '10'],
+    #                 'type': ['comp', 'serial', 'comm', 'other', 'overhead']}
+    #         }
+
+    #     },
+    #     'labels': {
+    #         # '1': 'hyb-T1',
+    #         # '2': 'hyb-T2',
+    #         '4': 'hyb-T4',
+    #         '5': 'hyb-T5',
+    #         '10': 'hyb-T10',
+    #         # '20': 'hybrid-T20'
+    #     },
+    #     'colors': {
+    #         '1': 'tab:purple',
+    #         '2': 'tab:blue',
+    #         '4': 'tab:orange',
+    #         '5': 'tab:green',
+    #         '10': 'tab:red'
+    #         # '20000000-20-comp': 'tab:purple'
+    #     },
+    #     'markers': {
+    #         'comm': 'o',
+    #         'comp': 'x',
+    #         'serial': '^',
+    #         'other': 's'
+    #     },
+    #     # 'exclude': [['v1', 'notcm'], ['v2', 'notcm'], ['v4', 'notcm']],
+    #     'x_name': 'n',
+    #     'omp_name': 'omp',
+    #     'y_name': 'avg_percent',
+    #     'y_err_name': 'std',
+    #     'xlabel': 'MPI Tasks/Threads',
+    #     'ylabel': 'Run-time percent',
+    #     'title': 'MPI Time breakdown',
+    #     'ylim': [0, 100],
+    #     'figsize': (6, 3),
+    #     'image_name': images_dir + 'LHC-histo-96B-lt-lb-nogat-int-op-knd-r5-10kt.pdf'
+
+    # }
 
 
 }
@@ -152,9 +242,10 @@ if __name__ == '__main__':
             label = label.split('-')
 
             if (label[1] == 'others'):
-                y += np.array(plots_dir[label[0]+ '-overhead'][:, header.index(config['y_name'])], float)
+                y += np.array(plots_dir[label[0] + '-overhead']
+                              [:, header.index(config['y_name'])], float)
                 y_err = np.array(
-                    plots_dir[label[0]+ '-overhead'][:, header.index(config['y_err_name'])], float)
+                    plots_dir[label[0] + '-overhead'][:, header.index(config['y_err_name'])], float)
 
             # if config['labels'][label[0]] in plt.gca().get_legend_handles_labels()[1]:
             plt.errorbar(x, y, yerr=y_err,

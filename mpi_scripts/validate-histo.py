@@ -18,61 +18,6 @@ parser.add_argument('-a', '--approx', type=str, default=None,
 parser.add_argument('-o', '--outdir', type=str, default=None,
                     help='Directory to store the images.')
 
-# parser.add_argument('-s', '--slices', type=int,
-#                     help='Number of slices.')
-
-# parser.add_argument('-b', '--bunches', type=int,
-#                     help='Number of bunches.')
-
-# parser.add_argument('--reduce', type=int,
-#                     help='Number of turns to reduce.')
-
-
-# parser.add_argument('-t', '--turns', type=int, default=2000,
-#                     help='Number of simulation turns.'
-#                     '\nDefault: 2000')
-
-
-
-# parser.add_argument('-o', '--omp', type=int, default=1,
-#                     help='Number of openmp threads to use.'
-#                     '\nDefault: 1')
-
-# parser.add_argument('-l', '--log', type=str, default=None,
-#                     nargs='?', const='logs',
-#                     help='Directory to store the log files.'
-#                     '\nDefault: Do not generate log files.')
-
-# parser.add_argument('-r', '--report', type=str, default='./',
-#                     help='Directory to store the timing reports.'
-#                     '\nDefault: Do not generate timing reports.')
-
-# parser.add_argument('-m', '--monitor', type=int, default=0,
-#                     help='Monitoring interval (0: no monitor).'
-#                     '\nDefault: 0')
-
-# parser.add_argument('-time', '--time', action='store_true',
-#                     help='Time the specified regions of interest.'
-#                     '\nDefault: No timing.')
-
-
-# parser.add_argument('-trace', '--trace', action='store_true',
-#                     help='Trace the specified regions of interest (MPE).'
-#                     '\nDefault: No tracing.')
-
-# parser.add_argument('-tracefile', '--tracefile', type=str, default='mpe-trace',
-#                     help='The file name to save the MPE trace (without the file type).'
-#                     '\nDefault: mpe-trace')
-
-
-# parser.add_argument('-d', '--debug', action='store_true',
-#                     help='Run workers in debug mode.'
-#                     '\nDefault: No')
-
-
-# def parse():
-#     args = parser.parse_args()
-#     return vars(args)
 
 if __name__ == '__main__':
     args = parser.parse_args()
@@ -93,12 +38,18 @@ if __name__ == '__main__':
     basedata = baseh5['Slices']['n_macroparticles'].value
     approxdata = approxh5['Slices']['n_macroparticles'].value
 
+    bins = np.arange(len(basedata[0]))
+
     assert basedata.shape == approxdata.shape
 
     turns = baseh5['Slices']['turns'].value
     # slices = np.range()
+    bins = len(basedata[0])
+    real_bins = 100
 
-    for i in range(len(turns)):
+    interval = (bins +real_bins - 1) // real_bins
+
+    for i in range(0, len(turns), 4):
         baserow = basedata[i]
         approxrow = approxdata[i]
 
@@ -109,28 +60,60 @@ if __name__ == '__main__':
         diff = baserow - approxrow
         # diff = 100. * diff / baserow
         turn = turns[i]
-
         fig = plt.figure(figsize=(6, 4))
         gs = gridspec.GridSpec(2, 2)
         
         axbase = plt.subplot(gs[0, 0])
         axbase.set_title('Base, turn {}'.format(turn))
-        axbase.set_ylim([0, 4000])
+        axbase.set_ylim([0, 40000])
 
         axapprox = plt.subplot(gs[0, 1])
         axapprox.set_title('Reduce every {} turns'.format(reduce_turns))
-        axapprox.set_ylim([0, 4000])
+        axapprox.set_ylim([0, 40000])
 
         axdiff = plt.subplot(gs[1, :])
         axdiff.set_title('Diff (base - approx)')
-        axdiff.set_ylim([-250, 250])
+        axdiff.set_ylim([-40000, 40000])
 
         axbase.plot(baserow, ls='-', marker='')
+        # axbase.plot(approxrow, ls='-', marker='')
+
+
         axapprox.plot(approxrow, ls='-', marker='')
+        # axapprox.plot(baserow, ls='-', marker='')
+
+        # axbase.plot(bins, baserow, ls='', marker='.', ms=0.01, alpha=0.5, color='red')
+        # axbase.plot(bins, approxrow, ls='', marker='.', ms=0.01, alpha=0.5, color='green')
+
+
+        # axdiff.plot(diff, ls='-', marker='')
+
+        # axdiff.bar(bins[::interval], baserow[::interval], width=interval/2)
+        # axdiff.bar(bins[::interval]+interval/2, approxrow[::interval], width=interval/2)
+
+        # base_less = [sum(baserow[i*interval: min((i+1)*interval, bins)])/interval for i in range(real_bins)]
+        # approx_less = [sum(approxrow[i*interval: min((i+1)*interval, bins)])/interval for i in range(real_bins)]
+
+        # axdiff.bar(np.linspace(0, bins, real_bins), base_less, width=interval/2.)
+        # axdiff.bar(np.linspace(0, bins, real_bins) + interval/2., approx_less, width=interval/2.)
+
+        # axdiff.bar(bins[10000:10000+interval], baserow[10000:10000+interval], width=0.5)
+        # axdiff.bar(bins[10000:10000+interval]+0.5, approxrow[10000:10000+interval], width=0.5)
+
+
+
+        # axapprox.plot(approxrow, ls='-', marker='', alpha=0.5)
         axdiff.plot(diff, ls='-', marker='')
 
+
+
+        # axbase.hist(baserow, bins)
+        # axapprox.hist(approxrow, bins)
+        # axdiff.plot(diff, )
+
+
         plt.tight_layout()
-        plt.savefig('{}/profile-t{:06}.png'.format(outdir, turn), bbox_inches='tight')
-        # plt.show()
+        plt.savefig('{}/profile-t{:06}.jpeg'.format(outdir, turn), bbox_inches='tight', dpi=900)
+        plt.show()
         plt.close()
 

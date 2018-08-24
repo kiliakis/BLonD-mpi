@@ -15,6 +15,7 @@ import time
 from scipy.constants import c
 
 # BLonD imports
+from beam.distributions import matched_from_distribution_function
 from input_parameters.ring import Ring
 from input_parameters.rf_parameters import RFStation
 from beam.beam import Beam, Proton
@@ -51,6 +52,7 @@ if BUNCHLENGTH_MODULATION is False:
     PS_case = 'rms13.0ns_full15ns'
 else:
     PS_case = 'blMod'
+
 optics = 'Q22'
 intensity_pb = 1.7e11
 V1 = 2.0e6
@@ -216,92 +218,92 @@ elif n_rf_systems == 1:
 n_macroparticles = n_bunches * n_macroparticles_pb
 beam = Beam(ring, n_macroparticles, intensity)
 
-PS_n_bunches = 1
+# PS_n_bunches = 1
 
 n_shift = 500  # how many rf-buckets to shift beam
 
-PS_folder = currdir+'/../input_files/'
+# PS_folder = currdir+'/../input_files/'
 
-if BUNCHLENGTH_MODULATION is False:
-    print('Loading PS beam')
-    with h5py.File(PS_folder+'bunch_rotation_'+PS_case
-                   + '_bunch_rotation/after_rotation_PS_beam.hd5', "r") as h5file:
-        PS_dt = h5file['PS_dt'].value
-        # place PS beam in SPS RF-bucket 0
-        PS_dt += 0.5*t_rf - np.mean(PS_dt)
-        PS_dE = h5file['PS_dE'].value
-        PS_n_macroparticles = h5file['PS_n_macroparticles'].value
+# if BUNCHLENGTH_MODULATION is False:
+#     print('Loading PS beam')
+#     with h5py.File(PS_folder+'bunch_rotation_'+PS_case
+#                    + '_bunch_rotation/after_rotation_PS_beam.hd5', "r") as h5file:
+#         PS_dt = h5file['PS_dt'].value
+#         # place PS beam in SPS RF-bucket 0
+#         PS_dt += 0.5*t_rf - np.mean(PS_dt)
+#         PS_dE = h5file['PS_dE'].value
+#         PS_n_macroparticles = h5file['PS_n_macroparticles'].value
 
-    # SPS --- Beam Setup -------------------------------------------
-    PS_bunchCopies = int(n_bunches / PS_n_bunches)
+#     # SPS --- Beam Setup -------------------------------------------
+#     PS_bunchCopies = int(n_bunches / PS_n_bunches)
 
-    # shift beam by n_shift rf buckets
-    PS_dt += (n_shift + bunch_shift/180/2) * t_rf
+#     # shift beam by n_shift rf buckets
+#     PS_dt += (n_shift + bunch_shift/180/2) * t_rf
 
-    if INTENSITY_MODULATION:
-        intensityModulation = np.array(np.linspace(0.9, 1.1, num=4).tolist()*18)
-    else:
-        intensityModulation = np.ones(PS_bunchCopies)
+#     if INTENSITY_MODULATION:
+#         intensityModulation = np.array(np.linspace(0.9, 1.1, num=4).tolist()*18)
+#     else:
+#         intensityModulation = np.ones(PS_bunchCopies)
 
-    print('Creating SPS bunch from PS bunch')
-    # create 72 bunches from PS bunch
-    beginIndex = 0
-    endIndex = 0
+#     print('Creating SPS bunch from PS bunch')
+#     # create 72 bunches from PS bunch
+#     beginIndex = 0
+#     endIndex = 0
 
-    for copy in range(PS_bunchCopies):
-        # randomly select macroparticles from PS bunch according to
-        # intensity modulation
-        numSelectedMPs = int(np.round(n_bunches*n_macroparticles_pb/PS_bunchCopies
-                                      * intensityModulation[copy]))
-        indices = np.zeros(len(PS_dt), dtype=bool)
-        randices = np.random.choice(len(indices), numSelectedMPs, replace=False)
-        indices[randices] = True
+#     for copy in range(PS_bunchCopies):
+#         # randomly select macroparticles from PS bunch according to
+#         # intensity modulation
+#         numSelectedMPs = int(np.round(n_bunches*n_macroparticles_pb/PS_bunchCopies
+#                                       * intensityModulation[copy]))
+#         indices = np.zeros(len(PS_dt), dtype=bool)
+#         randices = np.random.choice(len(indices), numSelectedMPs, replace=False)
+#         indices[randices] = True
 
-        endIndex = beginIndex + numSelectedMPs
+#         endIndex = beginIndex + numSelectedMPs
 
-        # now place PS bunch at correct position
-        beam.dt[beginIndex:endIndex] \
-            = PS_dt[indices] + copy * t_rf * PS_n_bunches*bunch_spacing
+#         # now place PS bunch at correct position
+#         beam.dt[beginIndex:endIndex] \
+#             = PS_dt[indices] + copy * t_rf * PS_n_bunches*bunch_spacing
 
-        beam.dE[beginIndex:endIndex] = PS_dE[indices]
+#         beam.dE[beginIndex:endIndex] = PS_dE[indices]
 
-        beginIndex = endIndex
-else:  # use bunch length modulation
-    print('creating SPS beam')
-    PS_cases = ['rms13.5ns_full20ns', 'rms13.4ns_full20ns', 'rms13.0ns_full20ns',
-                'rms12.6ns_full20ns']
+#         beginIndex = endIndex
+# else:  # use bunch length modulation
+#     print('creating SPS beam')
+#     PS_cases = ['rms13.5ns_full20ns', 'rms13.4ns_full20ns', 'rms13.0ns_full20ns',
+#                 'rms12.6ns_full20ns']
 
-    beginIndex = 0
-    for case, PS_case in enumerate(PS_cases):
-        with h5py.File(PS_folder+'bunch_rotation_'+PS_case
-                       + '_bunch_rotation/after_rotation_PS_beam.hd5', "r") as h5file:
-            PS_dt = h5file['PS_dt'].value
-            # place PS beam in SPS RF-bucket 0
-            PS_dt += 0.5*t_rf - np.mean(PS_dt)
-            PS_dE = h5file['PS_dE'].value
-            PS_n_macroparticles = h5file['PS_n_macroparticles'].value
+#     beginIndex = 0
+#     for case, PS_case in enumerate(PS_cases):
+#         with h5py.File(PS_folder+'bunch_rotation_'+PS_case
+#                        + '_bunch_rotation/after_rotation_PS_beam.hd5', "r") as h5file:
+#             PS_dt = h5file['PS_dt'].value
+#             # place PS beam in SPS RF-bucket 0
+#             PS_dt += 0.5*t_rf - np.mean(PS_dt)
+#             PS_dE = h5file['PS_dE'].value
+#             PS_n_macroparticles = h5file['PS_n_macroparticles'].value
 
-        PS_bunchCopies = int(n_bunches / len(PS_cases))
+#         PS_bunchCopies = int(n_bunches / len(PS_cases))
 
-        # shift beam by n_shift rf buckets
-        PS_dt += (n_shift + case*bunch_spacing + bunch_shift/180/2) * t_rf
+#         # shift beam by n_shift rf buckets
+#         PS_dt += (n_shift + case*bunch_spacing + bunch_shift/180/2) * t_rf
 
-        for copy in range(PS_bunchCopies):
-            # randomly select macroparticles from PS bunch
-            numSelectedMPs = n_macroparticles_pb
-            indices = np.zeros(len(PS_dt), dtype=bool)
-            randices = np.random.choice(len(indices), numSelectedMPs,
-                                        replace=False)
-            indices[randices] = True
+#         for copy in range(PS_bunchCopies):
+#             # randomly select macroparticles from PS bunch
+#             numSelectedMPs = n_macroparticles_pb
+#             indices = np.zeros(len(PS_dt), dtype=bool)
+#             randices = np.random.choice(len(indices), numSelectedMPs,
+#                                         replace=False)
+#             indices[randices] = True
 
-            endIndex = beginIndex + numSelectedMPs
+#             endIndex = beginIndex + numSelectedMPs
 
-            # now place PS bunch at correct position
-            beam.dt[beginIndex:endIndex] = PS_dt[indices] \
-                + copy * t_rf * n_bunches/PS_bunchCopies * bunch_spacing
+#             # now place PS bunch at correct position
+#             beam.dt[beginIndex:endIndex] = PS_dt[indices] \
+#                 + copy * t_rf * n_bunches/PS_bunchCopies * bunch_spacing
 
-            beam.dE[beginIndex:endIndex] = PS_dE[indices]
-            beginIndex = endIndex
+#             beam.dE[beginIndex:endIndex] = PS_dE[indices]
+#             beginIndex = endIndex
 
 
 # SPS --- Profile -------------------------------------------
@@ -324,8 +326,6 @@ n_slices = n_bins_rf * (bunch_spacing * (n_bunches-1) + 1
 profile = Profile(beam, CutOptions=CutOptions(cut_left=cut_left,
                                               cut_right=cut_right, n_slices=n_slices))
 
-# do profile on inital beam
-profile.track()
 
 
 print('Profile set!')
@@ -338,18 +338,101 @@ frequency_step = nFrev*ring.f_rev[0]
 
 if SPS_IMPEDANCE == True:
 
+    if impedance_model_str == 'present':
+
+        number_vvsa = 28
+
+        number_vvsb = 36
+
+        shield_vvsa = False
+
+        shield_vvsb = False
+
+        HOM_630_factor = 1
+
+        UPP_factor = 25/25
+
+        new_MKE = True
+
+        BPH_shield = False
+
+        BPH_factor = 1
+
+    elif impedance_model_str == 'future':
+
+        number_vvsa = 28
+
+        number_vvsb = 36
+
+        shield_vvsa = False
+
+        shield_vvsb = False
+
+        HOM_630_factor = 1/3
+
+        UPP_factor = 10/25
+
+        new_MKE = True
+
+        BPH_shield = False
+
+        BPH_factor = 0
+
+    
+
     # The main 200MHz impedance is effectively 0.0
+
     impedance_scenario = scenario(MODEL=impedance_model_str,
+
+                                  Flange_VVSA_R_factor=number_vvsa/31,
+
+                                  Flange_VVSB_R_factor=number_vvsb/33,
+
+                                  HOM_630_R_factor=HOM_630_factor,
+
+                                  HOM_630_Q_factor=HOM_630_factor,
+
+                                  UPP_R_factor=UPP_factor,
+
+                                  Flange_BPHQF_R_factor=BPH_factor,
+
                                   FB_attenuation=-1000)
 
-    impedance_scenario.importImpedanceSPS()
+    impedance_scenario.importImpedanceSPS(VVSA_shielded=shield_vvsa,
+
+                                          VVSB_shielded=shield_vvsb,
+
+                                          kickerMario=new_MKE, noMKP=False,
+
+                                          BPH_shield=BPH_shield)
+
+    
 
     # Convert to formats known to BLonD
+
     impedance_model = impedance2blond(impedance_scenario.table_impedance)
 
+    
+
     # Induced voltage calculated by the 'frequency' method
+
     SPS_freq = InducedVoltageFreq(beam, profile,
-                                  impedance_model.impedanceListToPlot, frequency_step)
+
+                         impedance_model.impedanceListToPlot, frequency_step)
+
+
+    # # The main 200MHz impedance is effectively 0.0
+    # impedance_scenario = scenario(MODEL=impedance_model_str,
+    #                               FB_attenuation=-1000)
+
+    # impedance_scenario.importImpedanceSPS()
+
+    # # Convert to formats known to BLonD
+    # impedance_model = impedance2blond(impedance_scenario.table_impedance)
+
+    # # Induced voltage calculated by the 'frequency' method
+    # SPS_freq = InducedVoltageFreq(beam, profile,
+    #                               impedance_model.impedanceListToPlot, frequency_step)
 
 #    induced_voltage = TotalInducedVoltage(beam, profile, [SPS_freq])
 
@@ -460,7 +543,39 @@ print('Setting up tracker')
 tracker = RingAndRFTracker(rf_station, beam, Profile=profile,
                            TotalInducedVoltage=inducedVoltage,
                            interpolation=True)
-# tracker = FullRingAndRF([section_tracker])
+fulltracker = FullRingAndRF([tracker])
+
+
+
+
+print('Creating SPS bunch from PS bunch')
+# create 72 bunches from PS bunch
+
+beginIndex = 0
+endIndex = 0
+PS_beam = Beam(ring, n_macroparticles_pb, 0.0)
+PS_n_bunches = 1
+for copy in range(n_bunches):
+    # create binomial distribution;
+    # use different seed for different bunches to avoid cloned bunches
+    matched_from_distribution_function(PS_beam, fulltracker, seed=seed+copy,
+                               distribution_type='binomial',
+                               distribution_exponent=0.7,
+                               emittance=0.35)
+
+    endIndex = beginIndex + n_macroparticles_pb
+
+    # now place PS bunch at correct position
+    beam.dt[beginIndex:endIndex] \
+        = PS_beam.dt + copy * t_rf * PS_n_bunches * bunch_spacing
+
+    beam.dE[beginIndex:endIndex] = PS_beam.dE
+    beginIndex = endIndex
+
+# do profile on inital beam
+profile.track()
+
+
 
 
 # SPS --- Tracking -------------------------------------
