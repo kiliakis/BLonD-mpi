@@ -24,6 +24,14 @@ def c_add(xmem, ymem, dt):
 add_op = MPI.Op.Create(c_add, commute=True)
 
 
+def c_add_uint16(xmem, ymem, dt):
+    x = np.frombuffer(xmem, dtype=np.uint16)
+    y = np.frombuffer(ymem, dtype=np.uint16)
+    y[:] = bm.add(x, y)
+
+
+add_op_uint16 = MPI.Op.Create(c_add_uint16, commute=True)
+
 class Worker:
 
     def __init__(self, log=None):

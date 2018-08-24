@@ -42,6 +42,12 @@ extern "C" {
                         const int *__restrict__ b,
                         const int size,
                         int *__restrict__ result);
+
+    void add_uint16_vector(const uint16_t *__restrict__ a,
+                        const uint16_t *__restrict__ b,
+                        const int size,
+                        uint16_t *__restrict__ result);
+
     void add_longint_vector(const long *__restrict__ a,
                             const long *__restrict__ b,
                             const int size,

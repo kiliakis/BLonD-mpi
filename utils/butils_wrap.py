@@ -68,6 +68,9 @@ def add(a, b, result=None):
     elif (a.dtype == 'float64'):
         __lib.add_double_vector(__getPointer(a), __getPointer(b),
                                 __getLen(a), __getPointer(result))
+    elif (a.dtype == 'uint16'):
+        __lib.add_uint16_vector(__getPointer(a), __getPointer(b),
+                                __getLen(a), __getPointer(result))
     else:
         raise TypeError('type ', a.dtype, ' is not supported')
 
@@ -127,7 +130,8 @@ def mul(a, b, result=None):
         else:
             raise TypeError('type ', a.dtype, ' is not supported')
     else:
-        raise TypeError('types {} and {} are not supported'.format(type(a), type(b)))
+        raise TypeError(
+            'types {} and {} are not supported'.format(type(a), type(b)))
     return result
 
 

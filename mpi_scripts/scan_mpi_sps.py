@@ -20,34 +20,34 @@ job_name_form = '{}/_p{}_b{}_s{}_t{}_w{}_o{}_N{}_'
 
 configs = {
 
-    'SPS-8n-72B-packed-mul-r1': {'p': cycle([4000000]),
-                                 'b': cycle([72]),
-                                 's': cycle([1408]),
-                                 't': cycle([4000]),
-                                 'reduce': cycle([1]),
-                                 'w': []
-                                 # + list(np.arange(2, 81, 2))
-                                 # + list(np.arange(2, 41, 2))
-                                 # + list(np.arange(2, 33, 1))
-                                 + list(np.arange(2, 17, 1))
-                                 + list(np.arange(2, 9, 1)),
-                                 #  + list([16, 32])
-                                 #  + list([8, 16])
-                                 #  + list([4, 8]),
+    'SPS-8n-72B-packed-mul-uint16-r1': {'p': cycle([4000000]),
+                                        'b': cycle([72]),
+                                        's': cycle([1408]),
+                                        't': cycle([4000]),
+                                        'reduce': cycle([1]),
+                                        'w': []
+                                        # + list(np.arange(2, 81, 2))
+                                        # + list(np.arange(2, 41, 2))
+                                        # + list(np.arange(2, 33, 1))
+                                        + list(np.arange(2, 17, 1))
+                                        + list(np.arange(2, 9, 1)),
+                                        #  + list([16, 32])
+                                        #  + list([8, 16])
+                                        #  + list([4, 8]),
 
-                                 'o': []
-                                 #  + [5]*2
-                                 #  + [10]*2
-                                 #  + [20]*2,
-                                 # + [5]*31
-                                 + [10]*15
-                                 + [20]*7,
+                                        'o': []
+                                        #  + [5]*2
+                                        #  + [10]*2
+                                        #  + [20]*2,
+                                        # + [5]*31
+                                        + [10]*15
+                                        + [20]*7,
 
-                                 'time': cycle([40]),
-                                 'partition': cycle(['be-long'])
-                                 }
-    
-#      'SPS-8n-72B-packed-mul-r2': {'p': cycle([4000000]),
+                                        'time': cycle([40]),
+                                        'partition': cycle(['be-long'])
+                                        }
+
+    #      'SPS-8n-72B-packed-mul-r2': {'p': cycle([4000000]),
     #                               'b': cycle([72]),
     #                               's': cycle([1408]),
     #                               't': cycle([4000]),
@@ -58,16 +58,16 @@ configs = {
     #                               + list(np.arange(2, 33, 1))
     #                               + list(np.arange(2, 17, 1))
     #                               + list(np.arange(2, 9, 1)),
-    #  
+    #
     #                               'o': []
     #                               + [5]*31
     #                               + [10]*15
     #                               + [20]*7,
-    #  
+    #
     #                               'time': cycle([40]),
     #                               'partition': cycle(['be-long'])
     #                               },
-    #  
+    #
     #  'SPS-8n-72B-packed-mul-r5': {'p': cycle([4000000]),
     #                               'b': cycle([72]),
     #                               's': cycle([1408]),
@@ -79,20 +79,20 @@ configs = {
     #                               + list(np.arange(2, 33, 1))
     #                               + list(np.arange(2, 17, 1))
     #                               + list(np.arange(2, 9, 1)),
-    #  
+    #
     #                               'o': []
     #                               + [5]*31
     #                               + [10]*15
     #                               + [20]*7,
-    #  
+    #
     #                               'time': cycle([40]),
     #                               'partition': cycle(['be-long'])
     #                               }
-#  
+    #
 
 }
 
-repeats = 2 
+repeats = 2
 
 
 total_sims = repeats * \
