@@ -77,6 +77,49 @@ extern "C" {
     }
 
 
+    void add_int_vector_inplace(int *__restrict__ a,
+                                const int *__restrict__ b,
+                                const int size)
+    {
+        #pragma omp parallel for
+        for (int i = 0; i < size; ++i) {
+            a[i] = a[i] + b[i];
+        }
+    }
+
+    void add_uint16_vector_inplace(uint16_t *__restrict__ a,
+                                   const uint16_t *__restrict__ b,
+                                   const int size)
+    {
+        #pragma omp parallel for
+        for (int i = 0; i < size; ++i) {
+            a[i] = a[i] + b[i];
+        }
+    }
+
+
+    void add_longint_vector_inplace(long *__restrict__ a,
+                                    const long *__restrict__ b,
+                                    const int size)
+    {
+        #pragma omp parallel for
+        for (int i = 0; i < size; ++i) {
+            a[i] = a[i] + b[i];
+        }
+    }
+
+
+    void add_double_vector_inplace(double * __restrict__ a,
+                                   const double * __restrict__ b,
+                                   const int size)
+    {
+        #pragma omp parallel for
+        for (int i = 0; i < size; ++i) {
+            a[i] = a[i] + b[i];
+        }
+    }
+
+
     void convolution(const double * __restrict__ signal,
                      const int SignalLen,
                      const double * __restrict__ kernel,

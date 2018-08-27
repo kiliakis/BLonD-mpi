@@ -7,15 +7,17 @@ from math import ceil
 from datetime import datetime
 import numpy as np
 import random
+import multiprocessing
+
 
 home = '/afs/cern.ch/work/k/kiliakis/git/BLonD-mpi'
 # home = os.environ['HOME'] + '/git/BLonD-kiliakis'
-result_dir = home + '/profiles/LHC/raw/{}/{}/'
+result_dir = home + '/profiles/LHC/raw/{}/{}/{}'
 
 exe = home + '/__EXAMPLES/mpi_main_files/LHC_test.py'
 # batch_script = home + '/mpi/batch-simple.sh'
 # setup_script = home + '/mpi/batch-setup.sh'
-job_name_form = '{}/_p{}_s{}_t{}_w{}_m{}_b{}_r{}_o{}_N{}'
+job_name_form = '_p{}_s{}_t{}_w{}_m{}_b{}_r{}_o{}_N{}'
 
 configs = {
 
@@ -32,7 +34,7 @@ configs = {
                           + [0, 1, 2] + [0, 0, 0]
                           + [0, 1, 2] + [0, 0, 0]
                           + [0, 1, 2] + [0, 0, 0],
-                          'r': [] 
+                          'r': []
                           + [1, 1, 1] + [2, 3, 50]
                           + [1, 1, 1] + [2, 3, 50]
                           + [1, 1, 1] + [2, 3, 50],
@@ -50,7 +52,7 @@ repeats = 1
 
 
 total_sims = repeats * \
-    sum([len(y['w']) for y in configs.values()])
+    sum([len(y['b']) for y in configs.values()])
 
 print("Total runs: ", total_sims)
 current_sim = 0
@@ -73,29 +75,29 @@ for analysis, config in configs.items():
     partitions = config['partition']
     stdout = open(analysis + '.txt', 'w')
 
-    for p, s, t, w, m, b, r, o, N, time, partition in zip(ps, ss, ts, ws, ms, bs, rs
+    for p, s, t, w, m, b, r, o, N, time, partition in zip(ps, ss, ts, ws, ms, bs, rs,
                                                           oss, Ns, times, partitions):
-        job_name = job_name_form.format(analysis, p, s, t, w, m, b, r, o, N)
+        job_name = job_name_form.format(p, s, t, w, m, b, r, o, N)
         for i in range(repeats):
             # timestr = datetime.now().strftime('%d%b%y.%H-%M-%S')
             # timestr = timestr + '-' + str(random.randint(0, 100))
 
-            output = result_dir.format(job_name, 'output.txt')
-            error = result_dir.format(job_name, 'error.txt')
-            log_dir = result_dir.format(job_name, 'log')
-            report_dir = result_dir.format(job_name, 'report')
-            for d in [log_dir, report_dir]:
-                if not os.path.exists(d):
-                    os.makedirs(d)
+            output = result_dir.format(analysis, 'output', job_name + '.txt')
+            error = result_dir.format(analysis, 'error', job_name + '.txt')
+            monitorfile = result_dir.format(analysis, 'h5', job_name)
+            for file in [output, error, monitorfile]:
+                if not os.path.exists(os.path.dirname(file)):
+                    os.makedirs(os.path.dirname(file))
+
             exe_args = ['-p', str(p), '-seed', str(s),
                         '-t', str(t), '-o', str(o),
-                        '-r', report_dir, '-time',
-                        '-reduce', str(r), '-m', str(m)]
+                        '-reduce', str(r), '-m', str(m),
+                        '--monitorfile='+monitorfile]
             print(job_name)
 
             all_args = ['mpirun', '-n', str(w),
                         'python', exe] + exe_args
-            subprocess.call(all_args,
+            subprocess.Popen(all_args,
                             stdout=open(output, 'w'),
                             stderr=open(error, 'w'),
                             env=os.environ.copy())

@@ -47,7 +47,7 @@ def __getLen(x):
     return ct.c_int(len(x))
 
 
-def add(a, b, result=None):
+def add(a, b, result=None, inplace=False):
     if(len(a) != len(b)):
         raise ValueError(
             'operands could not be broadcast together with shapes ',
@@ -56,21 +56,40 @@ def add(a, b, result=None):
         raise TypeError(
             'given arrays not of the same type ', a.dtype(), b.dtype())
 
-    if result is None:
+    if (result is None) and (inplace == False):
         result = np.empty_like(a, order='C')
 
     if (a.dtype == 'int32'):
-        __lib.add_int_vector(__getPointer(a), __getPointer(b),
-                             __getLen(a), __getPointer(result))
-    elif (a.dtype == 'int64'):
-        __lib.add_longint_vector(__getPointer(a), __getPointer(b),
+        if inplace:
+            __lib.add_int_vector_inplace(__getPointer(a), __getPointer(b),
+                                         __getLen(a))
+        else:
+            __lib.add_int_vector(__getPointer(a), __getPointer(b),
                                  __getLen(a), __getPointer(result))
+    elif (a.dtype == 'int64'):
+        if inplace:
+            __lib.add_longint_vector_inplace(__getPointer(a), __getPointer(b),
+                                             __getLen(a))
+        else:
+            __lib.add_longint_vector(__getPointer(a), __getPointer(b),
+                                     __getLen(a), __getPointer(result))
+
     elif (a.dtype == 'float64'):
-        __lib.add_double_vector(__getPointer(a), __getPointer(b),
-                                __getLen(a), __getPointer(result))
+        if inplace:
+            __lib.add_double_vector_inplace(__getPointer(a), __getPointer(b),
+                                            __getLen(a))
+        else:
+            __lib.add_double_vector(__getPointer(a), __getPointer(b),
+                                    __getLen(a), __getPointer(result))
+
     elif (a.dtype == 'uint16'):
-        __lib.add_uint16_vector(__getPointer(a), __getPointer(b),
-                                __getLen(a), __getPointer(result))
+        if inplace:
+            __lib.add_uint16_vector_inplace(__getPointer(a), __getPointer(b),
+                                            __getLen(a))
+        else:
+            __lib.add_uint16_vector(__getPointer(a), __getPointer(b),
+                                    __getLen(a), __getPointer(result))
+
     else:
         raise TypeError('type ', a.dtype, ' is not supported')
 

@@ -349,6 +349,20 @@ class SlicesMonitor(object):
         self.create_data(
             'turns', self.h5file['Slices'], (self.n_turns, ), dtype='int32')
 
+        self.create_data(
+            'mean_dE', self.h5file['Slices'], (self.n_turns, ), dtype='float64')
+
+        self.create_data(
+            'mean_dt', self.h5file['Slices'], (self.n_turns, ), dtype='float64')
+
+        self.create_data(
+            'std_dE', self.h5file['Slices'], (self.n_turns, ), dtype='float64')
+
+        self.create_data(
+            'std_dt', self.h5file['Slices'], (self.n_turns, ), dtype='float64')
+
+
+
     def track(self, turn):
 
         # if not self.i_turn:
@@ -360,6 +374,12 @@ class SlicesMonitor(object):
         # else:
         self.h5group['n_macroparticles'][self.i_turn] = self.profile.n_macroparticles
         self.h5group['turns'][self.i_turn] = turn
+
+        self.h5group['mean_dE'][self.i_turn] = np.mean(self.profile.Beam.dE)
+        self.h5group['std_dE'][self.i_turn] = np.std(self.profile.Beam.dE)
+        self.h5group['mean_dt'][self.i_turn] = np.mean(self.profile.Beam.dt)
+        self.h5group['std_dt'][self.i_turn] = np.std(self.profile.Beam.dt)
+
         # self.write_data(self.profile, self.h5file['Slices'], self.i_turn)
         # self.write_data(turn, self.h5file['Slices'], self.i_turn)
 

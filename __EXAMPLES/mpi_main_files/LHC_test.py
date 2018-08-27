@@ -155,8 +155,11 @@ print('dE mean: ', np.mean(beam.dE))
 print('dE std: ', np.std(beam.dE))
 
 if N_t_monitor > 0:
-    filename = 'profiles/LHC-v0-t{}-p{}-b{}-sl{}-r{}-m{}-se{}'.format(
-        N_t, N_p, NB, nSlices, N_t_reduce, N_t_monitor, seed)
+    if args.get('monitorfile', None):
+        filename = args['monitorfile']
+    else:
+        filename = 'profiles/LHC-v0-t{}-p{}-b{}-sl{}-r{}-m{}-se{}'.format(
+            N_t, N_p, NB, nSlices, N_t_reduce, N_t_monitor, seed)
     slicesMonitor = SlicesMonitor(filename=filename,
                                   n_turns=np.ceil(1.0 * N_t / N_t_monitor),
                                   profile=profile)
@@ -208,22 +211,20 @@ try:
     print("Ready for tracking!")
     print("")
 
-    # Tracking --------------------------------------------------------------------
-    for i in range(N_t):
-        # for i in range(turns):
-        t0 = time.clock()
-
-        # task_list = ['bcast']
-        task_list = []
-
-        if (i % N_t_reduce == 0):
+    task_list = []
+    for turn in range(N_t):
+        if (turn % N_t_reduce == 0):
             task_list += ['histo', 'reduce_histo']
 
-        if (N_t_monitor > 0) and (i % N_t_monitor == 0):
+        if (N_t_monitor > 0) and (turn % N_t_monitor == 0):
             task_list += ['gather_single']
 
         task_list += ['kick', 'drift']
-        master.bcast(task_list)
+
+    master.bcast(task_list)
+
+    # Tracking --------------------------------------------------------------------
+    for i in range(N_t):
 
         profile.track()
 

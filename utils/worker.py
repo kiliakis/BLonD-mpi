@@ -18,7 +18,8 @@ from utils import bmath as bm
 def c_add(xmem, ymem, dt):
     x = np.frombuffer(xmem, dtype=np.int32)
     y = np.frombuffer(ymem, dtype=np.int32)
-    y[:] = bm.add(x, y)
+    bm.add(y, x, inplace=True)
+    # y[:] = bm.add(x, y)
 
 
 add_op = MPI.Op.Create(c_add, commute=True)
@@ -27,7 +28,8 @@ add_op = MPI.Op.Create(c_add, commute=True)
 def c_add_uint16(xmem, ymem, dt):
     x = np.frombuffer(xmem, dtype=np.uint16)
     y = np.frombuffer(ymem, dtype=np.uint16)
-    y[:] = bm.add(x, y)
+    # y[:] = bm.add(x, y)
+    bm.add(y, x, inplace=True)
 
 
 add_op_uint16 = MPI.Op.Create(c_add_uint16, commute=True)
@@ -221,6 +223,24 @@ class Worker:
 
         self.update()
 
+    # def reduce_histo(self):
+
+    #     global profile
+    #     with timing.timed_region('comm:conversions') as tr:
+    #         with mpiprof.traced_region('comm:conversions') as tr:
+    #             profile = profile.astype(np.uint16, order='C')
+
+    #     with timing.timed_region('comm:histo_reduce') as tr:
+    #         with mpiprof.traced_region('comm:histo_reduce') as tr:
+    #             self.intracomm.Allreduce(MPI.IN_PLACE, profile, op=add_op_uint16)
+    #             # self.intracomm.Allreduce(MPI.IN_PLACE, profile, op=MPI.SUM)
+
+    #     with timing.timed_region('comm:conversions') as tr:
+    #         with mpiprof.traced_region('comm:conversions') as tr:
+    #             profile = profile.astype(np.float64, order='C')
+
+    #     self.update()
+
     @timing.timeit(key='comm:histo_scale')
     @mpiprof.traceit(key='comm:histo_scale')
     def scale_histo(self):
@@ -253,40 +273,6 @@ class Worker:
         self.update()
 
 
-    # def induced_voltage_sum(self):
-    #     # for any per-turn updated variables
-    #     global induced_voltage
-    #     self.bcast()
-    #     temp_induced_voltage = 0
-    #     beam_spectrum = None
-    #     min_idx = n_slices
-
-    #     # with timing.timed_region('serial:indVoltSum') as tr:
-    #     #     with mpiprof.traced_region('serial:indVoltSum') as tr:
-    #     for imped in impedList.values():
-    #         # Beam_spectrum_generation
-    #         if beam_spectrum is None:
-    #             with timing.timed_region('serial:indVoltRfft') as tr:
-    #                 beam_spectrum = bm.rfft(profile, imped['n_fft'])
-            
-    #         with timing.timed_region('serial:indVoltMul1') as tr:
-    #             temp = imped['total_impedance'] * beam_spectrum
-
-    #         with timing.timed_region('serial:indVoltIrfft') as tr:
-    #             temp = bm.irfft(temp)
-
-    #         with timing.timed_region('serial:indVoltMul2') as tr:
-    #             induced_voltage = - charge * e * beam_ratio * temp
-
-    #         # induced_voltage = - (charge * e * beam_ratio *
-    #         #                      bm.irfft(imped['total_impedance'] * beam_spectrum))
-    #         # induced_voltage = induced_voltage[:imped['n_induced_voltage']]
-    #         with timing.timed_region('serial:indVoltAcc') as tr:
-    #             min_idx = min(imped['n_induced_voltage'], min_idx)
-    #             temp_induced_voltage += induced_voltage[:min_idx]
-
-    #     induced_voltage = temp_induced_voltage
-    #     self.update()
 
     def induced_voltage_sum_packed(self):
         # for any per-turn updated variables

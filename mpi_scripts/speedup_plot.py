@@ -51,7 +51,7 @@ plots_config = {
 
     'plot4': {
         'files': {
-            res_dir+'raw/SPS-8n-72B-packed-mul-r1/comm-comp-report.csv': {
+            res_dir+'raw/SPS-8n-72B-packed-mul-int32-r1/comm-comp-report.csv': {
                 'lines': {
                     'omp': ['2', '5', '10', '20'],
                     'type': ['total']}
@@ -78,7 +78,7 @@ plots_config = {
         'title': '',
         # 'ylim': [0, 16000],
         'figsize': (6, 3),
-        'image_name': images_dir + 'SPS-8n-72B-packed-mul-r1-speedup.pdf'
+        'image_name': images_dir + 'SPS-8n-72B-packed-mul-int32-r1-speedup.pdf'
 
     },
 
@@ -247,7 +247,7 @@ if __name__ == '__main__':
         save_and_crop(fig, config['image_name'], dpi=600, bbox_inches='tight')
         # plt.savefig(config['image_name'], dpi=600, bbox_inches='tight')
         # subprocess.call
-        plt.show()
+        # plt.show()
         plt.close()
 
     # plt.legend(loc='best', fancybox=True, fontsize='11')
