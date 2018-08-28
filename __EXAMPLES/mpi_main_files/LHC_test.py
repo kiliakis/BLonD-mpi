@@ -32,11 +32,11 @@ from beam.profile import Profile, CutOptions
 from impedances.impedance_sources import InputTable
 from impedances.impedance import InducedVoltageFreq, TotalInducedVoltage
 from toolbox.next_regular import next_regular
-if MONITORING:
-    from monitors.monitors import BunchMonitor
-    from plots.plot import Plot
-    from plots.plot_beams import plot_long_phase_space
-    from plots.plot_slices import plot_beam_profile
+# if MONITORING:
+from monitors.monitors import BunchMonitor
+from plots.plot import Plot
+from plots.plot_beams import plot_long_phase_space
+from plots.plot_slices import plot_beam_profile
 
 from monitors.monitors import SlicesMonitor
 
@@ -112,9 +112,24 @@ print("")
 wrkDir = r'/afs/cern.ch/work/k/kiliakis/public/helga/'
 
 # Import pre-processed momentum and voltage for the acceleration ramp
-ps = 450.e9*np.ones(N_t+1)
+if REAL_RAMP:
+    ps = np.loadtxt(wrkDir+r'input/LHC_momentum_programme.dat',
+                    unpack=True)
+    ps = np.ascontiguousarray(ps)
+    ps = np.concatenate((ps, np.ones(436627)*6.5e12))
+else:
+    ps = 450.e9*np.ones(N_t+1)
+
+
+# ps = 450.e9*np.ones(N_t+1)
 print("Flat top momentum %.4e eV" % ps[-1])
-V = 6.e6*np.ones(N_t+1)
+if REAL_RAMP:
+    V = np.concatenate((np.linspace(6.e6, 12.e6, 13563374),
+                        np.ones(436627)*12.e6))
+else:
+    V = 6.e6*np.ones(N_t+1)
+
+# V = 6.e6*np.ones(N_t+1)
 print("Flat top voltage %.4e V" % V[-1])
 print("Momentum and voltage loaded...")
 
@@ -145,7 +160,20 @@ print("Beam generated, profile set...")
 print("Using %d slices" % nSlices)
 
 
-tracker = RingAndRFTracker(rf, beam, interpolation=False)
+# Define machine impedance from http://impedance.web.cern.ch/impedance/
+ZTot = np.loadtxt(wrkDir + r'input/Zlong_Allthemachine_450GeV_B1_LHC_inj_450GeV_B1.dat',
+                  skiprows=1)
+ZTable = InputTable(ZTot[:, 0], ZTot[:, 1], ZTot[:, 2])
+indVoltage = InducedVoltageFreq(
+    beam, profile, [ZTable], frequency_resolution=4.e5)
+totVoltage = TotalInducedVoltage(beam, profile, [indVoltage])
+
+tracker = RingAndRFTracker(rf, beam, BeamFeedback=None, Profile=profile,
+                           interpolation=True, TotalInducedVoltage=totVoltage)
+print("PL, SL, and tracker set...")
+# Fill beam distribution
+fullring = FullRingAndRF([tracker])
+
 
 map_ = [profile] + [tracker]
 print("Map set")
@@ -153,6 +181,10 @@ print("Map set")
 
 print('dE mean: ', np.mean(beam.dE))
 print('dE std: ', np.std(beam.dE))
+
+# plot_long_phase_space(ring, rf, beam, 0, 2.5e-9, -500e6, 500e6,
+#                       separatrix_plot=True)
+# plot_beam_profile(profile, 0)
 
 if N_t_monitor > 0:
     if args.get('monitorfile', None):
@@ -188,6 +220,11 @@ try:
         'beam_ratio': beam.ratio,
         'total_voltage': 0.,
         'induced_voltage': 0.,
+        'impedList': {
+            'indVoltage': {'total_impedance': indVoltage.total_impedance,
+                           'n_fft': indVoltage.n_fft,
+                           'n_induced_voltage': indVoltage.n_induced_voltage}
+        },
         'rfp_omega_rf': rf.omega_rf,
         'rfp_omega_rf_d': rf.omega_rf_d,
         'rfp_phi_rf': rf.phi_rf,
@@ -214,18 +251,20 @@ try:
     task_list = []
     for turn in range(N_t):
         if (turn % N_t_reduce == 0):
-            task_list += ['histo', 'reduce_histo']
+            task_list += ['induced_voltage_sum', 'histo', 'reduce_histo']
 
         if (N_t_monitor > 0) and (turn % N_t_monitor == 0):
             task_list += ['gather_single']
 
-        task_list += ['kick', 'drift']
+        task_list += ['RFVCalc', 'LIKick_n_drift']
 
     master.bcast(task_list)
 
     # Tracking --------------------------------------------------------------------
     for i in range(N_t):
-
+        if (turn % N_t_reduce == 0):
+            totVoltage.induced_voltage_sum()
+        
         profile.track()
 
         if (N_t_monitor > 0) and (i % N_t_monitor == 0):
@@ -253,6 +292,10 @@ timing.report(total_time=1e3*(end_t-start_t),
 
 print('dE mean: ', np.mean(beam.dE))
 print('dE std: ', np.std(beam.dE))
+
+# plot_long_phase_space(ring, rf, beam, 0, 2.5e-9, -500e6, 500e6,
+#                       separatrix_plot=True)
+# plot_beam_profile(profile, 0)
 
 # np.savetxt('out/coords_' "%d" % rf.counter[0] + '.dat',
 # np.c_[beam.dt, beam.dE], fmt='%.10e')

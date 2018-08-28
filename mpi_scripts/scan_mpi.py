@@ -19,175 +19,29 @@ setup_script = home + '/mpi_scripts/batch-setup.sh'
 job_name_form = '{}/_p{}_b{}_s{}_t{}_w{}_o{}_N{}_'
 
 configs = {
-    # 'weak_scale_mpi_single_node': {'p': np.arange(1000000, 19000001, 1000000),
-    #                                's': np.arange(500, 9501, 500),
-    #                                't': cycle([2000]),
-    #                                'w': np.arange(1, 20, 1),
-    #                                'o': cycle([1]),
-    #                                'N': cycle([1]),
-    #                                'time': cycle([45]),
-    #                                'partition': cycle(['be-short'])
-    #                                }
 
-    # 'strong_scale_mpi_single_node-2': {'p': cycle([10000000]),
-    #                                  's': cycle([5000]),
-    #                                  't': cycle([2000]),
-    #                                  'w': np.arange(2, 21, 1),
-    #                                  'o': cycle([1]),
-    #                                  'N': cycle([1]),
-    #                                  'time': cycle([60]),
-    #                                  'partition': cycle(['be-short'])
-    #                                  },
+    'LHC-96B-2MPPB-uint16-r1': {'p': cycle([2000000]),
+                                'b': cycle([96]),
+                                's': cycle([1000]),
+                                't': cycle([10000]),
+                                'reduce': cycle([1]),
 
-    # 'weak_scale_mpi_dual_node': {'p': np.arange(1000000, 39000001, 2000000),
-    #                              's': np.arange(500, 19501, 1000),
-    #                              't': cycle([2000]),
-    #                              'w': np.arange(1, 40, 2),
-    #                              'o': cycle([1]),
-    #                              'N': cycle([2]),
-    #                              'time': cycle([45]),
-    #                              'partition': cycle(['be-long'])
-    #                              },
+                                'w': []
+                                + list(np.arange(2, 17, 1))
+                                + list(np.arange(2, 9, 1)),
 
-    # 'strong_scale_mpi_dual_node': {'p': cycle([20000000]),
-    #                                's': cycle([10000]),
-    #                                't': cycle([2000]),
-    #                                'w': np.arange(3, 40, 2),
-    #                                'o': cycle([1]),
-    #                                'N': cycle([2]),
-    #                                'time': cycle([60]),
-    #                                'partition': cycle(['be-long'])
-    #                                }
+                                'o': []
+                                + [10]*15
+                                + [20]*7,
 
-    # 'weak_scale_mpi_four_node': {'p': np.arange(1000000, 78000001, 2000000),
-    #                              's': np.arange(500, 39501, 1000),
-    #                              't': cycle([2000]),
-    #                              'w': np.arange(1, 80, 2),
-    #                              'o': cycle([1]),
-    #                              'N': cycle([4]),
-    #                              'time': cycle([45]),
-    #                              'partition': cycle(['be-long'])
-    #                              },
-
-    # 'weak_scale_hybrid_four_node': {'p': np.arange(1000000, 78000001, 2000000),
-    #                              's': np.arange(500, 39501, 1000),
-    #                              't': cycle([2000]),
-    #                              'w': np.arange(1, 80, 2),
-    #                              'o': cycle([10]),
-    #                              'N': cycle([4]),
-    #                              'time': cycle([45]),
-    #                              'partition': cycle(['be-long'])
-    #                              },
-
-    # 'strong_scale_mpi_four_node': {'p': cycle([20000000]),
-    #                                's': cycle([10000]),
-    #                                't': cycle([2000]),
-    #                                'w': np.arange(3, 80, 2),
-    #                                'o': cycle([1]),
-    #                                'N': cycle([4]),
-    #                                'time': cycle([60]),
-    #                                'partition': cycle(['be-long'])
-    #                                }
-
-
-    # 'weak_scale_hybrid_four_node': {'p': np.arange(20000000, 80000001, 20000000),
-    #                                 's': np.arange(10000, 40001, 10000),
-    #                                 't': cycle([2000]),
-    #                                 'w': np.arange(1, 5, 1),
-    #                                 'o': cycle([20]),
-    #                                 'N': np.arange(2, 6, 1),
-    #                                 'time': cycle([60]),
-    #                                 'partition': cycle(['be-long'])
-    #                                 }
-
-    # 'strong_scale_hybrid_four_node-4': {'p': cycle([20000000]),
-    #                                     's': cycle([10000]),
-    #                                     't': cycle([2000]),
-    #                                     'w': list(np.arange(2, 21, 1))
-    #                                     + list(np.arange(2, 41, 1))
-    #                                     + list(np.arange(2, 17, 1)),
-    #                                     # list(np.arange(2, 9, 1))
-    #                                     # + list(np.arange(3, 20, 2))
-    #                                     'o': [4]*19 + [2]*39 + [5]*15,
-    #                                     # [10]*7 + [5]*8,
-    #                                     # + [4]*9 + [2]*10,
-    #                                     'N': [1]*4 + [2]*5 + [3]*5 + [4]*5
-    #                                     + [1]*9 + [2]*10 + [3]*10 + [4]*10
-    #                                     + [1]*3 + [2]*4 + [3]*4 + [4]*4,
-    #                                     # [1, 1, 2, 2, 2, 3, 3, 4, 4, 4],
-    #                                     # [1, 2, 2, 3, 3, 4, 4]
-    #                                     # + [1, 2, 2, 2, 3, 3, 4, 4, 4]
-    #                                     'time': cycle([60]),
-    #                                     'partition': cycle(['be-long'])
-    #                                     }
-
-
-    # 'LHC-hybrid-4nodes': {'p': cycle([1000000]),
-    #                       's': cycle([1000]),
-    #                       't': cycle([10000]),
-    #                       'w': list(np.arange(4, 41, 4))
-    #                       + list(np.arange(2, 21, 2))
-    #                       + list(np.arange(2, 17, 2))
-    #                       + list(np.arange(2, 9, 1)),
-    #                       # + list(np.arange(3, 20, 2))
-    #                       'o': [2]*10 + [4]*10 + [5]*8 + [10]*7,
-    #                       'N': [1, 1, 2, 2, 2, 3, 3, 4, 4, 4]
-    #                       + [1, 1, 2, 2, 2, 3, 3, 4, 4, 4]
-    #                       + [1, 1, 2, 2, 3, 3, 4, 4]
-    #                       + [1, 2, 2, 3, 3, 4, 4],
-    #                       # + [1]*4 + [2]*5 + [3]*5 + [4]*5
-    #                       # + [1]*9 + [2]*10 + [3]*10 + [4]*10
-    #                       # + [1]*3 + [2]*4 + [3]*4 + [4]*4,
-    #                       'time': cycle([60]),
-    #                       'partition': cycle(['be-long'])
-    #                       }
-
-    'LHC-4n-96B-lt-lb-nogat-int-op-knd-r5-10kt': {'p': cycle([1000000]),
-                                             'b': cycle([96]),
-                                             's': cycle([1000]),
-                                             't': cycle([10000]),
-                                             'reduce': cycle([5]),
-                                             'w': []
-                                             # + list(np.arange(4, 41, 4))
-                                             + list(np.arange(22, 41, 2))
-                                             + list(np.arange(18, 33, 2))
-                                             + list(np.arange(9, 17, 1)),
-
-                                             # + list(np.arange(4, 21, 2))
-                                             # + list(np.arange(2, 17, 2))
-                                             # + list(np.arange(2, 9, 1)),
-                                             # list(np.arange(2, 81, 2)),
-                                             # + list(np.arange(3, 20, 2))
-                                             'o': [4]*10 + [5]*8 + [10] * 8,
-                                             # [5]*5 + [10]*2,
-                                             # [1] * 40,
-                                             # 'N': []
-                                             # + [1, 1, 2, 2, 2, 3, 3, 4, 4, 4]
-                                             # + [1, 2, 2, 2, 3, 3, 4, 4, 4]
-                                             # + [1, 1, 2, 2, 3, 3, 4, 4]
-                                             # + [1, 2, 2, 3, 3, 4, 4],
-                                             # [1] * 10 + [2] * 10 + [3] * 10 + [4] * 10,
-                                             'time': cycle([60]),
-                                             'partition': cycle(['be-long'])
-                                             }
-
-
-    # 'strong_scale_hybrid_four_node-2': {'p': cycle([20000000]),
-    #                                     's': cycle([10000]),
-    #                                     't': cycle([2000]),
-    #                                     'w': [1, 2, 3, 4],
-    #                                     'o': cycle([20]),
-    #                                     'N': [2, 3, 4, 5],
-    #                                     'time': cycle([60]),
-    #                                     'partition': cycle(['be-long'])
-    #                                     }
-
-
+                                'time': cycle([60]),
+                                'partition': cycle(['be-long'])
+                                }
 
 
 }
 
-repeats = 1
+repeats = 4
 
 
 total_sims = repeats * \
@@ -219,7 +73,7 @@ for analysis, config in configs.items():
         N = (w * o + 20-1) // 20
 
         job_name = job_name_form.format(analysis, p, b, s, t, w, o, N)
-        if(N < 3):
+        if(N < 5):
             partition = 'be-short'
             # continue
         else:

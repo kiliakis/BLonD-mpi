@@ -205,34 +205,16 @@ class Worker:
 
     # @timing.timeit(key='comm:histo_reduce')
     # @mpiprof.traceit(key='comm:histo_reduce')
-    def reduce_histo(self):
-
-        global profile
-        with timing.timed_region('comm:conversions') as tr:
-            with mpiprof.traced_region('comm:conversions') as tr:
-                profile = profile.astype(np.int32, order='C')
-
-        with timing.timed_region('comm:histo_reduce') as tr:
-            with mpiprof.traced_region('comm:histo_reduce') as tr:
-                self.intracomm.Allreduce(MPI.IN_PLACE, profile, op=add_op)
-                # self.intracomm.Allreduce(MPI.IN_PLACE, profile, op=MPI.SUM)
-
-        with timing.timed_region('comm:conversions') as tr:
-            with mpiprof.traced_region('comm:conversions') as tr:
-                profile = profile.astype(np.float64, order='C')
-
-        self.update()
-
     # def reduce_histo(self):
 
     #     global profile
     #     with timing.timed_region('comm:conversions') as tr:
     #         with mpiprof.traced_region('comm:conversions') as tr:
-    #             profile = profile.astype(np.uint16, order='C')
+    #             profile = profile.astype(np.int32, order='C')
 
     #     with timing.timed_region('comm:histo_reduce') as tr:
     #         with mpiprof.traced_region('comm:histo_reduce') as tr:
-    #             self.intracomm.Allreduce(MPI.IN_PLACE, profile, op=add_op_uint16)
+    #             self.intracomm.Allreduce(MPI.IN_PLACE, profile, op=add_op)
     #             # self.intracomm.Allreduce(MPI.IN_PLACE, profile, op=MPI.SUM)
 
     #     with timing.timed_region('comm:conversions') as tr:
@@ -240,6 +222,26 @@ class Worker:
     #             profile = profile.astype(np.float64, order='C')
 
     #     self.update()
+
+
+
+    def reduce_histo(self):
+
+        global profile
+        with timing.timed_region('comm:conversions') as tr:
+            with mpiprof.traced_region('comm:conversions') as tr:
+                profile = profile.astype(np.uint16, order='C')
+
+        with timing.timed_region('comm:histo_reduce') as tr:
+            with mpiprof.traced_region('comm:histo_reduce') as tr:
+                self.intracomm.Allreduce(MPI.IN_PLACE, profile, op=add_op_uint16)
+                # self.intracomm.Allreduce(MPI.IN_PLACE, profile, op=MPI.SUM)
+
+        with timing.timed_region('comm:conversions') as tr:
+            with mpiprof.traced_region('comm:conversions') as tr:
+                profile = profile.astype(np.float64, order='C')
+
+        self.update()
 
     @timing.timeit(key='comm:histo_scale')
     @mpiprof.traceit(key='comm:histo_scale')

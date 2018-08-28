@@ -21,30 +21,30 @@ job_name_form = '_p{}_s{}_t{}_w{}_m{}_b{}_r{}_o{}_N{}'
 
 configs = {
 
-    'no_acc_no_indvolt': {'p': cycle([1000000]),
-                          # 's': cycle([144]),
-                          't': cycle([5000]),
-                          'w': cycle([2]),
-                          'm': cycle([1]),
-                          'b': []
-                          + [1]*6
-                          + [12]*6
-                          + [48]*6,
-                          's': []
-                          + [0, 1, 2] + [0, 0, 0]
-                          + [0, 1, 2] + [0, 0, 0]
-                          + [0, 1, 2] + [0, 0, 0],
-                          'r': []
-                          + [1, 1, 1] + [2, 3, 50]
-                          + [1, 1, 1] + [2, 3, 50]
-                          + [1, 1, 1] + [2, 3, 50],
+    'noacc_indvolt': {'p': cycle([1000000]),
+                       # 's': cycle([144]),
+                       't': cycle([5000]),
+                       'w': cycle([2]),
+                       'm': cycle([1]),
+                       'b': []
+                       + [1]*6,
+                       # + [12]*6
+                       # + [48]*6,
+                       's': []
+                       + [0, 1, 2] + [0, 0, 0],
+                       # + [0, 1, 2] + [0, 0, 0]
+                       # + [0, 1, 2] + [0, 0, 0],
+                       'r': []
+                       + [1, 1, 1] + [2, 3, 50],
+                       # + [1, 1, 1] + [2, 3, 50]
+                       # + [1, 1, 1] + [2, 3, 50],
 
-                          # 'w': np.arange(1, 2, 1),
-                          'o': cycle([2]),
-                          'N': cycle([1]),
-                          'time': cycle([60]),
-                          'partition': cycle(['be-short'])
-                          }
+                       # 'w': np.arange(1, 2, 1),
+                       'o': cycle([4]),
+                       'N': cycle([1]),
+                       'time': cycle([60]),
+                       'partition': cycle(['be-short'])
+                       }
 
 }
 
@@ -98,9 +98,9 @@ for analysis, config in configs.items():
             all_args = ['mpirun', '-n', str(w),
                         'python', exe] + exe_args
             subprocess.Popen(all_args,
-                            stdout=open(output, 'w'),
-                            stderr=open(error, 'w'),
-                            env=os.environ.copy())
+                             stdout=open(output, 'w'),
+                             stderr=open(error, 'w'),
+                             env=os.environ.copy())
             current_sim += 1
             print("%lf %% is completed" % (100.0 * current_sim /
                                            total_sims))

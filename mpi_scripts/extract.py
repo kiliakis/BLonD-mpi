@@ -71,13 +71,17 @@ def write_avg(files, outfile):
         elif not np.array_equal(default_header, header):
             print('Problem with file: ', indir+'/'+f)
             continue
-
-        if len(acc_data) == 0:
-            acc_data = data
-        else:
-            acc_data += data
-        num += 1
-    acc_data = np.around(acc_data/num, 2)
+        acc_data.append(data)
+        # if len(acc_data) == 0:
+        #     acc_data = data
+        # else:
+        #     acc_data += data
+        # num += 1
+    acc_data.sort(key=lambda a: (a[-1][0]))
+    acc_data = acc_data[:2]
+    
+    acc_data = np.mean(acc_data, axis=0)
+    acc_data = np.around(acc_data, 2)
         
     writer = csv.writer(outfile, delimiter='\t')
     writer.writerow(default_header)
@@ -92,6 +96,7 @@ def aggregate_reports(input):
         if len(sdirs) == 0:
             continue
         files = [os.path.join(dirs, s, comm_comp_worker_fname) for s in sdirs]
+        print(files)
         write_avg(files, open(os.path.join(dirs, comm_comp_fname), 'w'))
 
         files = [os.path.join(dirs, s, average_worker_fname) for s in sdirs]
