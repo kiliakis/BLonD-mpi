@@ -48,9 +48,9 @@ parser.add_argument('-monitorfile', '--monitorfile', type=str, default=None,
                     '\nDefault: Descriptive name based on simulation config.')
 
 
-parser.add_argument('-seed', '--seed', type=int, default=0,
+parser.add_argument('-seed', '--seed', type=int, default=None,
                     help='Seed value for the particle distribution generation.'
-                    '\nDefault: 0')
+                    '\nDefault: None')
 
 parser.add_argument('-time', '--time', action='store_true',
                     help='Time the specified regions of interest.'

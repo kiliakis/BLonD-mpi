@@ -20,23 +20,23 @@ job_name_form = '{}/_p{}_b{}_s{}_t{}_w{}_o{}_N{}_'
 
 configs = {
 
-    'LHC-96B-2MPPB-uint16-r1': {'p': cycle([2000000]),
-                                'b': cycle([96]),
-                                's': cycle([1000]),
-                                't': cycle([10000]),
-                                'reduce': cycle([1]),
+    'LHC-96B-2MPPB-uint16-nobcast-r1': {'p': cycle([2000000]),
+                                        'b': cycle([96]),
+                                        's': cycle([1000]),
+                                        't': cycle([10000]),
+                                        'reduce': cycle([1]),
 
-                                'w': []
-                                + list(np.arange(2, 17, 1))
-                                + list(np.arange(2, 9, 1)),
+                                        'w': []
+                                        + list(np.arange(2, 17, 1))
+                                        + list(np.arange(2, 9, 1)),
 
-                                'o': []
-                                + [10]*15
-                                + [20]*7,
+                                        'o': []
+                                        + [10]*15
+                                        + [20]*7,
 
-                                'time': cycle([60]),
-                                'partition': cycle(['be-long'])
-                                }
+                                        'time': cycle([60]),
+                                        'partition': cycle(['be-long'])
+                                        }
 
 
 }

@@ -53,6 +53,7 @@ class Worker:
 
         self.logger.debug('Hostname: %s' % self.hostname)
         self.task_queue = deque()
+        self.turn = 0
 
     # @timing.timeit(key='comm:multi_scatter')
     def multi_scatter(self):
@@ -166,8 +167,8 @@ class Worker:
     # @timing.timeit(key='comp:kick')
     # @mpiprof.traceit(key='kick')
     def kick(self):
-        self.bcast()
-        global turn
+        # self.bcast()
+        turn = self.turn
         with timing.timed_region('comp:kick') as tr:
             with mpiprof.traced_region('comp:kick') as tr:
                 voltage = np.ascontiguousarray(charge * rfp_voltage[:, turn])
@@ -180,14 +181,15 @@ class Worker:
     # @timing.timeit(key='comp:drift')
     # @mpiprof.traceit(key='drift')
     def drift(self):
-        self.bcast()
-        global turn
+        # self.bcast()
+        turn = self.turn + 1
         with timing.timed_region('comp:drift') as tr:
             with mpiprof.traced_region('comp:drift') as tr:
                 bph._drift(dt, dE, solver, tracker_t_rev[turn],
                            length_ratio, alpha_order,
                            tracker_eta_0[turn], tracker_eta_1[turn],
                            tracker_eta_2[turn], rfp_beta[turn], rfp_energy[turn])
+        self.turn += 1
         self.update()
 
     # @timing.timeit('comp:histo')
@@ -253,7 +255,7 @@ class Worker:
     def induced_voltage_sum(self):
         # for any per-turn updated variables
         global induced_voltage
-        self.bcast()
+        # self.bcast()
         temp_induced_voltage = 0
         beam_spectrum = None
         min_idx = n_slices
@@ -279,7 +281,7 @@ class Worker:
     def induced_voltage_sum_packed(self):
         # for any per-turn updated variables
         global induced_voltage
-        self.bcast()
+        # self.bcast()
         beam_spectrum = None
         induced_voltage = []
         min_idx = n_slices
@@ -310,25 +312,30 @@ class Worker:
     # @timing.timeit(key='comp:LIKick')
     # @mpiprof.traceit(key='LIKick')
     def LIKick(self):
-        self.bcast()
+        # self.bcast()
+        turn = self.turn
         with timing.timed_region('comp:LIKick') as tr:
             with mpiprof.traced_region('comp:LIKick') as tr:
                 bph._linear_interp_kick(dt, dE, total_voltage, bin_centers,
-                                        charge, acc_kick)
+                                        charge, tracker_acc_kick[turn])
         self.update()
 
     def LIKick_n_drift(self):
-        self.bcast()
-        global turn, acc_kick
+        # self.bcast()
+        # global acc_kick
+        turn = self.turn
         with timing.timed_region('comp:LIKick_n_drift') as tr:
             with mpiprof.traced_region('comp:LIKick_n_drift') as tr:
                 bph._LIKick_n_drift(dt, dE, total_voltage, bin_centers,
-                                    charge, acc_kick, solver,
+                                    charge, tracker_acc_kick[turn], solver,
                                     tracker_t_rev[turn], length_ratio,
                                     alpha_order, tracker_eta_0[turn],
                                     tracker_eta_1[turn], tracker_eta_2[turn],
                                     rfp_beta[turn], rfp_energy[turn])
+        # update the turn
+        self.turn +=1
         self.update()
+
 
     # @timing.timeit(key='comp:SR')
     def SR(self):
@@ -341,8 +348,10 @@ class Worker:
     # Perhaps this is not big enough to use mpi, an omp might be better
     # @timing.timeit(key='comp:RFVCalc')
     def RFVCalc(self):
-        self.bcast()
-        global total_voltage, induced_voltage, turn
+        # self.bcast()
+        global total_voltage, induced_voltage
+        total_voltage = 0.
+        turn = self.turn
         with timing.timed_region('serial:RFVCalc') as tr:
             with mpiprof.traced_region('serial:RFVCalc') as tr:
                 voltages = np.ascontiguousarray(rfp_voltage[:, turn])
@@ -358,8 +367,8 @@ class Worker:
 
     # @timing.timeit(key='comp:RFVCalc')
     def impedance_reduction(self):
-        self.bcast()
-        global turn
+        # self.bcast()
+        turn = self.turn
         with timing.timed_region('serial:imped_red') as tr:
             with mpiprof.traced_region('serial:imped_red') as tr:
                 for impRed in impedanceReduction:
@@ -371,9 +380,9 @@ class Worker:
         self.update()
 
     def beamFB(self):
-        self.bcast()
-        global turn, lhc_y, rfp_dphi_rf, rfp_omega_rf, rfp_phi_rf, machine, time_offset
-
+        # self.bcast()
+        global lhc_y, rfp_dphi_rf, rfp_omega_rf, rfp_phi_rf, machine, time_offset
+        turn = self.turn
         with timing.timed_region('serial:beamFB') as tr:
             with mpiprof.traced_region('serial:beamFB') as tr:
                 if machine == 'LHC':

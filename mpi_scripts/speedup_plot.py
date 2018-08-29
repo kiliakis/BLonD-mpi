@@ -85,7 +85,7 @@ plots_config = {
 
     'plot4': {
         'files': {
-            res_dir+'raw/LHC-96B-uint16-r1/comm-comp-report.csv': {
+            res_dir+'raw/LHC-96B-2MPPB-uint16-r1/comm-comp-report.csv': {
                 'lines': {
                     'omp': ['2', '5', '10', '20'],
                     'type': ['total']}
@@ -100,7 +100,7 @@ plots_config = {
             '10-total': 'hybrid-T10',
             '20-total': 'hybrid-T20'
         },
-        'reference': {'time': 8213., 'parts': 1000000, 'turns': 10000},
+        'reference': {'time': 200.7, 'parts': 2000000, 'turns': 100},
         # 'exclude': [['v1', 'notcm'], ['v2', 'notcm'], ['v4', 'notcm']],
         'ideal': '2-total',
         'x_name': 'n',
@@ -112,11 +112,44 @@ plots_config = {
         'title': '',
         # 'ylim': [0, 16000],
         'figsize': (6, 3),
-        'image_name': images_dir + 'LHC-96B-uint16-r1-speedup.pdf'
+        'image_name': images_dir + 'LHC-96B-2MPPB-uint16-r1-speedup.pdf'
 
     },
 
+    # 'plot4': {
+    #     'files': {
+    #         res_dir+'raw/LHC-96B-uint16-r1/comm-comp-report.csv': {
+    #             'lines': {
+    #                 'omp': ['2', '5', '10', '20'],
+    #                 'type': ['total']}
+    #         }
 
+    #     },
+    #     'labels': {
+    #         '1-total': 'hybrid-T1',
+    #         '2-total': 'hybrid-T2',
+    #         '4-total': 'hybrid-T4',
+    #         '5-total': 'hybrid-T5',
+    #         '10-total': 'hybrid-T10',
+    #         '20-total': 'hybrid-T20'
+    #     },
+    #     'reference': {'time': 200.71, 'parts': 2000000, 'turns': 100},
+    #     # 'reference': { 'time': 8213. , 'parts': 1000000, 'turns':10000},
+        
+    #     # 'exclude': [['v1', 'notcm'], ['v2', 'notcm'], ['v4', 'notcm']],
+    #     'ideal': '2-total',
+    #     'x_name': 'n',
+    #     'omp_name': 'omp',
+    #     'y_name': 'avg_time(sec)',
+    #     # 'y_err_name': 'std',
+    #     'xlabel': 'MPI Tasks/OMP Threads',
+    #     'ylabel': 'Speedup',
+    #     'title': '',
+    #     # 'ylim': [0, 16000],
+    #     'figsize': (6, 3),
+    #     'image_name': images_dir + 'LHC-96B-uint16-r1-speedup.pdf'
+
+    # },
 
 
     # 'plot3': {

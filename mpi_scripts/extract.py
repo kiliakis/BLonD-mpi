@@ -96,7 +96,7 @@ def aggregate_reports(input):
         if len(sdirs) == 0:
             continue
         files = [os.path.join(dirs, s, comm_comp_worker_fname) for s in sdirs]
-        print(files)
+        # print(files)
         write_avg(files, open(os.path.join(dirs, comm_comp_fname), 'w'))
 
         files = [os.path.join(dirs, s, average_worker_fname) for s in sdirs]

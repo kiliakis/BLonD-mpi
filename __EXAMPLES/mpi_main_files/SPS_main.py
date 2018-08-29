@@ -81,28 +81,28 @@ nFrev = 2  # multiples of f_rev for frequency resolution
 N_t_reduce = 1
 N_t_monitor = 0
 
-if args.get('turns', None):
+if args.get('turns', None) is not None:
     N_t = args['turns']
 
-if args.get('particles', None):
+if args.get('particles', None) is not None:
     n_macroparticles_pb = args['particles']
 
 if args.get('time', False) == True:
     timing.mode = 'timing'
 
-if args.get('omp', None):
+if args.get('omp', None) is not None:
     os.environ['OMP_NUM_THREADS'] = str(args['omp'])
 
-if args.get('bunches', None):
+if args.get('bunches', None) is not None:
     n_bunches = args['bunches']
 
-if args.get('reduce', None):
+if args.get('reduce', None) is not None:
     N_t_reduce = args['reduce']
 
-if args.get('monitor', None):
+if args.get('monitor', None) is not None:
     N_t_monitor = args['monitor']
 
-if args.get('seed', None):
+if args.get('seed', None) is not None:
     seed = args['seed']
 
 if 'log' in args:

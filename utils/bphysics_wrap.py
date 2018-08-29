@@ -46,14 +46,11 @@ def rf_volt_comp_mpi(voltages, omega_rf, phi_rf, ring):
     master = mpiconf.master
     # master.bcast('RFVCalc')
 
-    vars_dict = {
-        # 'voltages': voltages,
-        # 'omega_rf': omega_rf,
-        # 'phi_rf': phi_rf
-        'turn': ring.counter[0]
-    }
+    # vars_dict = {
+    #     'turn': ring.counter[0]
+    # }
 
-    master.multi_bcast(vars_dict, msg=False)
+    # master.multi_bcast(vars_dict, msg=False)
 
 
 def rf_volt_comp(voltages, omega_rf, phi_rf, ring):
@@ -98,7 +95,7 @@ def kick_mpi(ring, turn):
     #     omegarf_kick = np.ascontiguousarray(ring.omega_rf[:, turn])
     #     phirf_kick = np.ascontiguousarray(ring.phi_rf[:, turn])
 
-    master.multi_bcast({'turn': turn}, msg=False)
+    # master.multi_bcast({'turn': turn}, msg=False)
     # workercomm.Barrier()
 
 
@@ -129,7 +126,7 @@ def drift_mpi(ring, turn):
 
     master = mpiconf.master
     # master.bcast('drift')
-    master.multi_bcast({'turn': turn}, msg=False)
+    # master.multi_bcast({'turn': turn}, msg=False)
 
 
 def _drift(dt, dE, solver,
@@ -165,14 +162,7 @@ def LIKick_mpi(ring, turn):
     master = mpiconf.master
     # master.bcast('LIKick')
 
-    vars_dict = {
-        # 'total_voltage': ring.total_voltage,
-        # 'bin_centers': ring.profile.bin_centers,
-        # 'charge': ring.beam.Particle.charge,
-        'acc_kick': ring.acceleration_kick[turn]
-    }
-
-    master.multi_bcast(vars_dict, msg=False)
+    # master.multi_bcast({'acc_kick': ring.acceleration_kick[turn]}, msg=False)
 
 
 def _linear_interp_kick(dt, dE, total_voltage, bin_centers,
@@ -196,12 +186,12 @@ def LIKick_n_drift_mpi(ring, turn):
     from mpi4py import MPI
     master = mpiconf.master
 
-    vars_dict = {
-        'turn': turn,
-        'acc_kick': ring.acceleration_kick[turn]
-    }
+    # vars_dict = {
+    #     'turn': turn,
+    #     'acc_kick': ring.acceleration_kick[turn]
+    # }
 
-    master.multi_bcast(vars_dict, msg=False)
+    # master.multi_bcast(vars_dict, msg=False)
 
 
 def _LIKick_n_drift(dt, dE, total_voltage, bin_centers, charge, acc_kick,

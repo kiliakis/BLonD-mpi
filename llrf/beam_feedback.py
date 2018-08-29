@@ -212,7 +212,7 @@ class BeamFeedback(object):
         master = mpiconf.master
         # master.bcast('beamFB')
 
-        master.multi_bcast({'turn': int(self.rf_params.counter[0])}, msg=False)
+        # master.multi_bcast({'turn': int(self.rf_params.counter[0])}, msg=False)
 
         
         # Calculate PL correction on RF frequency    

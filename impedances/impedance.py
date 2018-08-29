@@ -106,7 +106,7 @@ class TotalInducedVoltage(object):
         import utils.mpi_config as mpiconf
         master = mpiconf.master
 
-        master.multi_bcast({'total_voltage': float(0.)}, msg=False)
+        # master.multi_bcast({'total_voltage': float(0.)}, msg=False)
 
     
         # for induced_voltage_object in self.induced_voltage_list:
