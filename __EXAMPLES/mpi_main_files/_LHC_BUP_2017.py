@@ -319,13 +319,17 @@ try:
     # Tracking --------------------------------------------------------------------
     for i in range(N_t):
 
+        task_list += ['LIKick_n_drift', 'beamFB', 'RFVCalc']
+
         if (i % N_t_reduce == 0):
-            task_list += ['induced_voltage_sum', 'histo', 'reduce_histo']
+            task_list += ['induced_voltage_sum']
 
         if (N_t_monitor > 0) and (i % N_t_monitor == 0):
             task_list += ['gather_single']
-
-        task_list += ['beamFB', 'RFVCalc', 'LIKick_n_drift']
+        
+        if (i % N_t_reduce == 0):
+            task_list += ['histo', 'reduce_histo']
+    
     master.bcast(task_list)
 
     # Tracking --------------------------------------------------------------------
@@ -343,17 +347,17 @@ try:
             noiseFB.bl_targ = 1.1e-9
 
         # totVoltage.induced_voltage_sum_and_histo()
-        if (i % N_t_reduce == 0):
-            totVoltage.induced_voltage_sum()
+        # if (i % N_t_reduce == 0):
+        #     totVoltage.induced_voltage_sum()
 
-        profile.track()
+        # profile.track()
 
         if (N_t_monitor > 0) and (i % N_t_monitor == 0):
             master.gather_single(
                 {'profile': profile.n_macroparticles}, msg=False)
             slicesMonitor.track(i)
 
-        tracker.track()
+        # tracker.track()
 
         # noiseFB.track()
 
