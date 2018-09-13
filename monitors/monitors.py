@@ -335,7 +335,7 @@ class SlicesMonitor(object):
         the slicing.
     '''
 
-    def __init__(self, filename, n_turns, profile):
+    def __init__(self, filename, n_turns, profile, Nbunches):
 
         self.h5file = hp.File(filename + '.h5', 'w')
         self.n_turns = n_turns
@@ -343,25 +343,29 @@ class SlicesMonitor(object):
         self.profile = profile
         self.h5file.create_group('Slices')
         self.h5group = self.h5file['Slices']
+        self.Nbunches = Nbunches
 
         self.create_data('n_macroparticles', self.h5file['Slices'],
-                         (self.n_turns, self.profile.n_slices), dtype='float32')
+                         (self.n_turns, self.profile.n_slices), dtype='int32')
+
         self.create_data(
             'turns', self.h5file['Slices'], (self.n_turns, ), dtype='int32')
 
         self.create_data(
-            'mean_dE', self.h5file['Slices'], (self.n_turns, ), dtype='float64')
+            'mean_dE', self.h5file['Slices'], (self.n_turns, self.Nbunches),
+            dtype='float64')
 
         self.create_data(
-            'mean_dt', self.h5file['Slices'], (self.n_turns, ), dtype='float64')
+            'mean_dt', self.h5file['Slices'], (self.n_turns, self.Nbunches),
+            dtype='float64')
 
         self.create_data(
-            'std_dE', self.h5file['Slices'], (self.n_turns, ), dtype='float64')
+            'std_dE', self.h5file['Slices'], (self.n_turns, self.Nbunches),
+            dtype='float64')
 
         self.create_data(
-            'std_dt', self.h5file['Slices'], (self.n_turns, ), dtype='float64')
-
-
+            'std_dt', self.h5file['Slices'], (self.n_turns, self.Nbunches),
+            dtype='float64')
 
     def track(self, turn):
 
@@ -372,14 +376,34 @@ class SlicesMonitor(object):
         #                                              self.profile.n_slices))
         #     self.write_data(self.profile, self.h5file['Slices'], self.i_turn)
         # else:
-        self.h5group['n_macroparticles'][self.i_turn] = self.profile.n_macroparticles
+        self.h5group['n_macroparticles'][self.i_turn] = \
+            self.profile.n_macroparticles.astype(np.int32)
+
         self.h5group['turns'][self.i_turn] = turn
 
-        self.h5group['mean_dE'][self.i_turn] = np.mean(self.profile.Beam.dE)
-        self.h5group['std_dE'][self.i_turn] = np.std(self.profile.Beam.dE)
-        self.h5group['mean_dt'][self.i_turn] = np.mean(self.profile.Beam.dt)
-        self.h5group['std_dt'][self.i_turn] = np.std(self.profile.Beam.dt)
+        Nppb = int(self.profile.Beam.n_macroparticles // self.Nbunches)
+        mean_dE = np.zeros(self.Nbunches, dtype=float)
+        mean_dt = np.zeros(self.Nbunches, dtype=float)
+        std_dE = np.zeros(self.Nbunches, dtype=float)
+        std_dt = np.zeros(self.Nbunches, dtype=float)
+        for i in range(self.Nbunches):
+            mean_dE[i] =  np.mean(self.profile.Beam.dE[i*Nppb:(i+1)*Nppb])
+            mean_dt[i] =  np.mean(self.profile.Beam.dt[i*Nppb:(i+1)*Nppb])
+            std_dE[i] =  np.std(self.profile.Beam.dE[i*Nppb:(i+1)*Nppb])
+            std_dt[i] =  np.std(self.profile.Beam.dt[i*Nppb:(i+1)*Nppb])
+            
+        self.h5group['mean_dE'][self.i_turn] = mean_dE
+        self.h5group['mean_dt'][self.i_turn] = mean_dt
+        self.h5group['std_dE'][self.i_turn] = std_dE
+        self.h5group['std_dt'][self.i_turn] = std_dt
 
+        #  self.h5group['std_dE'][self.i_turn][i] = np.std(
+        #      self.profile.Beam.dE[i*Nppb:(i+1)*Nppb])
+        #  self.h5group['mean_dt'][self.i_turn][i] = np.mean(
+        #      self.profile.Beam.dt[i*Nppb:(i+1)*Nppb])
+        #  self.h5group['std_dt'][self.i_turn][i] = np.std(
+        #      self.profile.Beam.dt[i*Nppb:(i+1)*Nppb])
+#  
         # self.write_data(self.profile, self.h5file['Slices'], self.i_turn)
         # self.write_data(turn, self.h5file['Slices'], self.i_turn)
 
@@ -387,7 +411,7 @@ class SlicesMonitor(object):
 
     def create_data(self, name, h5group, dims, dtype):
 
-        h5group.create_dataset(name, dims, compression="gzip",
+        h5group.create_dataset(name, dims, compression='gzip',
                                compression_opts=4, dtype=dtype, shuffle=True)
 
     # def write_data(self, name, h5group, i_turn):

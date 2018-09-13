@@ -2,6 +2,8 @@
 import matplotlib.pyplot as plt
 import numpy as np
 import os
+import matplotlib.lines as mlines
+import matplotlib.ticker
 
 from plot.plotting_utilities import *
 
@@ -93,12 +95,21 @@ plots_config = {
 
         },
         'labels': {
-            '1-total': 'hybrid-T1',
-            '2-total': 'hybrid-T2',
-            '4-total': 'hybrid-T4',
-            '5-total': 'hybrid-T5',
-            '10-total': 'hybrid-T10',
-            '20-total': 'hybrid-T20'
+            '1-total': '1C/T',
+            '2-total': '2C/T',
+            '4-total': '4C/T',
+            '5-total': '5C/T',
+            '10-total': '10C/T',
+            '20-total': '20C/T'
+        },
+        'markers': {
+            # '5-total': 'x',
+            '10-total': 's',
+            '20-total': 'o'
+        },
+        'colors': {
+            'speedup': 'tab:blue',
+            'efficiency': 'tab:red'
         },
         # 'reference': {'time': 200.7, 'parts': 2000000, 'turns': 100},
         'reference': {'time': 2120., 'parts': 2000000, 'turns': 1000},
@@ -110,12 +121,16 @@ plots_config = {
         'omp_name': 'omp',
         'y_name': 'avg_time(sec)',
         # 'y_err_name': 'std',
-        'xlabel': 'MPI Tasks/OMP Threads',
-        'ylabel': 'Speedup',
-        'title': '',
+        'xlabel': 'Cores',
+        'ylabel': ['Speedup', 'Efficiency'],
+        'title': 'Speedup-Efficiency graph',
+        'ylim': {
+            'speedup': [0, 120],
+            'efficiency': [50, 110]
+        },
         # 'ylim': [0, 16000],
         'figsize': (6, 3),
-        'image_name': images_dir + 'LHC-96B-2MPPB-uint16-nobcast-r1-speedup.pdf'
+        'image_name': images_dir + 'LHC-96B-2MPPB-uint16-nobcast-r1-speed-eff.pdf'
 
     },
 
@@ -236,15 +251,27 @@ if __name__ == '__main__':
                                        exclude=config['files'][file].get('exclude', [])))
         # print(plots_dir)
         fig = plt.figure(figsize=config['figsize'])
-        plt.grid(True, which='major', alpha=0.6)
-        plt.grid(True, which='minor', alpha=0.6, linestyle=':')
+        ax1 = fig.add_subplot(111)
+        ax2 = ax1.twinx()
+
+        plt.grid(True, which='major', alpha=1)
+        # plt.grid(True, which='minor', alpha=0.6, linestyle=':')
         # plt.minorticks_on()
         plt.title(config['title'])
-        plt.xlabel(config['xlabel'])
-        plt.ylabel(config['ylabel'])
+        ax1.set_title(config['title'])
+        ax1.set_xlabel(config['xlabel'])
+        ax1.set_ylabel(config['ylabel'][0],
+                       color=config['colors']['speedup'])
+        ax1.set_ylim(config['ylim']['speedup'])
+        # , size='12', weight='semibold')
+        ax2.set_ylabel(config['ylabel'][1],
+                       color=config['colors']['efficiency'])
+        # , size='12', weight='semibold')
+        ax2.set_ylim(config['ylim']['efficiency'])
+
         # plt.yscale('log', basex=2)
-        if 'ylim' in config:
-            plt.ylim(config['ylim'])
+        # if 'ylim' in config:
+        #     plt.ylim(config['ylim'])
 
         for key, values in plots_dir.items():
             # print(values)
@@ -252,9 +279,7 @@ if __name__ == '__main__':
             x = np.array(values[:, header.index(config['x_name'])], float)
             omp = np.array(
                 values[:, header.index(config['omp_name'])], float)
-            # sub 1 due to the master
-            if (plot_key != 'plot1'):
-                x = (x-1) * omp
+            x = (x-1) * omp
 
             y = np.array(values[:, header.index(config['y_name'])], float)
             parts = np.array(values[:, header.index('parts')], float)
@@ -270,48 +295,37 @@ if __name__ == '__main__':
 
             speedup = y / yref
 
+            efficiency = 100 * speedup / x
+
             # We want speedup, compared to 1 worker with 1 thread
-            plt.errorbar(x, speedup, yerr=None, label=label,
-                         capsize=2, marker='.', markersize=5, linewidth=1.5)
+            ax1.errorbar(x, speedup, yerr=None, color=config['colors']['speedup'],
+                         capsize=2, marker=config['markers'][key], markersize=4,
+                         linewidth=1.)
+
+            ax2.errorbar(x, efficiency, yerr=None, color=config['colors']['efficiency'],
+                         capsize=2, marker=config['markers'][key], markersize=4,
+                         linewidth=1.)
+
         if 'extra' in config:
             for c in config['extra']:
                 exec(c)
 
-        # if config.get('ideal', ''):
-        #     # Ideal line
-        #     ylims = plt.gca().get_ylim()
-        #     xlims = plt.gca().get_xlim()
+        nticks = 7
+        ax1.yaxis.set_major_locator(matplotlib.ticker.LinearLocator(nticks))
+        ax2.yaxis.set_major_locator(matplotlib.ticker.LinearLocator(nticks))
+        for tl in ax1.get_yticklabels():
+            tl.set_color(config['colors']['speedup'])
 
-        #     x0 = np.array(plots_dir[config['ideal']]
-        #                   [:, header.index(config['x_name'])], float)[0]
-        #     omp0 = np.array(plots_dir[config['ideal']]
-        #                     [:, header.index(config['omp_name'])], float)[0]
-        #     x0 = (x0-1) * omp0
-        #     y0 = float(plots_dir[config['ideal']]
-        #                [0, header.index(config['y_name'])])
-        #     print(x0)
-        #     print(y0)
+        for tl in ax2.get_yticklabels():
+            tl.set_color(config['colors']['efficiency'])
 
-        #     parts0 = float(plots_dir[config['ideal']]
-        #                    [0, header.index('parts')])
-        #     turns0 = float(plots_dir[config['ideal']]
-        #                    [0, header.index('turns')])
-        #     print(parts0)
-        #     print(turns0)
-        #     x = np.arange(x0, xlims[1], 1)
-        #     y = x * (parts0 * turns0) / (y0 * x0)
-        #     print(y)
-        #     plt.plot(x, y, color='black', linestyle='--', label='ideal')
-        #     plt.ylim(ylims)
+        handles = []
+        for k, v in config['markers'].items():
+            line = mlines.Line2D([], [], color='black',
+                                 marker=v, label=config['labels'][k])
+            handles.append(line)
 
-        # plt.yticks(np.linspace(ylims[0], ylims[1], 5))
-
-        # if plot_key == 'plot6':
-        #     plt.gca().get_lines()
-        #     for p in plt.gca().get_lines()[::3]:
-        #         annotate(plt.gca(), p.get_xdata(),
-        #                  p.get_ydata(), fontsize='8')
-        plt.legend(loc='best', fancybox=True, fontsize=9.5,
+        plt.legend(handles=handles, loc='lower right', fancybox=True, fontsize=9.5,
                    labelspacing=0, borderpad=0.5, framealpha=0.4,
                    handletextpad=0.5, handlelength=2, borderaxespad=0)
         plt.tight_layout()

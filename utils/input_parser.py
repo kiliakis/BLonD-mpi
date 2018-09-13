@@ -20,10 +20,11 @@ parser.add_argument('-reduce', '--reduce', type=int,
                     help='Number of turns to reduce.')
 
 
-parser.add_argument('-t', '--turns', type=int, default=2000,
-                    help='Number of simulation turns.'
-                    '\nDefault: 2000')
+parser.add_argument('-t', '--turns', type=int,
+                    help='Number of simulation turns.')
 
+parser.add_argument('-mtw', '--mtw', type=int,
+                    help='Number of simulation turns.')
 
 
 parser.add_argument('-o', '--omp', type=int, default=1,

@@ -27,21 +27,42 @@ configs = {
                                         'reduce': cycle([1]),
 
                                         'w': []
-                                        + list(np.arange(2, 17, 1))
-                                        + list(np.arange(2, 9, 1)),
+                                        # + list(np.arange(4, 17, 1))
+                                        # + list(np.arange(4, 9, 1)),
+                                        + list([3]),
+                                        # + list([7]),
 
                                         'o': []
-                                        + [10]*15
-                                        + [20]*7,
+                                        # + [10]*13
+                                        + [20]*1,
 
-                                        'time': cycle([60]),
+                                        'time': cycle([25]),
                                         'partition': cycle(['be-long'])
                                         }
 
 
+    # 'LHC-96B-4MPPB-uint16-nobcast-r1': {'p': cycle([4000000]),
+    #                                     'b': cycle([96]),
+    #                                     's': cycle([1000]),
+    #                                     't': cycle([10000]),
+    #                                     'reduce': cycle([1]),
+
+    #                                     'w': []
+    #                                     + list(np.arange(17, 25, 1))
+    #                                     + list(np.arange(9, 13, 1)),
+
+    #                                     'o': []
+    #                                     + [10]*8
+    #                                     + [20]*4,
+
+    #                                     'time': cycle([40]),
+    #                                     'partition': cycle(['be-long'])
+    #                                     }
+
+
 }
 
-repeats = 4
+repeats = 10
 
 
 total_sims = repeats * \
@@ -73,7 +94,7 @@ for analysis, config in configs.items():
         N = (w * o + 20-1) // 20
 
         job_name = job_name_form.format(analysis, p, b, s, t, w, o, N)
-        if(N < 5):
+        if(N < 13):
             partition = 'be-short'
             # continue
         else:

@@ -17,7 +17,7 @@ mpl.use('Agg')
 import sys
 
 
-REAL_RAMP = False    # track full ramp
+REAL_RAMP = True    # track full ramp
 MONITORING = False   # turn off plots and monitors
 
 
@@ -99,7 +99,7 @@ if args.get('omp', None) is not None:
 if 'log' in args:
     log = args['log']
 
-if args.get('time', False) == True:
+if args.get('time', False) is True:
     timing.mode = 'timing'
 
 if args.get('seed', None) is not None:
@@ -113,7 +113,7 @@ wrkDir = r'/afs/cern.ch/work/k/kiliakis/public/helga/'
 
 # Import pre-processed momentum and voltage for the acceleration ramp
 if REAL_RAMP:
-    ps = np.loadtxt(wrkDir+r'input/LHC_momentum_programme.dat',
+    ps = np.loadtxt(wrkDir+r'input/LHC_momentum_programme_6.5TeV.dat',
                     unpack=True)
     ps = np.ascontiguousarray(ps)
     ps = np.concatenate((ps, np.ones(436627)*6.5e12))
@@ -168,8 +168,13 @@ indVoltage = InducedVoltageFreq(
     beam, profile, [ZTable], frequency_resolution=4.e5)
 totVoltage = TotalInducedVoltage(beam, profile, [indVoltage])
 
+# tracker = RingAndRFTracker(rf, beam, BeamFeedback=None, Profile=profile,
+#                            interpolation=True, TotalInducedVoltage=totVoltage)
+
 tracker = RingAndRFTracker(rf, beam, BeamFeedback=None, Profile=profile,
-                           interpolation=True, TotalInducedVoltage=totVoltage)
+                           interpolation=False, TotalInducedVoltage=totVoltage)
+
+
 print("PL, SL, and tracker set...")
 # Fill beam distribution
 fullring = FullRingAndRF([tracker])
@@ -249,22 +254,24 @@ try:
     print("")
 
     task_list = []
-    for turn in range(N_t):
-        if (turn % N_t_reduce == 0):
-            task_list += ['induced_voltage_sum', 'histo', 'reduce_histo']
+    for i in range(N_t):
+        if (i % N_t_reduce == 0):
+            # task_list += ['induced_voltage_sum', 'histo', 'reduce_histo']
+            task_list += ['histo', 'reduce_histo']
 
-        if (N_t_monitor > 0) and (turn % N_t_monitor == 0):
+        if (N_t_monitor > 0) and (i % N_t_monitor == 0):
             task_list += ['gather_single']
+        task_list += ['kick', 'drift']
 
-        task_list += ['RFVCalc', 'LIKick_n_drift']
+        # task_list += ['RFVCalc', 'LIKick_n_drift']
 
     master.bcast(task_list)
 
     # Tracking --------------------------------------------------------------------
     for i in range(N_t):
-        if (turn % N_t_reduce == 0):
-            totVoltage.induced_voltage_sum()
-        
+        # if (i % N_t_reduce == 0):
+        #     totVoltage.induced_voltage_sum()
+
         profile.track()
 
         if (N_t_monitor > 0) and (i % N_t_monitor == 0):
@@ -293,7 +300,7 @@ timing.report(total_time=1e3*(end_t-start_t),
 print('dE mean: ', np.mean(beam.dE))
 print('dE std: ', np.std(beam.dE))
 
-# plot_long_phase_space(ring, rf, beam, 0, 2.5e-9, -500e6, 500e6,
+# plot_long_phase_space(ring, rf, beam, 24 * 25e-9, 2.5e-9 + 24 * 25e-9, -500e6, 500e6,
 #                       separatrix_plot=True)
 # plot_beam_profile(profile, 0)
 

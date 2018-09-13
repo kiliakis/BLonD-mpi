@@ -13,38 +13,38 @@ from cycler import cycle
 home = '/afs/cern.ch/work/k/kiliakis/git/BLonD-mpi'
 eos = '/eos/user/k/kiliakis'
 # home = os.environ['HOME'] + '/git/BLonD-kiliakis'
-result_dir = eos + '/profiles/LHC/raw/{}/{}/{}'
+result_dir = eos + '/profiles/SPS/raw/{}/{}/{}'
 
-exe = home + '/__EXAMPLES/mpi_main_files/LHC_test.py'
+exe = home + '/__EXAMPLES/mpi_main_files/SPS_main_random.py'
 # batch_script = home + '/mpi/batch-simple.sh'
 # setup_script = home + '/mpi/batch-setup.sh'
 job_name_form = '_p{}_s{}_t{}_w{}_m{}_b{}_r{}_o{}_N{}'
 
 configs = {
 
-    'acc_no_indvolt': {'p': cycle([1000000]),
-                       # 's': cycle([144]),
-                       't': cycle([5000]),
-                       'w': cycle([2]),
-                       'm': cycle([1]),
-                       'b': []
-                       + [1]*6
-                       + [12]*6
-                       + [48]*6,
-                       's': []
-                       + [0, 1, 2] + [0, 0, 0]
-                       + [0, 1, 2] + [0, 0, 0]
-                       + [0, 1, 2] + [0, 0, 0],
-                       'r': []
-                       + [1, 1, 1] + [2, 3, 50]
-                       + [1, 1, 1] + [2, 3, 50]
-                       + [1, 1, 1] + [2, 3, 50],
-                       # 'w': np.arange(1, 2, 1),
-                       'o': cycle([4]),
-                       'N': cycle([1]),
-                       'time': cycle([60]),
-                       'partition': cycle(['be-short'])
-                       }
+    'acc_indvolt': {'p': cycle([1000000]),
+                    # 's': cycle([144]),
+                    't': cycle([5000]),
+                    'w': cycle([2]),
+                    'm': cycle([1]),
+                    'b': []
+                    + [1]*5
+                    + [24]*5,
+                    # + [72]*5,
+                    's': []
+                    + [0, 1, 2] + [0, 0]
+                    + [0, 1, 2] + [0, 0],
+                    # + [0, 1, 2] + [0, 0],
+                    'r': []
+                    + [1, 1, 1] + [2, 3]
+                    + [1, 1, 1] + [2, 3],
+                    # + [1, 1, 1] + [2, 3],
+                    # 'w': np.arange(1, 2, 1),
+                    'o': cycle([3]),
+                    'N': cycle([1]),
+                    'time': cycle([60]),
+                    'partition': cycle(['be-short'])
+                    }
 
 }
 

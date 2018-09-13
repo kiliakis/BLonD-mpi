@@ -14,3 +14,5 @@
 *.clog*
 *.slog*
 *.pdf
+*.txt
+*.out
