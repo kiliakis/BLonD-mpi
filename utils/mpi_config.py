@@ -62,7 +62,7 @@ def init(trace=False, logfile='mpe-trace'):
 
 class Master:
     # @timing.timeit(key='master:init')
-    def __init__(self, log=None):
+    def __init__(self, log=None, add_load=0.1):
         global master
 
         self.vars = {}
@@ -89,7 +89,8 @@ class Master:
         self.intercomm.bcast(self.hostname, root=MPI.ROOT)
         self.neighbors = np.empty(self.workers, dtype=int)
         self.intercomm.Gather(self.neighbors, self.neighbors, root=MPI.ROOT)
-        self.weights = (1. + self.neighbors) / np.sum(1. + self.neighbors)
+        self.weights = (1. + self.neighbors*add_load) / \
+            np.sum(1. + self.neighbors*add_load)
 
     @timing.timeit(key='master:multi_scatter')
     # @mpiprof.traceit(key='multi_scatter')
@@ -135,8 +136,8 @@ class Master:
             # counts = np.array([basesize+1]*plusone + [basesize] *
             #                   (self.workers-plusone), dtype='i')
 
-            counts = np.array(self.weights * len(val), dtype='i')
-            counts[-1] = len(val) - np.sum(counts[:-1])
+            counts = np.array(self.weights * len(v), dtype='i')
+            counts[-1] = len(v) - np.sum(counts[:-1])
 
             displs = np.append([0], np.cumsum(counts[:-1]))
 
@@ -160,8 +161,8 @@ class Master:
             # counts = np.array([basesize+1]*plusone + [basesize] *
             #                   (self.workers-plusone), dtype='i')
 
-            counts = np.array(self.weights * len(val), dtype='i')
-            counts[-1] = len(val) - np.sum(counts[:-1])
+            counts = np.array(self.weights * len(v), dtype='i')
+            counts[-1] = len(v) - np.sum(counts[:-1])
 
             displs = np.append([0], np.cumsum(counts[:-1]))
 

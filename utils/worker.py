@@ -298,7 +298,7 @@ class Worker:
             if 'type' not in imped:
                 induced_voltage, beam_spectrum = self.inducedVoltage1Turn(
                     imped, beam_spectrum)
-            if imped['type'] == 'inductive':
+            elif imped['type'] == 'inductive':
                 induced_voltage = self.inducedVoltageInductive(imped)
             elif imped['type'] == 'mtw':
                 induced_voltage, beam_spectrum = self.inducedVoltageMTW(
