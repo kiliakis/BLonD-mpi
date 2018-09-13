@@ -1,6 +1,6 @@
-import matplotlib.pyplot as plt
+# import matplotlib.pyplot as plt
+# from matplotlib import gridspec
 import numpy as np
-from matplotlib import gridspec
 import h5py
 import argparse
 import sys
@@ -10,155 +10,194 @@ parser = argparse.ArgumentParser(
     description='Calculate the error in the histogram.')
 
 
-parser.add_argument('-a', '--approx', type=str, nargs='+',
-                    help='Approximate file names.')
+parser.add_argument('-i', '--indir', type=str, default=None,
+                    help='Directory with the input raw files.')
+
+# parser.add_argument('-a', '--approx', type=str, nargs='+',
+#                     help='Approximate file names.')
 
 parser.add_argument('-o', '--outfile', type=str, default=None,
                     help='File to store the results.')
 
-parser.add_argument('-b', '--base', type=str, nargs='+',
-                    help='Base file names')
+# parser.add_argument('-b', '--base', type=str, nargs='+',
+#                     help='Base file names')
 
-parser.add_argument('-t', '--ts', type=int, default=100,
+parser.add_argument('-t', '--ts', type=int, default=[1, 100], nargs='+',
                     help='Qs^(-1)')
 
+# parser.add_argument('-q', '--quantities', type=str, default=[], nargs='+',
+#                     help='The quantities for which the error will be computed.')
 
-data = {}
+quantities = ['n_macroparticles', 'mean_dE', 'mean_dt', 'std_dt', 'std_dE']
 
 
-def calc_error(f1, f2):
+def calc_error(f1, f2, ts):
+    f1 = h5py.File(f1, 'r')
+    f2 = h5py.File(f2, 'r')
 
-    if f1 in data:
-        f1data = data[f1]
-    else:
-        f1 = h5py.File(f1, 'r')
-        f1data = f1['Slices']['n_macroparticles'].value
+    errors = {}
 
-    if f2 in data:
-        f2data = data[f2]
-    else:
-        f2 = h5py.File(f2, 'r')
-        f2data = f2['Slices']['n_macroparticles'].value
+    for key in quantities:
 
-    errors = np.empty(len(f1data)-ts, dtype=float)
-    f1sum = np.sum(f1data[0:ts-1], axis=0)
-    f2sum = np.sum(f2data[0:ts-1], axis=0)
-    for i in range(len(f1data)-ts):
-        f1sum += f1data[ts-1]
-        f2sum += f2data[ts-1]
-        errors[i] = np.sum((f1sum/ts - f2sum/ts)**2)
-        f1sum -= f1data[i]
-        f2sum -= f2data[i]
+        f1data = f1['Slices'][key].value
+        f2data = f2['Slices'][key].value
 
-        # errors[i] = np.sum((np.sum(f1data[i:i+ts], axis=0) / ts
-        #                     - np.sum(f2data[i:i+ts], axis=0)/ts)**2)
+        errors[key] = np.empty(len(f1data)-ts, dtype=float)
+        f1sum = np.sum(f1data[0:ts-1], axis=0)
+        f2sum = np.sum(f2data[0:ts-1], axis=0)
+        for i in range(len(f1data)-ts):
+            f1sum += f1data[ts-1]
+            f2sum += f2data[ts-1]
+            errors[key][i] = np.sum((f1sum/ts - f2sum/ts)**2)
+            f1sum -= f1data[i]
+            f2sum -= f2data[i]
 
-    if f1 not in data:
-        # data[f1] = f1data
-        f1.close()
-
-    if f2 not in data:
-        # data[f2] = f1data
-        f2.close()
+            # errors[i] = np.sum((np.sum(f1data[i:i+ts], axis=0) / ts
+            #                     - np.sum(f2data[i:i+ts], axis=0)/ts)**2)
+    f1.close()
+    f2.close()
 
     return errors
 
 
 def getDim(file):
-    if file in data:
-        return len(data[file])
-    else:
-        h5file = h5py.File(file, 'r')
-        h5data = h5file['Slices']['n_macroparticles'].value
-        data[file] = h5data
-        h5file.close()
-        return len(h5data)-ts
+    h5file = h5py.File(file, 'r')
+    length = h5file['Slices']['n_macroparticles'].len()
+    h5file.close()
+    return length
+
+
+def calc_and_write(indir, basefiles, approxfiles, reffile, bunch, ts, outh5):
+    errors = {}
+    # idx = 0
+    for i in range(len(basefiles)):
+        bf1 = basefiles[i]
+        seed1 = int(bf1.split('_s')[1].split('_t')[0])
+        for j in range(i+1, len(basefiles)):
+            bf2 = basefiles[j]
+            seed2 = int(bf2.split('_s')[1].split('_t')[0])
+            # print('\n------------------------')
+            print('Calculating the error between the basefiles with ' +
+                  'seeds {} and {}'.format(seed1, seed2))
+            err = calc_error(indir + '/' + bf1, indir + '/' + bf2, ts)
+            for key in err.keys():
+                outh5[key][calc_and_write.idx] = err[key]
+                if key not in errors:
+                    errors[key] = []
+                errors[key].append(err[key])
+            outh5['seeds'][calc_and_write.idx] = [seed1, seed2]
+            outh5['reduce'][calc_and_write.idx] = [1, 1]
+
+            calc_and_write.idx += 1
+
+            # print('The error is: {}'.format(errors[-1]))
+    # avg_base_error = np.mean(errors, axis=0)
+    avg_base_error = {}
+    for key in errors.keys():
+        avg_base_error[key] = np.mean(errors[key], axis=0)
+
+    # std_base_error = np.std(errors, axis=0)
+
+    for approxfile in approxfiles:
+        seed = int(approxfile.split('_s')[1].split('_t')[0])
+        red = int(approxfile.split('_r')[1].split('.h5')[0])
+        print('Calculating the error between the files with ' +
+              'reduce {} and {}'.format(red, 1))
+
+        err = calc_error(indir + '/' + approxfile,
+                         indir + '/' + reffile, ts)
+        for key in err.keys():
+            outh5[key][calc_and_write.idx] = err[key]
+            # err[key] = err[key] / avg_base_error[key]
+            print('{} error for approxfile {} is :{}'.format(
+                key, approxfile, err[key] / avg_base_error[key]))
+        # outh5['errors'][calc_and_write.idx] = err
+        outh5['seeds'][calc_and_write.idx] = [seed, seed]
+        outh5['reduce'][calc_and_write.idx] = [1, red]
+        calc_and_write.idx += 1
+
+
+# calc_and_write.idx = 0
 
 
 if __name__ == '__main__':
     args = parser.parse_args()
     args = vars(args)
 
-    basefiles = args['base']
-    approxfiles = args['approx']
     outfile = args['outfile']
-    ts = args['ts']
+    tss = args['ts']
+    indir = args['indir']
+    # all these per bunch
+    # basefiles: files with reduce == 1
+    # approxfiles: files with reduce != 1
+    # reference file: reduce == 1 and same seed as the approxfiles
 
-    # if not os.path.exists(outfile):
-    #     os.makedirs(outfile)
+    infiles_d = {}
+    for file in os.listdir(indir):
+        # print(file)
+        bunches = file.split('_b')[1].split('_r')[0]
+        red = file.split('_r')[1].split('.h5')[0]
+        if bunches not in infiles_d:
+            infiles_d[bunches] = {'basefiles': [],
+                                  'approxfiles': [],
+                                  'reffile': '',
+                                  'approxseed': '0'}
+        if red == '1':
+            infiles_d[bunches]['basefiles'].append(file)
+        else:
+            infiles_d[bunches]['approxfiles'].append(file)
+            infiles_d[bunches]['approxseed'] = file.split('_s')[
+                1].split('_t')[0]
 
-    dims = ((len(basefiles) * (len(basefiles)-1)) // 2
-            + len(approxfiles), getDim(basefiles[0]))
+    for file in os.listdir(indir):
+        bunches = file.split('_b')[1].split('_r')[0]
+        seed = file.split('_s')[1].split('_t')[0]
+        red = file.split('_r')[1].split('.h5')[0]
+        if seed == infiles_d[bunches]['approxseed'] and red == '1':
+            infiles_d[bunches]['reffile'] = file
 
-    outh5file = h5py.File(outfile + '.h5', 'w')
-    outh5file.create_group('default')
-    outh5 = outh5file['default']
+    for ts in tss:
+        filename = outfile + '/ts' + str(ts) + '.h5'
+        if not os.path.exists(os.path.dirname(filename)):
+            os.makedirs(os.path.dirname(filename))
 
-    outh5.create_dataset('errors', dims, compression='gzip',
-                         compression_opts=9, dtype='float64')
+        outh5file = h5py.File(filename, 'w')
+        for bunch, data in infiles_d.items():
+            calc_and_write.idx = 0
+            datasets = len(data['basefiles']) * \
+                (len(data['basefiles'])-1) // 2 + len(data['approxfiles'])
+            print('Ts: {}, Bunches: {}'.format(ts, bunch))
 
-    outh5.create_dataset('seeds', (dims[0], 2), compression='gzip',
-                         compression_opts=9, dtype='int32')
+            turns = getDim(indir + '/' + data['reffile'])
+            outh5file.create_group('bunch_{}'.format(bunch))
+            outh5 = outh5file['bunch_{}'.format(bunch)]
 
-    outh5.create_dataset('reduce', (dims[0], 2), compression='gzip',
-                         compression_opts=9, dtype='int32')
+            outh5.create_dataset('n_macroparticles', (datasets, turns - ts),
+                                 compression='gzip', compression_opts=4,
+                                 dtype='float64')
 
-    # outh5.create_dataset('average_base_error', (dims[0],) , compression='gzip',
-    #                      compression_opts=9, dtype='float64')
+            outh5.create_dataset('mean_dE', (datasets, turns - ts),
+                                 compression='gzip', compression_opts=4,
+                                 dtype='float64')
 
-    # outh5.create_dataset('average_base_error', (dims[0],) , compression='gzip',
-    #                      compression_opts=9, dtype='float64')
+            outh5.create_dataset('mean_dt', (datasets, turns - ts),
+                                 compression='gzip', compression_opts=4,
+                                 dtype='float64')
 
+            outh5.create_dataset('std_dE', (datasets, turns - ts),
+                                 compression='gzip', compression_opts=4,
+                                 dtype='float64')
+            outh5.create_dataset('std_dt', (datasets, turns - ts),
+                                 compression='gzip', compression_opts=4,
+                                 dtype='float64')
 
-    errors = []
-    k = 0
-    for i in range(len(basefiles)):
-        bf1 = basefiles[i]
-        seed1 = int(bf1.split('-se')[1].split('.h5')[0])
-        for j in range(i+1, len(basefiles)):
-            bf2 = basefiles[j]
-            seed2 = int(bf2.split('-se')[1].split('.h5')[0])
-            print('\n------------------------')
-            print('Calculating the error between the basefiles with seeds {} and {}'.format(
-                seed1, seed2))
-            err = calc_error(bf1, bf2)
-            outh5['errors'][k] = err
-            outh5['seeds'][k] = [seed1, seed2]
-            outh5['reduce'][k] = [1, 1]
-            errors.append(err)
-            k += 1
+            outh5.create_dataset('seeds', (datasets, 2), compression='gzip',
+                                 compression_opts=4, dtype='int32')
 
-            # print('The error is: {}'.format(errors[-1]))
-    avg_base_error = np.mean(errors, axis=0)
+            outh5.create_dataset('reduce', (datasets, 2), compression='gzip',
+                                 compression_opts=4, dtype='int32')
 
-    std_base_error = np.std(errors, axis=0)
+            calc_and_write(indir, data['basefiles'], data['approxfiles'],
+                           data['reffile'], bunch, ts, outh5)
 
-    seed = int(approxfiles[0].split('-se')[1].split('.h5')[0])
-
-    todelete = []
-    for key in data:
-        if('se{}.h5'.format(seed) not in key):
-            todelete.append(key)
-
-    for key in todelete:
-        del data[key]
-
-
-    for approxfile in approxfiles:
-        seed = int(approxfile.split('-se')[1].split('.h5')[0])
-        red = int(approxfile.split('-r')[1].split('-')[0])
-        for file in basefiles:
-            if('se{}.h5'.format(seed) in file):
-                bf = file
-
-        err = calc_error(approxfile, bf)
-
-        outh5['errors'][k] = err
-        outh5['seeds'][k] = [seed, seed]
-        outh5['reduce'][k] = [1, red]
-        k += 1
-        err = err / avg_base_error
-
-        print('Total error is for approxfile {} is :\n'.format(approxfile), err)
-
-    outh5file.close()
+        outh5file.close()

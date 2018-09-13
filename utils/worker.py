@@ -34,6 +34,7 @@ def c_add_uint16(xmem, ymem, dt):
 
 add_op_uint16 = MPI.Op.Create(c_add_uint16, commute=True)
 
+
 class Worker:
 
     def __init__(self, log=None):
@@ -169,8 +170,8 @@ class Worker:
     def kick(self):
         # self.bcast()
         turn = self.turn
-        with timing.timed_region('comp:kick') as tr:
-            with mpiprof.traced_region('comp:kick') as tr:
+        with timing.timed_region('comp:kick'):
+            with mpiprof.traced_region('comp:kick'):
                 voltage = np.ascontiguousarray(charge * rfp_voltage[:, turn])
                 omegarf = np.ascontiguousarray(rfp_omega_rf[:, turn])
                 phirf = np.ascontiguousarray(rfp_phi_rf[:, turn])
@@ -183,8 +184,8 @@ class Worker:
     def drift(self):
         # self.bcast()
         turn = self.turn + 1
-        with timing.timed_region('comp:drift') as tr:
-            with mpiprof.traced_region('comp:drift') as tr:
+        with timing.timed_region('comp:drift'):
+            with mpiprof.traced_region('comp:drift'):
                 bph._drift(dt, dE, solver, tracker_t_rev[turn],
                            length_ratio, alpha_order,
                            tracker_eta_0[turn], tracker_eta_1[turn],
@@ -198,8 +199,8 @@ class Worker:
         # self.bcast()
         global profile
 
-        with timing.timed_region('comp:histo') as tr:
-            with mpiprof.traced_region('comp:histo') as tr:
+        with timing.timed_region('comp:histo'):
+            with mpiprof.traced_region('comp:histo'):
                 profile = np.empty(n_slices, dtype='d')
                 bph._slice(dt, profile, cut_left, cut_right)
         # Or even better, allreduce it
@@ -210,37 +211,36 @@ class Worker:
     # def reduce_histo(self):
 
     #     global profile
-    #     with timing.timed_region('comm:conversions') as tr:
-    #         with mpiprof.traced_region('comm:conversions') as tr:
+    #     with timing.timed_region('comm:conversions'):
+    #         with mpiprof.traced_region('comm:conversions'):
     #             profile = profile.astype(np.int32, order='C')
 
-    #     with timing.timed_region('comm:histo_reduce') as tr:
-    #         with mpiprof.traced_region('comm:histo_reduce') as tr:
+    #     with timing.timed_region('comm:histo_reduce'):
+    #         with mpiprof.traced_region('comm:histo_reduce'):
     #             self.intracomm.Allreduce(MPI.IN_PLACE, profile, op=add_op)
     #             # self.intracomm.Allreduce(MPI.IN_PLACE, profile, op=MPI.SUM)
 
-    #     with timing.timed_region('comm:conversions') as tr:
-    #         with mpiprof.traced_region('comm:conversions') as tr:
+    #     with timing.timed_region('comm:conversions'):
+    #         with mpiprof.traced_region('comm:conversions'):
     #             profile = profile.astype(np.float64, order='C')
 
     #     self.update()
 
-
-
     def reduce_histo(self):
 
         global profile
-        with timing.timed_region('comm:conversions') as tr:
-            with mpiprof.traced_region('comm:conversions') as tr:
+        with timing.timed_region('comm:conversions'):
+            with mpiprof.traced_region('comm:conversions'):
                 profile = profile.astype(np.uint16, order='C')
 
-        with timing.timed_region('comm:histo_reduce') as tr:
-            with mpiprof.traced_region('comm:histo_reduce') as tr:
-                self.intracomm.Allreduce(MPI.IN_PLACE, profile, op=add_op_uint16)
+        with timing.timed_region('comm:histo_reduce'):
+            with mpiprof.traced_region('comm:histo_reduce'):
+                self.intracomm.Allreduce(
+                    MPI.IN_PLACE, profile, op=add_op_uint16)
                 # self.intracomm.Allreduce(MPI.IN_PLACE, profile, op=MPI.SUM)
 
-        with timing.timed_region('comm:conversions') as tr:
-            with mpiprof.traced_region('comm:conversions') as tr:
+        with timing.timed_region('comm:conversions'):
+            with mpiprof.traced_region('comm:conversions'):
                 profile = profile.astype(np.float64, order='C')
 
         self.update()
@@ -252,31 +252,60 @@ class Worker:
         profile *= self.workers
         # self.intracomm.Allreduce(MPI.IN_PLACE, profile, op=MPI.SUM)
 
+    # def induced_voltage_sum(self):
+    #     # for any per-turn updated variables
+    #     global induced_voltage
+    #     # self.bcast()
+    #     temp_induced_voltage = 0
+    #     beam_spectrum = None
+    #     min_idx = n_slices
+
+    #     with timing.timed_region('serial:indVoltSum'):
+    #         with mpiprof.traced_region('serial:indVoltSum'):
+    #             for imped in impedList.values():
+    #                 # Beam_spectrum_generation
+    #                 if beam_spectrum is None:
+    #                     beam_spectrum = bm.rfft(profile, imped['n_fft'])
+
+    #                 induced_voltage = - (charge * e * beam_ratio *
+    #                                      bm.irfft(imped['total_impedance'] * beam_spectrum))
+    #                 # induced_voltage = induced_voltage[:imped['n_induced_voltage']]
+    #                 min_idx = min(imped['n_induced_voltage'], min_idx)
+    #                 temp_induced_voltage += induced_voltage[:min_idx]
+
+    #     induced_voltage = temp_induced_voltage
+    #     self.update()
+
     def induced_voltage_sum(self):
         # for any per-turn updated variables
-        global induced_voltage
-        # self.bcast()
+        global induced_voltage, n_slices, profile, beam_ration, charge, \
+            impedList, induced_voltage
+
         temp_induced_voltage = 0
         beam_spectrum = None
         min_idx = n_slices
 
-        with timing.timed_region('serial:indVoltSum') as tr:
-            with mpiprof.traced_region('serial:indVoltSum') as tr:
-                for imped in impedList.values():
-                    # Beam_spectrum_generation
-                    if beam_spectrum is None:
-                        beam_spectrum = bm.rfft(profile, imped['n_fft'])
+        for imped in impedList.values():
+            # Beam_spectrum_generation
+            if 'type' not in imped:
+                induced_voltage, beam_spectrum = self.inducedVoltage1Turn(
+                    imped, beam_spectrum)
+            if imped['type'] == 'inductive':
+                induced_voltage = self.inducedVoltageInductive(imped)
+            elif imped['type'] == 'mtw':
+                induced_voltage = self.inducedVoltageMTW(imped)
+            else:
+                self.logger.debug(
+                    'Unrecognized impedance type: {}'.format(imped['type']))
+                raise RuntimeError('Unrecognized impedance type.')
 
-                    induced_voltage = - (charge * e * beam_ratio *
-                                         bm.irfft(imped['total_impedance'] * beam_spectrum))
-                    # induced_voltage = induced_voltage[:imped['n_induced_voltage']]
+            with timing.timed_region('serial:indVoltSum'):
+                with mpiprof.traced_region('serial:indVoltSum'):
                     min_idx = min(imped['n_induced_voltage'], min_idx)
                     temp_induced_voltage += induced_voltage[:min_idx]
 
         induced_voltage = temp_induced_voltage
         self.update()
-
-
 
     def induced_voltage_sum_packed(self):
         # for any per-turn updated variables
@@ -286,36 +315,97 @@ class Worker:
         induced_voltage = []
         min_idx = n_slices
 
-        with timing.timed_region('serial:indVoltSum') as tr:
-            with mpiprof.traced_region('serial:indVoltSum') as tr:
+        with timing.timed_region('serial:indVoltSum'):
+            with mpiprof.traced_region('serial:indVoltSum'):
                 for imped in impedList.values():
                     # Beam_spectrum_generation
                     if beam_spectrum is None:
-                        #  with timing.timed_region('serial:indVoltRfft') as tr:
+                        #  with timing.timed_region('serial:indVoltRfft'):
                         beam_spectrum = bm.rfft(profile, imped['n_fft'])
-                    
-                    #  with timing.timed_region('serial:indVoltMul1') as tr:
-                    induced_voltage.append(bm.mul(imped['total_impedance'], beam_spectrum))
+
+                    #  with timing.timed_region('serial:indVoltMul1'):
+                    induced_voltage.append(
+                        bm.mul(imped['total_impedance'], beam_spectrum))
                     min_idx = min(imped['n_induced_voltage'], min_idx)
 
-                #  with timing.timed_region('serial:indVoltIrfft') as tr:
+                #  with timing.timed_region('serial:indVoltIrfft'):
                 induced_voltage = bm.irfft_packed(induced_voltage)[:, :min_idx]
-                #  with timing.timed_region('serial:indVoltMul2') as tr:
+                #  with timing.timed_region('serial:indVoltMul2'):
                 induced_voltage = -charge * e * beam_ratio * induced_voltage
-                    # for i in range(len(induced_voltage)):
-                    #     induced_voltage[i] = bm.mul(induced_voltage[i], -charge * e * beam_ratio)
-                #  with timing.timed_region('serial:indVoltAcc') as tr:
+                # for i in range(len(induced_voltage)):
+                #     induced_voltage[i] = bm.mul(induced_voltage[i], -charge * e * beam_ratio)
+                #  with timing.timed_region('serial:indVoltAcc'):
                 induced_voltage = np.sum(induced_voltage, axis=0)
 
         self.update()
+
+    def inducedVoltageMTW(self, imped):
+
+        global tracker_t_rev
+        turn = self.turn
+
+        if imped['mtw_mode'] == 'time':
+            with timing.timed_region('serial:indVoltMTW'):
+                with mpiprof.traced_region('serial:indVoltMTW'):
+                    imped['mtw_memory'] = np.interp(imped['time_mtw'] + tracker_t_rev[turn],
+                                                    imped['time_mtw'],
+                                                    imped['mtw_memory'],
+                                                    left=0, right=0)
+
+            induced_voltage = self.induced_voltage_1turn()
+            with timing.timed_region('serial:indVoltMTW'):
+                with mpiprof.traced_region('serial:indVoltMTW'):
+                    induced_voltage[imped['n_induced_voltage'] -
+                                    imped['front_wake_buffer']:] = 0
+                    imped['mtw_memory'][:imped['n_induced_voltage']] += \
+                        induced_voltage
+                    induced_voltage = imped['mtw_memory'][:imped['n_induced_voltage']]
+            return induced_voltage
+
+        elif imped['mtw_mode'] == 'freq':
+            self.logger.debug('The freq mtw mode is not yet implemented.')
+            raise RuntimeError('The freq mtw mode is not yet implemented.')
+        else:
+            self.logger.debug(
+                'Unrecognized mtw mode: {}'.format(imped['mtw_mode']))
+            raise RuntimeError('Unrecognized mtw mode.')
+
+    def inducedVoltageInductive(self, imped):
+        global charge, beam_ratio, Z_over_n, tracker_t_rev, bin_size, deriv_mode
+        turn = self.turn
+        with timing.timed_region('serial:indVoltInductive'):
+            with mpiprof.traced_region('serial:indVoltInductive'):
+                induced_voltage = - (charge * e / (2 * np.pi) *
+                                     beam_ratio * imped['Z_over_n'][turn] *
+                                     tracker_t_rev[turn] / bin_size *
+                                     self.beam_profile_derivative(imped['deriv_mode'])[1])
+
+        # self.induced_voltage = induced_voltage[:self.n_induced_voltage]
+        return induced_voltage
+
+    def inducedVoltage1Turn(self, imped, beam_spectrum=None):
+        # for any per-turn updated variables
+        global induced_voltage, n_slices, profile, beam_ration, charge, \
+            impedList, induced_voltage
+        # self.bcast()
+
+        with timing.timed_region('serial:indVolt1Turn'):
+            with mpiprof.traced_region('serial:indVolt1Turn'):
+                if beam_spectrum is None:
+                    beam_spectrum = bm.rfft(profile, imped['n_fft'])
+
+                induced_voltage = - (charge * e * beam_ratio *
+                                     bm.irfft(imped['total_impedance'] *
+                                              beam_spectrum))
+        return induced_voltage, beam_spectrum
 
     # @timing.timeit(key='comp:LIKick')
     # @mpiprof.traceit(key='LIKick')
     def LIKick(self):
         # self.bcast()
         turn = self.turn
-        with timing.timed_region('comp:LIKick') as tr:
-            with mpiprof.traced_region('comp:LIKick') as tr:
+        with timing.timed_region('comp:LIKick'):
+            with mpiprof.traced_region('comp:LIKick'):
                 bph._linear_interp_kick(dt, dE, total_voltage, bin_centers,
                                         charge, tracker_acc_kick[turn])
         self.update()
@@ -324,8 +414,8 @@ class Worker:
         # self.bcast()
         # global acc_kick
         turn = self.turn
-        with timing.timed_region('comp:LIKick_n_drift') as tr:
-            with mpiprof.traced_region('comp:LIKick_n_drift') as tr:
+        with timing.timed_region('comp:LIKick_n_drift'):
+            with mpiprof.traced_region('comp:LIKick_n_drift'):
                 bph._LIKick_n_drift(dt, dE, total_voltage, bin_centers,
                                     charge, tracker_acc_kick[turn], solver,
                                     tracker_t_rev[turn], length_ratio,
@@ -333,15 +423,14 @@ class Worker:
                                     tracker_eta_1[turn], tracker_eta_2[turn],
                                     rfp_beta[turn], rfp_energy[turn])
         # update the turn
-        self.turn +=1
+        self.turn += 1
         self.update()
-
 
     # @timing.timeit(key='comp:SR')
     def SR(self):
         self.bcast()
-        with timing.timed_region('comp:SR') as tr:
-            with mpiprof.traced_region('comp:SR') as tr:
+        with timing.timed_region('comp:SR'):
+            with mpiprof.traced_region('comp:SR'):
                 bph._sync_rad_full(dE, U0, tau_z, n_kicks, sigma_dE, energy)
         self.update()
 
@@ -352,8 +441,8 @@ class Worker:
         global total_voltage, induced_voltage
         total_voltage = 0.
         turn = self.turn
-        with timing.timed_region('serial:RFVCalc') as tr:
-            with mpiprof.traced_region('serial:RFVCalc') as tr:
+        with timing.timed_region('serial:RFVCalc'):
+            with mpiprof.traced_region('serial:RFVCalc'):
                 voltages = np.ascontiguousarray(rfp_voltage[:, turn])
                 omega_rf = np.ascontiguousarray(rfp_omega_rf[:, turn])
                 phi_rf = np.ascontiguousarray(rfp_phi_rf[:, turn])
@@ -369,8 +458,8 @@ class Worker:
     def impedance_reduction(self):
         # self.bcast()
         turn = self.turn
-        with timing.timed_region('serial:imped_red') as tr:
-            with mpiprof.traced_region('serial:imped_red') as tr:
+        with timing.timed_region('serial:imped_red'):
+            with mpiprof.traced_region('serial:imped_red'):
                 for impRed in impedanceReduction:
                     impedList[impRed['impedance']]['total_impedance'][impRed['affected_indices']] = \
                         impRed['initial_impedance'][impRed['affected_indices']] \
@@ -383,8 +472,8 @@ class Worker:
         # self.bcast()
         global lhc_y, rfp_dphi_rf, rfp_omega_rf, rfp_phi_rf, machine, time_offset
         turn = self.turn
-        with timing.timed_region('serial:beamFB') as tr:
-            with mpiprof.traced_region('serial:beamFB') as tr:
+        with timing.timed_region('serial:beamFB'):
+            with mpiprof.traced_region('serial:beamFB'):
                 if machine == 'LHC':
                     coeff = bph._beam_phase(
                         bin_centers, profile, alpha,
@@ -471,6 +560,32 @@ class Worker:
                     self.logger.debug('Unrecognized machine type: %s' % machine)
 
         self.update()
+
+    def beam_profile_derivative(self, mode='gradient'):
+        """
+        The input is one of the three available methods for differentiating
+        a function. The two outputs are the bin centres and the discrete
+        derivative of the Beam profile respectively.*
+        """
+        from scipy import ndimage
+        global bin_centers, profile
+        dist_centers = bin_centers[1] - bin_centers[0]
+
+        if mode == 'filter1d':
+            derivative = ndimage.gaussian_filter1d(profile, sigma=1, order=1,
+                                                   mode='wrap') / dist_centers
+        elif mode == 'gradient':
+            derivative = np.gradient(profile, dist_centers)
+        elif mode == 'diff':
+            derivative = np.diff(profile) / dist_centers
+            diffCenters = bin_centers[0:-1] + dist_centers/2
+            derivative = np.interp(bin_centers, diffCenters, derivative)
+        else:
+            self.logger.debug(
+                'Option for derivative is not recognized: {}'.format(mode))
+            raise RuntimeError('Option for derivative is not recognized.')
+
+        return bin_centers, derivative
 
 
 def main():

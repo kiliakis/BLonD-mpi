@@ -73,7 +73,7 @@ PL_2ndLoop = 'F_Loop'
 FB_strength = 'present'
 
 # simulation parameters
-seed = 1980
+seed = 0
 n_macroparticles_pb = int(4e6)  # 4M macroparticles per bunch
 n_bins_rf = 256  # number of slices per RF-bucket
 nFrev = 2  # multiples of f_rev for frequency resolution
@@ -87,7 +87,7 @@ if args.get('turns', None) is not None:
 if args.get('particles', None) is not None:
     n_macroparticles_pb = args['particles']
 
-if args.get('time', False) == True:
+if args.get('time', False) is True:
     timing.mode = 'timing'
 
 if args.get('omp', None) is not None:
