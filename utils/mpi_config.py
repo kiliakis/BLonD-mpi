@@ -76,6 +76,7 @@ class Master:
             'Only one process can be the master!\nRe-run with only 1 process.'
 
         self.hostname = MPI.Get_processor_name()
+
         if log:
             self.logger = MPILog(rank=-1, log_dir=log)
         else:
@@ -84,6 +85,11 @@ class Master:
         logging.debug('Initialized.')
         master = self
 
+        # Get the neighbors
+        self.intercomm.bcast(self.hostname, root=MPI.ROOT)
+        self.neighbors = np.empty(self.workers, dtype=int)
+        self.intercomm.Gather(self.neighbors, self.neighbors, root=MPI.ROOT)
+        self.weights = (1. + self.neighbors) / np.sum(1. + self.neighbors)
 
     @timing.timeit(key='master:multi_scatter')
     # @mpiprof.traceit(key='multi_scatter')
@@ -96,10 +102,13 @@ class Master:
         for name, dtype in var_list:
             val = vars[name]
             # calculate counts and displs
-            basesize = len(val) // self.workers
-            plusone = len(val) - basesize * self.workers
-            counts = np.array([basesize+1]*plusone + [basesize] *
-                              (self.workers-plusone), dtype='i')
+            # basesize = len(val) // self.workers
+            # plusone = len(val) - basesize * self.workers
+            # counts = np.array([basesize+1]*plusone + [basesize] *
+            #                   (self.workers-plusone), dtype='i')
+            counts = np.array(self.weights * len(val), dtype='i')
+            counts[-1] = len(val) - np.sum(counts[:-1])
+
             displs = np.append([0], np.cumsum(counts[:-1]))
 
             recvbuf = np.array(0, dtype='i')
@@ -108,7 +117,6 @@ class Master:
             recvbuf = np.empty(1, dtype=dtype)
             self.intercomm.Scatterv([val, counts, displs, mpi_type[dtype]],
                                     recvbuf, root=MPI.ROOT)
-
 
     # args are the buffers to fill with the gathered values
     # e.g. (comm, beam.dt, beam.dE)
@@ -122,10 +130,14 @@ class Master:
         sendbuf = None
         for k in gather_dict.keys():
             v = gather_dict[k]
-            basesize = len(v) // self.workers
-            plusone = len(v) - basesize * self.workers
-            counts = np.array([basesize+1]*plusone + [basesize] *
-                              (self.workers-plusone), dtype='i')
+            # basesize = len(v) // self.workers
+            # plusone = len(v) - basesize * self.workers
+            # counts = np.array([basesize+1]*plusone + [basesize] *
+            #                   (self.workers-plusone), dtype='i')
+
+            counts = np.array(self.weights * len(val), dtype='i')
+            counts[-1] = len(val) - np.sum(counts[:-1])
+
             displs = np.append([0], np.cumsum(counts[:-1]))
 
             self.intercomm.Gatherv(sendbuf,
@@ -143,10 +155,14 @@ class Master:
         sendbuf = None
         for k in gather_dict.keys():
             v = gather_dict[k]
-            basesize = len(v) // self.workers
-            plusone = len(v) - basesize * self.workers
-            counts = np.array([basesize+1]*plusone + [basesize] *
-                              (self.workers-plusone), dtype='i')
+            # basesize = len(v) // self.workers
+            # plusone = len(v) - basesize * self.workers
+            # counts = np.array([basesize+1]*plusone + [basesize] *
+            #                   (self.workers-plusone), dtype='i')
+
+            counts = np.array(self.weights * len(val), dtype='i')
+            counts[-1] = len(val) - np.sum(counts[:-1])
+
             displs = np.append([0], np.cumsum(counts[:-1]))
 
             self.intercomm.Gatherv(sendbuf,

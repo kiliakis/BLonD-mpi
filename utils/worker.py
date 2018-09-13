@@ -56,6 +56,14 @@ class Worker:
         self.task_queue = deque()
         self.turn = 0
 
+        self.master_hostname = None
+        self.master_hostname = self.intercomm.bcast(
+            self.master_hostname, root=0)
+
+        # Send the neighbors array to master
+        temp = np.array([self.hostname == self.master_hostname], int)
+        self.intercomm.Gather(temp, temp, root=0)
+
     # @timing.timeit(key='comm:multi_scatter')
     def multi_scatter(self):
         var_list = None
