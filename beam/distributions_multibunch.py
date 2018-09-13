@@ -9,8 +9,13 @@ from builtins import range
 import numpy as np
 import copy
 import matplotlib.pyplot as plt
+from scipy.integrate import cumtrapz
+
 from beam.beam import Beam
-from beam.distributions import matched_from_distribution_function, matched_from_line_density
+from beam.distributions import matched_from_distribution_function,\
+    matched_from_line_density, populate_bunch,\
+    distribution_function, potential_well_cut,\
+    X0_from_bunch_length
 
 
 def matched_from_distribution_density_multibunch(beam, Ring, FullRingAndRF, distribution_options_list,
@@ -475,8 +480,8 @@ def match_beam_from_distribution(beam, FullRingAndRF, GeneralParameters,
         for it in range(n_iterations):
             conv = 0.
             # Compute the induced voltage/potential for all the beam
-            profile.track()
-            TotalInducedVoltage.induced_voltage_sum()
+            profile.master_track()
+            TotalInducedVoltage.master_induced_voltage_sum()
 
             induced_voltage_coordinates = TotalInducedVoltage.time_array
             induced_voltage = TotalInducedVoltage.induced_voltage
@@ -512,8 +517,8 @@ def match_beam_from_distribution(beam, FullRingAndRF, GeneralParameters,
 
             print('iteration ' + str(it) +
                   ', average RMS emittance (4sigma) = ' + str(4*conv/n_bunches))
-            profile.track()
-            TotalInducedVoltage.induced_voltage_sum()
+            profile.master_track()
+            TotalInducedVoltage.master_induced_voltage_sum()
 
 
 def match_beam_from_distribution_multibatch(beam, FullRingAndRF, GeneralParameters,

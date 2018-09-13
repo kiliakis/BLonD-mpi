@@ -62,15 +62,15 @@ class TotalInducedVoltage(object):
         Time array corresponding to induced_voltage [s]
     """
 
-    def __init__(self, Beam, Profiles, induced_voltage_list):
+    def __init__(self, Beam, Profile, induced_voltage_list):
         """
         Constructor.
         """
         # Copy of the Beam object in order to access the beam info.
         self.beam = Beam
 
-        # Copy of the Profiles object in order to access the profile info.
-        self.profile = Profiles
+        # Copy of the Profile object in order to access the profile info.
+        self.profile = Profile
 
         # Induced voltage list.
         self.induced_voltage_list = induced_voltage_list
@@ -89,68 +89,29 @@ class TotalInducedVoltage(object):
         for induced_voltage_object in self.induced_voltage_list:
             induced_voltage_object.process()
 
-    @timing.timeit('ind_volt_sum')
+    def master_induced_voltage_sum(self):
+        """
+        Method to sum all the induced voltages in one single array.
+        """
+
+        temp_induced_voltage = 0
+
+        for induced_voltage_object in self.induced_voltage_list:
+            induced_voltage_object.induced_voltage_generation()
+            temp_induced_voltage += \
+                induced_voltage_object.induced_voltage[:self.profile.n_slices]
+
+        self.induced_voltage = temp_induced_voltage
+
+    @timing.timeit('indVoltSum')
     def induced_voltage_sum(self):
         """
         Method to sum all the induced voltages in one single array.
         """
-
-        # temp_induced_voltage = 0
-
-        # for induced_voltage_object in self.induced_voltage_list:
-        #     induced_voltage_object.induced_voltage_generation()
-        #     temp_induced_voltage += \
-        #           induced_voltage_object.induced_voltage[:self.profile.n_slices]
-
-        # self.induced_voltage = temp_induced_voltage
         import utils.mpi_config as mpiconf
         master = mpiconf.master
 
-        # master.multi_bcast({'total_voltage': float(0.)}, msg=False)
-
-    
-        # for induced_voltage_object in self.induced_voltage_list:
-            # master.bcast('induced_voltage_1turn')
-            # master.multi_bcast({'n_fft': induced_voltage_object.n_fft,
-                                # 'n_induced_voltage': induced_voltage_object.n_induced_voltage},
-                               # msg=False)
-
-
-    @timing.timeit('ind_volt_sum_and_histo')
-    def induced_voltage_sum_and_histo(self):
-        """
-        Method to sum all the induced voltages in one single array.
-        """
-
-        # temp_induced_voltage = 0
-
-        # for induced_voltage_object in self.induced_voltage_list:
-        #     induced_voltage_object.induced_voltage_generation()
-        #     temp_induced_voltage += \
-        #           induced_voltage_object.induced_voltage[:self.profile.n_slices]
-
-        # self.induced_voltage = temp_induced_voltage
-        import utils.mpi_config as mpiconf
-        master = mpiconf.master
-
-        master.multi_bcast({'total_voltage': float(0.)})
-
-        master.bcast('histo_and_induced_voltage')
-    
-        for induced_voltage_object in self.induced_voltage_list:
-            master.multi_bcast({'n_fft': induced_voltage_object.n_fft,
-                                'n_induced_voltage': induced_voltage_object.n_induced_voltage,
-                                'cut_left': self.profile.cut_left,
-                                'cut_right': self.profile.cut_right},
-                               msg=False)
-        master.gather_single('profile', self.profile.n_macroparticles)
-
-
-            # induced_voltage_object.induced_voltage_generation()
-            # temp_induced_voltage += \
-            #     induced_voltage_object.induced_voltage[:self.profile.n_slices]
-
-    @timing.timeit('master:inc_volt_track')
+    @timing.timeit('master:indVoltTrack')
     def track(self):
         """
         Track method to apply the induced voltage kick on the beam.
@@ -581,7 +542,7 @@ class InducedVoltageFreq(_InducedVoltage):
         # Length of the front wake in frequency domain calculations
         if self.front_wake_length:
             self.front_wake_buffer = int(np.ceil(
-                np.max(self.front_wake_length) / self.slices.bin_size))
+                np.max(self.front_wake_length) / self.profile.bin_size))
 
         # Processing the impedances
         self.sum_impedances(self.freq)
@@ -712,13 +673,13 @@ class InducedVoltageResonator(_InducedVoltage):
         # Copy of the Beam object in order to access the beam info.
         self.beam = Beam
         # Copy of the Profile object in order to access the line density.
-        self.slices = Profile
+        self.profile = Profile
 
         # Optional array of time values where the induced voltage is calculated.
         # If left out, the induced voltage is calculated at the times of the
         # line density.
         if timeArray is None:
-            self.tArray = self.slices.bin_centers
+            self.tArray = self.profile.bin_centers
             self.atLineDensityTimes = True
         else:
             self.tArray = timeArray
@@ -746,10 +707,10 @@ class InducedVoltageResonator(_InducedVoltage):
         self._tmp_matrix = np.ones((self.n_resonators, self.n_time))
 
         # Slopes of the line segments. For internal use.
-        self._kappa1 = np.zeros(int(self.slices.n_slices-1))
+        self._kappa1 = np.zeros(int(self.profile.n_slices-1))
 
         # Matrix to hold n_times many tArray[t]-bin_centers arrays.
-        self._deltaT = np.zeros((self.n_time, self.slices.n_slices))
+        self._deltaT = np.zeros((self.n_time, self.profile.n_slices))
 
         # Call the __init__ method of the parent class [calls process()]
         _InducedVoltage.__init__(self, Beam, Profile, wake_length=None,
