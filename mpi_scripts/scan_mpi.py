@@ -60,26 +60,6 @@ configs = {
                                                    'partition': cycle(['be-long'])
                                                    },
 
-    'LHC-96B-2MPPB-sl512-uint16-nobcast-r1-lb0': {'p': cycle([2000000]),
-                                                  'b': cycle([96]),
-                                                  's': cycle([512]),
-                                                  't': cycle([10000]),
-                                                  'reduce': cycle([1]),
-                                                  'load': cycle([0.]),
-                                                  'w': []
-                                                  + list(np.arange(16, 17, 1)),
-                                                  # + list(np.arange(4, 9, 1)),
-                                                  # + list([3]),
-                                                  # + list([7]),
-
-                                                  'o': []
-                                                  + [10]*1,
-                                                  # + [20]*5,
-
-                                                  'time': cycle([25]),
-                                                  'partition': cycle(['be-long'])
-                                                  },
-
 
     # 'LHC-96B-2MPPB-uint16-nobcast-r1-lb30': {'p': cycle([2000000]),
     #                                          'b': cycle([96]),

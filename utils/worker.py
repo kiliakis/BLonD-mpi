@@ -63,6 +63,8 @@ class Worker:
         # Send the neighbors array to master
         temp = np.array([self.hostname == self.master_hostname], int)
         self.intercomm.Gather(temp, temp, root=0)
+        # if self.hostname == self.master_hostname:
+        #     os.environ['OMP_NUM_THREADS'] = '20'
 
     # @timing.timeit(key='comm:multi_scatter')
     def multi_scatter(self):

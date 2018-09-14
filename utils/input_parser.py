@@ -26,7 +26,7 @@ parser.add_argument('-t', '--turns', type=int,
 parser.add_argument('-mtw', '--mtw', type=int,
                     help='Number of simulation turns.')
 
-parser.add_argument('-addload', '--addload', type=float, default=None,
+parser.add_argument('-addload', '--addload', type=float, default=0.0,
                     help='Additional Load for tasks close to the master.')
 
 

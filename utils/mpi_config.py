@@ -62,7 +62,7 @@ def init(trace=False, logfile='mpe-trace'):
 
 class Master:
     # @timing.timeit(key='master:init')
-    def __init__(self, log=None, add_load=0.1):
+    def __init__(self, log=None, add_load=0.):
         global master
 
         self.vars = {}
