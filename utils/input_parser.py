@@ -26,6 +26,9 @@ parser.add_argument('-t', '--turns', type=int,
 parser.add_argument('-mtw', '--mtw', type=int,
                     help='Number of simulation turns.')
 
+parser.add_argument('-addload', '--addload', type=float, default=None,
+                    help='Additional Load for tasks close to the master.')
+
 
 parser.add_argument('-o', '--omp', type=int, default=1,
                     help='Number of openmp threads to use.'

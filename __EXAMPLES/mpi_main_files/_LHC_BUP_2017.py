@@ -80,6 +80,8 @@ N_t_reduce = 1
 N_t_monitor = 0
 seed = 0
 
+addload = 0.1
+
 if args.get('turns', None) is not None:
     N_t = args['turns']
 if args.get('particles', None) is not None:
@@ -91,6 +93,9 @@ if args.get('bunches', None) is not None:
 if args.get('reduce', None) is not None:
     N_t_reduce = args['reduce']
 
+if args.get('addload', None) is not None:
+    addload = args['addload']
+
 if args.get('monitor', None) is not None:
     N_t_monitor = args['monitor']
 
@@ -99,12 +104,11 @@ if args.get('omp', None) is not None:
 if 'log' in args:
     log = args['log']
 
-if args.get('time', False) == True:
+if args.get('time', False) is True:
     timing.mode = 'timing'
 
 if args.get('seed', None) is not None:
     seed = args['seed']
-
 
 
 # Simulation setup -------------------------------------------------------------
@@ -252,7 +256,8 @@ if N_t_monitor > 0:
     slicesMonitor = SlicesMonitor(filename=filename,
                                   n_turns=np.ceil(1.0 * N_t / N_t_monitor),
                                   profile=profile)
-master = mpiconf.Master(log=log)
+
+master = mpiconf.Master(log=log, add_load=addload)
 start_t = time.time()
 try:
 
@@ -313,29 +318,27 @@ try:
     print("Ready for tracking!")
     print("")
 
-
     task_list = []
 
     # Tracking --------------------------------------------------------------------
     for i in range(N_t):
 
-        task_list += ['LIKick_n_drift', 'beamFB', 'RFVCalc']
+        if (i % N_t_reduce == 0):
+            task_list += ['histo', 'reduce_histo']
+
+        if (N_t_monitor > 0) and (i % N_t_monitor == 0):
+            task_list += ['gather_single']
 
         if (i % N_t_reduce == 0):
             task_list += ['induced_voltage_sum']
 
-        if (N_t_monitor > 0) and (i % N_t_monitor == 0):
-            task_list += ['gather_single']
-        
-        if (i % N_t_reduce == 0):
-            task_list += ['histo', 'reduce_histo']
-    
+        task_list += ['beamFB', 'RFVCalc', 'LIKick_n_drift']
+
     master.bcast(task_list)
 
     # Tracking --------------------------------------------------------------------
     for i in range(N_t):
         # t0 = time.clock()
-
 
         # Remove lost particles to obtain a correct r.m.s. value
         # if (i % 1000) == 0:  # reduce computational costs
@@ -347,17 +350,17 @@ try:
             noiseFB.bl_targ = 1.1e-9
 
         # totVoltage.induced_voltage_sum_and_histo()
-        # if (i % N_t_reduce == 0):
-        #     totVoltage.induced_voltage_sum()
-
-        # profile.track()
+        if (i % N_t_reduce == 0):
+            totVoltage.induced_voltage_sum()
 
         if (N_t_monitor > 0) and (i % N_t_monitor == 0):
             master.gather_single(
                 {'profile': profile.n_macroparticles}, msg=False)
             slicesMonitor.track(i)
 
-        # tracker.track()
+        tracker.track()
+
+        profile.track()
 
         # noiseFB.track()
 

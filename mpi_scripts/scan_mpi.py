@@ -20,25 +20,106 @@ job_name_form = '{}/_p{}_b{}_s{}_t{}_w{}_o{}_N{}_'
 
 configs = {
 
-    'LHC-96B-2MPPB-uint16-nobcast-r1': {'p': cycle([2000000]),
-                                        'b': cycle([96]),
-                                        's': cycle([1000]),
-                                        't': cycle([10000]),
-                                        'reduce': cycle([1]),
+    'LHC-96B-2MPPB-sl512-uint16-nobcast-r1-lb10': {'p': cycle([2000000]),
+                                                   'b': cycle([96]),
+                                                   's': cycle([512]),
+                                                   't': cycle([10000]),
+                                                   'reduce': cycle([1]),
+                                                   'load': cycle([0.1]),
+                                                   'w': []
+                                                   + list(np.arange(16, 17, 1)),
+                                                   # + list(np.arange(4, 9, 1)),
+                                                   # + list([3]),
+                                                   # + list([7]),
 
-                                        'w': []
-                                        # + list(np.arange(4, 17, 1))
-                                        # + list(np.arange(4, 9, 1)),
-                                        + list([3]),
-                                        # + list([7]),
+                                                   'o': []
+                                                   + [10]*1,
+                                                   # + [20]*5,
 
-                                        'o': []
-                                        # + [10]*13
-                                        + [20]*1,
+                                                   'time': cycle([25]),
+                                                   'partition': cycle(['be-long'])
+                                                   },
 
-                                        'time': cycle([25]),
-                                        'partition': cycle(['be-long'])
-                                        }
+    'LHC-96B-2MPPB-sl512-uint16-nobcast-r1-lb20': {'p': cycle([2000000]),
+                                                   'b': cycle([96]),
+                                                   's': cycle([512]),
+                                                   't': cycle([10000]),
+                                                   'reduce': cycle([1]),
+                                                   'load': cycle([0.2]),
+                                                   'w': []
+                                                   + list(np.arange(16, 17, 1)),
+                                                   # + list(np.arange(4, 9, 1)),
+                                                   # + list([3]),
+                                                   # + list([7]),
+
+                                                   'o': []
+                                                   + [10]*1,
+                                                   # + [20]*5,
+
+                                                   'time': cycle([25]),
+                                                   'partition': cycle(['be-long'])
+                                                   },
+
+    'LHC-96B-2MPPB-sl512-uint16-nobcast-r1-lb0': {'p': cycle([2000000]),
+                                                  'b': cycle([96]),
+                                                  's': cycle([512]),
+                                                  't': cycle([10000]),
+                                                  'reduce': cycle([1]),
+                                                  'load': cycle([0.]),
+                                                  'w': []
+                                                  + list(np.arange(16, 17, 1)),
+                                                  # + list(np.arange(4, 9, 1)),
+                                                  # + list([3]),
+                                                  # + list([7]),
+
+                                                  'o': []
+                                                  + [10]*1,
+                                                  # + [20]*5,
+
+                                                  'time': cycle([25]),
+                                                  'partition': cycle(['be-long'])
+                                                  },
+
+
+    # 'LHC-96B-2MPPB-uint16-nobcast-r1-lb30': {'p': cycle([2000000]),
+    #                                          'b': cycle([96]),
+    #                                          's': cycle([1000]),
+    #                                          't': cycle([10000]),
+    #                                          'reduce': cycle([1]),
+    #                                          'load': cycle([0.3]),
+    #                                          'w': []
+    #                                          + list(np.arange(16, 17, 1)),
+    #                                          # + list(np.arange(4, 9, 1)),
+    #                                          # + list([3]),
+    #                                          # + list([7]),
+
+    #                                          'o': []
+    #                                          + [10]*1,
+    #                                          # + [20]*5,
+
+    #                                          'time': cycle([25]),
+    #                                          'partition': cycle(['be-long'])
+    #                                          },
+
+    # 'LHC-96B-2MPPB-uint16-nobcast-r1-lb40': {'p': cycle([2000000]),
+    #                                          'b': cycle([96]),
+    #                                          's': cycle([1000]),
+    #                                          't': cycle([10000]),
+    #                                          'reduce': cycle([1]),
+    #                                          'load': cycle([0.4]),
+    #                                          'w': []
+    #                                          + list(np.arange(16, 17, 1)),
+    #                                          # + list(np.arange(4, 9, 1)),
+    #                                          # + list([3]),
+    #                                          # + list([7]),
+
+    #                                          'o': []
+    #                                          + [10]*1,
+    #                                          # + [20]*5,
+
+    #                                          'time': cycle([25]),
+    #                                          'partition': cycle(['be-long'])
+    #                                          },
 
 
     # 'LHC-96B-4MPPB-uint16-nobcast-r1': {'p': cycle([4000000]),
@@ -62,7 +143,7 @@ configs = {
 
 }
 
-repeats = 10
+repeats = 5
 
 
 total_sims = repeats * \
@@ -87,20 +168,26 @@ for analysis, config in configs.items():
     # Ns = config['N']
     times = config['time']
     partitions = config['partition']
+    loads = config['load']
     stdout = open(analysis + '.txt', 'w')
 
-    for p, b, s, t, r, w, o, time, partition in zip(ps, bs, ss, ts, rs, ws,
-                                                    oss, times, partitions):
+    for p, b, s, t, r, w, o, time, partition, load in zip(ps, bs, ss, ts, rs, ws,
+                                                          oss, times, partitions,
+                                                          loads):
         N = (w * o + 20-1) // 20
 
         job_name = job_name_form.format(analysis, p, b, s, t, w, o, N)
-        if(N < 13):
-            partition = 'be-short'
-            # continue
-        else:
-            partition = 'be-long'
+        # if(N < 13):
+        #     partition = 'be-short'
+        # else:
+        #     partition = 'be-long'
+
         # os.environ['OMP_NUM_THREADS'] = str(o)
         for i in range(repeats):
+            if(current_sim % 2 == 0):
+                partition = 'be-short'
+            else:
+                partition = 'be-long'
             timestr = datetime.now().strftime('%d%b%y.%H-%M-%S')
             timestr = timestr + '-' + str(random.randint(0, 100))
             output = result_dir.format(job_name, timestr, 'output.txt')
@@ -113,14 +200,14 @@ for analysis, config in configs.items():
             # exe_args = ['-n', str('python', exe,
             exe_args = ['-n', str(w), 'python', exe,
                         '-p', str(p), '-s', str(s),
-                        '-b', str(b),
+                        '-b', str(b), '-addload', str(load),
                         '-t', str(t), '-time',
                         '-o', str(o), '-r', report_dir,
                         '--reduce', str(r)]
             print(job_name, timestr)
             batch_args = ['-N', str(N), '-n', str(w),
                           '--ntasks-per-node', str(ceil(w/N)),
-                          '-c', str(o),
+                          '-c', str(20),  # str(o),
                           '-t', str(time), '-p', partition,
                           '-o', output,
                           '-e', error,

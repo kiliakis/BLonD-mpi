@@ -9,8 +9,9 @@
 ##Comment SBATCH --output="%x".txt
 ##Comment SBATCH --error="%x".txt
 ##Comment SBATCH --job-name="%x"
-#SBATCH --hint=nomultithread
+##Comment SBATCH --hint=nomultithread
 #SBATCH --export=ALL
+##Comment SBATCH --overcommit
 
 # source $HOME/.bashrc
 

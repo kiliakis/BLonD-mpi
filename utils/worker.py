@@ -76,6 +76,8 @@ class Worker:
             recvbuf = np.empty(count, dtype=dtype)
             self.intercomm.Scatterv(sendbuf, recvbuf, root=0)
             vals[name] = recvbuf
+            # print('Worker {}: len {}: {}'.format(self.rank, name, len(recvbuf)))
+
         return vals
         # self.intercomm.Barrier()
 

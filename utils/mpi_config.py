@@ -91,6 +91,7 @@ class Master:
         self.intercomm.Gather(self.neighbors, self.neighbors, root=MPI.ROOT)
         self.weights = (1. + self.neighbors*add_load) / \
             np.sum(1. + self.neighbors*add_load)
+        # print('Master, add_load: {}, weights {}'.format(add_load, self.weights))
 
     @timing.timeit(key='master:multi_scatter')
     # @mpiprof.traceit(key='multi_scatter')
