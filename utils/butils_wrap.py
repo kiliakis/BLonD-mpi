@@ -9,6 +9,7 @@ import ctypes as ct
 import numpy as np
 from setup_cpp import libblondmath as __lib
 from setup_cpp import libfft
+from pyprof import timing
 
 
 class c_complex128(ct.Structure):
@@ -270,13 +271,30 @@ def interp(x, xp, yp, left=None, right=None, result=None):
     if not right:
         right = yp[-1]
     if result is None:
-        result = np.empty(len(x), dtype=float)
+        result = np.empty_like(x, order='C')
     __lib.interp(__getPointer(x), __getLen(x),
                  __getPointer(xp), __getLen(xp),
                  __getPointer(yp),
                  ct.c_double(left),
                  ct.c_double(right),
                  __getPointer(result))
+    return result
+
+
+def interp_const_space(x, xp, yp, left=None, right=None, result=None):
+    if not left:
+        left = yp[0]
+    if not right:
+        right = yp[-1]
+    if result is None:
+        result = np.empty_like(x, order='C')
+
+    __lib.interp_const_space(__getPointer(x), __getLen(x),
+                             __getPointer(xp), __getLen(xp),
+                             __getPointer(yp),
+                             ct.c_double(left),
+                             ct.c_double(right),
+                             __getPointer(result))
     return result
 
 

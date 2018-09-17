@@ -100,6 +100,15 @@ extern "C" {
               const double right,
               double * __restrict__ y);
 
+  void interp_const_space(const double * __restrict__ x,
+                          const int N,
+                          const double * __restrict__ xp,
+                          const int M,
+                          const double * __restrict__ yp,
+                          const double left,
+                          const double right,
+                          double * __restrict__ y);
+
   // Function to implement integration of f(x); over the interval
   // [a,b] using the trapezoid rule with nsub subdivisions.
   void cumtrapz_wo_initial(const double * __restrict__ f,

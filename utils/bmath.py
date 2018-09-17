@@ -19,6 +19,7 @@ _CPU_func_dict = {
     'mean': butils_wrap.mean,
     'std': butils_wrap.std,
     'interp': butils_wrap.interp,
+    'interp_const_space': butils_wrap.interp_const_space,
     'cumtrapz': butils_wrap.cumtrapz,
     'trapz': butils_wrap.trapz,
     'linspace': butils_wrap.linspace,

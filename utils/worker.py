@@ -264,29 +264,37 @@ class Worker:
         profile *= self.workers
         # self.intracomm.Allreduce(MPI.IN_PLACE, profile, op=MPI.SUM)
 
-    # def induced_voltage_sum(self):
-    #     # for any per-turn updated variables
-    #     global induced_voltage
-    #     # self.bcast()
-    #     temp_induced_voltage = 0
-    #     beam_spectrum = None
-    #     min_idx = n_slices
+    def induced_voltage_sum_packed(self):
+        # for any per-turn updated variables
+        global induced_voltage
+        # self.bcast()
+        beam_spectrum = None
+        induced_voltage = []
+        min_idx = n_slices
 
-    #     with timing.timed_region('serial:indVoltSum'):
-    #         with mpiprof.traced_region('serial:indVoltSum'):
-    #             for imped in impedList.values():
-    #                 # Beam_spectrum_generation
-    #                 if beam_spectrum is None:
-    #                     beam_spectrum = bm.rfft(profile, imped['n_fft'])
+        with timing.timed_region('serial:indVoltSum'):
+            with mpiprof.traced_region('serial:indVoltSum'):
+                for imped in impedList.values():
+                    # Beam_spectrum_generation
+                    if beam_spectrum is None:
+                        #  with timing.timed_region('serial:indVoltRfft'):
+                        beam_spectrum = bm.rfft(profile, imped['n_fft'])
 
-    #                 induced_voltage = - (charge * e * beam_ratio *
-    #                                      bm.irfft(imped['total_impedance'] * beam_spectrum))
-    #                 # induced_voltage = induced_voltage[:imped['n_induced_voltage']]
-    #                 min_idx = min(imped['n_induced_voltage'], min_idx)
-    #                 temp_induced_voltage += induced_voltage[:min_idx]
+                    #  with timing.timed_region('serial:indVoltMul1'):
+                    induced_voltage.append(
+                        bm.mul(imped['total_impedance'], beam_spectrum))
+                    min_idx = min(imped['n_induced_voltage'], min_idx)
 
-    #     induced_voltage = temp_induced_voltage
-    #     self.update()
+                #  with timing.timed_region('serial:indVoltIrfft'):
+                induced_voltage = bm.irfft_packed(induced_voltage)[:, :min_idx]
+                #  with timing.timed_region('serial:indVoltMul2'):
+                induced_voltage = -charge * e * beam_ratio * induced_voltage
+                # for i in range(len(induced_voltage)):
+                #     induced_voltage[i] = bm.mul(induced_voltage[i], -charge * e * beam_ratio)
+                #  with timing.timed_region('serial:indVoltAcc'):
+                induced_voltage = np.sum(induced_voltage, axis=0)
+
+        self.update()
 
     def induced_voltage_sum(self):
         # for any per-turn updated variables
@@ -320,38 +328,6 @@ class Worker:
         induced_voltage = temp_induced_voltage
         self.update()
 
-    def induced_voltage_sum_packed(self):
-        # for any per-turn updated variables
-        global induced_voltage
-        # self.bcast()
-        beam_spectrum = None
-        induced_voltage = []
-        min_idx = n_slices
-
-        with timing.timed_region('serial:indVoltSum'):
-            with mpiprof.traced_region('serial:indVoltSum'):
-                for imped in impedList.values():
-                    # Beam_spectrum_generation
-                    if beam_spectrum is None:
-                        #  with timing.timed_region('serial:indVoltRfft'):
-                        beam_spectrum = bm.rfft(profile, imped['n_fft'])
-
-                    #  with timing.timed_region('serial:indVoltMul1'):
-                    induced_voltage.append(
-                        bm.mul(imped['total_impedance'], beam_spectrum))
-                    min_idx = min(imped['n_induced_voltage'], min_idx)
-
-                #  with timing.timed_region('serial:indVoltIrfft'):
-                induced_voltage = bm.irfft_packed(induced_voltage)[:, :min_idx]
-                #  with timing.timed_region('serial:indVoltMul2'):
-                induced_voltage = -charge * e * beam_ratio * induced_voltage
-                # for i in range(len(induced_voltage)):
-                #     induced_voltage[i] = bm.mul(induced_voltage[i], -charge * e * beam_ratio)
-                #  with timing.timed_region('serial:indVoltAcc'):
-                induced_voltage = np.sum(induced_voltage, axis=0)
-
-        self.update()
-
     def inducedVoltageMTW(self, imped, beam_spectrum=None):
 
         global tracker_t_rev
@@ -360,10 +336,11 @@ class Worker:
         if imped['mtw_mode'] == 'time':
             with timing.timed_region('serial:indVoltMTW'):
                 with mpiprof.traced_region('serial:indVoltMTW'):
-                    imped['mtw_memory'] = np.interp(imped['time_mtw'] + tracker_t_rev[turn],
-                                                    imped['time_mtw'],
-                                                    imped['mtw_memory'],
-                                                    left=0, right=0)
+                    imped['mtw_memory'] = bm.interp_const_space(
+                        imped['time_mtw'] + tracker_t_rev[turn],
+                        imped['time_mtw'],
+                        imped['mtw_memory'],
+                        left=0, right=0)
 
             induced_voltage, beam_spectrum = self.inducedVoltage1Turn(
                 imped, beam_spectrum)
@@ -409,8 +386,7 @@ class Worker:
                     beam_spectrum = bm.rfft(profile, imped['n_fft'])
 
                 induced_voltage = - (charge * e * beam_ratio *
-                                     bm.irfft(imped['total_impedance'] *
-                                              beam_spectrum))
+                                     bm.irfft(imped['total_impedance'] * beam_spectrum))
         return induced_voltage[:imped['n_induced_voltage']], beam_spectrum
 
     # @timing.timeit(key='comp:LIKick')
@@ -475,8 +451,7 @@ class Worker:
         with timing.timed_region('serial:imped_red'):
             with mpiprof.traced_region('serial:imped_red'):
                 for impRed in impedanceReduction:
-                    impedList[impRed['impedance']]['total_impedance'][impRed['affected_indices']] = \
-                        impRed['initial_impedance'][impRed['affected_indices']] \
+                    impedList[impRed['impedance']]['total_impedance'][impRed['affected_indices']] = impRed['initial_impedance'][impRed['affected_indices']] \
                         * impRed['filter_func']**(impRed['reduction_factor'][turn]
                                                   * impRed['FB_strength'])
 
@@ -507,8 +482,8 @@ class Worker:
                          (rfp_dphi_rf[0] + reference))
 
                     lhc_y = (1 - lhc_t[turn]) * lhc_y + \
-                            (1 - lhc_a[turn]) * lhc_t[turn] * \
-                            (rfp_dphi_rf[0] + reference)
+                        (1 - lhc_a[turn]) * lhc_t[turn] * \
+                        (rfp_dphi_rf[0] + reference)
 
                     # Update the RF frequency of all systems for the next turn
                     turn = turn + 1

@@ -241,8 +241,48 @@ extern "C" {
     }
 
 
-    // Function to implement integration of f(x) over the interval
-    // [a,b] using the trapezoid rule with nsub subdivisions.
+    /**
+    @x: x-coordinates of the interpolated values
+    @N: The x array size
+    @xp: The x-coords of the data points, !!must be sorted!!
+    @M: The xp array size
+    @yp: the y-coords of the data points
+    @left: value to return for x < xp[0]
+    @right: value to return for x > xp[last]
+    @y: the interpolated values, same shape as x
+    */
+    void interp_const_space(const double * __restrict__ x,
+                            const int N,
+                            const double * __restrict__ xp,
+                            const int M,
+                            const double * __restrict__ yp,
+                            const double left,
+                            const double right,
+                            double * __restrict__ y)
+    {
+
+        const int offset = std::lower_bound(xp, xp + M, x[0]) - xp;
+        const double c = (x[0] - xp[0] + (1 - offset) * (xp[1] - xp[0]))
+                         / (xp[1] - xp[0]);
+
+        #pragma omp parallel for
+        for (int i = 0; i < N; ++i) {
+            const int pos = i + offset;
+            if (pos >= M)
+                y[i] = right;
+            else
+                y[i] = yp[pos - 1] + (yp[pos] - yp[pos - 1]) * c;
+            // else if (xp[pos] == x[i])
+            //     y[i] = yp[pos];
+            // else if (pos == 0)
+            //     y[i] = left;
+        }
+    }
+
+
+
+// Function to implement integration of f(x) over the interval
+// [a,b] using the trapezoid rule with nsub subdivisions.
     void cumtrapz_wo_initial(const double * __restrict__ f,
                              const double deltaX,
                              const int nsub,
@@ -257,8 +297,8 @@ extern "C" {
             psum[i] = psum[i - 1] + (f[i + 1] + f[i]) * half_dx;
     }
 
-    // Function to implement integration of f(x) over the interval
-    // [a,b] using the trapezoid rule with nsub subdivisions.
+// Function to implement integration of f(x) over the interval
+// [a,b] using the trapezoid rule with nsub subdivisions.
     void cumtrapz_w_initial(const double * __restrict__ f,
                             const double deltaX,
                             const double initial,

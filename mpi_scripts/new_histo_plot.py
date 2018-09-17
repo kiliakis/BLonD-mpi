@@ -20,7 +20,7 @@ plots_config = {
 
     'plot5': {
         'files': {
-            res_dir+'raw/PS-2MPPB-r1/comm-comp-report.csv': {
+            res_dir+'raw/PS-2MPPB-interp2-r1/comm-comp-report.csv': {
                     'lines': {
                         'omp': ['2', '5', '10', '20'],
                         'type': ['comp', 'serial', 'comm', 'other', 'overhead']}
@@ -66,7 +66,7 @@ plots_config = {
         'title': 'Run-Time breakdown',
         'ylim': [0, 100],
         'figsize': (6, 3),
-        'image_name': images_dir + 'PS-2MPPB-r1-newhisto.pdf'
+        'image_name': images_dir + 'PS-2MPPB-interp2-r1-newhisto.pdf'
 
     },
 
