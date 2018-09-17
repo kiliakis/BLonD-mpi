@@ -9,7 +9,7 @@
 ##Comment SBATCH --output="%x".txt
 ##Comment SBATCH --error="%x".txt
 ##Comment SBATCH --job-name="%x"
-##Comment SBATCH --hint=nomultithread
+#SBATCH --hint=nomultithread
 #SBATCH --export=ALL
 ##Comment SBATCH --overcommit
 

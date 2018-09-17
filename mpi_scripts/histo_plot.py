@@ -16,10 +16,10 @@ if not os.path.exists(images_dir):
 # csv_file = res_dir + 'csv/interp-kick1/all_results2.csv'
 
 plots_config = {
-
+    
     'plot5': {
         'files': {
-            res_dir+'raw/LHC-96B-uint16-r1/comm-comp-report.csv': {
+            res_dir+'raw/PS-2MPPB-r1/comm-comp-report.csv': {
                     'lines': {
                         'omp': ['2', '5', '10', '20'],
                         'type': ['comp', 'serial', 'comm', 'other', 'overhead']}
@@ -58,9 +58,54 @@ plots_config = {
         'title': 'MPI Time breakdown',
         'ylim': [0, 100],
         'figsize': (6, 3),
-        'image_name': images_dir + 'LHC-96B-uint16-r1-histo.pdf'
+        'image_name': images_dir + 'PS-2MPPB-r1-histo.pdf'
 
     },
+
+    # 'plot5': {
+    #     'files': {
+    #         res_dir+'raw/LHC-96B-uint16-r1/comm-comp-report.csv': {
+    #                 'lines': {
+    #                     'omp': ['2', '5', '10', '20'],
+    #                     'type': ['comp', 'serial', 'comm', 'other', 'overhead']}
+    #         }
+
+    #     },
+    #     'labels': {
+    #         # '1': 'hyb-T1',
+    #         # '2': 'hyb-T2',
+    #         # '4': 'hyb-T4',
+    #         '5': 'hyb-T5',
+    #         '10': 'hyb-T10',
+    #         '20': 'hybrid-T20'
+    #     },
+    #     'colors': {
+    #         '1': 'tab:purple',
+    #         '20': 'tab:blue',
+    #         '4': 'tab:orange',
+    #         '5': 'tab:green',
+    #         '10': 'tab:red'
+    #         # '20000000-20-comp': 'tab:purple'
+    #     },
+    #     'markers': {
+    #         'comm': 'o',
+    #         'comp': 'x',
+    #         'serial': '^',
+    #         'other': 's'
+    #     },
+    #     # 'exclude': [['v1', 'notcm'], ['v2', 'notcm'], ['v4', 'notcm']],
+    #     'x_name': 'n',
+    #     'omp_name': 'omp',
+    #     'y_name': 'avg_percent',
+    #     'y_err_name': 'std',
+    #     'xlabel': 'MPI Tasks/Threads',
+    #     'ylabel': 'Run-time percent',
+    #     'title': 'MPI Time breakdown',
+    #     'ylim': [0, 100],
+    #     'figsize': (6, 3),
+    #     'image_name': images_dir + 'LHC-96B-uint16-r1-histo.pdf'
+
+    # },
 
     # 'plot4': {
     #     'files': {
