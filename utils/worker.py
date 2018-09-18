@@ -296,10 +296,52 @@ class Worker:
 
         self.update()
 
+    # def induced_voltage_sum(self):
+    #     # for any per-turn updated variables
+    #     global induced_voltage, n_slices, profile, beam_ration, charge, impedList
+
+    #     # temp_induced_voltage = 0
+    #     beam_spectrum = None
+    #     min_idx = n_slices
+    #     induced_voltage = []
+    #     fft_pack = []
+
+    #     for imped in impedList.values():
+    #         # Beam_spectrum_generation
+    #         min_idx = min(imped['n_induced_voltage'], min_idx)
+
+    #         if 'type' not in imped:
+    #             fft_pack.append(
+    #                 self.inducedVoltage1Turn(imped, beam_spectrum))
+    #         elif imped['type'] == 'inductive':
+    #             induced_voltage.append(self.inducedVoltageInductive(imped))
+    #         elif imped['type'] == 'mtw':
+    #             fft_pack.append(
+    #                 self.inducedVoltageMTW(imped, beam_spectrum))
+    #         else:
+    #             self.logger.debug(
+    #                 'Unrecognized impedance type: {}'.format(imped['type']))
+    #             raise RuntimeError('Unrecognized impedance type.')
+    #     with timing.timed_region('serial:indVoltRfft'):
+    #         fft_pack = bm.irfft_packed(fft_pack)[:, :min_idx]
+
+    #     with timing.timed_region('serial:sum'):
+    #         induced_voltage.append(fft_pack)
+    #         induced_voltage = -charge * e * \
+    #             beam_ratio * np.array(induced_voltage)
+    #         induced_voltage = np.sum(induced_voltage, axis=0)
+
+    #     # with timing.timed_region('serial:indVoltSum'):
+    #     #     with mpiprof.traced_region('serial:indVoltSum'):
+    #     #         min_idx = min(imped['n_induced_voltage'], min_idx)
+    #     #         temp_induced_voltage += induced_voltage[:min_idx]
+
+    #     # induced_voltage = temp_induced_voltage
+    #     self.update()
+
     def induced_voltage_sum(self):
         # for any per-turn updated variables
-        global induced_voltage, n_slices, profile, beam_ration, charge, \
-            impedList, induced_voltage
+        global induced_voltage, n_slices, profile, beam_ration, charge, impedList
 
         temp_induced_voltage = 0
         beam_spectrum = None
@@ -308,12 +350,12 @@ class Worker:
         for imped in impedList.values():
             # Beam_spectrum_generation
             if 'type' not in imped:
-                induced_voltage, beam_spectrum = self.inducedVoltage1Turn(
+                induced_voltage = self.inducedVoltage1Turn(
                     imped, beam_spectrum)
             elif imped['type'] == 'inductive':
                 induced_voltage = self.inducedVoltageInductive(imped)
             elif imped['type'] == 'mtw':
-                induced_voltage, beam_spectrum = self.inducedVoltageMTW(
+                induced_voltage = self.inducedVoltageMTW(
                     imped, beam_spectrum)
             else:
                 self.logger.debug(
@@ -342,8 +384,7 @@ class Worker:
                         imped['mtw_memory'],
                         left=0, right=0)
 
-            induced_voltage, beam_spectrum = self.inducedVoltage1Turn(
-                imped, beam_spectrum)
+            induced_voltage = self.inducedVoltage1Turn(imped, beam_spectrum)
             with timing.timed_region('serial:indVoltMTW'):
                 with mpiprof.traced_region('serial:indVoltMTW'):
                     induced_voltage[(imped['n_induced_voltage'] -
@@ -351,7 +392,7 @@ class Worker:
                     imped['mtw_memory'][:imped['n_induced_voltage']] += \
                         induced_voltage
                     induced_voltage = imped['mtw_memory'][:imped['n_induced_voltage']]
-            return induced_voltage, beam_spectrum
+            return induced_voltage
 
         elif imped['mtw_mode'] == 'freq':
             self.logger.debug('The freq mtw mode is not yet implemented.')
@@ -370,14 +411,16 @@ class Worker:
                                      beam_ratio * imped['Z_over_n'][turn] *
                                      tracker_t_rev[turn] / bin_size *
                                      self.beam_profile_derivative(imped['deriv_mode'])[1])
+                # induced_voltage = (1. / (2 * np.pi) * imped['Z_over_n'][turn] *
+                #                    tracker_t_rev[turn] / bin_size *
+                #                    self.beam_profile_derivative(imped['deriv_mode'])[1])
 
         # self.induced_voltage = induced_voltage[:self.n_induced_voltage]
         return induced_voltage[:imped['n_induced_voltage']]
 
     def inducedVoltage1Turn(self, imped, beam_spectrum=None):
         # for any per-turn updated variables
-        global induced_voltage, n_slices, profile, beam_ration, charge, \
-            impedList, induced_voltage
+        global n_slices, profile, beam_ration, charge, impedList
         # self.bcast()
 
         with timing.timed_region('serial:indVolt1Turn'):
@@ -387,7 +430,11 @@ class Worker:
 
                 induced_voltage = - (charge * e * beam_ratio *
                                      bm.irfft(imped['total_impedance'] * beam_spectrum))
-        return induced_voltage[:imped['n_induced_voltage']], beam_spectrum
+                # induced_voltage = bm.mul(
+                #     imped['total_impedance'], beam_spectrum)
+                # induced_voltage = (imped['total_impedance'] * beam_spectrum)
+
+        return induced_voltage[:imped['n_induced_voltage']]
 
     # @timing.timeit(key='comp:LIKick')
     # @mpiprof.traceit(key='LIKick')

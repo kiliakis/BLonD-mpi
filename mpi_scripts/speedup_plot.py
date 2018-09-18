@@ -17,7 +17,7 @@ plots_config = {
 
     'plot4': {
         'files': {
-            res_dir+'raw/PS-2MPPB-interp2-r1/comm-comp-report.csv': {
+            res_dir+'raw/PS-2MPPB-interp3-r1/comm-comp-report.csv': {
                 'lines': {
                     'omp': ['2', '5', '10', '20'],
                     'type': ['total']}
@@ -47,7 +47,7 @@ plots_config = {
         'title': '',
         # 'ylim': [0, 16000],
         'figsize': (6, 3),
-        'image_name': images_dir + 'PS-2MPPB-interp2-r1-speedup.pdf'
+        'image_name': images_dir + 'PS-2MPPB-interp3-r1-speedup.pdf'
 
     },
 
