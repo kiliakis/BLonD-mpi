@@ -33,7 +33,7 @@ plots_config = {
             '20-total': 'hybrid-T20'
         },
         # 'reference': {'time': 200.7, 'parts': 2000000, 'turns': 100},
-        'reference': {'time': 588., 'parts': 2000000, 'turns': 2000},
+        'reference': {'time': 862.7, 'parts': 2000000, 'turns': 2000},
         # 'reference': {'time': 378.59, 'parts': 4000000, 'turns': 100},
 
         # 'exclude': [['v1', 'notcm'], ['v2', 'notcm'], ['v4', 'notcm']],
