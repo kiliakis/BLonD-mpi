@@ -393,16 +393,17 @@ ImpedanceTableListRest = impRestToBLonD.impedanceList
 frequency_step = 1/(ring.t_rev[0]*n_turns_memory)  # [Hz]
 front_wake_length = filter_front_wake * ring.t_rev[0]*n_turns_memory
 
-PS_intensity_freq_10MHz = InducedVoltageFreq(beam,
-                                             profile,
-                                             ResonatorsList10MHz+ImpedanceTableList10MHz,
-                                             frequency_step,
-                                             RFParams=rf_params,
-                                             multi_turn_wake=True,
-                                             front_wake_length=front_wake_length)
+# PS_intensity_freq_10MHz = InducedVoltageFreq(beam,
+#                                              profile,
+#                                              ResonatorsList10MHz+ImpedanceTableList10MHz,
+#                                              frequency_step,
+#                                              RFParams=rf_params,
+#                                              multi_turn_wake=True,
+#                                              front_wake_length=front_wake_length)
 
 PS_intensity_freq_Rest = InducedVoltageFreq(beam,
                                             profile,
+                                            ResonatorsList10MHz+ImpedanceTableList10MHz +
                                             ResonatorsListRest+ImpedanceTableListRest,
                                             frequency_step,
                                             RFParams=rf_params,
@@ -421,8 +422,12 @@ PS_intensity_plot = InducedVoltageFreq(beam,
                                        multi_turn_wake=True,
                                        front_wake_length=front_wake_length)
 
+# PS_longitudinal_intensity = TotalInducedVoltage(
+#     beam, profile, [PS_intensity_freq_10MHz, PS_intensity_freq_Rest, PS_inductive])
+
 PS_longitudinal_intensity = TotalInducedVoltage(
-    beam, profile, [PS_intensity_freq_10MHz, PS_intensity_freq_Rest, PS_inductive])
+    beam, profile, [PS_intensity_freq_Rest, PS_inductive])
+
 
 # RF tracker
 tracker = RingAndRFTracker(
@@ -544,15 +549,15 @@ try:
         'charge': beam.Particle.charge,
         'beam_ratio': beam.ratio,
         'impedList': {
-            'PS_intensity_freq_10MHz': {
-                'type': 'mtw',
-                'mtw_mode': 'time',
-                'total_impedance': PS_intensity_freq_10MHz.total_impedance,
-                'n_fft': PS_intensity_freq_10MHz.n_fft,
-                'n_induced_voltage': PS_intensity_freq_10MHz.n_induced_voltage,
-                'front_wake_buffer': PS_intensity_freq_10MHz.front_wake_buffer,
-                'time_mtw': PS_intensity_freq_10MHz.time_mtw,
-                'mtw_memory': PS_intensity_freq_10MHz.mtw_memory},
+            # 'PS_intensity_freq_10MHz': {
+            #     'type': 'mtw',
+            #     'mtw_mode': 'time',
+            #     'total_impedance': PS_intensity_freq_10MHz.total_impedance,
+            #     'n_fft': PS_intensity_freq_10MHz.n_fft,
+            #     'n_induced_voltage': PS_intensity_freq_10MHz.n_induced_voltage,
+            #     'front_wake_buffer': PS_intensity_freq_10MHz.front_wake_buffer,
+            #     'time_mtw': PS_intensity_freq_10MHz.time_mtw,
+            #     'mtw_memory': PS_intensity_freq_10MHz.mtw_memory},
             'PS_intensity_freq_Rest': {
                 'type': 'mtw',
                 'mtw_mode': 'time',

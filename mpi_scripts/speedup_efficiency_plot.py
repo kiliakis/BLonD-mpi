@@ -83,11 +83,9 @@ plots_config = {
     #     'image_name': images_dir + 'LHC-96B-uint16-r1-speedup.pdf'
 
     # },
-
-
     'plot4': {
         'files': {
-            res_dir+'raw/LHC-96B-2MPPB-uint16-nobcast-r1/comm-comp-report.csv': {
+            res_dir+'raw/PS-2MPPB-interp4-r1/comm-comp-report.csv': {
                 'lines': {
                     'omp': ['2', '5', '10', '20'],
                     'type': ['total']}
@@ -112,7 +110,8 @@ plots_config = {
             'efficiency': 'tab:red'
         },
         # 'reference': {'time': 200.7, 'parts': 2000000, 'turns': 100},
-        'reference': {'time': 2120., 'parts': 2000000, 'turns': 1000},
+        # 'reference': {'time': 2120., 'parts': 2000000, 'turns': 1000},
+        'reference': {'time': 862.7, 'parts': 2000000, 'turns': 2000},
         # 'reference': {'time': 378.59, 'parts': 4000000, 'turns': 100},
 
         # 'exclude': [['v1', 'notcm'], ['v2', 'notcm'], ['v4', 'notcm']],
@@ -125,14 +124,170 @@ plots_config = {
         'ylabel': ['Speedup', 'Efficiency'],
         'title': 'Speedup-Efficiency graph',
         'ylim': {
-            'speedup': [0, 120],
-            'efficiency': [50, 110]
+            'speedup': [0, 40],
+            'efficiency': [20, 70]
         },
+        'nticks': 5,
         # 'ylim': [0, 16000],
         'figsize': (6, 3),
-        'image_name': images_dir + 'LHC-96B-2MPPB-uint16-nobcast-r1-speed-eff.pdf'
+        'image_name': images_dir + 'PS-2MPPB-interp4-r1-speed-eff.pdf'
 
     },
+
+    # 'plot4': {
+    #     'files': {
+    #         res_dir+'raw/PS-2MPPB-comb1-mtw50-r1/comm-comp-report.csv': {
+    #             'lines': {
+    #                 'omp': ['2', '5', '10', '20'],
+    #                 'type': ['total']}
+    #         }
+
+    #     },
+    #     'labels': {
+    #         '1-total': '1C/T',
+    #         '2-total': '2C/T',
+    #         '4-total': '4C/T',
+    #         '5-total': '5C/T',
+    #         '10-total': '10C/T',
+    #         '20-total': '20C/T'
+    #     },
+    #     'markers': {
+    #         # '5-total': 'x',
+    #         '10-total': 's',
+    #         '20-total': 'o'
+    #     },
+    #     'colors': {
+    #         'speedup': 'tab:blue',
+    #         'efficiency': 'tab:red'
+    #     },
+    #     # 'reference': {'time': 200.7, 'parts': 2000000, 'turns': 100},
+    #     # 'reference': {'time': 2120., 'parts': 2000000, 'turns': 1000},
+    #     'reference': {'time': 877.7, 'parts': 2000000, 'turns': 2000},
+    #     # 'reference': {'time': 378.59, 'parts': 4000000, 'turns': 100},
+
+    #     # 'exclude': [['v1', 'notcm'], ['v2', 'notcm'], ['v4', 'notcm']],
+    #     'ideal': '2-total',
+    #     'x_name': 'n',
+    #     'omp_name': 'omp',
+    #     'y_name': 'avg_time(sec)',
+    #     # 'y_err_name': 'std',
+    #     'xlabel': 'Cores',
+    #     'ylabel': ['Speedup', 'Efficiency'],
+    #     'title': 'Speedup-Efficiency graph',
+    #     'ylim': {
+    #         'speedup': [0, 80],
+    #         'efficiency': [45, 105]
+    #     },
+    #     'nticks': 5,
+    #     # 'ylim': [0, 16000],
+    #     'figsize': (6, 3),
+    #     'image_name': images_dir + 'PS-2MPPB-comb1-mtw50-r1-speed-eff.pdf'
+
+    # },
+
+
+    # 'plot5': {
+    #     'files': {
+    #         res_dir+'raw/PS-4MPPB-comb-r1/comm-comp-report.csv': {
+    #             'lines': {
+    #                 'omp': ['2', '5', '10', '20'],
+    #                 'type': ['total']}
+    #         }
+
+    #     },
+    #     'labels': {
+    #         '1-total': '1C/T',
+    #         '2-total': '2C/T',
+    #         '4-total': '4C/T',
+    #         '5-total': '5C/T',
+    #         '10-total': '10C/T',
+    #         '20-total': '20C/T'
+    #     },
+    #     'markers': {
+    #         # '5-total': 'x',
+    #         '10-total': 's',
+    #         '20-total': 'o'
+    #     },
+    #     'colors': {
+    #         'speedup': 'tab:blue',
+    #         'efficiency': 'tab:red'
+    #     },
+    #     # 'reference': {'time': 200.7, 'parts': 2000000, 'turns': 100},
+    #     # 'reference': {'time': 2120., 'parts': 2000000, 'turns': 1000},
+    #     'reference': {'time': 1606., 'parts': 4000000, 'turns': 2000},
+    #     # 'reference': {'time': 378.59, 'parts': 4000000, 'turns': 100},
+
+    #     # 'exclude': [['v1', 'notcm'], ['v2', 'notcm'], ['v4', 'notcm']],
+    #     'ideal': '2-total',
+    #     'x_name': 'n',
+    #     'omp_name': 'omp',
+    #     'y_name': 'avg_time(sec)',
+    #     # 'y_err_name': 'std',
+    #     'xlabel': 'Cores',
+    #     'ylabel': ['Speedup', 'Efficiency'],
+    #     'title': 'Speedup-Efficiency graph',
+    #     'ylim': {
+    #         'speedup': [0, 80],
+    #         'efficiency': [40, 100]
+    #     },
+    #     'nticks': 5,
+    #     # 'ylim': [0, 16000],
+    #     'figsize': (6, 3),
+    #     'image_name': images_dir + 'PS-4MPPB-comb-r1-speed-eff.pdf'
+
+    # },
+
+
+    # 'plot6': {
+    #     'files': {
+    #         res_dir+'raw/PS-4MPPB-comb1-mtw50-r1/comm-comp-report.csv': {
+    #             'lines': {
+    #                 'omp': ['2', '5', '10', '20'],
+    #                 'type': ['total']}
+    #         }
+
+    #     },
+    #     'labels': {
+    #         '1-total': '1C/T',
+    #         '2-total': '2C/T',
+    #         '4-total': '4C/T',
+    #         '5-total': '5C/T',
+    #         '10-total': '10C/T',
+    #         '20-total': '20C/T'
+    #     },
+    #     'markers': {
+    #         # '5-total': 'x',
+    #         '10-total': 's',
+    #         '20-total': 'o'
+    #     },
+    #     'colors': {
+    #         'speedup': 'tab:blue',
+    #         'efficiency': 'tab:red'
+    #     },
+    #     # 'reference': {'time': 200.7, 'parts': 2000000, 'turns': 100},
+    #     # 'reference': {'time': 2120., 'parts': 2000000, 'turns': 1000},
+    #     'reference': {'time': 1623.7, 'parts': 4000000, 'turns': 2000},
+    #     # 'reference': {'time': 378.59, 'parts': 4000000, 'turns': 100},
+
+    #     # 'exclude': [['v1', 'notcm'], ['v2', 'notcm'], ['v4', 'notcm']],
+    #     'ideal': '2-total',
+    #     'x_name': 'n',
+    #     'omp_name': 'omp',
+    #     'y_name': 'avg_time(sec)',
+    #     # 'y_err_name': 'std',
+    #     'xlabel': 'Cores',
+    #     'ylabel': ['Speedup', 'Efficiency'],
+    #     'title': 'Speedup-Efficiency graph',
+    #     'ylim': {
+    #         'speedup': [0, 100],
+    #         'efficiency': [50, 100]
+    #     },
+    #     'nticks': 5,
+    #     # 'ylim': [0, 16000],
+    #     'figsize': (6, 3),
+    #     'image_name': images_dir + 'PS-4MPPB-comb1-mtw50-r1-speed-eff.pdf'
+
+    # },
 
     # 'plot4': {
     #     'files': {
@@ -310,7 +465,7 @@ if __name__ == '__main__':
             for c in config['extra']:
                 exec(c)
 
-        nticks = 7
+        nticks = config['nticks']
         ax1.yaxis.set_major_locator(matplotlib.ticker.LinearLocator(nticks))
         ax2.yaxis.set_major_locator(matplotlib.ticker.LinearLocator(nticks))
         for tl in ax1.get_yticklabels():
@@ -325,7 +480,7 @@ if __name__ == '__main__':
                                  marker=v, label=config['labels'][k])
             handles.append(line)
 
-        plt.legend(handles=handles, loc='lower right', fancybox=True, fontsize=9.5,
+        plt.legend(handles=handles, loc='lower left', fancybox=True, fontsize=9.5,
                    labelspacing=0, borderpad=0.5, framealpha=0.4,
                    handletextpad=0.5, handlelength=2, borderaxespad=0)
         plt.tight_layout()
