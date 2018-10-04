@@ -155,6 +155,14 @@ if args.get('seed', None) is not None:
     seed = args['seed']
 
 
+print({'N_t':N_t, 'n_macroparticles_per_bunch':n_macroparticles_per_bunch,
+        'n_slices_per_bunch': n_slices_per_bunch,
+        'n_turns_memory':n_turns_memory, 
+        'timing.mode':timing.mode, 'n_bunches':n_bunches, 
+        'N_t_reduce':N_t_reduce,
+        'N_t_monitor':N_t_monitor, 'seed':seed, 'log':log})
+
+
 n_macroparticles = n_bunches * n_macroparticles_per_bunch
 intensity = (4*n_bunches*intensity_per_bunch)
 intensity_per_bunch = intensity/n_bunches

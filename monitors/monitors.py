@@ -335,89 +335,166 @@ class SlicesMonitor(object):
         the slicing.
     '''
 
-    def __init__(self, filename, n_turns, profile, Nbunches):
+    def __init__(self, filename, n_turns, profile, Nbunches, buffer_size=100):
 
         self.h5file = hp.File(filename + '.h5', 'w')
         self.n_turns = n_turns
         self.i_turn = 0
         self.profile = profile
-        self.h5file.create_group('Slices')
-        self.h5group = self.h5file['Slices']
+        self.beam = self.profile.Beam
+        self.h5file.create_group('default')
+        self.h5group = self.h5file['default']
         self.Nbunches = Nbunches
+        self.buffer_size = buffer_size
+        self.last_save = 0
 
-        self.create_data('n_macroparticles', self.h5file['Slices'],
+        self.create_data('profile', self.h5file['default'],
                          (self.n_turns, self.profile.n_slices), dtype='int32')
 
         self.create_data(
-            'turns', self.h5file['Slices'], (self.n_turns, ), dtype='int32')
+            'turns', self.h5file['default'], (self.n_turns, ), dtype='int32')
+
+        self.create_data('n_particles', self.h5file['default'],
+                         (self.n_turns, self.Nbunches), dtype='int')
 
         self.create_data(
-            'mean_dE', self.h5file['Slices'], (self.n_turns, self.Nbunches),
+            'mean_dE', self.h5file['default'], (self.n_turns, self.Nbunches),
             dtype='float64')
 
         self.create_data(
-            'mean_dt', self.h5file['Slices'], (self.n_turns, self.Nbunches),
+            'mean_dt', self.h5file['default'], (self.n_turns, self.Nbunches),
             dtype='float64')
 
         self.create_data(
-            'std_dE', self.h5file['Slices'], (self.n_turns, self.Nbunches),
+            'std_dE', self.h5file['default'], (self.n_turns, self.Nbunches),
             dtype='float64')
 
         self.create_data(
-            'std_dt', self.h5file['Slices'], (self.n_turns, self.Nbunches),
+            'std_dt', self.h5file['default'], (self.n_turns, self.Nbunches),
             dtype='float64')
+
+        self.create_data('bunch_length', self.h5file['default'],
+                         (self.n_turns, self.Nbunches), dtype='float64')
+
+        self.b_profile = np.zeros(
+            (self.buffer_size, self.profile.n_slices), dtype='int32')
+        self.b_turns = np.zeros(self.buffer_size, dtype='int32')
+        self.b_n_particles = np.zeros((self.buffer_size, self.Nbunches), dtype='int32')
+        self.b_mean_dE = np.zeros((self.buffer_size, self.Nbunches), dtype=float)
+        self.b_mean_dt = np.zeros((self.buffer_size, self.Nbunches), dtype=float)
+        self.b_std_dE = np.zeros((self.buffer_size, self.Nbunches), dtype=float)
+        self.b_std_dt = np.zeros((self.buffer_size, self.Nbunches), dtype=float)
+        self.b_bunch_length = np.zeros((self.buffer_size, self.Nbunches), dtype=float)
+
+
+
+    def __del__(self):
+        if self.i_turn > self.last_save:
+            self.write_data()
+        # self.h5file.close()
+
+
+    def write_buffer(self, turn):
+
+        # Nppb = int(self.profile.Beam.n_macroparticles // self.Nbunches)
+        # mean_dE = np.zeros(self.Nbunches, dtype=float)
+        # mean_dt = np.zeros(self.Nbunches, dtype=float)
+        # std_dE = np.zeros(self.Nbunches, dtype=float)
+        # std_dt = np.zeros(self.Nbunches, dtype=float)
+        # for i in range(self.Nbunches):
+        #     mean_dE[i] = np.mean(self.profile.Beam.dE[i*Nppb:(i+1)*Nppb])
+        #     mean_dt[i] = np.mean(self.profile.Beam.dt[i*Nppb:(i+1)*Nppb])
+        #     std_dE[i] = np.std(self.profile.Beam.dE[i*Nppb:(i+1)*Nppb])
+        #     std_dt[i] = np.std(self.profile.Beam.dt[i*Nppb:(i+1)*Nppb])
+
+        idx = self.i_turn % self.buffer_size
+
+        self.b_profile[idx] = self.profile.n_macroparticles.astype(np.int32)
+        # self.b_mean_dE[idx] = mean_dE
+        # self.b_mean_dt[idx] = mean_dt
+        # self.b_std_dE[idx] = std_dE
+        # self.b_std_dt[idx] = std_dt
+
+        self.b_mean_dE[idx] = self.beam.mean_dE
+        self.b_mean_dt[idx] = self.beam.mean_dt
+        self.b_std_dE[idx] = self.beam.sigma_dE
+        self.b_std_dt[idx] = self.beam.sigma_dt
+
+        # self.b_bunch_length[idx] = mean_dE
+        self.b_n_particles[idx] = self.beam.n_macroparticles_alive
+        self.b_turns[idx] = turn
+
+    def write_data(self):
+
+        i1_h5 = self.last_save
+        i2_h5 = self.i_turn
+        i1_b = 0
+        i2_b = self.i_turn - self.last_save
+        
+        self.last_save = self.i_turn
+
+        # if self.i_turn % self.buffer_size == 0:
+        #     i1_h5 = self.i_turn - self.buffer_size
+        #     i2_h5 = self.i_turn
+        #     i1_b = 0
+        #     i2_b = self.buffer_size
+        # else:
+        #     i1_h5 = int((self.i_turn // self.buffer_size) * self.buffer_size)
+        #     i2_h5 = self.i_turn
+        #     i1_b = 0
+        #     i2_b = self.i_turn % self.buffer_size
+
+        self.h5group['mean_dE'][i1_h5:i2_h5] = self.b_mean_dE[i1_b:i2_b]
+        self.h5group['mean_dt'][i1_h5:i2_h5] = self.b_mean_dt[i1_b:i2_b]
+        self.h5group['std_dE'][i1_h5:i2_h5] = self.b_std_dE[i1_b:i2_b]
+        self.h5group['std_dt'][i1_h5:i2_h5] = self.b_std_dt[i1_b:i2_b]
+        self.h5group['profile'][i1_h5:i2_h5] = self.b_profile[i1_b:i2_b]
+        self.h5group['bunch_length'][i1_h5:i2_h5] = self.b_bunch_length[i1_b:i2_b]
+        self.h5group['turns'][i1_h5:i2_h5] = self.b_turns[i1_b:i2_b]
+        self.h5group['n_particles'][i1_h5:i2_h5] = self.b_n_particles[i1_b:i2_b]
 
     def track(self, turn):
 
-        # if not self.i_turn:
-        #     # self.create_data(self.h5file['Slices'], (self.profile.n_slices,
-        #     #                                          self.n_turns))
-        #     self.create_data(self.h5file['Slices'], (self.n_turns,
-        #                                              self.profile.n_slices))
-        #     self.write_data(self.profile, self.h5file['Slices'], self.i_turn)
-        # else:
-        self.h5group['n_macroparticles'][self.i_turn] = \
-            self.profile.n_macroparticles.astype(np.int32)
+        # self.losses_longitudinal_cut()
+        # self.losses_energy_cut()
 
-        self.h5group['turns'][self.i_turn] = turn
+        # self.beam.statistics()
 
-        Nppb = int(self.profile.Beam.n_macroparticles // self.Nbunches)
-        mean_dE = np.zeros(self.Nbunches, dtype=float)
-        mean_dt = np.zeros(self.Nbunches, dtype=float)
-        std_dE = np.zeros(self.Nbunches, dtype=float)
-        std_dt = np.zeros(self.Nbunches, dtype=float)
-        for i in range(self.Nbunches):
-            mean_dE[i] =  np.mean(self.profile.Beam.dE[i*Nppb:(i+1)*Nppb])
-            mean_dt[i] =  np.mean(self.profile.Beam.dt[i*Nppb:(i+1)*Nppb])
-            std_dE[i] =  np.std(self.profile.Beam.dE[i*Nppb:(i+1)*Nppb])
-            std_dt[i] =  np.std(self.profile.Beam.dt[i*Nppb:(i+1)*Nppb])
-            
-        self.h5group['mean_dE'][self.i_turn] = mean_dE
-        self.h5group['mean_dt'][self.i_turn] = mean_dt
-        self.h5group['std_dE'][self.i_turn] = std_dE
-        self.h5group['std_dt'][self.i_turn] = std_dt
-
-        #  self.h5group['std_dE'][self.i_turn][i] = np.std(
-        #      self.profile.Beam.dE[i*Nppb:(i+1)*Nppb])
-        #  self.h5group['mean_dt'][self.i_turn][i] = np.mean(
-        #      self.profile.Beam.dt[i*Nppb:(i+1)*Nppb])
-        #  self.h5group['std_dt'][self.i_turn][i] = np.std(
-        #      self.profile.Beam.dt[i*Nppb:(i+1)*Nppb])
-#  
-        # self.write_data(self.profile, self.h5file['Slices'], self.i_turn)
-        # self.write_data(turn, self.h5file['Slices'], self.i_turn)
-
+        self.write_buffer(turn)
         self.i_turn += 1
+
+        if (self.i_turn > 0) and (self.i_turn % self.buffer_size == 0):
+            self.write_data()
+
+        # self.h5group['profile'][self.i_turn] = \
+        #     self.profile.n_macroparticles.astype(np.int32)
+
+        # self.h5group['turns'][self.i_turn] = turn
+
+        # Nppb = int(self.profile.Beam.n_macroparticles // self.Nbunches)
+        # mean_dE = np.zeros(self.Nbunches, dtype=float)
+        # mean_dt = np.zeros(self.Nbunches, dtype=float)
+        # std_dE = np.zeros(self.Nbunches, dtype=float)
+        # std_dt = np.zeros(self.Nbunches, dtype=float)
+        # for i in range(self.Nbunches):
+        #     mean_dE[i] = np.mean(self.profile.Beam.dE[i*Nppb:(i+1)*Nppb])
+        #     mean_dt[i] = np.mean(self.profile.Beam.dt[i*Nppb:(i+1)*Nppb])
+        #     std_dE[i] = np.std(self.profile.Beam.dE[i*Nppb:(i+1)*Nppb])
+        #     std_dt[i] = np.std(self.profile.Beam.dt[i*Nppb:(i+1)*Nppb])
+
+        # self.h5group['mean_dE'][self.i_turn] = mean_dE
+        # self.h5group['mean_dt'][self.i_turn] = mean_dt
+        # self.h5group['std_dE'][self.i_turn] = std_dE
+        # self.h5group['std_dt'][self.i_turn] = std_dt
+
+        # self.i_turn += 1
 
     def create_data(self, name, h5group, dims, dtype):
 
         h5group.create_dataset(name, dims, compression='gzip',
                                compression_opts=4, dtype=dtype, shuffle=True)
 
-    # def write_data(self, name, h5group, i_turn):
-
-    #     # h5group["n_macroparticles"][:, i_turn] = self.profile.n_macroparticles
-    #     h5group[name][i_turn, :] = self.profile.n_macroparticles
-
     def close(self):
+        if self.i_turn > self.last_save:
+            self.write_data()
         self.h5file.close()

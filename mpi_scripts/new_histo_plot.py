@@ -18,9 +18,116 @@ if not os.path.exists(images_dir):
 
 plots_config = {
 
-    'plot5': {
+    # 'plot5': {
+    #     'files': {
+    #         res_dir+'raw/PS-4MPPB-comb1-mtw50-r1-2/comm-comp-report.csv': {
+    #                 'lines': {
+    #                     'omp': ['2', '5', '10', '20'],
+    #                     'type': ['comp', 'serial', 'comm', 'other', 'overhead']}
+    #         }
+
+    #     },
+    #     'labels': {
+    #         # '1': 'hyb-T1',
+    #         # '2': 'hyb-T2',
+    #         # '4': 'hyb-T4',
+    #         '5': 'hyb-T5',
+    #         '10': 'hyb-T10',
+    #         '20': 'hybrid-T20'
+    #     },
+    #     'colors': {
+    #         # 'comm': 'tab:green',
+    #         # 'comp': 'tab:blue',
+    #         # 'serial': 'tab:orange',
+    #         # 'other': 'tab:purple'
+    #         'comm': '0.2',
+    #         'comp': '0.6',
+    #         'serial': '1',
+    #         # 'other': '1'
+
+    #         # '10': 'tab:red'
+    #         # '20000000-20-comp': 'tab:purple'
+    #     },
+    #     'hatches': {
+    #         # '5': '/',
+    #         '10': '',
+    #         '20': 'x',
+    #     },
+    #     'order': ['comm', 'serial', 'comp'],
+    #     # 'exclude': [['v1', 'notcm'], ['v2', 'notcm'], ['v4', 'notcm']],
+    #     'x_name': 'n',
+    #     'width': 3,
+    #     'displs': 3.5,
+    #     'omp_name': 'omp',
+    #     'y_name': 'avg_percent',
+    #     'y_err_name': 'std',
+    #     'xlabel': 'Cores (x10)',
+    #     'ylabel': 'Percent',
+    #     'title': 'Run-Time breakdown',
+    #     'ylim': [0, 100],
+    #     'figsize': (5, 3),
+    #     'image_name': images_dir + 'PS-4MPPB-comb1-mtw50-r1-2-newhisto.pdf'
+
+    # },
+
+
+    # 'plot4': {
+    #     'files': {
+    #         res_dir+'raw/LHC-96B-2MPPB-uint16-nobcast-r1-2/comm-comp-report.csv': {
+    #                 'lines': {
+    #                     'omp': ['2', '5', '10', '20'],
+    #                     'type': ['comp', 'serial', 'comm', 'other', 'overhead']}
+    #         }
+
+    #     },
+    #     'labels': {
+    #         # '1': 'hyb-T1',
+    #         # '2': 'hyb-T2',
+    #         # '4': 'hyb-T4',
+    #         '5': 'hyb-T5',
+    #         '10': 'hyb-T10',
+    #         '20': 'hybrid-T20'
+    #     },
+    #     'colors': {
+    #         # 'comm': 'tab:green',
+    #         # 'comp': 'tab:blue',
+    #         # 'serial': 'tab:orange',
+    #         # 'other': 'tab:purple'
+    #         'comm': '0.2',
+    #         'comp': '0.6',
+    #         'serial': '1',
+    #         # 'other': '1'
+
+    #         # '10': 'tab:red'
+    #         # '20000000-20-comp': 'tab:purple'
+    #     },
+    #     'hatches': {
+    #         # '5': '/',
+    #         '10': '',
+    #         '20': 'x',
+    #     },
+    #     'order': ['comm', 'serial', 'comp'],
+    #     # 'exclude': [['v1', 'notcm'], ['v2', 'notcm'], ['v4', 'notcm']],
+    #     'x_name': 'n',
+    #     'width': 3,
+    #     'displs': 3.5,
+    #     'omp_name': 'omp',
+    #     'y_name': 'avg_percent',
+    #     'y_err_name': 'std',
+    #     'xlabel': 'Cores (x10)',
+    #     'ylabel': 'Percent',
+    #     'title': 'Run-Time breakdown',
+    #     'ylim': [0, 100],
+    #     'figsize': (5, 3),
+    #     'image_name': images_dir + 'LHC-96B-2MPPB-uint16-nobcast-r1-2-newhisto.pdf'
+
+    # },
+
+
+
+    'plot3': {
         'files': {
-            res_dir+'raw/PS-2MPPB-comb1-mtw50-r1/comm-comp-report.csv': {
+            res_dir+'raw/SPS-72B-4MPPB-uint16-r1-2/comm-comp-report.csv': {
                     'lines': {
                         'omp': ['2', '5', '10', '20'],
                         'type': ['comp', 'serial', 'comm', 'other', 'overhead']}
@@ -61,12 +168,12 @@ plots_config = {
         'omp_name': 'omp',
         'y_name': 'avg_percent',
         'y_err_name': 'std',
-        'xlabel': 'Cores',
+        'xlabel': 'Cores (x10)',
         'ylabel': 'Percent',
         'title': 'Run-Time breakdown',
         'ylim': [0, 100],
-        'figsize': (6, 3),
-        'image_name': images_dir + 'PS-2MPPB-comb1-mtw50-r1-newhisto.pdf'
+        'figsize': (5, 3),
+        'image_name': images_dir + 'SPS-72B-4MPPB-uint16-r1-2-newhisto.pdf'
 
     },
 
@@ -158,6 +265,11 @@ if __name__ == '__main__':
 
                 bottom += y
 
+                if phase == 'serial' and omp=='10':
+                    annotate(plt.gca(), x+displs, bottom, ha='center',
+                        size=10.5)
+
+
             displs += config['displs']
 
         if 'extra' in config:
@@ -180,7 +292,7 @@ if __name__ == '__main__':
         #         [], [], color='black', marker=v, label=k)
         # handles.append(line)
 
-        plt.xticks(xticks+config['width']/2, np.array(xticks, int))
+        plt.xticks(xticks+config['width']/2, np.array(xticks, int)//10)
         # plt.legend(loc='best', fancybox=True, fontsize=9.5,
         plt.legend(handles=handles, loc='center left', fancybox=True, fontsize=9,
                    ncol=1, columnspacing=1,

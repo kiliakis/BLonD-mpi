@@ -30,6 +30,11 @@ parser.add_argument('-addload', '--addload', type=float, default=0.0,
                     help='Additional Load for tasks close to the master.')
 
 
+parser.add_argument('-beginafter', '--beginafter', type=int,
+                    help='Start the approximation after so many turns.')
+
+
+
 parser.add_argument('-o', '--omp', type=int, default=1,
                     help='Number of openmp threads to use.'
                     '\nDefault: 1')

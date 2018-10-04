@@ -18,74 +18,10 @@ if not os.path.exists(images_dir):
 plots_config = {
 
 
-    #   'plot3': {
-    #     'files': {
-    #         res_dir+'raw/LHC-4n-96B-lt-lb-nogat-int-op-knd-r5-10kt/comm-comp-report.csv': {
-    #             'lines': {
-    #                       'omp': ['4', '5', '10'],
-    #                       'type': ['total']}
-    #         }
 
-    #     },
-    #     'labels': {
-    #                '1-total': 'hybrid-T1',
-    #                '2-total': 'hybrid-T2',
-    #                '4-total': 'hybrid-T4',
-    #                '5-total': 'hybrid-T5',
-    #                '10-total': 'hybrid-T10',
-    #                '20-total': 'hybrid-T20'
-    #                },
-    #     'reference': { 'time': 8213. , 'parts': 1000000, 'turns':10000},
-    #     # 'exclude': [['v1', 'notcm'], ['v2', 'notcm'], ['v4', 'notcm']],
-    #     'ideal': '2-total',
-    #     'x_name': 'n',
-    #     'omp_name': 'omp',
-    #     'y_name': 'avg_time(sec)',
-    #     # 'y_err_name': 'std',
-    #     'xlabel': 'MPI Tasks/OMP Threads',
-    #     'ylabel': 'Speedup',
-    #     'title': '',
-    #     # 'ylim': [0, 16000],
-    #     'figsize': (6, 3),
-    #     'image_name': images_dir + 'LHC-4n-speedup-96B-lt-lb-int-op-knd-r5-10kt.pdf'
-
-    # },
-
-    # 'plot4': {
-    #     'files': {
-    #         res_dir+'raw/LHC-96B-uint16-r1/comm-comp-report.csv': {
-    #             'lines': {
-    #                 'omp': ['2', '5', '10', '20'],
-    #                 'type': ['total']}
-    #         }
-
-    #     },
-    #     'labels': {
-    #         '1-total': 'hybrid-T1',
-    #         '2-total': 'hybrid-T2',
-    #         '4-total': 'hybrid-T4',
-    #         '5-total': 'hybrid-T5',
-    #         '10-total': 'hybrid-T10',
-    #         '20-total': 'hybrid-T20'
-    #     },
-    #     'reference': {'time': 430., 'parts': 4000000, 'turns': 100},
-    #     # 'exclude': [['v1', 'notcm'], ['v2', 'notcm'], ['v4', 'notcm']],
-    #     'ideal': '2-total',
-    #     'x_name': 'n',
-    #     'omp_name': 'omp',
-    #     'y_name': 'avg_time(sec)',
-    #     # 'y_err_name': 'std',
-    #     'xlabel': 'MPI Tasks/OMP Threads',
-    #     'ylabel': 'Speedup',
-    #     'title': '',
-    #     # 'ylim': [0, 16000],
-    #     'figsize': (6, 3),
-    #     'image_name': images_dir + 'LHC-96B-uint16-r1-speedup.pdf'
-
-    # },
-    'plot4': {
+    'plot6': {
         'files': {
-            res_dir+'raw/PS-2MPPB-interp4-r1/comm-comp-report.csv': {
+            res_dir+'raw/PS-4MPPB-comb1-mtw50-r1-2/comm-comp-report.csv': {
                 'lines': {
                     'omp': ['2', '5', '10', '20'],
                     'type': ['total']}
@@ -111,7 +47,7 @@ plots_config = {
         },
         # 'reference': {'time': 200.7, 'parts': 2000000, 'turns': 100},
         # 'reference': {'time': 2120., 'parts': 2000000, 'turns': 1000},
-        'reference': {'time': 862.7, 'parts': 2000000, 'turns': 2000},
+        'reference': {'time': 1623.7, 'parts': 4000000, 'turns': 2000},
         # 'reference': {'time': 378.59, 'parts': 4000000, 'turns': 100},
 
         # 'exclude': [['v1', 'notcm'], ['v2', 'notcm'], ['v4', 'notcm']],
@@ -120,23 +56,24 @@ plots_config = {
         'omp_name': 'omp',
         'y_name': 'avg_time(sec)',
         # 'y_err_name': 'std',
-        'xlabel': 'Cores',
+        'xlabel': 'Cores (x10)',
         'ylabel': ['Speedup', 'Efficiency'],
         'title': 'Speedup-Efficiency graph',
         'ylim': {
-            'speedup': [0, 40],
-            'efficiency': [20, 70]
+            'speedup': [0, 100],
+            'efficiency': [50, 100]
         },
-        'nticks': 5,
+        'nticks': 6,
+        'legend_loc': 'lower center',
         # 'ylim': [0, 16000],
-        'figsize': (6, 3),
-        'image_name': images_dir + 'PS-2MPPB-interp4-r1-speed-eff.pdf'
+        'figsize': (5, 3),
+        'image_name': images_dir + 'PS-4MPPB-comb1-mtw50-r1-2-speed-eff.pdf'
 
     },
 
     # 'plot4': {
     #     'files': {
-    #         res_dir+'raw/PS-2MPPB-comb1-mtw50-r1/comm-comp-report.csv': {
+    #         res_dir+'raw/LHC-96B-2MPPB-uint16-nobcast-r1-2/comm-comp-report.csv': {
     #             'lines': {
     #                 'omp': ['2', '5', '10', '20'],
     #                 'type': ['total']}
@@ -160,153 +97,9 @@ plots_config = {
     #         'speedup': 'tab:blue',
     #         'efficiency': 'tab:red'
     #     },
-    #     # 'reference': {'time': 200.7, 'parts': 2000000, 'turns': 100},
-    #     # 'reference': {'time': 2120., 'parts': 2000000, 'turns': 1000},
-    #     'reference': {'time': 877.7, 'parts': 2000000, 'turns': 2000},
-    #     # 'reference': {'time': 378.59, 'parts': 4000000, 'turns': 100},
+    #     # 'reference': {'time': 200.71, 'parts': 2000000, 'turns': 100},
+    #     'reference': {'time': 2120., 'parts': 2000000, 'turns': 1000},
 
-    #     # 'exclude': [['v1', 'notcm'], ['v2', 'notcm'], ['v4', 'notcm']],
-    #     'ideal': '2-total',
-    #     'x_name': 'n',
-    #     'omp_name': 'omp',
-    #     'y_name': 'avg_time(sec)',
-    #     # 'y_err_name': 'std',
-    #     'xlabel': 'Cores',
-    #     'ylabel': ['Speedup', 'Efficiency'],
-    #     'title': 'Speedup-Efficiency graph',
-    #     'ylim': {
-    #         'speedup': [0, 80],
-    #         'efficiency': [45, 105]
-    #     },
-    #     'nticks': 5,
-    #     # 'ylim': [0, 16000],
-    #     'figsize': (6, 3),
-    #     'image_name': images_dir + 'PS-2MPPB-comb1-mtw50-r1-speed-eff.pdf'
-
-    # },
-
-
-    # 'plot5': {
-    #     'files': {
-    #         res_dir+'raw/PS-4MPPB-comb-r1/comm-comp-report.csv': {
-    #             'lines': {
-    #                 'omp': ['2', '5', '10', '20'],
-    #                 'type': ['total']}
-    #         }
-
-    #     },
-    #     'labels': {
-    #         '1-total': '1C/T',
-    #         '2-total': '2C/T',
-    #         '4-total': '4C/T',
-    #         '5-total': '5C/T',
-    #         '10-total': '10C/T',
-    #         '20-total': '20C/T'
-    #     },
-    #     'markers': {
-    #         # '5-total': 'x',
-    #         '10-total': 's',
-    #         '20-total': 'o'
-    #     },
-    #     'colors': {
-    #         'speedup': 'tab:blue',
-    #         'efficiency': 'tab:red'
-    #     },
-    #     # 'reference': {'time': 200.7, 'parts': 2000000, 'turns': 100},
-    #     # 'reference': {'time': 2120., 'parts': 2000000, 'turns': 1000},
-    #     'reference': {'time': 1606., 'parts': 4000000, 'turns': 2000},
-    #     # 'reference': {'time': 378.59, 'parts': 4000000, 'turns': 100},
-
-    #     # 'exclude': [['v1', 'notcm'], ['v2', 'notcm'], ['v4', 'notcm']],
-    #     'ideal': '2-total',
-    #     'x_name': 'n',
-    #     'omp_name': 'omp',
-    #     'y_name': 'avg_time(sec)',
-    #     # 'y_err_name': 'std',
-    #     'xlabel': 'Cores',
-    #     'ylabel': ['Speedup', 'Efficiency'],
-    #     'title': 'Speedup-Efficiency graph',
-    #     'ylim': {
-    #         'speedup': [0, 80],
-    #         'efficiency': [40, 100]
-    #     },
-    #     'nticks': 5,
-    #     # 'ylim': [0, 16000],
-    #     'figsize': (6, 3),
-    #     'image_name': images_dir + 'PS-4MPPB-comb-r1-speed-eff.pdf'
-
-    # },
-
-
-    # 'plot6': {
-    #     'files': {
-    #         res_dir+'raw/PS-4MPPB-comb1-mtw50-r1/comm-comp-report.csv': {
-    #             'lines': {
-    #                 'omp': ['2', '5', '10', '20'],
-    #                 'type': ['total']}
-    #         }
-
-    #     },
-    #     'labels': {
-    #         '1-total': '1C/T',
-    #         '2-total': '2C/T',
-    #         '4-total': '4C/T',
-    #         '5-total': '5C/T',
-    #         '10-total': '10C/T',
-    #         '20-total': '20C/T'
-    #     },
-    #     'markers': {
-    #         # '5-total': 'x',
-    #         '10-total': 's',
-    #         '20-total': 'o'
-    #     },
-    #     'colors': {
-    #         'speedup': 'tab:blue',
-    #         'efficiency': 'tab:red'
-    #     },
-    #     # 'reference': {'time': 200.7, 'parts': 2000000, 'turns': 100},
-    #     # 'reference': {'time': 2120., 'parts': 2000000, 'turns': 1000},
-    #     'reference': {'time': 1623.7, 'parts': 4000000, 'turns': 2000},
-    #     # 'reference': {'time': 378.59, 'parts': 4000000, 'turns': 100},
-
-    #     # 'exclude': [['v1', 'notcm'], ['v2', 'notcm'], ['v4', 'notcm']],
-    #     'ideal': '2-total',
-    #     'x_name': 'n',
-    #     'omp_name': 'omp',
-    #     'y_name': 'avg_time(sec)',
-    #     # 'y_err_name': 'std',
-    #     'xlabel': 'Cores',
-    #     'ylabel': ['Speedup', 'Efficiency'],
-    #     'title': 'Speedup-Efficiency graph',
-    #     'ylim': {
-    #         'speedup': [0, 100],
-    #         'efficiency': [50, 100]
-    #     },
-    #     'nticks': 5,
-    #     # 'ylim': [0, 16000],
-    #     'figsize': (6, 3),
-    #     'image_name': images_dir + 'PS-4MPPB-comb1-mtw50-r1-speed-eff.pdf'
-
-    # },
-
-    # 'plot4': {
-    #     'files': {
-    #         res_dir+'raw/LHC-96B-uint16-r1/comm-comp-report.csv': {
-    #             'lines': {
-    #                 'omp': ['2', '5', '10', '20'],
-    #                 'type': ['total']}
-    #         }
-
-    #     },
-    #     'labels': {
-    #         '1-total': 'hybrid-T1',
-    #         '2-total': 'hybrid-T2',
-    #         '4-total': 'hybrid-T4',
-    #         '5-total': 'hybrid-T5',
-    #         '10-total': 'hybrid-T10',
-    #         '20-total': 'hybrid-T20'
-    #     },
-    #     'reference': {'time': 200.71, 'parts': 2000000, 'turns': 100},
     #     # 'reference': { 'time': 8213. , 'parts': 1000000, 'turns':10000},
 
     #     # 'exclude': [['v1', 'notcm'], ['v2', 'notcm'], ['v4', 'notcm']],
@@ -315,79 +108,69 @@ plots_config = {
     #     'omp_name': 'omp',
     #     'y_name': 'avg_time(sec)',
     #     # 'y_err_name': 'std',
-    #     'xlabel': 'MPI Tasks/OMP Threads',
-    #     'ylabel': 'Speedup',
-    #     'title': '',
-    #     # 'ylim': [0, 16000],
-    #     'figsize': (6, 3),
-    #     'image_name': images_dir + 'LHC-96B-uint16-r1-speedup.pdf'
+    #     'xlabel': 'Cores (x10)',
+    #     'ylabel': ['Speedup', 'Efficiency'],
+    #     'title': 'Speedup-Efficiency graph',
+    #     'ylim': {
+    #         'speedup': [0, 120],
+    #         'efficiency': [60, 120]
+    #     },
+    #     'nticks': 7,
+    #     'legend_loc':'lower center',
+    #     'figsize': (5, 3),
+    #     'image_name': images_dir + 'LHC-96B-2MPPB-uint16-nobcast-r1-2-speedup.pdf'
 
     # },
 
 
-    # 'plot3': {
-    #     'files': {
-    #         res_dir+'raw/SPS-8n-72B-packed-mul-r2/comm-comp-report.csv': {
-    #             'lines': {
-    #                 'omp': ['2', '5', '10', '20'],
-    #                 'type': ['total']}
-    #         }
-
-    #     },
-    #     'labels': {
-    #         '1-total': 'hybrid-T1',
-    #         '2-total': 'hybrid-T2',
-    #         '4-total': 'hybrid-T4',
-    #         '5-total': 'hybrid-T5',
-    #         '10-total': 'hybrid-T10',
-    #         '20-total': 'hybrid-T20'
-    #     },
-    #     'reference': {'time': 430., 'parts': 4000000, 'turns': 100},
-    #     # 'exclude': [['v1', 'notcm'], ['v2', 'notcm'], ['v4', 'notcm']],
-    #     'ideal': '2-total',
-    #     'x_name': 'n',
-    #     'omp_name': 'omp',
-    #     'y_name': 'avg_time(sec)',
-    #     # 'y_err_name': 'std',
-    #     'xlabel': 'MPI Tasks/OMP Threads',
-    #     'ylabel': 'Speedup',
-    #     'title': '',
-    #     # 'ylim': [0, 16000],
-    #     'figsize': (6, 3),
-    #     'image_name': images_dir + 'SPS-8n-72B-packed-mul-r2-speedup.pdf'
-
-    # },
 
     # 'plot2': {
     #     'files': {
-    #         res_dir+'raw/SPS-8n-72B-packed-mul-r5/comm-comp-report.csv': {
+    #         res_dir+'raw/SPS-72B-4MPPB-uint16-r1-2/comm-comp-report.csv': {
     #             'lines': {
     #                 'omp': ['2', '5', '10', '20'],
     #                 'type': ['total']}
     #         }
 
     #     },
-    #     'labels': {
-    #         '1-total': 'hybrid-T1',
-    #         '2-total': 'hybrid-T2',
-    #         '4-total': 'hybrid-T4',
-    #         '5-total': 'hybrid-T5',
-    #         '10-total': 'hybrid-T10',
-    #         '20-total': 'hybrid-T20'
-    #     },
+
     #     'reference': {'time': 430., 'parts': 4000000, 'turns': 100},
+    #     # 'exclude': [['v1', 'notcm'], ['v2', 'notcm'], ['v4', 'notcm']],
+    #     'labels': {
+    #         '1-total': '1C/T',
+    #         '2-total': '2C/T',
+    #         '4-total': '4C/T',
+    #         '5-total': '5C/T',
+    #         '10-total': '10C/T',
+    #         '20-total': '20C/T'
+    #     },
+    #     'markers': {
+    #         # '5-total': 'x',
+    #         '10-total': 's',
+    #         '20-total': 'o'
+    #     },
+    #     'colors': {
+    #         'speedup': 'tab:blue',
+    #         'efficiency': 'tab:red'
+    #     },
+
     #     # 'exclude': [['v1', 'notcm'], ['v2', 'notcm'], ['v4', 'notcm']],
     #     'ideal': '2-total',
     #     'x_name': 'n',
     #     'omp_name': 'omp',
     #     'y_name': 'avg_time(sec)',
     #     # 'y_err_name': 'std',
-    #     'xlabel': 'MPI Tasks/OMP Threads',
-    #     'ylabel': 'Speedup',
-    #     'title': '',
-    #     # 'ylim': [0, 16000],
-    #     'figsize': (6, 3),
-    #     'image_name': images_dir + 'SPS-8n-72B-packed-mul-r5-speedup.pdf'
+    #     'xlabel': 'Cores (x10)',
+    #     'ylabel': ['Speedup', 'Efficiency'],
+    #     'title': 'Speedup-Efficiency graph',
+    #     'ylim': {
+    #         'speedup': [0, 120],
+    #         'efficiency': [60, 150]
+    #     },
+    #     'nticks': 7,
+    #     'legend_loc':'lower center',
+    #     'figsize': (5, 3),
+    #     'image_name': images_dir + 'SPS-72B-4MPPB-uint16-r1-2-speed-eff.pdf'
 
     # },
 
@@ -452,12 +235,17 @@ if __name__ == '__main__':
 
             efficiency = 100 * speedup / x
 
+            
             # We want speedup, compared to 1 worker with 1 thread
-            ax1.errorbar(x, speedup, yerr=None, color=config['colors']['speedup'],
+            ax1.errorbar(x//10, speedup, yerr=None, color=config['colors']['speedup'],
                          capsize=2, marker=config['markers'][key], markersize=4,
                          linewidth=1.)
+            
+            if '10' in key:
+                plt.xticks(x//10)
+                annotate(ax1, x//10, speedup, ha='center', va='bottom')
 
-            ax2.errorbar(x, efficiency, yerr=None, color=config['colors']['efficiency'],
+            ax2.errorbar(x//10, efficiency, yerr=None, color=config['colors']['efficiency'],
                          capsize=2, marker=config['markers'][key], markersize=4,
                          linewidth=1.)
 
@@ -480,7 +268,11 @@ if __name__ == '__main__':
                                  marker=v, label=config['labels'][k])
             handles.append(line)
 
-        plt.legend(handles=handles, loc='lower left', fancybox=True, fontsize=9.5,
+        # ax1.set_xticks(x//10)
+        # ax2.set_xticks(x//10)
+        # plt.xticks(x//10)
+
+        plt.legend(handles=handles, loc=config['legend_loc'], fancybox=True, fontsize=9.5,
                    labelspacing=0, borderpad=0.5, framealpha=0.4,
                    handletextpad=0.5, handlelength=2, borderaxespad=0)
         plt.tight_layout()

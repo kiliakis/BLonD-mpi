@@ -109,6 +109,11 @@ if 'log' in args:
     log = args['log']
 
 
+print({'N_t':N_t, 'n_macroparticles_pb':n_macroparticles_pb, 
+        'timing.mode':timing.mode, 'n_bunches':n_bunches, 
+        'N_t_reduce':N_t_reduce, 
+        'N_t_monitor':N_t_monitor, 'seed':seed, 'log':log})
+
 # initialize simulation
 
 np.random.seed(seed)

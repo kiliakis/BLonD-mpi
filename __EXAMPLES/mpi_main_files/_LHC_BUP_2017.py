@@ -80,7 +80,7 @@ N_t_reduce = 1
 N_t_monitor = 0
 seed = 0
 
-addload = 0.1
+addload = 0.0
 
 if args.get('turns', None) is not None:
     N_t = args['turns']
@@ -110,6 +110,13 @@ if args.get('time', False) is True:
 if args.get('seed', None) is not None:
     seed = args['seed']
 
+
+
+print({'N_t':N_t, 'N_p':N_p, 
+        'timing.mode':timing.mode, 'NB':NB, 
+        'addload': addload,
+        'N_t_reduce':N_t_reduce,
+        'N_t_monitor':N_t_monitor, 'seed':seed, 'log':log})
 
 # Simulation setup -------------------------------------------------------------
 print("Setting up the simulation...")
