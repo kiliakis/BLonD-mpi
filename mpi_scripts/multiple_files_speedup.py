@@ -49,10 +49,10 @@ plots_config = {
 
         },
         'labels': {
-            'r1': 'r1',
-            'r2': 'r2',
-            'r3': 'r3',
-            'r4': 'r4'
+            'r1': 'every-turn',
+            'r2': 'every-2-turns',
+            'r3': 'every-3-turns',
+            'r4': 'every-4-turns'
         },
         # 'markers': {
         #     '10-total': 's',
@@ -73,7 +73,7 @@ plots_config = {
         # 'y_err_name': 'std',
         'xlabel': 'Cores (x10)',
         'ylabel': 'Speedup',
-        'title': 'Speedup graph',
+        'title': 'SPS Testcase',
         'ylim': {
             'speedup': [0, 210]
         },
@@ -210,6 +210,7 @@ if __name__ == '__main__':
         # ax2 = ax1.twinx()
 
         plt.grid(True, which='major', alpha=1)
+        plt.grid(False, which='major', axis='x')
         # plt.grid(True, which='minor', alpha=0.6, linestyle=':')
         # plt.minorticks_on()
         plt.title(config['title'])
@@ -279,7 +280,7 @@ if __name__ == '__main__':
         plt.xticks(x//10)
 
         plt.legend(loc=config['legend_loc'], fancybox=True, fontsize=10.5,
-                   labelspacing=0, borderpad=0.5, framealpha=0.4,
+                   labelspacing=0, borderpad=0.5, framealpha=0.8,
                    handletextpad=0.5, handlelength=2, borderaxespad=0)
         plt.tight_layout()
         save_and_crop(fig, config['image_name'], dpi=600, bbox_inches='tight')
