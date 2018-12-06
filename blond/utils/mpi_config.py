@@ -2,10 +2,14 @@ import sys
 from mpi4py import MPI
 import numpy as np
 import logging
-from pyprof import timing
-from pyprof import mpiprof
+try:
+    from pyprof import timing
+    from pyprof import mpiprof
+except ImportError:
+    from ..utils import profile_mock as timing
+    mpiprof = timing
 import os
-from utils import worker
+from ..utils import worker
 
 mpi_type = {
     'd': MPI.DOUBLE,
@@ -103,11 +107,6 @@ class Master:
 
         for name, dtype in var_list:
             val = vars[name]
-            # calculate counts and displs
-            # basesize = len(val) // self.workers
-            # plusone = len(val) - basesize * self.workers
-            # counts = np.array([basesize+1]*plusone + [basesize] *
-            #                   (self.workers-plusone), dtype='i')
             counts = np.array(self.weights * len(val), dtype='i')
             counts[-1] = len(val) - np.sum(counts[:-1])
 
@@ -132,10 +131,6 @@ class Master:
         sendbuf = None
         for k in gather_dict.keys():
             v = gather_dict[k]
-            # basesize = len(v) // self.workers
-            # plusone = len(v) - basesize * self.workers
-            # counts = np.array([basesize+1]*plusone + [basesize] *
-            #                   (self.workers-plusone), dtype='i')
 
             counts = np.array(self.weights * len(v), dtype='i')
             counts[-1] = len(v) - np.sum(counts[:-1])
@@ -157,10 +152,6 @@ class Master:
         sendbuf = None
         for k in gather_dict.keys():
             v = gather_dict[k]
-            # basesize = len(v) // self.workers
-            # plusone = len(v) - basesize * self.workers
-            # counts = np.array([basesize+1]*plusone + [basesize] *
-            #                   (self.workers-plusone), dtype='i')
 
             counts = np.array(self.weights * len(v), dtype='i')
             counts[-1] = len(v) - np.sum(counts[:-1])

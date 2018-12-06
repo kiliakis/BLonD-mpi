@@ -9,8 +9,12 @@ import ctypes as ct
 import numpy as np
 from setup_cpp import libblondphysics as __lib
 
-from pyprof import timing
-# from pyprof import mpiprof
+try:
+    from pyprof import timing
+    from pyprof import mpiprof
+except ImportError:
+    from ..utils import profile_mock as timing
+    mpiprof = timing
 
 
 def __getPointer(x):

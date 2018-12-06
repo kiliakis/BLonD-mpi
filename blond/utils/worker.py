@@ -7,12 +7,17 @@ import logging
 from collections import deque
 
 from scipy.constants import e
-from pyprof import timing
-from pyprof import mpiprof
-from utils import bphysics_wrap as bph
-from utils import mpi_config as mpiconf
-from utils.input_parser import parse
-from utils import bmath as bm
+try:
+    from pyprof import timing
+    from pyprof import mpiprof
+except ImportError:
+    from ..utils import profile_mock as timing
+    mpiprof = timing
+    
+from ..utils import bphysics_wrap as bph
+from ..utils import mpi_config as mpiconf
+from ..utils.input_parser import parse
+from ..utils import bmath as bm
 
 
 def c_add(xmem, ymem, dt):
@@ -205,8 +210,6 @@ class Worker:
         self.turn += 1
         self.update()
 
-    # @timing.timeit('comp:histo')
-    # @mpiprof.traceit(key='histo')
     def histo(self):
         # self.bcast()
         global profile
@@ -217,26 +220,6 @@ class Worker:
                 bph._slice(dt, profile, cut_left, cut_right)
         # Or even better, allreduce it
         self.update()
-
-    # @timing.timeit(key='comm:histo_reduce')
-    # @mpiprof.traceit(key='comm:histo_reduce')
-    # def reduce_histo(self):
-
-    #     global profile
-    #     with timing.timed_region('comm:conversions'):
-    #         with mpiprof.traced_region('comm:conversions'):
-    #             profile = profile.astype(np.int32, order='C')
-
-    #     with timing.timed_region('comm:histo_reduce'):
-    #         with mpiprof.traced_region('comm:histo_reduce'):
-    #             self.intracomm.Allreduce(MPI.IN_PLACE, profile, op=add_op)
-    #             # self.intracomm.Allreduce(MPI.IN_PLACE, profile, op=MPI.SUM)
-
-    #     with timing.timed_region('comm:conversions'):
-    #         with mpiprof.traced_region('comm:conversions'):
-    #             profile = profile.astype(np.float64, order='C')
-
-    #     self.update()
 
     def reduce_histo(self):
 
@@ -295,49 +278,6 @@ class Worker:
                 induced_voltage = np.sum(induced_voltage, axis=0)
 
         self.update()
-
-    # def induced_voltage_sum(self):
-    #     # for any per-turn updated variables
-    #     global induced_voltage, n_slices, profile, beam_ration, charge, impedList
-
-    #     # temp_induced_voltage = 0
-    #     beam_spectrum = None
-    #     min_idx = n_slices
-    #     induced_voltage = []
-    #     fft_pack = []
-
-    #     for imped in impedList.values():
-    #         # Beam_spectrum_generation
-    #         min_idx = min(imped['n_induced_voltage'], min_idx)
-
-    #         if 'type' not in imped:
-    #             fft_pack.append(
-    #                 self.inducedVoltage1Turn(imped, beam_spectrum))
-    #         elif imped['type'] == 'inductive':
-    #             induced_voltage.append(self.inducedVoltageInductive(imped))
-    #         elif imped['type'] == 'mtw':
-    #             fft_pack.append(
-    #                 self.inducedVoltageMTW(imped, beam_spectrum))
-    #         else:
-    #             self.logger.debug(
-    #                 'Unrecognized impedance type: {}'.format(imped['type']))
-    #             raise RuntimeError('Unrecognized impedance type.')
-    #     with timing.timed_region('serial:indVoltRfft'):
-    #         fft_pack = bm.irfft_packed(fft_pack)[:, :min_idx]
-
-    #     with timing.timed_region('serial:sum'):
-    #         induced_voltage.append(fft_pack)
-    #         induced_voltage = -charge * e * \
-    #             beam_ratio * np.array(induced_voltage)
-    #         induced_voltage = np.sum(induced_voltage, axis=0)
-
-    #     # with timing.timed_region('serial:indVoltSum'):
-    #     #     with mpiprof.traced_region('serial:indVoltSum'):
-    #     #         min_idx = min(imped['n_induced_voltage'], min_idx)
-    #     #         temp_induced_voltage += induced_voltage[:min_idx]
-
-    #     # induced_voltage = temp_induced_voltage
-    #     self.update()
 
     def induced_voltage_sum(self):
         # for any per-turn updated variables
@@ -436,8 +376,6 @@ class Worker:
 
         return induced_voltage[:imped['n_induced_voltage']]
 
-    # @timing.timeit(key='comp:LIKick')
-    # @mpiprof.traceit(key='LIKick')
     def LIKick(self):
         # self.bcast()
         turn = self.turn
@@ -464,6 +402,7 @@ class Worker:
         self.update()
 
     # @timing.timeit(key='comp:SR')
+
     def SR(self):
         self.bcast()
         with timing.timed_region('comp:SR'):
@@ -473,6 +412,7 @@ class Worker:
 
     # Perhaps this is not big enough to use mpi, an omp might be better
     # @timing.timeit(key='comp:RFVCalc')
+
     def RFVCalc(self):
         # self.bcast()
         global total_voltage, induced_voltage
@@ -492,6 +432,7 @@ class Worker:
         self.update()
 
     # @timing.timeit(key='comp:RFVCalc')
+
     def impedance_reduction(self):
         # self.bcast()
         turn = self.turn
@@ -562,8 +503,8 @@ class Worker:
                                       * profile[indexes], dx=bin_size)
 
                     ccoeff = np.trapz(np.cos(rfp_omega_rf[0, turn]*bin_centers[indexes]
-                                             + rfp_phi_rf[0, turn])
-                                      * profile[indexes], dx=bin_size)
+                                             + rfp_phi_rf[0, turn]) *
+                                      profile[indexes], dx=bin_size)
 
                     # Project beam phase to (pi/2,3pi/2) range
                     phi_beam = np.arctan(scoeff/ccoeff) + np.pi

@@ -7,9 +7,15 @@ BLonD math wrapper functions
 
 import ctypes as ct
 import numpy as np
-from setup_cpp import libblondmath as __lib
-from setup_cpp import libfft
-from pyprof import timing
+from .. import libblond as __lib
+# from setup_cpp import libblondmath as __lib
+# from setup_cpp import libfft
+try:
+    from pyprof import timing
+    from pyprof import mpiprof
+except ImportError:
+    from ..utils import profile_mock as timing
+    mpiprof = timing
 
 
 class c_complex128(ct.Structure):

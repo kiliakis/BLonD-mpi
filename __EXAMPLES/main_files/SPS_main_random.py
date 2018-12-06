@@ -8,8 +8,12 @@ Created on Thu Mar 22 16:11:42 2018
 import numpy as np
 import os
 # import h5py
-from pyprof import timing
-from pyprof import mpiprof
+try:
+    from pyprof import timing
+    from pyprof import mpiprof
+except ImportError:
+    from blond.utils import profile_mock as timing
+    mpiprof = timing
 
 import time
 from scipy.constants import c

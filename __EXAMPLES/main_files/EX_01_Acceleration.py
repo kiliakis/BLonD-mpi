@@ -22,9 +22,12 @@ import sys
 import matplotlib.pyplot as plt
 import time
 import datetime
-from pyprof import timing
-from pyprof import mpiprof
-
+try:
+    from pyprof import timing
+    from pyprof import mpiprof
+except ImportError:
+    from blond.utils import profile_mock as timing
+    mpiprof = timing
 #  BLonD Imports
 from blond.input_parameters.ring import Ring
 from blond.input_parameters.rf_parameters import RFStation

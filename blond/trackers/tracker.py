@@ -23,7 +23,12 @@ import ctypes
 import logging
 
 from ..utils import bmath as bm
-from pyprof import timing
+try:
+    from pyprof import timing
+    from pyprof import mpiprof
+except ImportError:
+    from ..utils import profile_mock as timing
+    mpiprof = timing
 
 
 class FullRingAndRF(object):

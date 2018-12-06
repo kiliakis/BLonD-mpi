@@ -17,9 +17,13 @@ mpl.use('Agg')
 import sys
 
 import datetime
-from pyprof import timing
-from pyprof import mpiprof
 import os
+try:
+    from pyprof import timing
+    from pyprof import mpiprof
+except ImportError:
+    from blond.utils import profile_mock as timing
+    mpiprof = timing
 
 REAL_RAMP = True    # track full ramp
 MONITORING = False   # turn off plots and monitors

@@ -19,8 +19,12 @@ the corresponding h5 files).
 '''
 
 from __future__ import division, print_function
-from pyprof import timing
-from pyprof import mpiprof
+try:
+    from pyprof import timing
+    from pyprof import mpiprof
+except ImportError:
+    from blond.utils import profile_mock as timing
+    mpiprof = timing
 import os
 import time
 import datetime

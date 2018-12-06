@@ -20,8 +20,12 @@ import numpy as np
 from numpy.fft import rfft, irfft, rfftfreq
 from ctypes import c_uint, c_double, c_void_p
 from scipy.constants import e
-from pyprof import timing
-from pyprof import mpiprof
+try:
+    from pyprof import timing
+    from pyprof import mpiprof
+except ImportError:
+    from ..utils import profile_mock as timing
+    mpiprof = timing
 
 from ..utils import bmath as bm
 from ..toolbox.next_regular import next_regular
