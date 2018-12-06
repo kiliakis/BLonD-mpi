@@ -18,7 +18,7 @@ from __future__ import division
 from builtins import str, range
 import numpy as np
 import matplotlib.pyplot as plt
-from plots.plot import fig_folder
+from ..plots.plot import fig_folder
 from scipy.constants import c
 from scipy.interpolate import splrep, splev
 

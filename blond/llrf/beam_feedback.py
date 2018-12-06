@@ -18,7 +18,7 @@ from __future__ import division
 from builtins import object
 import numpy as np
 import sys
-from utils import bmath as bm
+from ..utils import bmath as bm
 
 
 

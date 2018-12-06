@@ -17,18 +17,15 @@
 from __future__ import division, print_function
 from builtins import range, object
 import numpy as np
-from toolbox.next_regular import next_regular
 from numpy.fft import rfft, irfft, rfftfreq
 from ctypes import c_uint, c_double, c_void_p
 from scipy.constants import e
-from setup_cpp import libblond
-# from setup_cpp import libfft
-from utils import bmath as bm
-
-linear_interp_kick = libblond.linear_interp_kick
-
 from pyprof import timing
 from pyprof import mpiprof
+
+from ..utils import bmath as bm
+from ..toolbox.next_regular import next_regular
+
 
 
 class TotalInducedVoltage(object):
@@ -147,7 +144,7 @@ class TotalInducedVoltage(object):
 
     def track_ghosts_particles(self, ghostBeam):
 
-        linear_interp_kick(ghostBeam.dt.ctypes.data_as(c_void_p),
+        bm.linear_interp_kick(ghostBeam.dt.ctypes.data_as(c_void_p),
                            ghostBeam.dE.ctypes.data_as(c_void_p),
                            self.induced_voltage.ctypes.data_as(c_void_p),
                            self.profile.bin_centers.ctypes.data_as(c_void_p),
@@ -377,7 +374,7 @@ class _InducedVoltage(object):
 
         self.induced_voltage_generation()
 
-        linear_interp_kick(self.beam.dt.ctypes.data_as(c_void_p),
+        bm.linear_interp_kick(self.beam.dt.ctypes.data_as(c_void_p),
                            self.beam.dE.ctypes.data_as(c_void_p),
                            self.induced_voltage.ctypes.data_as(c_void_p),
                            self.profile.bin_centers.ctypes.data_as(c_void_p),

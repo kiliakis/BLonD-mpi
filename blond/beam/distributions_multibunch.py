@@ -11,8 +11,8 @@ import copy
 import matplotlib.pyplot as plt
 from scipy.integrate import cumtrapz
 
-from beam.beam import Beam
-from beam.distributions import matched_from_distribution_function,\
+from ..beam.beam import Beam
+from ..beam.distributions import matched_from_distribution_function,\
     matched_from_line_density, populate_bunch,\
     distribution_function, potential_well_cut,\
     X0_from_bunch_length

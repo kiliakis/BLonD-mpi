@@ -7,40 +7,43 @@ import numpy as np
 import time
 import os
 import sys
+from scipy.constants import c
+from pyprof import timing
+from pyprof import mpiprof
 # import yaml
 import matplotlib as mpl
 mpl.use('Agg')
 import matplotlib.pyplot as plt
 
 # BLonD imports
-from beam.beam import Proton, Beam
-from input_parameters.ring import Ring, RingOptions
-from input_parameters.rf_parameters import RFStation
-from beam.profile import Profile, CutOptions
-#from beams.distributions import matched_from_line_density
-from beam.distributions_multibunch import match_beam_from_distribution
-from trackers.tracker import RingAndRFTracker, FullRingAndRF
-from impedances.impedance_sources import Resonators
-from impedances.impedance import InducedVoltageTime, InducedVoltageFreq, \
+from blond.beam.beam import Proton, Beam
+from blond.input_parameters.ring import Ring, RingOptions
+from blond.input_parameters.rf_parameters import RFStation
+from blond.beam.profile import Profile, CutOptions
+#from blond.beams.distributions import matched_from_line_density
+from blond.beam.distributions_multibunch import match_beam_from_distribution
+from blond.trackers.tracker import RingAndRFTracker, FullRingAndRF
+from blond.impedances.impedance_sources import Resonators
+from blond.impedances.impedance import InducedVoltageTime, InducedVoltageFreq, \
     TotalInducedVoltage, InductiveImpedance
 
 # LoCa imports
-import LoCa.Base.Machine as mach
-import LoCa.Base.RFProgram as rfp
-import LoCa.Base.Bare_RF as brf
+import blond.LoCa.Base.Machine as mach
+import blond.LoCa.Base.RFProgram as rfp
+import blond.LoCa.Base.Bare_RF as brf
 
 # Impedance scenario import
-from impedances.PS_impedance.impedance_scenario import scenario
+from blond.impedances.PS_impedance.impedance_scenario import scenario
 
 # Other imports
-from scipy.constants import c
-from colormap import colormap
+from blond.colormap import colormap
 
-from monitors.monitors import SlicesMonitor
-from utils.input_parser import parse
-from utils import mpi_config as mpiconf
-from pyprof import timing
-# from pyprof import mpiprof
+from blond.monitors.monitors import SlicesMonitor
+from blond.utils.input_parser import parse
+from blond.utils import mpi_config as mpiconf
+
+this_directory = os.path.dirname(os.path.realpath(__file__)) + '/'
+
 
 cmap = colormap.cmap_white_blue_red
 currdir = os.path.dirname(os.path.realpath(__file__))

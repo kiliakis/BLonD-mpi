@@ -16,7 +16,8 @@ from builtins import range, object
 import numpy as np
 from scipy.constants import e
 import ctypes
-from setup_cpp import libblond
+# from setup_cpp import libblond
+from ..utils import bmath as bm
 
 
 
@@ -145,7 +146,7 @@ class Music(object):
         
         """
         
-        libblond.music_track(self.beam.dt.ctypes.data_as(ctypes.c_void_p),
+        bm.music_track(self.beam.dt.ctypes.data_as(ctypes.c_void_p),
                              self.beam.dE.ctypes.data_as(ctypes.c_void_p),
                         self.induced_voltage.ctypes.data_as(ctypes.c_void_p),
                         self.array_parameters.ctypes.data_as(ctypes.c_void_p),
@@ -179,7 +180,7 @@ class Music(object):
         
         """
         
-        libblond.music_track_multiturn(
+        bm.music_track_multiturn(
                              self.beam.dt.ctypes.data_as(ctypes.c_void_p),
                              self.beam.dE.ctypes.data_as(ctypes.c_void_p),
                         self.induced_voltage.ctypes.data_as(ctypes.c_void_p),

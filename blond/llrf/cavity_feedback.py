@@ -18,10 +18,11 @@ import ctypes
 import logging
 import numpy as np
 import scipy
-from llrf.signal_processing import comb_filter, cartesian_to_polar, \
+from ..llrf.signal_processing import comb_filter, cartesian_to_polar, \
     polar_to_cartesian, modulator, moving_average, rf_beam_current
-from llrf.impulse_response import SPS4Section200MHzTWC, SPS5Section200MHzTWC
-from setup_cpp import libblond
+from ..llrf.impulse_response import SPS4Section200MHzTWC, SPS5Section200MHzTWC
+# from setup_cpp import libblond
+from ..utils import bmath as bm
 
 
 class CavityFeedbackCommissioning(object):
@@ -99,8 +100,8 @@ class SPSCavityFeedback(object):
         # Initialise OTFB without beam
         self.turns = int(turns)
         if turns < 1:
-            raise RuntimeError("ERROR in SPSCavityFeedback: 'turns' has to" +
-                               " be a positive integer!")
+            raise RuntimeError("ERROR in SPSCavityFeedback: 'turns' has to"
+                               + " be a positive integer!")
         self.track_init(debug=Commissioning.debug)
 
     def track(self):
@@ -177,20 +178,20 @@ class SPSCavityFeedback(object):
 #                ax.plot(self.OTFB_4.profile.bin_centers,
 #                        np.absolute(self.OTFB_4.V_gen))
                 ax1_1.plot(1e6*self.OTFB_4.profile.bin_centers,
-                           1e-6*(self.OTFB_4.V_tot.real +
-                                 self.OTFB_5.V_tot.real),
+                           1e-6*(self.OTFB_4.V_tot.real
+                                 + self.OTFB_5.V_tot.real),
                            color=colors[i])
                 ax1_1.fill_between(1e6*self.OTFB_4.profile.bin_centers, 0,
-                                   1e-6*(self.OTFB_4.V_tot.real +
-                                         self.OTFB_5.V_tot.real),
+                                   1e-6*(self.OTFB_4.V_tot.real
+                                         + self.OTFB_5.V_tot.real),
                                    alpha=0.2, color=colors[i])
                 ax1_2.plot(1e6*self.OTFB_4.profile.bin_centers,
-                           1e-6*(self.OTFB_4.V_tot.imag +
-                                 self.OTFB_5.V_tot.imag),
+                           1e-6*(self.OTFB_4.V_tot.imag
+                                 + self.OTFB_5.V_tot.imag),
                            color=colors[i])
                 ax1_2.fill_between(1e6*self.OTFB_4.profile.bin_centers, 0,
-                                   1e-6*(self.OTFB_4.V_tot.imag +
-                                         self.OTFB_5.V_tot.imag),
+                                   1e-6*(self.OTFB_4.V_tot.imag
+                                         + self.OTFB_5.V_tot.imag),
                                    alpha=0.2, color=colors[i])
                 fig1.savefig("fig/V_ant_" + "%d" % (i+1) + ".png")
 
@@ -277,12 +278,12 @@ class SPSOneTurnFeedback(object):
         self.profile = Profile
         self.n_cavities = int(n_cavities)
         if self.n_cavities < 1:
-            raise RuntimeError("ERROR in SPSOneTurnFeedback: argument" +
-                               " n_cavities has invalid value!")
+            raise RuntimeError("ERROR in SPSOneTurnFeedback: argument"
+                               + " n_cavities has invalid value!")
         self.V_part = float(V_part)
         if self.V_part*(1 - self.V_part) < 0:
-            raise RuntimeError("ERROR in SPSOneTurnFeedback: V_part" +
-                               " should be in range (0,1)!")
+            raise RuntimeError("ERROR in SPSOneTurnFeedback: V_part"
+                               + " should be in range (0,1)!")
 
         # Gain settings
         self.G_llrf = float(G_llrf)
@@ -292,10 +293,10 @@ class SPSOneTurnFeedback(object):
         if n_sections in [4, 5]:
             self.TWC = eval("SPS" + str(n_sections) + "Section200MHzTWC()")
         else:
-            raise RuntimeError("ERROR in SPSOneTurnFeedback: argument" +
-                               " n_sections has invalid value!")
-        self.logger.debug("SPS OTFB cavities: %d, sections: %d, voltage" +
-                          " partition %.2f, gain: %.2e", self.n_cavities,
+            raise RuntimeError("ERROR in SPSOneTurnFeedback: argument"
+                               + " n_sections has invalid value!")
+        self.logger.debug("SPS OTFB cavities: %d, sections: %d, voltage"
+                          + " partition %.2f, gain: %.2e", self.n_cavities,
                           n_sections, self.V_part, self.G_tx)
 
         # TWC resonant frequency
@@ -318,8 +319,8 @@ class SPSOneTurnFeedback(object):
         self.n_mov_av = int(self.TWC.tau/self.profile.bin_size)
         self.logger.debug("Moving average over %d points", self.n_mov_av)
         if self.n_mov_av < 2:
-            raise RuntimeError("ERROR in SPSOneTurnFeedback: profile has to" +
-                               " have at least 12.5 ns resolution!")
+            raise RuntimeError("ERROR in SPSOneTurnFeedback: profile has to"
+                               + " have at least 12.5 ns resolution!")
         self.V_mov_av_prev = np.zeros(self.n_llrf, dtype=complex)
         self.V_mov_av_next = np.zeros(self.n_llrf, dtype=complex)
 
@@ -336,8 +337,8 @@ class SPSOneTurnFeedback(object):
         # Present carrier frequency: main RF frequency
         self.omega_c = self.rf.omega_rf[0, self.counter]
         # Present delay time
-        self.n_delay = int((self.rf.t_rev[0] - self.TWC.tau)
-                           / self.profile.bin_size)
+        self.n_delay = int((self.rf.t_rev[0] - self.TWC.tau) /
+                           self.profile.bin_size)
 
         # Update the impulse response at present carrier frequency
         self.TWC.impulse_response(self.omega_c, self.profile.bin_centers)
@@ -362,8 +363,8 @@ class SPSOneTurnFeedback(object):
         # Present carrier frequency: main RF frequency
         self.omega_c = self.rf.omega_rf[0, 0]
         # Present delay time
-        self.n_delay = int((self.rf.t_rev[0] - self.TWC.tau)
-                           / self.profile.bin_size)
+        self.n_delay = int((self.rf.t_rev[0] - self.TWC.tau) /
+                           self.profile.bin_size)
 
         # Update the impulse response at present carrier frequency
         self.TWC.impulse_response(self.omega_c, self.profile.bin_centers)
@@ -399,10 +400,10 @@ class SPSOneTurnFeedback(object):
 
         # Voltage set point of current turn (I,Q); depends on voltage partition
         # Sinusoidal voltage completely in Q
-        self.V_set = polar_to_cartesian(self.V_part *
-                                        self.rf.voltage[0,
-                                                        self.counter], self.rf.phi_rf[0, self.counter]
-                                        + 0.5*np.pi)
+        self.V_set = polar_to_cartesian(self.V_part
+                                        * self.rf.voltage[0,
+                                                        self.counter], self.rf.phi_rf[0, self.counter] +
+                                        0.5*np.pi)
         # Convert to array
 #        self.V_set *= np.concatenate((np.ones(1000), np.zeros(self.n_llrf - 1000)))
         self.V_set *= np.ones(self.n_llrf)
@@ -547,10 +548,10 @@ class SPSOneTurnFeedback(object):
         kernel = np.ascontiguousarray(kernel)
 
         result = np.zeros(len(kernel) + len(signal) - 1)
-        libblond.convolution(signal.ctypes.data_as(ctypes.c_void_p),
-                             ctypes.c_int(len(signal)),
-                             kernel.ctypes.data_as(ctypes.c_void_p),
-                             ctypes.c_int(len(kernel)),
-                             result.ctypes.data_as(ctypes.c_void_p))
+        bm.convolve(signal.ctypes.data_as(ctypes.c_void_p),
+                    ctypes.c_int(len(signal)),
+                    kernel.ctypes.data_as(ctypes.c_void_p),
+                    ctypes.c_int(len(kernel)),
+                    result.ctypes.data_as(ctypes.c_void_p))
 
         return result

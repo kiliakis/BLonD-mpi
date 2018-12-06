@@ -15,12 +15,13 @@
 
 from __future__ import division
 import numpy as np
-
-from impedances.impedance_sources import TravelingWaveCavity, Resonators, InputTable
-from impedances.impedance import InducedVoltageTime, InducedVoltageFreq
-
 from scipy.constants import c
-import os,inspect
+import os
+import inspect
+
+from ..impedances.impedance_sources import TravelingWaveCavity, Resonators, InputTable
+from ..impedances.impedance import InducedVoltageTime, InducedVoltageFreq
+
 
 
 class handleImpedance(object):

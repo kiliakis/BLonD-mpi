@@ -19,10 +19,10 @@ from builtins import range, object
 import numpy as np
 from scipy.integrate import cumtrapz
 import ctypes
-from setup_cpp import libblond
+# from setup_cpp import libblond
 import logging
 
-from utils import bmath as bm
+from ..utils import bmath as bm
 from pyprof import timing
 
 
@@ -312,7 +312,7 @@ class RingAndRFTracker(object):
         phirf_kick = np.ascontiguousarray(self.phi_rf[:, turn])
 
 
-        libblond.kick(beam_dt.ctypes.data_as(ctypes.c_void_p),
+        bm.kick(beam_dt.ctypes.data_as(ctypes.c_void_p),
                       beam_dE.ctypes.data_as(ctypes.c_void_p),
                       ctypes.c_int(self.n_rf),
                       voltage_kick.ctypes.data_as(ctypes.c_void_p),
@@ -336,7 +336,7 @@ class RingAndRFTracker(object):
             \\Delta t^{n+1} = \\Delta t^{n} + \\frac{L}{C} T_0^{n+1}\\eta_0\\delta^{n+1} \quad \\text{(simple)}
 
         """
-        libblond.drift(beam_dt.ctypes.data_as(ctypes.c_void_p),
+        bm.drift(beam_dt.ctypes.data_as(ctypes.c_void_p),
                        beam_dE.ctypes.data_as(ctypes.c_void_p),
                        ctypes.c_char_p(self.solver),
                        ctypes.c_double(self.t_rev[index]),
@@ -456,7 +456,7 @@ class RingAndRFTracker(object):
 
                     # bm.LIKick_mpi(self, self.counter[0])
                     bm.LIKick_n_drift_mpi(self, self.counter[0])
-                    # libblond.linear_interp_kick(
+                    # bm.linear_interp_kick(
                     #     self.beam.dt.ctypes.data_as(ctypes.c_void_p),
                     #     self.beam.dE.ctypes.data_as(ctypes.c_void_p),
                     #     self.total_voltage.ctypes.data_as(ctypes.c_void_p),
