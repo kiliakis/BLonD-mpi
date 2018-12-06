@@ -9,6 +9,7 @@ from setuptools import setup, find_packages
 from setuptools.command.egg_info import egg_info as _egg_info
 from distutils.command.clean import clean as _clean
 
+
 class Compile(distutils.cmd.Command):
     """Compile all C/C++ source files."""
 
@@ -17,7 +18,6 @@ class Compile(distutils.cmd.Command):
         ('openmp', 'o', 'Enable Multi-threaded code'),
         ('compiler=', 'c', 'Specify the compiler type'),
         ('boost=', None, 'Compile with the Boost Library')]
-
 
     def initialize_options(self):
         """Set default values for options."""
@@ -46,8 +46,6 @@ class Compile(distutils.cmd.Command):
         subprocess.call(cmd)
 
 
-
-
 class Compile_and_Egg_Info(_egg_info):
     description = 'Compile the C++ sources before installing'
     user_options = _egg_info.user_options
@@ -61,7 +59,6 @@ class Compile_and_Egg_Info(_egg_info):
         self.parallel = None
         self.boost = None
         self.compiler = None
-
 
     def finalize_options(self):
         """Post-process options."""
@@ -88,8 +85,6 @@ class CleanAll(_clean):
         rmtree('dist', ignore_errors=True)
         rmtree('blond.egg-info', ignore_errors=True)
         return _clean.run(self)
-
-
 
 
 # class Compile_and_Install(_install):
@@ -203,9 +198,9 @@ if __name__ == "__main__":
     #     sys.argv = [sys.argv[0]] + ['compile'] + sys.argv[1:]
 
 
-setup(name='blond',
+setup(name='blond-mpi',
       version=__version__,
-      description='CERN code for simulating longitudinal beam dynamics in synchrotrons.',
+      description='Distributed implementation of BLonD with MPI.',
       keywords='Beam Longitudinal Dynamics Synchrotrons CERN',
       author='Helga Timko et al.',
       author_email='helga.timko@cern.ch',
@@ -213,8 +208,8 @@ setup(name='blond',
       maintainer_email='konstantinos.iliakis@cern.ch',
       long_description=open('README.rst').read(),
       # long_description_content_type='text/markdown',
-      url='https://github.com/blond-admin/BLonD',
-      download_url='https://github.com/blond-admin/BLonD/archive/v'+__version__+'.tar.gz',
+      url='https://github.com/kiliakis/BLonD-mpi',
+      # download_url='https://github.com/blond-admin/BLonD/archive/v'+__version__+'.tar.gz',
       cmdclass={
           # 'build_py': Compile_and_Build,
           # 'install': Compile_and_Install,
@@ -225,9 +220,10 @@ setup(name='blond',
           'pep8': PEP8,
           'docs': Docs},
       packages=find_packages(
-          exclude=['__doc', '__BENCHMARKS', '__EXAMPLES', 'unittests']),
+          exclude=['__doc', '__BENCHMARKS', '__EXAMPLES', 'scripts', 'tests_mpi']),
       include_package_data=True,
       setup_requires=['numpy',
+                      'mpi4py',
                       'scipy',
                       'h5py',
                       'matplotlib'],
