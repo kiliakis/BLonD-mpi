@@ -79,7 +79,7 @@ plots_config = {
         },
         'nticks': 6,
         'legend_loc': 'upper left',
-        'figsize': (5, 3),
+        'figsize': (4, 4),
         'image_name': images_dir + 'SPS-72B-4MPPB-uint16-multi-reduce.pdf'
 
     },
