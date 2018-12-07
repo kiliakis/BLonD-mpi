@@ -221,14 +221,15 @@ class MPILog(object):
 
     """
 
-    def __init__(self, rank=-1, log_dir='./'):
+    def __init__(self, rank=-1, log_dir='./logs'):
 
         # Root logger on DEBUG level
         self.disabled = False
         self.root_logger = logging.getLogger()
         self.root_logger.setLevel(logging.DEBUG)
-        # if not os.path.exists(log_dir):
-        #     os.mkdir(log_dir)
+        if not os.path.exists(log_dir):
+            os.makedirs(log_dir)
+        
         if rank < 0:
             log_name = log_dir+'/master.log'
         else:

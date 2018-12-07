@@ -8,7 +8,7 @@ Created on Thu Jan 18 14:09:16 2018
 import numpy as np
 from copy import deepcopy
 from scipy.constants import c
-
+from ..utils import mpi_config as mpiconf
 
 ### SPS --- Impedance reduction definition
 class ImpedanceReduction():
@@ -126,7 +126,7 @@ class ImpedanceReduction():
     #end fb_reduction
     
     def track(self):
-        import utils.mpi_config as mpiconf
+        
         master = mpiconf.master
 
         # master.multi_bcast({'turn': self.counter[0]}, msg=False)

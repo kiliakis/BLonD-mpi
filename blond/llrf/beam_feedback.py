@@ -19,7 +19,7 @@ from builtins import object
 import numpy as np
 import sys
 from ..utils import bmath as bm
-
+from ..utils import mpi_config as mpiconf
 
 
 class BeamFeedback(object): 
@@ -208,7 +208,6 @@ class BeamFeedback(object):
         Update the RF phase and frequency of the next turn for all systems.
         '''    
 
-        import utils.mpi_config as mpiconf
         master = mpiconf.master
         # master.bcast('beamFB')
 

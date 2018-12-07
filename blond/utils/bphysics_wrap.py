@@ -7,7 +7,10 @@ BLonD physics wrapper functions
 
 import ctypes as ct
 import numpy as np
-from setup_cpp import libblondphysics as __lib
+# from setup_cpp import libblondphysics as __lib
+from .. import libblond as __lib
+from ..utils import mpi_config as mpiconf
+from mpi4py import MPI
 
 try:
     from pyprof import timing
@@ -45,16 +48,7 @@ def _beam_phase(bin_centers, profile, alpha, omegarf, phirf, bin_size):
 
 
 def rf_volt_comp_mpi(voltages, omega_rf, phi_rf, ring):
-    import utils.mpi_config as mpiconf
-    from mpi4py import MPI
     master = mpiconf.master
-    # master.bcast('RFVCalc')
-
-    # vars_dict = {
-    #     'turn': ring.counter[0]
-    # }
-
-    # master.multi_bcast(vars_dict, msg=False)
 
 
 def rf_volt_comp(voltages, omega_rf, phi_rf, ring):
@@ -89,18 +83,7 @@ def kick(ring, dt, dE, turn):
 
 def kick_mpi(ring, turn):
 
-    import utils.mpi_config as mpiconf
-    from mpi4py import MPI
     master = mpiconf.master
-    # master.bcast('kick')
-
-    # with timing.timed_region('master:kick') as tr:
-    #     voltage_kick = np.ascontiguousarray(ring.charge*ring.voltage[:, turn])
-    #     omegarf_kick = np.ascontiguousarray(ring.omega_rf[:, turn])
-    #     phirf_kick = np.ascontiguousarray(ring.phi_rf[:, turn])
-
-    # master.multi_bcast({'turn': turn}, msg=False)
-    # workercomm.Barrier()
 
 
 def _kick(dt, dE, voltage, omega_rf,
@@ -124,13 +107,7 @@ def drift(ring, dt, dE, turn):
 
 
 def drift_mpi(ring, turn):
-    import utils.mpi_config as mpiconf
-    from mpi4py import MPI
-    # with mpiprof.timed_region('master:drift') as tr:
-
     master = mpiconf.master
-    # master.bcast('drift')
-    # master.multi_bcast({'turn': turn}, msg=False)
 
 
 def _drift(dt, dE, solver,
@@ -159,14 +136,7 @@ def LIKick(ring, dt, dE, turn):
 
 
 def LIKick_mpi(ring, turn):
-    import utils.mpi_config as mpiconf
-    from mpi4py import MPI
-    # with mpiprof.timed_region('master:LIKick') as tr:
-
     master = mpiconf.master
-    # master.bcast('LIKick')
-
-    # master.multi_bcast({'acc_kick': ring.acceleration_kick[turn]}, msg=False)
 
 
 def _linear_interp_kick(dt, dE, total_voltage, bin_centers,
@@ -186,16 +156,8 @@ def linear_interp_time_translation(ring, dt, dE, turn):
 
 
 def LIKick_n_drift_mpi(ring, turn):
-    import utils.mpi_config as mpiconf
-    from mpi4py import MPI
     master = mpiconf.master
 
-    # vars_dict = {
-    #     'turn': turn,
-    #     'acc_kick': ring.acceleration_kick[turn]
-    # }
-
-    # master.multi_bcast(vars_dict, msg=False)
 
 
 def _LIKick_n_drift(dt, dE, total_voltage, bin_centers, charge, acc_kick,
@@ -228,9 +190,6 @@ def slice(profile):
 
 
 def slice_mpi(profile):
-    import utils.mpi_config as mpiconf
-    from mpi4py import MPI
-    # with mpiprof.timed_region('master:histo') as tr:
 
     master = mpiconf.master
     # master.bcast('histo')

@@ -27,6 +27,7 @@ except ImportError:
     from ..utils import profile_mock as timing
     mpiprof = timing
 
+from ..utils import mpi_config as mpiconf
 from ..utils import bmath as bm
 from ..toolbox.next_regular import next_regular
 
@@ -104,20 +105,18 @@ class TotalInducedVoltage(object):
 
         self.induced_voltage = temp_induced_voltage
 
-    @timing.timeit('indVoltSum')
+    # @timing.timeit('indVoltSum')
     def induced_voltage_sum(self):
         """
         Method to sum all the induced voltages in one single array.
         """
-        import utils.mpi_config as mpiconf
         master = mpiconf.master
 
-    @timing.timeit('master:indVoltTrack')
+    # @timing.timeit('master:indVoltTrack')
     def track(self):
         """
         Track method to apply the induced voltage kick on the beam.
         """
-        import utils.mpi_config as mpiconf
         master = mpiconf.master
 
         # with mpiprof.timed_region('master:ind_volt_sum') as tr:
@@ -133,18 +132,10 @@ class TotalInducedVoltage(object):
         # 'acc_kick': float(0.)
         # }
 
-        master.logger.debug('Broadcasting an LIKick task (totIndVolt)')
+        # master.logger.debug('Broadcasting an LIKick task (totIndVolt)')
         master.bcast('LIKick')
         master.multi_bcast({'acc_kick': float(0.)}, msg=False)
 
-        # linear_interp_kick(self.beam.dt.ctypes.data_as(c_void_p),
-        #                    self.beam.dE.ctypes.data_as(c_void_p),
-        #                    self.induced_voltage.ctypes.data_as(c_void_p),
-        #                    self.profile.bin_centers.ctypes.data_as(c_void_p),
-        #                    c_double(self.beam.Particle.charge),
-        #                    c_uint(self.profile.n_slices),
-        #                    c_uint(self.beam.n_macroparticles),
-        #                    c_double(0.))
 
     def track_ghosts_particles(self, ghostBeam):
 

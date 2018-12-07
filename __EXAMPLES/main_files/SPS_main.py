@@ -82,6 +82,7 @@ n_macroparticles_pb = int(4e6)  # 4M macroparticles per bunch
 n_bins_rf = 256  # number of slices per RF-bucket
 nFrev = 2  # multiples of f_rev for frequency resolution
 
+N_t = n_turns
 N_t_reduce = 1
 N_t_monitor = 0
 
