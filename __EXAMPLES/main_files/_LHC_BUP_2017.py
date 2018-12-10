@@ -119,7 +119,7 @@ if args.get('seed', None) is not None:
 
 
 print({'N_t':N_t, 'N_p':N_p, 
-        'timing.mode':timing.mode, 'NB':NB, 
+        'timing.mode':timing.mode, 'n_bunches':NB, 
         'addload': addload,
         'N_t_reduce':N_t_reduce,
         'N_t_monitor':N_t_monitor, 'seed':seed, 'log':log})

@@ -89,33 +89,51 @@ harmonic_number = 4620
 voltage_program = 0.9e6  # [V]
 phi_offset = 0.0
 number_slices = 2**8
+n_bunches = 1
+N_t_reduce = 1
+N_t_monitor = 0
+seed = 0
 
 
-log = None
-report = None
-
-
-
-if args.get('turns', None):
+if args.get('turns', None) is not None:
     n_turns = args['turns']
 
-if args.get('particles', None):
+if args.get('particles', None) is not None:
     n_macroparticles = args['particles']
 
-if args.get('slices', None):
+if args.get('slices', None) is not None:
     number_slices = args['slices']
 
-if args.get('omp', None):
+if args.get('time', False) is True:
+    timing.mode = 'timing'
+
+if args.get('omp', None) is not None:
     os.environ['OMP_NUM_THREADS'] = str(args['omp'])
+
+if args.get('bunches', None) is not None:
+    n_bunches = args['bunches']
+
+if args.get('reduce', None) is not None:
+    N_t_reduce = args['reduce']
+
+if args.get('monitor', None) is not None:
+    N_t_monitor = args['monitor']
+
+if args.get('seed', None) is not None:
+    seed = args['seed']
 
 if 'log' in args:
     log = args['log']
-if 'report' in args:
-    report = args['report']
-    if args['time'] == True:
-        timing.mode = 'timing'
 
-master = mpiconf.Master(log=log)
+
+print({'N_t': n_turns, 'n_macroparticles': n_macroparticles,
+       'N_slices': number_slices,
+       'timing.mode': timing.mode,
+       'n_bunches': n_bunches,
+       'N_t_reduce': N_t_reduce,
+       'N_t_monitor': N_t_monitor, 'seed': seed, 'log': log})
+
+
 
 
 # DEFINE RING------------------------------------------------------------------
@@ -263,6 +281,7 @@ map_res = [tot_vol_res] + [ring_RF_section_res] + [slice_beam_res]
 # TRACKING + PLOTS-------------------------------------------------------------
 print('Map set')
 
+master = mpiconf.Master(log=log)
 
 start_t = time.time()
 print(datetime.datetime.now().time())
@@ -400,7 +419,7 @@ print('dE res mean: ', np.mean(my_beam_res.dE))
 
 # if report:
 timing.report(total_time=1e3*(end_t-start_t),
-               out_dir=report,
+               out_dir=args['report'],
                out_file='master.csv')
 mpiprof.finalize()
 

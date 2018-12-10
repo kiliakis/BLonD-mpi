@@ -35,8 +35,7 @@ from blond.monitors.monitors import SlicesMonitor
 from blond.utils import mpi_config as mpiconf
 
 
-
-this_directory  = os.path.dirname(os.path.realpath(__file__)) + '/'
+this_directory = os.path.dirname(os.path.realpath(__file__)) + '/'
 
 args = parse()
 mpiconf.init(trace=args['trace'], logfile=args['tracefile'])
@@ -47,7 +46,7 @@ print(args)
 # --- Simulation parameters -------------------------------------
 
 # where and at what turns to save, only relevant if SAVE_DATA is True
-save_folder = this_directory  + '/../output_files/lossInSimulation_scanSimParam/'
+save_folder = this_directory + '/../output_files/lossInSimulation_scanSimParam/'
 save_turn_fine = 5
 save_turn_coarse = 1
 
@@ -85,6 +84,7 @@ n_macroparticles_pb = int(4e6)  # 4M macroparticles per bunch
 n_bins_rf = 256  # number of slices per RF-bucket
 nFrev = 2  # multiples of f_rev for frequency resolution
 
+N_t = n_turns
 N_t_reduce = 1
 N_t_monitor = 0
 
@@ -115,6 +115,10 @@ if args.get('seed', None) is not None:
 if 'log' in args:
     log = args['log']
 
+print({'N_t': N_t, 'n_macroparticles_pb': n_macroparticles_pb,
+       'timing.mode': timing.mode, 'n_bunches': n_bunches,
+       'N_t_reduce': N_t_reduce,
+       'N_t_monitor': N_t_monitor, 'seed': seed, 'log': log})
 
 # initialize simulation
 
@@ -390,7 +394,7 @@ if FB_strength == 'present':
     FBstrengthLong = 1.05
     FBstrengthShort = 0.73
 elif FB_strength == 'future':
-    #-26dB
+    # -26dB
     FBstrengthLong = 1.8
     FBstrengthShort = FBstrengthLong
 
