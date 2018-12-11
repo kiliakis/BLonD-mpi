@@ -93,14 +93,51 @@ class TotalInducedVoltage(object):
         """
         Method to sum all the induced voltages in one single array.
         """
-
+        # self.profile.beam_spectrum_dict = {}
+        # for obj in self.induced_voltage_list:
+        #     if isinstance(obj, (InducedVoltageTime, InducedVoltageFreq)) and \
+        #             (obj.n_fft not in self.profile.beam_spectrum_dict):
+        #         self.profile.beam_spectrum_generation(obj.n_fft)
+        beam_spectrum_dict = {}
         temp_induced_voltage = 0
         for induced_voltage_object in self.induced_voltage_list:
-            induced_voltage_object.induced_voltage_generation()
+            induced_voltage_object.induced_voltage_generation(
+                beam_spectrum_dict)
             temp_induced_voltage += \
                 induced_voltage_object.induced_voltage[:self.profile.n_slices]
 
         self.induced_voltage = temp_induced_voltage
+
+    def induced_voltage_sum_packed(self):
+        """
+        Method to sum all the induced voltages in one single array.
+        """
+        # self.profile.beam_spectrum_dict = {}
+        # for obj in self.induced_voltage_list:
+        #     if isinstance(obj, (InducedVoltageTime, InducedVoltageFreq)) and \
+        #             (obj.n_fft not in self.profile.beam_spectrum_dict):
+        #         self.profile.beam_spectrum_generation(obj.n_fft)
+
+
+        # Assuming the same n_fft for all
+        self.induced_voltage_list[0].profile.beam_spectrum_generation(
+            self.induced_voltage_list[0].n_fft)
+        beam_spectrum = self.induced_voltage_list[0].profile.beam_spectrum
+
+        with timing.timed_region('serial:ind_volt_sum_packed'):
+            with mpiprof.traced_region('serial:ind_volt_sum_packed'):
+                self.induced_voltage = []
+                min_idx = self.profile.n_slices
+                for obj in self.induced_voltage_list:
+                    temp_induced_voltage.append(
+                        bm.mul(obj.total_impedance, beam_spectrum))
+                    min_idx = min(obj.n_induced_voltage, min_idx)
+
+                self.induced_voltage = bm.irfft_packed(
+                    self.induced_voltage)[:, :min_idx]
+                self.induced_voltage = -self.beam.Particle.charge * \
+                    e * self.beam.ratio * self.induced_voltage
+                self.induced_voltage = np.sum(self.induced_voltage, axis=0)
 
     def track(self):
         """
@@ -278,7 +315,7 @@ class _InducedVoltage(object):
         else:
             self.induced_voltage_generation = self.induced_voltage_1turn
 
-    def induced_voltage_1turn(self):
+    def induced_voltage_1turn(self, beam_spectrum_dict={}):
         """
         Method to calculate the induced voltage at the current turn. DFTs are 
         used for calculations in time and frequency domain (see classes below)
@@ -286,18 +323,22 @@ class _InducedVoltage(object):
         # if induced_voltage_1turn.last_turn < self.RFParams.counter[0]:
         # induced_voltage_1turn.last_turn = self.RFParams.counter[0]
 
-        self.profile.beam_spectrum_generation(self.n_fft)
+        if self.n_fft not in beam_spectrum_dict:
+            self.profile.beam_spectrum_generation(self.n_fft)
+            beam_spectrum_dict[self.n_fft] = self.profile.beam_spectrum
+
+        beam_spectrum = beam_spectrum_dict[self.n_fft]
 
         with timing.timed_region('serial:indVolt1Turn'):
             with mpiprof.traced_region('serial:indVolt1Turn'):
                 induced_voltage = - (self.beam.Particle.charge * e * self.beam.ratio
-                                     * bm.irfft(self.total_impedance * self.profile.beam_spectrum))
+                                     * bm.irfft(self.total_impedance * beam_spectrum))
 
         self.induced_voltage = induced_voltage[:self.n_induced_voltage]
 
     # induced_voltage_1turn.last_turn = 0
 
-    def induced_voltage_mtw(self):
+    def induced_voltage_mtw(self, beam_spectrum_dict={}):
         """
         Method to calculate the induced voltage taking into account the effect
         from previous passages (multi-turn wake)
@@ -408,7 +449,7 @@ class InducedVoltageTime(_InducedVoltage):
         _InducedVoltage.__init__(self, Beam, Profile, frequency_resolution=None,
                                  wake_length=wake_length, multi_turn_wake=multi_turn_wake,
                                  RFParams=RFParams, mtw_mode=mtw_mode)
-        # self.needs_beam_spectrum = True
+        self.needs_beam_spectrum = True
 
     def process(self):
         """
@@ -501,7 +542,7 @@ class InducedVoltageFreq(_InducedVoltage):
                                  frequency_resolution=frequency_resolution,
                                  multi_turn_wake=multi_turn_wake, RFParams=RFParams,
                                  mtw_mode=mtw_mode)
-        # self.needs_beam_spectrum = True
+        self.needs_beam_spectrum = True
 
     def process(self):
         """
@@ -579,11 +620,10 @@ class InductiveImpedance(_InducedVoltage):
 
         # Call the __init__ method of the parent class
         _InducedVoltage.__init__(self, Beam, Profile, RFParams=RFParams)
-    
-    
+
     @timing.timeit(key='serial:InductiveImped')
     @mpiprof.traceit(key='serial:InductiveImped')
-    def induced_voltage_1turn(self):
+    def induced_voltage_1turn(self, beam_spectrum_dict={}):
         """
         Method to calculate the induced voltage through the derivative of the
         profile. The impedance must be a constant Z/n.
@@ -714,7 +754,7 @@ class InducedVoltageResonator(_InducedVoltage):
         self._kappa1 = np.zeros(int(self.profile.n_slices-1))
         self._deltaT = np.zeros((self.n_time, self.profile.n_slices))
 
-    def induced_voltage_1turn(self):
+    def induced_voltage_1turn(self, beam_spectrum_dict={}):
         r"""
         Method to calculate the induced voltage through linearily 
         interpolating the line density and applying the analytic equation

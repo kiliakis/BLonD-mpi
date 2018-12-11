@@ -423,6 +423,7 @@ class Profile(object):
         if OtherSlicesOptions.direct_slicing:
             self.track()
 
+
     def set_slices_parameters(self):
         self.n_slices, self.cut_left, self.cut_right, self.n_sigma, \
             self.edges, self.bin_centers, self.bin_size = \
