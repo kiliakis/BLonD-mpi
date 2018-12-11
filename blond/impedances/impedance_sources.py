@@ -22,6 +22,7 @@ from builtins import range, object
 import numpy as np
 from scipy.constants import c, physical_constants
 import ctypes
+# from ..setup_cpp import libblond
 from .. import libblond
 
 
@@ -52,7 +53,7 @@ class _ImpedanceObject(object):
         Method required to compute the wake function. Returns an error if
         called from an object which does not implement this method.
         """
-        
+        #WrongCalcError
         raise RuntimeError('wake_calc() method not implemented in this class'+
                            '. This object is probably meant to be used in the'+
                            ' frequency domain')
@@ -63,7 +64,7 @@ class _ImpedanceObject(object):
         Method required to compute the impedance. Returns an error if called
         from an object which does not implement this method.
         """
-        
+        #WrongCalcError
         raise RuntimeError('imped_calc() method not implemented in this class'+
                            '. This object is probably meant to be used in the'+
                            ' time domain')
@@ -217,21 +218,21 @@ class Resonators(_ImpedanceObject):
     
     .. math::
     
-        Z(f) = \\frac{R}{1 + j Q \\left(\\frac{f}{f_r}-\\frac{f_r}{f}\\right)}
+        Z(f) = \frac{R}{1 + j Q \left(\frac{f}{f_r}-\frac{f_r}{f}\right)}
         
     .. math::
         
-        W(t>0) = 2\\alpha R e^{-\\alpha t}\\left(\\cos{\\bar{\\omega}t} - \\frac{\\alpha}{\\bar{\\omega}}\\sin{\\bar{\\omega}t}\\right)
+        W(t>0) = 2\alpha R e^{-\alpha t}\left(\cos{\bar{\omega}t} - \frac{\alpha}{\bar{\omega}}\sin{\bar{\omega}t}\right)
 
-        W(0) = \\alpha R
+        W(0) = \alpha R
         
     .. math::
         
-        \\omega_r = 2 \\pi f_r
+        \omega_r = 2 \pi f_r
         
-        \\alpha = \\frac{\\omega_r}{2Q}
+        \alpha = \frac{\omega_r}{2Q}
         
-        \\bar{\\omega} = \\sqrt{\\omega_r^2 - \\alpha^2}
+        \bar{\omega} = \sqrt{\omega_r^2 - \alpha^2}
     
     Parameters
     ----------
@@ -289,6 +290,7 @@ class Resonators(_ImpedanceObject):
         elif method == 'python':
             self.imped_calc = self._imped_calc_python
         else:
+            #WrongCalcError
             raise RuntimeError('method for impedance calculation in Resonator object not recognized')
 
 
@@ -554,7 +556,7 @@ class ResistiveWall(_ImpedanceObject):
     
     .. math::
     
-        Z(f) = \\frac{Z_0 c L}{ \\pi } \\frac{ 1 }{ \\left[1 - i \\sign{f}\\right] 2  b  c \\sqrt{ \\frac{\\sigma_c Z_0 c }{ 4 \\pi |f| } + i 2 \\pi b^2 f }
+        Z(f) = \frac{Z_0 c L}{ \pi } \frac{ 1 }{ \left[1 - i \sign{f}\right] 2  b  c \sqrt{ \frac{\sigma_c Z_0 c }{ 4 \pi |f| } + i 2 \pi b^2 f }
      
     Parameters
     ----------
@@ -605,6 +607,7 @@ class ResistiveWall(_ImpedanceObject):
         elif conductivity != None:
             self.conductivity = conductivity
         else:
+            #MissingParameterError
             raise RuntimeError('At least one of the following parameters ' + 
                              'should be provided: resistivity or conductivity')
                 

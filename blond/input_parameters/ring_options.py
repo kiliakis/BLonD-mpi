@@ -18,9 +18,9 @@ from __future__ import division
 from builtins import str, range
 import numpy as np
 import matplotlib.pyplot as plt
-from ..plots.plot import fig_folder
 from scipy.constants import c
 from scipy.interpolate import splrep, splev
+from ..plots.plot import fig_folder
 
 
 class RingOptions(object):
@@ -63,18 +63,21 @@ class RingOptions(object):
         if interpolation in ['linear', 'cubic', 'derivative']:
             self.interpolation = str(interpolation)
         else:
+            #InputDataError
             raise RuntimeError("ERROR: Interpolation scheme in " +
                                "PreprocessRamp not recognised. Aborting...")
 
         self.smoothing = float(smoothing)
 
         if flat_bottom < 0:
+            #MomentumError
             raise RuntimeError("ERROR: flat_bottom value in PreprocessRamp" +
                                " not recognised. Aborting...")
         else:
             self.flat_bottom = int(flat_bottom)
 
         if flat_top < 0:
+            #MomentumError
             raise RuntimeError("ERROR: flat_top value in PreprocessRamp" +
                                " not recognised. Aborting...")
         else:
@@ -86,6 +89,7 @@ class RingOptions(object):
         if (plot is True) or (plot is False):
             self.plot = bool(plot)
         else:
+            #TypeError
             raise RuntimeError("ERROR: plot value in PreprocessRamp" +
                                " not recognised. Aborting...")
 
@@ -94,12 +98,14 @@ class RingOptions(object):
         if sampling > 0:
             self.sampling = int(sampling)
         else:
+            #TypeError
             raise RuntimeError("ERROR: sampling value in PreprocessRamp" +
                                " not recognised. Aborting...")
 
     def reshape_data(self, input_data, n_turns, n_sections,
-                     interp_time='t_rev', input_is_momentum=False,
-                     mass=None, circumference=None):
+                     interp_time='t_rev', input_to_momentum=False,
+                     synchronous_data_type='momentum', mass=None, charge=None,
+                     circumference=None, bending_radius=None):
         r"""Checks whether the user input is consistent with the expectation
         for the Ring object. The possibilites are detailed in the documentation
         of the Ring object.
@@ -121,17 +127,25 @@ class RingOptions(object):
         interp_time : str or float or float array [n_turns+1]
             Optional : defines the time on which the program will be
             interpolated. If 't_rev' is passed and if the input_data is
-            momentum (see input_is_momentum option) the momentum program
+            momentum (see input_to_momentum option) the momentum program
             is interpolated on the revolution period (see preprocess()
             function). If a float or a float array is passed, the program
             is interpolated on that input ; default is 't_rev'
-        input_is_momentum : bool
+        input_to_momentum : bool
             Optional : flags if the input_data is the momentum program, the
-            options mass and circumference become necessary
+            options defined below become necessary for conversion
+        synchronous_data_type : str
+            Optional : to be passed to the convert_data function if
+            input_to_momentum ; default is 'momentum'
         mass : Ring.Particle.mass
-            Optional : the mass of the particles ; default is None
+            Optional : the mass of the particles in [eV/c**2] ; default is None
+        charge : Ring.Particle.charge
+            Optional : the charge of the particles in units of [e] ;
+            default is None
         circumference : Ring.circumference
             Optional : the circumference of the ring ; default is None
+        bending_radius : Ring.bending_radis
+            Optional : the bending radius of magnets ; default is None
 
         Returns
         -------
@@ -147,7 +161,12 @@ class RingOptions(object):
 
         # If single float, expands the value to match the input number of turns
         # and sections
-        if isinstance(input_data, float):
+        if isinstance(input_data, float) or isinstance(input_data, int):
+            input_data = float(input_data)
+            if input_to_momentum:
+                input_data = convert_data(input_data, mass, charge,
+                                          synchronous_data_type,
+                                          bending_radius)
             output_data = input_data * np.ones((n_sections, n_turns+1))
 
         # If tuple, separate time and synchronous data and check data
@@ -163,6 +182,7 @@ class RingOptions(object):
                 input_data = (input_data, )
 
             if len(input_data) != n_sections:
+                #InputDataError
                 raise RuntimeError("ERROR in Ring: the input data " +
                                    "does not match the number of sections")
 
@@ -173,19 +193,28 @@ class RingOptions(object):
                 input_data_time = input_data[index_section][0]
                 input_data_values = input_data[index_section][1]
 
+                if input_to_momentum:
+                    input_data_values = convert_data(input_data_values, mass,
+                                                     charge,
+                                                     synchronous_data_type,
+                                                     bending_radius)
+
                 if len(input_data_time) \
                         != len(input_data_values):
+                    #InputDataError
                     raise RuntimeError("ERROR in Ring: synchronous data " +
                                        "does not match the time data")
 
-                if input_is_momentum and interp_time == 't_rev':
+                if input_to_momentum and (interp_time == 't_rev'):
                     output_data.append(self.preprocess(
                         mass,
                         circumference,
                         input_data_time,
                         input_data_values)[1])
 
-                elif isinstance(interp_time, float):
+                elif isinstance(interp_time, float) or \
+                        isinstance(interp_time, int):
+                    interp_time = float(interp_time)
                     interp_time = np.arange(
                         input_data_time[0],
                         input_data_time[-1],
@@ -211,6 +240,12 @@ class RingOptions(object):
                 isinstance(input_data, list):
 
             input_data = np.array(input_data, ndmin=2, dtype=float)
+
+            if input_to_momentum:
+                input_data = convert_data(input_data, mass, charge,
+                                          synchronous_data_type,
+                                          bending_radius)
+
             output_data = np.zeros((n_sections, n_turns+1), dtype=float)
 
             # If the number of points is exactly the same as n_rf, this means
@@ -221,6 +256,7 @@ class RingOptions(object):
                 input_data = input_data.reshape((n_sections, 1))
 
             if len(input_data) != n_sections:
+                #InputDataError
                 raise RuntimeError("ERROR in Ring: the input data " +
                                    "does not match the number of sections")
 
@@ -234,7 +270,7 @@ class RingOptions(object):
                         input_data[index_section])
 
                 else:
-
+                    #InputDataError
                     raise RuntimeError("ERROR in Ring: The input data " +
                                        "does not match the proper length " +
                                        "(n_turns+1)")
@@ -267,8 +303,9 @@ class RingOptions(object):
         """
 
         # Some checks on the options
-        if (self.t_start is not None and self.t_start < time[0]) or \
-                (self.t_end is not None and self.t_end > time[-1]):
+        if ((self.t_start is not None) and (self.t_start < time[0])) or \
+                ((self.t_end is not None) and (self.t_end > time[-1])):
+                #InputDataError
                 raise RuntimeError("ERROR: [t_start, t_end] should be " +
                                    "included in the passed time array.")
 
@@ -455,6 +492,55 @@ class RingOptions(object):
             plt.clf()
 
         return time_interp, momentum_interp
+
+
+def convert_data(synchronous_data, mass, charge,
+                 synchronous_data_type='momentum', bending_radius=None):
+        """ Function to convert synchronous data (i.e. energy program of the
+        synchrotron) into momentum.
+
+        Parameters
+        ----------
+        synchronous_data : float array
+            The synchronous data to be converted to momentum
+        mass : float or Particle.mass
+            The mass of the particles in [eV/c**2]
+        charge : int or Particle.charge
+            The charge of the particles in units of [e]
+        synchronous_data_type : str
+            Type of input for the synchronous data ; can be 'momentum',
+            'total energy', 'kinetic energy' or 'bending field' (last case
+            requires bending_radius to be defined)
+        bending_radius : float
+            Bending radius in [m] in case synchronous_data_type is
+            'bending field'
+
+        Returns
+        -------
+        momentum : float array
+            The input synchronous_data converted into momentum [eV/c]
+
+        """
+
+        if synchronous_data_type == 'momentum':
+            momentum = synchronous_data
+        elif synchronous_data_type == 'total energy':
+            momentum = np.sqrt(synchronous_data**2 - mass**2)
+        elif synchronous_data_type == 'kinetic energy':
+            momentum = np.sqrt((synchronous_data+mass)**2 - mass**2)
+        elif synchronous_data_type == 'bending field':
+            if bending_radius is None:
+                #InputDataError
+                raise RuntimeError("ERROR in Ring: bending_radius is not " +
+                                   "defined and is required to compute " +
+                                   "momentum")
+            momentum = synchronous_data*bending_radius*charge*c
+        else:
+            #InputDataError
+            raise RuntimeError("ERROR in Ring: Synchronous data" +
+                               " type not recognized!")
+
+        return momentum
 
 
 def load_data(filename, ignore=0, delimiter=None):

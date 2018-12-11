@@ -1,212 +1,138 @@
 import sys
+import os
 from mpi4py import MPI
 import numpy as np
 import logging
+from functools import wraps
 try:
     from pyprof import timing
     from pyprof import mpiprof
 except ImportError:
     from ..utils import profile_mock as timing
     mpiprof = timing
-import os
-from ..utils import worker
 
-mpi_type = {
-    'd': MPI.DOUBLE,
-    'float64': MPI.DOUBLE,
-    'numpy.float64': MPI.DOUBLE,
-    '<f8': MPI.DOUBLE,
-    'i': MPI.INT,
-    'int32': MPI.INT,
-    'numpy.int32': MPI.INT,
-    '<i4': MPI.INT,
-    'uint8': MPI.UINT8_T,
-    'B': MPI.UINT8_T,
-    '|u1': MPI.UINT8_T
-}
+from ..utils.input_parser import parse
+from ..utils import bmath as bm
+
+worker = None
 
 
-task_id = {
-    'kick': np.uint8(0),
-    'drift': np.uint8(1),
-    'histo': np.uint8(2),
-    'LIKick': np.uint8(3),
-    'RFVCalc': np.uint8(4),
-    'gather': np.uint8(5),
-    'bcast': np.uint8(6),
-    'scatter': np.uint8(7),
-    'barrier': np.uint8(8),
-    'quit': np.uint8(9),
-    'switch_context': np.uint8(10),
-    'induced_voltage_sum': np.uint8(11),
-    # 'histo_and_induced_voltage': np.uint8(12),
-    'gather_single': np.uint8(13),
-    'beamFB': np.uint8(14),
-    'reduce_histo': np.uint8(15),
-    'scale_histo': np.uint8(16),
-    'LIKick_n_drift': np.uint8(17),
-    'impedance_reduction': np.uint8(18),
-    'induced_voltage_sum_packed': np.uint8(19),
-    'stop': np.uint8(255)
-}
 
-master = None
+def c_add_uint32(xmem, ymem, dt):
+    x = np.frombuffer(xmem, dtype=np.uint32)
+    y = np.frombuffer(ymem, dtype=np.uint32)
+    bm.add(y, x, inplace=True)
+
+def c_add_uint16(xmem, ymem, dt):
+    x = np.frombuffer(xmem, dtype=np.uint16)
+    y = np.frombuffer(ymem, dtype=np.uint16)
+    bm.add(y, x, inplace=True)
 
 
-def init(trace=False, logfile='mpe-trace'):
-    rank = MPI.COMM_WORLD.rank
-    if trace == True:
-        mpiprof.mode = 'tracing'
-        mpiprof.init(logfile=logfile)
+def print_wrap(f):
+    @wraps(f)
+    def wrap(*args):
+        if worker.rank == 0:
+            # worker.logger.debug(*args)
+            worker.logger.debug(' '.join([str(a) for a in args]))
+            return f(*args)
+        else:
+            return worker.logger.debug(' '.join([str(a) for a in args]))
+            # pass
+    return wrap
 
-    if rank != 0:
-        worker.main()
-        exit(0)
 
-
-class Master:
-    # @timing.timeit(key='master:init')
-    def __init__(self, log=None, add_load=0.):
-        global master
-
-        self.vars = {}
-        rank = MPI.COMM_WORLD.rank
-        self.intracomm = MPI.COMM_WORLD.Split(rank == 0, rank)
-        self.intercomm = self.intracomm.Create_intercomm(0, MPI.COMM_WORLD, 1)
-        self.workers = self.intercomm.Get_remote_size()
+class Worker:
+    @timing.timeit(key='serial:init')
+    @mpiprof.traceit(key='serial:init')
+    def __init__(self):
+        args = parse()
+        self.indices = {}
+        self.intracomm = MPI.COMM_WORLD
         self.rank = self.intracomm.rank
 
-        if self.intracomm.size != 1:
-            'Only one process can be the master!\nRe-run with only 1 process.'
+        # self.intercomm = MPI.COMM_WORLD.Split(self.rank == 0, self.rank)
+        # self.intercomm = self.intercomm.Create_intercomm(0, MPI.COMM_WORLD, 1)
+
+        self.workers = self.intracomm.size
 
         self.hostname = MPI.Get_processor_name()
 
-        if log:
-            self.logger = MPILog(rank=-1, log_dir=log)
+        if args['log']:
+            self.logger = MPILog(rank=self.rank, log_dir=args['logdir'])
         else:
-            self.logger = MPILog(rank=-1)
+            self.logger = MPILog(rank=self.rank)
             self.logger.disable()
         logging.debug('Initialized.')
-        master = self
+
+        self.add_op_uint32 = MPI.Op.Create(c_add_uint32, commute=True)
+        self.add_op_uint16 = MPI.Op.Create(c_add_uint16, commute=True)
+
+        # master = self
 
         # Get the neighbors
-        self.intercomm.bcast(self.hostname, root=MPI.ROOT)
-        self.neighbors = np.empty(self.workers, dtype=int)
-        self.intercomm.Gather(self.neighbors, self.neighbors, root=MPI.ROOT)
-        self.weights = (1. + self.neighbors*add_load) / \
-            np.sum(1. + self.neighbors*add_load)
+        # self.intercomm.bcast(self.hostname, root=MPI.ROOT)
+        # self.neighbors = np.empty(self.workers, dtype=int)
+        # self.intercomm.Gather(self.neighbors, self.neighbors, root=MPI.ROOT)
+        # self.weights = (1. + self.neighbors*add_load) / \
+        #     np.sum(1. + self.neighbors*add_load)
         # print('Master, add_load: {}, weights {}'.format(add_load, self.weights))
 
-    @timing.timeit(key='master:multi_scatter')
-    # @mpiprof.traceit(key='multi_scatter')
-    def multi_scatter(self, vars):
-        # self.intercomm.Bcast(task_id['scatter'], root=MPI.ROOT)
-        self.bcast('scatter')
-        var_list = [(k, v.dtype.char) for k, v in vars.items()]
-        self.intercomm.bcast(var_list, root=MPI.ROOT)
+    # Define the begin and size numbers in order to split a variable of length size
+    @timing.timeit(key='serial:split')
+    @mpiprof.traceit(key='serial:split')
+    def split(self, size):
 
-        for name, dtype in var_list:
-            val = vars[name]
-            counts = np.array(self.weights * len(val), dtype='i')
-            counts[-1] = len(val) - np.sum(counts[:-1])
+        counts = [size // self.workers + 1 if i < size % self.workers
+                  else size // self.workers for i in range(self.workers)]
+        displs = np.append([0], np.cumsum(counts[:-1])).astype(int)
 
-            displs = np.append([0], np.cumsum(counts[:-1]))
+        return displs[self.rank], counts[self.rank]
 
-            recvbuf = np.array(0, dtype='i')
-            self.intercomm.Scatter(counts, recvbuf, root=MPI.ROOT)
-
-            recvbuf = np.empty(1, dtype=dtype)
-            self.intercomm.Scatterv([val, counts, displs, mpi_type[dtype]],
-                                    recvbuf, root=MPI.ROOT)
 
     # args are the buffers to fill with the gathered values
     # e.g. (comm, beam.dt, beam.dE)
-    @timing.timeit(key='master:multi_gather')
-    # @mpiprof.traceit(key='multi_gather')
-    def multi_gather(self, gather_dict):
-        self.bcast('gather')
-        # self.intercomm.Bcast(task_id['gather'], root=MPI.ROOT)
-        keys = list(gather_dict.keys())
-        self.intercomm.bcast(keys, root=MPI.ROOT)
-        sendbuf = None
-        for k in gather_dict.keys():
-            v = gather_dict[k]
-
-            counts = np.array(self.weights * len(v), dtype='i')
-            counts[-1] = len(v) - np.sum(counts[:-1])
-
+    @timing.timeit(key='comm:gather')
+    @mpiprof.traceit(key='comm:gather')
+    def gather(self, var, size):
+        if self.rank == 0:
+            counts = [size // self.workers + 1 if i < size % self.workers
+                      else size // self.workers for i in range(self.workers)]
             displs = np.append([0], np.cumsum(counts[:-1]))
+            sendbuf = np.copy(var)
+            recvbuf = np.resize(var, np.sum(counts))
 
-            self.intercomm.Gatherv(sendbuf,
-                                   [v, counts, displs, mpi_type[v.dtype.char]],
-                                   root=MPI.ROOT)
+            self.intracomm.Gatherv(sendbuf,
+                                   [recvbuf, counts, displs, recvbuf.dtype.char], root=0)
+            return recvbuf
+        else:
+            recvbuf = None
+            self.intracomm.Gatherv(var, recvbuf, root=0)
+            return var
 
-    @timing.timeit(key='master:gather_single')
-    # @mpiprof.traceit(key='gather_single')
-    def gather_single(self, gather_dict, msg=True):
-        if msg == True:
-            self.bcast('gather_single')
+    @timing.timeit(key='comm:allreduce')
+    @mpiprof.traceit(key='comm:allreduce')
+    def allreduce(self, sendbuf, recvbuf=None, dtype=np.uint32):
+        if (recvbuf is None) or (sendbuf is recvbuf):
+            if dtype == np.uint32:
+                self.intracomm.Allreduce(
+                    MPI.IN_PLACE, sendbuf, op=self.add_op_uint32)
+            elif dtype == np.uint16:
+                self.intracomm.Allreduce(
+                    MPI.IN_PLACE, sendbuf, op=self.add_op_uint16)
+        else:
+            if dtype == np.uint32:
+                self.intracomm.Allreduce(
+                    sendbuf, recvbuf, op=self.add_op_uint32)
+            elif dtype == np.uint16:
+                self.intracomm.Allreduce(
+                    sendbuf, recvbuf, op=self.add_op_uint16)
 
-        keys = list(gather_dict.keys())
-        self.intercomm.bcast(keys, root=MPI.ROOT)
-        sendbuf = None
-        for k in gather_dict.keys():
-            v = gather_dict[k]
-
-            counts = np.array(self.weights * len(v), dtype='i')
-            counts[-1] = len(v) - np.sum(counts[:-1])
-
-            displs = np.append([0], np.cumsum(counts[:-1]))
-
-            self.intercomm.Gatherv(sendbuf,
-                                   [v, counts, displs, mpi_type[v.dtype.char]],
-                                   root=MPI.ROOT)
-
-    @timing.timeit(key='master:multi_bcast')
-    # @mpiprof.traceit(key='multi_bcast')
-    def multi_bcast(self, vars, msg=True):
-        self.logger.debug('Broadcasting variables')
-        if msg == True:
-            self.bcast('bcast')
-        self.intercomm.bcast(vars, root=MPI.ROOT)
-
-    @timing.timeit(key='master:bcast')
-    # @mpiprof.traceit(key='bcast')
-    def bcast(self, cmd):
-        # self.logger.debug('Broadcasting a %s task' % cmd)
-        if(isinstance(cmd, str)):
-            cmd = [cmd]
-        cmd = [task_id[c] for c in cmd]
-        self.intercomm.bcast(cmd, root=MPI.ROOT)
-
-    @timing.timeit(key='master:reduce')
-    # @mpiprof.traceit(key='reduce')
-    def reduce(self, x, y, op=MPI.SUM):
-        self.intercomm.Reduce(x, y, op=op, root=MPI.ROOT)
-
-    # @timing.timeit(key='master:stop')
-    def stop(self):
-        self.bcast('stop')
-        # self.intercomm.Barrier()
-
-    # @timing.timeit(key='master:sync')
+    @timing.timeit(key='serial:sync')
+    @mpiprof.traceit(key='serial:sync')
     def sync(self):
-        self.bcast('barrier')
-        self.intercomm.Barrier()
+        self.intracomm.Barrier()
 
-    # @timing.timeit(key='master:disconnect')
-    def disconnect(self):
-        self.intercomm.Disconnect()
-
-    # @timing.timeit(key='master:quit')
-    def quit(self):
-        self.bcast('quit')
-
-    # @mpiprof.traceit(key='reduce')
-    def switch_context(self, context):
-        self.bcast('switch_context')
-        sendbuf = np.array(context, dtype='i')
-        self.intercomm.Bcast(sendbuf, root=MPI.ROOT)
 
 
 class MPILog(object):
@@ -229,7 +155,7 @@ class MPILog(object):
         self.root_logger.setLevel(logging.DEBUG)
         if not os.path.exists(log_dir):
             os.makedirs(log_dir)
-        
+
         if rank < 0:
             log_name = log_dir+'/master.log'
         else:
@@ -267,3 +193,57 @@ class MPILog(object):
     def info(self, string):
         if self.disabled == False:
             logging.info(string)
+
+
+# def init(trace=False, logfile='mpe-trace'):
+#     rank = MPI.COMM_WORLD.rank
+#     if trace == True:
+#         mpiprof.mode = 'tracing'
+#         mpiprof.init(logfile=logfile)
+
+#     if rank != 0:
+#         worker.main()
+#         exit(0)
+
+if worker is None:
+    worker = Worker()
+
+
+# mpi_type = {
+#     'd': MPI.DOUBLE,
+#     'float64': MPI.DOUBLE,
+#     'numpy.float64': MPI.DOUBLE,
+#     '<f8': MPI.DOUBLE,
+#     'i': MPI.INT,
+#     'int32': MPI.INT,
+#     'numpy.int32': MPI.INT,
+#     '<i4': MPI.INT,
+#     'uint8': MPI.UINT8_T,
+#     'B': MPI.UINT8_T,
+#     '|u1': MPI.UINT8_T
+# }
+
+
+# task_id = {
+#     'kick': np.uint8(0),
+#     'drift': np.uint8(1),
+#     'histo': np.uint8(2),
+#     'LIKick': np.uint8(3),
+#     'RFVCalc': np.uint8(4),
+#     'gather': np.uint8(5),
+#     'bcast': np.uint8(6),
+#     'scatter': np.uint8(7),
+#     'barrier': np.uint8(8),
+#     'quit': np.uint8(9),
+#     'switch_context': np.uint8(10),
+#     'induced_voltage_sum': np.uint8(11),
+#     # 'histo_and_induced_voltage': np.uint8(12),
+#     'gather_single': np.uint8(13),
+#     'beamFB': np.uint8(14),
+#     'reduce_histo': np.uint8(15),
+#     'scale_histo': np.uint8(16),
+#     'LIKick_n_drift': np.uint8(17),
+#     'impedance_reduction': np.uint8(18),
+#     'induced_voltage_sum_packed': np.uint8(19),
+#     'stop': np.uint8(255)
+# }

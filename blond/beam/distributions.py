@@ -10,8 +10,9 @@
 '''
 **Module to generate distributions**
 
-:Authors: **Danilo Quartullo**, **Helga Timko**, **Alexandre Lasheen**, 
-          **Juan F. Esteban Mueller**, **Theodoros Argyropoulos**
+:Authors: **Danilo Quartullo**, **Helga Timko**, **Alexandre Lasheen**,
+          **Juan F. Esteban Mueller**, **Theodoros Argyropoulos**,
+          **Joel Repond**
 '''
 
 from __future__ import division, print_function, absolute_import
@@ -20,9 +21,9 @@ from builtins import range
 import numpy as np
 import warnings
 import copy
-from scipy.integrate import cumtrapz
 import gc
 import matplotlib.pyplot as plt
+from scipy.integrate import cumtrapz
 from ..trackers.utilities import is_in_separatrix
 from ..beam.profile import Profile, CutOptions
 from ..trackers.utilities import potential_well_cut, minmax_location
@@ -98,6 +99,7 @@ def matched_from_line_density(beam, full_ring_and_RF, line_density_input=None,
         line_density_ -= np.min(line_density_)
         line_density_ *= beam.n_macroparticles / np.sum(line_density_)
     else:
+        #GenerationError
         raise RuntimeError('The input for the matched_from_line_density ' +
                            'function was not recognized')
     
@@ -545,6 +547,7 @@ def matched_from_distribution_function(beam, full_ring_and_RF,
             sorted_X_dE0 = sorted_H_dE0
             X_grid = H_grid
         else:
+            #DistributionError
             raise RuntimeError('The distribution_variable option was not ' +
                                'recognized')
         
@@ -608,10 +611,8 @@ def matched_from_distribution_function(beam, full_ring_and_RF,
             induced_potential = np.interp(time_potential,
                              time_potential_low_res, induced_potential_low_res,
                              left=0, right=0)
-
         del full_ring_and_RF2
-        gc.collect()
-                    
+        gc.collect()            
     # Populating the bunch
     populate_bunch(beam, time_grid, deltaE_grid, density_grid, 
                    time_resolution_low, deltaE_coord_array[1] -
@@ -696,9 +697,9 @@ def X0_from_bunch_length(bunch_length, bunch_length_fit, X_grid, sorted_X_dE0,
             
         if (X_max - X0) < X_accuracy:
             print('WARNING: The bucket is too small to have the ' +
-                  'desired bunch length! Input is %.2e, the ' +
-                  'generation gave %.2e, the error is %.2e'
-                  %(bunch_length, tau, bunch_length-tau))
+                  'desired bunch length! Input is %.2e, ' % (bunch_length) +
+                  'the generation gave %.2e, ' % (tau) +
+                  'the error is %.2e' % (bunch_length-tau))
             break
         
         if (X0-X_min) < X_accuracy:
@@ -752,6 +753,7 @@ def distribution_function(action_array, dist_type, length, exponent=None):
         return distribution_function_
 
     else:
+        #DistributionError
         raise RuntimeError('The dist_type option was not recognized')
     
 

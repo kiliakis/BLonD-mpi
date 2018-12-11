@@ -20,17 +20,8 @@ import numpy as np
 from numpy.fft import rfft, irfft, rfftfreq
 from ctypes import c_uint, c_double, c_void_p
 from scipy.constants import e
-try:
-    from pyprof import timing
-    from pyprof import mpiprof
-except ImportError:
-    from ..utils import profile_mock as timing
-    mpiprof = timing
-
-from ..utils import mpi_config as mpiconf
-from ..utils import bmath as bm
 from ..toolbox.next_regular import next_regular
-
+from ..utils import bmath as bm
 
 
 class TotalInducedVoltage(object):
@@ -45,8 +36,8 @@ class TotalInducedVoltage(object):
     ----------
     Beam : object
         Beam object
-    Profiles : object
-        Profiles object
+    Profile : object
+        Profile object
     induced_voltage_list : object list
         List of objects for which induced voltages have to be calculated
 
@@ -55,7 +46,7 @@ class TotalInducedVoltage(object):
     beam : object
         Copy of the Beam object in order to access the beam info
     profile : object
-        Copy of the Profiles object in order to access the profile info
+        Copy of the Profile object in order to access the profile info
     induced_voltage_list : object list
         List of objects for which induced voltages have to be calculated
     induced_voltage : float array
@@ -63,7 +54,6 @@ class TotalInducedVoltage(object):
     time_array : float array
         Time array corresponding to induced_voltage [s]
     """
-
     def __init__(self, Beam, Profile, induced_voltage_list):
         """
         Constructor.
@@ -73,7 +63,7 @@ class TotalInducedVoltage(object):
 
         # Copy of the Profile object in order to access the profile info.
         self.profile = Profile
-
+        
         # Induced voltage list.
         self.induced_voltage_list = induced_voltage_list
 
@@ -91,7 +81,7 @@ class TotalInducedVoltage(object):
         for induced_voltage_object in self.induced_voltage_list:
             induced_voltage_object.process()
 
-    def master_induced_voltage_sum(self):
+    def induced_voltage_sum(self):
         """
         Method to sum all the induced voltages in one single array.
         """
@@ -105,48 +95,26 @@ class TotalInducedVoltage(object):
 
         self.induced_voltage = temp_induced_voltage
 
-    # @timing.timeit('indVoltSum')
-    def induced_voltage_sum(self):
-        """
-        Method to sum all the induced voltages in one single array.
-        """
-        master = mpiconf.master
-
-    # @timing.timeit('master:indVoltTrack')
     def track(self):
         """
         Track method to apply the induced voltage kick on the beam.
         """
-        master = mpiconf.master
 
-        # with mpiprof.timed_region('master:ind_volt_sum') as tr:
         self.induced_voltage_sum()
+        bm.linear_interp_kick(dt=self.beam.dt, dE=self.beam.dE,
+                              voltage=self.induced_voltage,
+                              bin_centers=self.profile.bin_centers,
+                              charge=self.beam.Particle.charge,
+                              acceleration_kick=0.)
 
-        # master.bcast('induced_voltage_1turn')
-        # master.multi_bcast({'total_voltage': float(0.)})
-
-        # with mpiprof.timed_region('master:LIKick') as tr:
-        # print('Master ind volt:', self.induced_voltage)
-        # vars_dict = {
-        # 'total_voltage': self.induced_voltage,
-        # 'acc_kick': float(0.)
-        # }
-
-        # master.logger.debug('Broadcasting an LIKick task (totIndVolt)')
-        master.bcast('LIKick')
-        master.multi_bcast({'acc_kick': float(0.)}, msg=False)
-
-
+#
     def track_ghosts_particles(self, ghostBeam):
-
-        bm.linear_interp_kick(ghostBeam.dt.ctypes.data_as(c_void_p),
-                           ghostBeam.dE.ctypes.data_as(c_void_p),
-                           self.induced_voltage.ctypes.data_as(c_void_p),
-                           self.profile.bin_centers.ctypes.data_as(c_void_p),
-                           c_double(self.beam.Particle.charge),
-                           c_uint(self.profile.n_slices),
-                           c_uint(ghostBeam.n_macroparticles),
-                           c_double(0.))
+        
+        bm.linear_interp_kick(dt=ghostBeam.dt, dE=ghostBeam.dE,
+                              voltage=self.induced_voltage,
+                              bin_centers=self.profile.bin_centers,
+                              charge=self.beam.Particle.charge,
+                              acceleration_kick=0.)
 
 
 class _InducedVoltage(object):
@@ -158,8 +126,8 @@ class _InducedVoltage(object):
     ----------
     Beam : object
         Beam object
-    Profiles : object
-        Profiles object
+    Profile : object
+        Profile object
     frequency_resolution : float, optional
         Frequency resolution of the impedance [Hz]
     wake_length : float, optional
@@ -176,7 +144,7 @@ class _InducedVoltage(object):
     beam : object
         Copy of the Beam object in order to access the beam info
     profile : object
-        Copy of the Profiles object in order to access the profile info
+        Copy of the Profile object in order to access the profile info
     induced_voltage : float array
         Induced voltage from the sum of the wake sources in V
     wake_length_input : float
@@ -234,6 +202,7 @@ class _InducedVoltage(object):
             self.n_induced_voltage = int(np.ceil(self.wake_length_input /
                                                  self.profile.bin_size))
             if self.n_induced_voltage < self.profile.n_slices:
+                #WakeLengthError
                 raise RuntimeError('Error: too short wake length. ' +
                                    'Increase it above {0:1.2e} s.'.format(self.profile.n_slices *
                                                                           self.profile.bin_size))
@@ -245,6 +214,7 @@ class _InducedVoltage(object):
             self.n_induced_voltage = int(np.ceil(1 / (self.profile.bin_size *
                                                       self.frequency_resolution_input)))
             if self.n_induced_voltage < self.profile.n_slices:
+                #FrequencyResolutionError
                 raise RuntimeError('Error: too large frequency_resolution. ' +
                                    'Reduce it below {0:1.2e} Hz.'.format(1 /
                                                                          (self.profile.cut_right - self.profile.cut_left)))
@@ -272,7 +242,8 @@ class _InducedVoltage(object):
                 # In frequency domain, an extra buffer for a revolution turn is
                 # needed due to the circular time shift in frequency domain
                 self.buffer_size = \
-                    np.ceil(np.max(self.RFParams.t_rev) / self.profile.bin_size)
+                    np.ceil(np.max(self.RFParams.t_rev) /
+                            self.profile.bin_size)
                 # Extending the buffer to reduce the effect of the front wake
                 self.buffer_size += \
                     np.ceil(np.max(self.buffer_extra) / self.profile.bin_size)
@@ -289,8 +260,8 @@ class _InducedVoltage(object):
                 # Selecting time-shift method
                 self.shift_trev = self.shift_trev_time
                 # Time array
-                self.time_mtw = np.linspace(
-                    0, self.wake_length, self.n_mtw_memory, endpoint=False)
+                self.time_mtw = np.linspace(0, self.wake_length,
+                                            self.n_mtw_memory, endpoint=False)
 
             # Array to add and shift in time the multi-turn wake over the turns
             self.mtw_memory = np.zeros(self.n_mtw_memory)
@@ -309,8 +280,7 @@ class _InducedVoltage(object):
         self.profile.beam_spectrum_generation(self.n_fft)
 
         induced_voltage = - (self.beam.Particle.charge * e * self.beam.ratio *
-                             bm.irfft(self.total_impedance * self.profile.beam_spectrum))
-        # irfft(self.total_impedance * self.profile.beam_spectrum))
+                             irfft(self.total_impedance * self.profile.beam_spectrum))
 
         self.induced_voltage = induced_voltage[:self.n_induced_voltage]
 
@@ -369,15 +339,21 @@ class _InducedVoltage(object):
 
         self.induced_voltage_generation()
 
-        bm.linear_interp_kick(self.beam.dt.ctypes.data_as(c_void_p),
-                           self.beam.dE.ctypes.data_as(c_void_p),
-                           self.induced_voltage.ctypes.data_as(c_void_p),
-                           self.profile.bin_centers.ctypes.data_as(c_void_p),
-                           c_double(self.beam.charge),
-                           c_uint(self.profile.n_slices),
-                           c_uint(self.beam.n_macroparticles),
-                           c_double(0.))
+        bm.linear_interp_kick(dt=self.beam.dt, dE=self.beam.dE,
+                              voltage=self.induced_voltage,
+                              bin_centers=self.profile.bin_centers,
+                              charge=self.beam.Particle.charge,
+                              acceleration_kick=0.)
 
+
+        #  linear_interp_kick(self.beam.dt.ctypes.data_as(c_void_p),
+        #                     self.beam.dE.ctypes.data_as(c_void_p),
+        #                     self.induced_voltage.ctypes.data_as(c_void_p),
+        #                     self.profile.bin_centers.ctypes.data_as(c_void_p),
+        #                     c_double(self.beam.Particle.charge),
+        #                     c_uint(self.profile.n_slices),
+        #                     c_uint(self.beam.n_macroparticles),
+        #                     c_double(0.))
 
 class InducedVoltageTime(_InducedVoltage):
     r"""
@@ -430,7 +406,7 @@ class InducedVoltageTime(_InducedVoltage):
         _InducedVoltage.process(self)
 
         # Number of points for the FFT, equal to the length of the induced
-        # voltage array + number of slices -1 to calculate a linear convolution
+        # voltage array + number of profile -1 to calculate a linear convolution
         # in the frequency domain. The next regular number is used for speed,
         # therefore the frequency resolution is always equal or finer than
         # the input value
@@ -516,7 +492,7 @@ class InducedVoltageFreq(_InducedVoltage):
 
     def process(self):
         """
-        Reprocess the impedance contributions. To be run when slices change
+        Reprocess the impedance contributions. To be run when profile change
         """
 
         _InducedVoltage.process(self)
@@ -637,7 +613,7 @@ class InducedVoltageResonator(_InducedVoltage):
     ----------
     beam : object
         Copy of the Beam object in order to access the beam info.
-    slices : object
+    profile : object
         Copy of the Profile object in order to access the line density.
     tArray : float array
         array of time values where the induced voltage is calculated. 
@@ -660,6 +636,7 @@ class InducedVoltageResonator(_InducedVoltage):
 
         # Test if one or more quality factors is smaller than 0.5.
         if sum(Resonators.Q < 0.5) > 0:
+            #ResonatorError
             raise RuntimeError('All quality factors Q must be larger than 0.5')
 
         # Copy of the Beam object in order to access the beam info.
@@ -733,7 +710,7 @@ class InducedVoltageResonator(_InducedVoltage):
         self._kappa1[:] = np.diff(self.profile.n_macroparticles) \
             / np.diff(self.profile.bin_centers) \
             / (self.beam.n_macroparticles*self.profile.bin_size)
-        #[:] makes kappa pass by reference
+        # [:] makes kappa pass by reference
 
         for t in range(self.n_time):
             self._deltaT[t] = self.tArray[t]-self.profile.bin_centers
@@ -753,12 +730,12 @@ class InducedVoltageResonator(_InducedVoltage):
         # To obtain the voltage, sum the contribution of each cavity...
         self.induced_voltage = self._tmp_matrix.sum(axis=0)
         # ... and multiply with bunch charge
-        self.induced_voltage *= -self.beam.Particle.charge*e*self.beam.intensity
+        self.induced_voltage *= -self.beam.Particle.charge*e \
+                                *self.beam.n_macroparticles*self.beam.ratio
 
     # Implementation of Heaviside function
     def Heaviside(self, x):
         r"""
         Heaviside function, which returns 1 if x>1, 0 if x<0, and 1/2 if x=0
         """
-
         return 0.5*(np.sign(x) + 1.)

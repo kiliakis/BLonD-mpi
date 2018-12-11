@@ -38,14 +38,15 @@ from blond.beam.profile import CutOptions, FitOptions, Profile
 from blond.monitors.monitors import BunchMonitor
 from blond.plots.plot import Plot
 from blond.utils.input_parser import parse
+
 from blond.utils import mpi_config as mpiconf
 
 this_directory = os.path.dirname(os.path.realpath(__file__)) + '/'
 
-args = parse()
 
-mpiconf.init(trace=args['trace'], logfile=args['tracefile'])
-print(args)
+worker = mpiconf.worker
+print = mpiconf.print_wrap(print)
+
 # Simulation parameters -------------------------------------------------------
 # Bunch parameters
 N_b = 1e9           # Intensity
@@ -65,7 +66,7 @@ alpha = 1./gamma_t/gamma_t        # First order mom. comp. factor
 # Tracking details
 N_t = 2000           # Number of turns to track
 dt_plt = 200         # Time steps between plots
-N_slices = 500
+N_slices = 100
 n_bunches = 1
 workers = 3
 debug = False
@@ -75,6 +76,8 @@ seed = 0
 N_t_reduce = 1
 N_t_monitor = 0
 
+
+args = parse()
 if args.get('turns', None) is not None:
     N_t = args['turns']
 
@@ -86,6 +89,9 @@ if args.get('slices', None) is not None:
 
 if args.get('time', False) is True:
     timing.mode = 'timing'
+
+if args.get('trace', False) == True:
+    mpiprof.mode = 'tracing'
 
 if args.get('omp', None) is not None:
     os.environ['OMP_NUM_THREADS'] = str(args['omp'])
@@ -102,7 +108,7 @@ if args.get('monitor', None) is not None:
 if args.get('seed', None) is not None:
     seed = args['seed']
 
-if 'log' in args:
+if args.get('log', None) is not None:
     log = args['log']
 
 
@@ -112,150 +118,77 @@ print({'N_t': N_t, 'n_macroparticles': N_p,
        'n_bunches': n_bunches,
        'N_t_reduce': N_t_reduce,
        'N_t_monitor': N_t_monitor, 'seed': seed, 'log': log})
-# try:
-#     os.mkdir('../output_files')
-# except:
-#     pass
-# try:
-#     os.mkdir('../output_files/EX_01_fig')
-# except:
-#     pass
 
 
 # Simulation setup ------------------------------------------------------------
 print("Setting up the simulation...")
 
 
-# # Define general parameters
+# Define general parameters
 ring = Ring(C, alpha, np.linspace(p_i, p_f, N_t+1), Proton(), N_t)
 
-# # Define beam and distribution
+# Define beam and distribution
 beam = Beam(ring, N_p, N_b)
 
 
-# # Define RF station parameters and corresponding tracker
+# Define RF station parameters and corresponding tracker
 rf = RFStation(ring, [h], [V], [dphi])
 
 bigaussian(ring, rf, beam, tau_0/4, reinsertion=True, seed=1)
 
 
-# # Need slices for the Gaussian fit
-profile = Profile(beam, CutOptions(n_slices=N_slices),
-                  FitOptions(fit_option='gaussian'))
+# Need slices for the Gaussian fit
+# TODO add the gaussian fit
+profile = Profile(beam, CutOptions(n_slices=N_slices))
+                  # FitOptions(fit_option='gaussian'))
 
 long_tracker = RingAndRFTracker(rf, beam)
 
-# # Define what to save in file
-# # bunchmonitor = BunchMonitor(ring, rf, beam,
-# #                             '../output_files/EX_01_output_data', Profile=profile)
-# #
-# # format_options = {'dirname': '../output_files/EX_01_fig'}
-# # plots = Plot(ring, rf, beam, dt_plt, N_t, 0, 0.0001763*h,
-# #              -400e6, 400e6, xunit='rad', separatrix_plot=True,
-# #              Profile=profile, h5file='../output_files/EX_01_output_data',
-# #              format_options=format_options)
-# #
+beam.split()
+
 # Accelerator map
-map_ = [long_tracker, profile]
+# map_ = [long_tracker, profile]
 print("Map set")
 
-
-master = mpiconf.Master(log=log)
+timing.reset()
 start_t = time.time()
-print(datetime.datetime.now().time())
-
-# master.spawn_workers(workers=workers, debug=debug, log=log, report=report)
-
-try: 
-    # Send initial data to the workers
-    init_dict = {
-        'n_rf': long_tracker.n_rf,
-        'solver': long_tracker.solver,
-        'length_ratio': long_tracker.length_ratio,
-        'alpha_order': long_tracker.alpha_order,
-        'n_slices': profile.n_slices
-    }
-    master.logger.debug('Broadcasted initial variables')
-    master.multi_bcast(init_dict)
+# print(datetime.datetime.now().time())
 
 
-    # Scatter coordinates etc
-    vars_dict = {
-        'dt': beam.dt,
-        'dE': beam.dE
-    }
+for i in range(1, N_t+1):
 
-    master.logger.debug('Scattered initial coordinates')
-    master.multi_scatter(vars_dict)
-    # workercomm.Barrier()
+    # Plot has to be done before tracking (at least for cases with separatrix)
+    if (i % dt_plt) == 0:
+        print("Outputting at time step %d..." % i)
+        print("   Beam momentum %.6e eV" % beam.momentum)
+        print("   Beam gamma %3.3f" % beam.gamma)
+        print("   Beam beta %3.3f" % beam.beta)
+        print("   Beam energy %.6e eV" % beam.energy)
+        print("   Four-times r.m.s. bunch length %.4e s" % (4.*beam.sigma_dt))
+        print("   Gaussian bunch length %.4e s" % profile.bunchLength)
+        print("")
 
+    # Track
+    long_tracker.track()
 
-    # N_t = 600
-    # print('dE mean: ', np.mean(beam.dE))
-    # print('dE std: ', np.std(beam.dE))
-
-    # N_t=1
-    # Tracking --------------------------------------------------------------------
-
-    task_list = []
-    for turn in range(N_t):
-        task_list += ['kick', 'drift']
-
-        if (turn % N_t_reduce == 0):
-            task_list += ['histo', 'reduce_histo']
-
-        if (N_t_monitor > 0) and (turn % N_t_monitor == 0):
-            task_list += ['gather_single']
-
-    master.bcast(task_list)
-
-    for i in range(1, N_t+1):
-        # print('Turn: ', i)
-
-        # Plot has to be done before tracking (at least for cases with separatrix)
-        # if (i % dt_plt) == 0:
-        #     print("Outputting at time step %d..." % i)
-        #     print("   Beam momentum %.6e eV" % beam.momentum)
-        #     print("   Beam gamma %3.3f" % beam.gamma)
-        #     print("   Beam beta %3.3f" % beam.beta)
-        #     print("   Beam energy %.6e eV" % beam.energy)
-        #     print("   Four-times r.m.s. bunch length %.4e s" % (4.*beam.sigma_dt))
-        #     print("   Gaussian bunch length %.4e s" % profile.bunchLength)
-        #     print("")
-
-        # Track
-        for m in map_:
-            m.track()
-
-        # Define losses according to separatrix and/or longitudinal position
-        # beam.losses_separatrix(ring, rf)
-        # beam.losses_longitudinal_cut(0., 2.5e-9)
-
-    master.multi_gather(vars_dict)
-    master.stop()
-    master.disconnect()
-
-except Exception as e:
-    print(e)
-    master.quit()
-    master.disconnect()
+    # Calc local profile and then allreduce for the global one
+    profile.track()
+    profile.reduce_histo()
 
 
+beam.gather()
 end_t = time.time()
-print(datetime.datetime.now().time())
-# if report:
+
 mpiprof.finalize()
 timing.report(total_time=1e3*(end_t-start_t),
-              out_dir=args['report'],
-              out_file='master.csv')
+              out_dir=args['timedir'],
+              out_file='worker-{}.csv'.format(os.getpid()))
+
 
 print('dE mean: ', np.mean(beam.dE))
 print('dE std: ', np.std(beam.dE))
-# plt.figure()
-# plt.plot(profile.n_macroparticles)
-# plt.show()
+print('profile mean: ', np.mean(profile.n_macroparticles))
+print('profile std: ', np.std(profile.n_macroparticles))
 
-# print(beam.dE)
-# print(beam.dt)
+print('Done!')
 
-print("Done!")

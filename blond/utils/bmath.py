@@ -6,10 +6,8 @@ BLonD math and physics core functions
 '''
 # from functools import wraps
 import numpy as np
-import numpy.fft
 from ..utils import butils_wrap
 from ..utils import bphysics_wrap
-# from numpy.fft import  rfft, irfft
 
 # dictionary storing the CPU versions of the desired functions #
 _CPU_func_dict = {
@@ -20,6 +18,7 @@ _CPU_func_dict = {
     'std': butils_wrap.std,
     'interp': butils_wrap.interp,
     'interp_const_space': butils_wrap.interp_const_space,
+
     'cumtrapz': butils_wrap.cumtrapz,
     'trapz': butils_wrap.trapz,
     'linspace': butils_wrap.linspace,
@@ -34,24 +33,16 @@ _CPU_func_dict = {
     'irfft_packed': butils_wrap.irfft_packed,
     'add': butils_wrap.add,
     'mul': butils_wrap.mul,
-    # 'rfft': np.fft.rfft,
-    # 'irfft': np.fft.irfft,
     'beam_phase': bphysics_wrap.beam_phase,
     'kick': bphysics_wrap.kick,
-    'kick_mpi': bphysics_wrap.kick_mpi,
     'rf_volt_comp': bphysics_wrap.rf_volt_comp,
-    'rf_volt_comp_mpi': bphysics_wrap.rf_volt_comp_mpi,
     'drift': bphysics_wrap.drift,
-    'drift_mpi': bphysics_wrap.drift_mpi,
-    'LIKick': bphysics_wrap.LIKick,
-    'LIKick_mpi': bphysics_wrap.LIKick_mpi,
-    'LIKick_n_drift_mpi': bphysics_wrap.LIKick_n_drift_mpi,
-    'SR': bphysics_wrap.SR,
-    'SR_full': bphysics_wrap.SR_full,
-    'SR_full_mpi': bphysics_wrap.SR_full_mpi,
+    'linear_interp_kick': bphysics_wrap.linear_interp_kick,
+    'LIKick_n_drift': bphysics_wrap.linear_interp_kick_n_drift,
+    'synchrotron_radiation': bphysics_wrap.synchrotron_radiation,
+    'synchrotron_radiation_full': bphysics_wrap.synchrotron_radiation_full,
     # 'linear_interp_time_translation': bphysics_wrap.linear_interp_time_translation,
     'slice': bphysics_wrap.slice,
-    'slice_mpi': bphysics_wrap.slice_mpi,
     'slice_smooth': bphysics_wrap.slice_smooth,
     'music_track': bphysics_wrap.music_track,
     'music_track_multiturn': bphysics_wrap.music_track_multiturn,

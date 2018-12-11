@@ -34,19 +34,26 @@ parser.add_argument('-beginafter', '--beginafter', type=int,
                     help='Start the approximation after so many turns.')
 
 
-
 parser.add_argument('-o', '--omp', type=int, default=1,
                     help='Number of openmp threads to use.'
                     '\nDefault: 1')
 
-parser.add_argument('-l', '--log', type=str, default=None,
-                    nargs='?', const='logs',
-                    help='Directory to store the log files.'
-                    '\nDefault: Do not generate log files.')
+parser.add_argument('-l', '--log', action='store_true',
+                    help='Log debug messages or not.'
+                    '\nDefault: Do not log.')
 
-parser.add_argument('-r', '--report', type=str, default='./',
+parser.add_argument('-logdir', '--logdir', type=str, default='./logs/',
+                    help='Directory to store the log files.'
+                    '\nDefault: ./logs.')
+
+
+parser.add_argument('-time', '--time', action='store_true',
+                    help='Time the specified regions of interest.'
+                    '\nDefault: No timing.')
+
+parser.add_argument('-timedir', '--timedir', type=str, default='./timings/',
                     help='Directory to store the timing reports.'
-                    '\nDefault: Do not generate timing reports.')
+                    '\nDefault: ./timings')
 
 parser.add_argument('-m', '--monitor', type=int, default=0,
                     help='Monitoring interval (0: no monitor).'
@@ -60,10 +67,6 @@ parser.add_argument('-monitorfile', '--monitorfile', type=str, default=None,
 parser.add_argument('-seed', '--seed', type=int, default=None,
                     help='Seed value for the particle distribution generation.'
                     '\nDefault: None')
-
-parser.add_argument('-time', '--time', action='store_true',
-                    help='Time the specified regions of interest.'
-                    '\nDefault: No timing.')
 
 
 parser.add_argument('-trace', '--trace', action='store_true',

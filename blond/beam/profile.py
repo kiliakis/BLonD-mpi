@@ -19,13 +19,16 @@ from builtins import object
 import numpy as np
 from numpy.fft import rfft, rfftfreq
 from scipy import ndimage
-import logging
 import ctypes
-# from setup_cpp import libblond
-
 from ..toolbox import filters_and_fitting as ffroutines
-
 from ..utils import bmath as bm
+
+try:
+    from pyprof import timing
+    from pyprof import mpiprof
+except ImportError:
+    from ..blond.utils import profile_mock as timing
+    mpiprof = timing
 
 
 class CutOptions(object):
@@ -50,11 +53,11 @@ class CutOptions(object):
         defines the left and right extremes of the profile in case those are
         not given explicitly
     cuts_unit : str
-        the unit of cut_left and cut_right, it can be seconds 's' or radiants 
+        the unit of cut_left and cut_right, it can be seconds 's' or radians
         'rad'
     RFSectionParameters : object
         RFSectionParameters[0][0] is necessary for the conversion from radians
-        to seconds if cuts_unit = 'rad'. RFSectionParameters[0][0] is the value 
+        to seconds if cuts_unit = 'rad'. RFSectionParameters[0][0] is the value
         of omega_rf of the main harmonic at turn number 0
 
     Attributes
@@ -74,17 +77,17 @@ class CutOptions(object):
     --------
     >>> from input_parameters.ring import Ring
     >>> from input_parameters.rf_parameters import RFStation
-    >>> self.ring = Ring(n_turns = 1, ring_length = 100, 
+    >>> self.ring = Ring(n_turns = 1, ring_length = 100,
     >>> alpha = 0.00001, momentum = 1e9)
-    >>> self.rf_params = RFStation(Ring=self.ring, n_rf=1, harmonic=[4620], 
+    >>> self.rf_params = RFStation(Ring=self.ring, n_rf=1, harmonic=[4620],
     >>>                  voltage=[7e6], phi_rf_d=[0.])
-    >>> CutOptions = profileModule.CutOptions(cut_left=0, cut_right=2*np.pi, 
+    >>> CutOptions = profileModule.CutOptions(cut_left=0, cut_right=2*np.pi,
     >>> n_slices = 100, cuts_unit='rad', RFSectionParameters=self.rf_params)
 
     """
 
-    def __init__(self, cut_left=None, cut_right=None, n_slices=100, n_sigma=None,
-                 cuts_unit='s', RFSectionParameters=None, Beam=None):
+    def __init__(self, cut_left=None, cut_right=None, n_slices=100,
+                 n_sigma=None, cuts_unit='s', RFSectionParameters=None):
         """
         Constructor
         """
@@ -111,9 +114,11 @@ class CutOptions(object):
         self.RFParams = RFSectionParameters
 
         if self.cuts_unit == 'rad' and self.RFParams is None:
-            raise RuntimeError('You should pass an RFParams object to convert' +
-                               ' from radians to seconds')
+            # CutError
+            raise RuntimeError('You should pass an RFParams object to '
+                               + 'convert from radians to seconds')
         if self.cuts_unit != 'rad' and self.cuts_unit != 's':
+            # CutError
             raise RuntimeError('cuts_unit should be "s" or "rad"')
 
         self.edges = np.zeros(n_slices + 1, dtype=float)
@@ -121,10 +126,10 @@ class CutOptions(object):
 
     def set_cuts(self, Beam=None):
         """
-        Method to set self.cut_left, self.cut_right, self.edges and 
-        self.bin_centers attributes. 
+        Method to set self.cut_left, self.cut_right, self.edges and
+        self.bin_centers attributes.
         The frame is defined by :math:`n\sigma_{RMS}` or manually by the user.
-        If not, a default frame consisting of taking the whole bunch +5% of the 
+        If not, a default frame consisting of taking the whole bunch +5% of the
         maximum distance between two particles in the bunch will be taken
         in each side of the frame.
         """
@@ -156,7 +161,7 @@ class CutOptions(object):
 
     def track_cuts(self, Beam):
         """
-        Track the slice frame (limits and slice position) as the mean of the 
+        Track the slice frame (limits and slice position) as the mean of the
         bunch moves.
         Requires Beam statistics!
         Method to be refined!
@@ -192,14 +197,14 @@ class CutOptions(object):
 class FitOptions(object):
     """
     This class defines the method to be used turn after turn to obtain the
-    position and length of the bunch profile. 
+    position and length of the bunch profile.
 
     Parameters
     ----------
 
     fit_method : string
-        Current options are 'gaussian', 
-        'fwhm' (full-width-half-maximum converted to 4 sigma gaussian bunch) 
+        Current options are 'gaussian',
+        'fwhm' (full-width-half-maximum converted to 4 sigma gaussian bunch)
         and 'rms'. The methods 'gaussian' and 'rms' give both 4 sigma.
     fitExtraOptions : unknown
         For the moment no options can be passed into fitExtraOptions
@@ -224,7 +229,7 @@ class FilterOptions(object):
 
     """
     This class defines the filter to be used turn after turn to smooth
-    the bunch profile. 
+    the bunch profile.
 
     Parameters
     ----------
@@ -256,21 +261,21 @@ class FilterOptions(object):
 class OtherSlicesOptions(object):
 
     """
-    This class groups all the remaining options for the Profile class. 
+    This class groups all the remaining options for the Profile class.
 
     Parameters
     ----------
 
     smooth : boolean
         If set True, this method slices the bunch not in the
-        standard way (fixed one slice all the macroparticles contribute 
-        with +1 or 0 depending if they are inside or not). The method assigns to
-        each macroparticle a real value between 0 and +1 depending on its
-        time coordinate. This method can be considered a filter able to smooth 
+        standard way (fixed one slice all the macroparticles contribute
+        with +1 or 0 depending if they are inside or not). The method assigns
+        to each macroparticle a real value between 0 and +1 depending on its
+        time coordinate. This method can be considered a filter able to smooth
         the profile.
     direct_slicing : boolean
         If set True, the profile is calculated when the Profile class below
-        is created. If False the user has to manually track the Profile object 
+        is created. If False the user has to manually track the Profile object
         in the main file after its creation
 
     Attributes
@@ -308,13 +313,13 @@ class Profile(object):
         Options to set a filter (see above)
     OtherSlicesOptions : object
         All remaining options, like smooth histogram and direct
-        slicing (see above)    
+        slicing (see above)
 
     Attributes
     ----------
 
-    Beam : object 
-    n_slices : int 
+    Beam : object
+    n_slices : int
         number of slices to be used
     cut_left : float
         left extreme of the profile
@@ -349,20 +354,20 @@ class Profile(object):
     --------
 
     >>> n_slices = 100
-    >>> CutOptions = profileModule.CutOptions(cut_left=0, 
-    >>>       cut_right=self.ring.t_rev[0],  n_slices = n_slices, cuts_unit='s')                 
-    >>> FitOptions = profileModule.FitOptions(fit_option='gaussian', 
+    >>> CutOptions = profileModule.CutOptions(cut_left=0,
+    >>>       cut_right=self.ring.t_rev[0], n_slices = n_slices, cuts_unit='s')
+    >>> FitOptions = profileModule.FitOptions(fit_option='gaussian',
     >>>                                        fitExtraOptions=None)
-    >>> filter_option = {'pass_frequency':1e7, 
-    >>>    'stop_frequency':1e8, 'gain_pass':1, 'gain_stop':2, 
+    >>> filter_option = {'pass_frequency':1e7,
+    >>>    'stop_frequency':1e8, 'gain_pass':1, 'gain_stop':2,
     >>>    'transfer_function_plot':False}
-    >>> FilterOptions = profileModule.FilterOptions(filterMethod='chebishev', 
+    >>> FilterOptions = profileModule.FilterOptions(filterMethod='chebishev',
     >>>         filterExtraOptions=filter_option)
-    >>> OtherSlicesOptions = profileModule.OtherSlicesOptions(smooth=False, 
+    >>> OtherSlicesOptions = profileModule.OtherSlicesOptions(smooth=False,
     >>>                             direct_slicing = True)
     >>> self.profile4 = profileModule.Profile(my_beam, CutOptions = CutOptions,
     >>>                     FitOptions= FitOptions,
-    >>>                     FilterOptions=FilterOptions, 
+    >>>                     FilterOptions=FilterOptions,
     >>>                     OtherSlicesOptions = OtherSlicesOptions)
 
     """
@@ -400,7 +405,7 @@ class Profile(object):
         else:
             self.operations = [self._slice]
 
-        if FitOptions.fit_option != None:
+        if FitOptions.fit_option is not None:
             self.fit_option = FitOptions.fit_option
             self.bunchPosition = 0.0
             self.bunchLength = 0.0
@@ -423,15 +428,6 @@ class Profile(object):
             self.edges, self.bin_centers, self.bin_size = \
             self.cut_options.get_slices_parameters()
 
-    def master_track(self):
-        libblond.histogram(self.Beam.dt.ctypes.data_as(ctypes.c_void_p),
-                           self.n_macroparticles.ctypes.data_as(
-                               ctypes.c_void_p),
-                           ctypes.c_double(self.cut_left),
-                           ctypes.c_double(self.cut_right),
-                           ctypes.c_int(self.n_slices),
-                           ctypes.c_int(self.Beam.n_macroparticles))
-
     def track(self):
         """
         Track method in order to update the slicing along with the tracker.
@@ -440,30 +436,35 @@ class Profile(object):
         for op in self.operations:
             op()
 
+    @timing.timeit(key='comp:histo')
+    @mpiprof.traceit(key='comp:histo')
     def _slice(self):
         """
         Constant space slicing with a constant frame. 
         """
-        bm.slice_mpi(self)
-        # libblond.histogram(self.Beam.dt.ctypes.data_as(ctypes.c_void_p),
-        #                  self.n_macroparticles.ctypes.data_as(ctypes.c_void_p),
-        #                  ctypes.c_double(self.cut_left),
-        #                  ctypes.c_double(self.cut_right),
-        #                  ctypes.c_int(self.n_slices),
-        #                  ctypes.c_int(self.Beam.n_macroparticles))
+        bm.slice(self)
+
+    def reduce_histo(self):
+        from ..utils.mpi_config import worker
+        
+        with timing.timed_region('serial:conversion'):
+            with mpiprof.traced_region('serial:conversion'):
+                self.n_macroparticles = self.n_macroparticles.astype(
+                    np.uint16, order='C')
+
+        worker.allreduce(self.n_macroparticles, dtype=np.uint16)
+
+        with timing.timed_region('serial:conversion'):
+            with mpiprof.traced_region('serial:conversion'):
+                self.n_macroparticles = self.n_macroparticles.astype(
+                    np.float64, order='C')
+
 
     def _slice_smooth(self):
         """
         At the moment 4x slower than _slice but smoother (filtered).
         """
-
-        libblond.smooth_histogram(self.Beam.dt.ctypes.data_as(ctypes.c_void_p),
-                                  self.n_macroparticles.ctypes.data_as(
-                                      ctypes.c_void_p),
-                                  ctypes.c_double(self.cut_left),
-                                  ctypes.c_double(self.cut_right),
-                                  ctypes.c_uint(self.n_slices),
-                                  ctypes.c_uint(self.Beam.n_macroparticles))
+        bm.slice_smooth(self)
 
     def apply_fit(self):
         """
@@ -539,8 +540,8 @@ class Profile(object):
         """
         Beam spectrum calculation
         """
-        self.beam_spectrum = bm.rfft(self.n_macroparticles, n_sampling_fft)
-        # self.beam_spectrum = rfft(self.n_macroparticles, n_sampling_fft)
+
+        self.beam_spectrum = rfft(self.n_macroparticles, n_sampling_fft)
 
     def beam_profile_derivative(self, mode='gradient'):
         """
@@ -553,8 +554,9 @@ class Profile(object):
         dist_centers = x[1] - x[0]
 
         if mode is 'filter1d':
-            derivative = ndimage.gaussian_filter1d(self.n_macroparticles,
-                                                   sigma=1, order=1, mode='wrap') / dist_centers
+            derivative = ndimage.gaussian_filter1d(
+                self.n_macroparticles, sigma=1, order=1, mode='wrap') / \
+                dist_centers
         elif mode is 'gradient':
             derivative = np.gradient(self.n_macroparticles, dist_centers)
         elif mode is 'diff':
@@ -562,6 +564,7 @@ class Profile(object):
             diffCenters = x[0:-1] + dist_centers/2
             derivative = np.interp(x, diffCenters, derivative)
         else:
+            # ProfileDerivativeError
             raise RuntimeError('Option for derivative is not recognized.')
 
         return x, derivative

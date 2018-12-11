@@ -219,3 +219,4 @@ def rms_multibunch(Y_array, X_array, n_bunches,
             X_array[indexes_bucket])
 
     return bl_rms, bp_rms
+
