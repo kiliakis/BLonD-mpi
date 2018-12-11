@@ -115,8 +115,8 @@ class CutOptions(object):
 
         if self.cuts_unit == 'rad' and self.RFParams is None:
             # CutError
-            raise RuntimeError('You should pass an RFParams object to '
-                               + 'convert from radians to seconds')
+            raise RuntimeError('You should pass an RFParams object to ' +
+                               'convert from radians to seconds')
         if self.cuts_unit != 'rad' and self.cuts_unit != 's':
             # CutError
             raise RuntimeError('cuts_unit should be "s" or "rad"')
@@ -446,7 +446,7 @@ class Profile(object):
 
     def reduce_histo(self):
         from ..utils.mpi_config import worker
-        
+
         with timing.timed_region('serial:conversion'):
             with mpiprof.traced_region('serial:conversion'):
                 self.n_macroparticles = self.n_macroparticles.astype(
@@ -459,6 +459,11 @@ class Profile(object):
                 self.n_macroparticles = self.n_macroparticles.astype(
                     np.float64, order='C')
 
+    @timing.timeit(key='serial:scale_histo')
+    @mpiprof.traceit(key='serial:scale_histo')
+    def scale_histo(self):
+        from ..utils.mpi_config import worker
+        self.n_macroparticles *= worker.workers
 
     def _slice_smooth(self):
         """
@@ -536,12 +541,13 @@ class Profile(object):
 
         self.beam_spectrum_freq = rfftfreq(n_sampling_fft, self.bin_size)
 
+    @timing.timeit(key='serial:beam_spectrum_gen')
+    @mpiprof.traceit(key='serial:beam_spectrum_gen')
     def beam_spectrum_generation(self, n_sampling_fft):
         """
         Beam spectrum calculation
         """
-
-        self.beam_spectrum = rfft(self.n_macroparticles, n_sampling_fft)
+        self.beam_spectrum = bm.rfft(self.n_macroparticles, n_sampling_fft)
 
     def beam_profile_derivative(self, mode='gradient'):
         """

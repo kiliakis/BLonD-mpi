@@ -171,7 +171,7 @@ def rfft(signal, fftsize=0, result=None):
     elif (fftsize != 0) and (result == None):
         result = np.empty(fftsize//2 + 1, dtype=np.complex128)
 
-    libfft.rfft(__getPointer(signal),
+    __lib.rfft(__getPointer(signal),
                 __getLen(signal),
                 __getPointer(result),
                 fftsize)
@@ -185,7 +185,7 @@ def irfft(signal, fftsize=0, result=None):
     elif (fftsize != 0) and (result == None):
         result = np.empty(fftsize, dtype=np.float64)
 
-    libfft.irfft(__getPointer(signal),
+    __lib.irfft(__getPointer(signal),
                  __getLen(signal),
                  __getPointer(result),
                  fftsize)
@@ -204,7 +204,7 @@ def irfft_packed(signal, fftsize=0, result=None):
     elif (fftsize != 0) and (result == None):
         result = np.empty(howmany * fftsize, dtype=np.float64)
 
-    libfft.irfft_packed(__getPointer(signal),
+    __lib.irfft_packed(__getPointer(signal),
                         n0,
                         howmany,
                         __getPointer(result),

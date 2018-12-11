@@ -38,7 +38,6 @@ def _beam_phase(bin_centers, profile, alpha, omegarf, phirf, bin_size):
     return coeff
 
 
-
 def rf_volt_comp(voltages, omega_rf, phi_rf, ring):
     # voltages = np.ascontiguousarray(ring.voltage[:, ring.counter[0]])
     # omega_rf = np.ascontiguousarray(ring.omega_rf[:, ring.counter[0]])
@@ -100,9 +99,9 @@ def linear_interp_kick(dt, dE, voltage,
                              ct.c_double(acceleration_kick))
 
 
-def LIKick_n_drift(dt, dE, total_voltage, bin_centers, charge, acc_kick,
-                    solver, t_rev, length_ratio, alpha_order, eta_0, eta_1,
-                    eta_2, beta, energy):
+def linear_interp_kick_n_drift(dt, dE, total_voltage, bin_centers, charge, acc_kick,
+                               solver, t_rev, length_ratio, alpha_order, eta_0, eta_1,
+                               eta_2, beta, energy):
     __lib.linear_interp_kick_n_drift(__getPointer(dt),
                                      __getPointer(dE),
                                      __getPointer(total_voltage),
@@ -120,8 +119,6 @@ def LIKick_n_drift(dt, dE, total_voltage, bin_centers, charge, acc_kick,
                                      ct.c_double(beta),
                                      ct.c_double(energy),
                                      ct.c_double(charge))
-
-
 
 
 def linear_interp_time_translation(ring, dt, dE, turn):

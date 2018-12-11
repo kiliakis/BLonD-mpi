@@ -10,13 +10,28 @@
 # H. Timko
 
 
+from blond.utils import mpi_config as mpiconf
+from blond.utils.input_parser import parse
+from blond.monitors.monitors import SlicesMonitor
+from blond.toolbox.next_regular import next_regular
+from blond.impedances.impedance import InducedVoltageFreq, TotalInducedVoltage
+from blond.impedances.impedance_sources import InputTable
+from blond.beam.profile import Profile, CutOptions
+# matched_from_distribution_function
+from blond.beam.distributions import bigaussian
+from blond.beam.beam import Beam, Proton
+from blond.llrf.rf_noise import FlatSpectrum, LHCNoiseFB
+from blond.llrf.beam_feedback import BeamFeedback
+from blond.trackers.tracker import RingAndRFTracker, FullRingAndRF
+from blond.input_parameters.rf_parameters import RFStation
+from blond.input_parameters.ring import Ring
+import os
+import datetime
+import sys
 import time
 import numpy as np
 import matplotlib as mpl
 mpl.use('Agg')
-import sys
-import datetime
-import os
 try:
     from pyprof import timing
     from pyprof import mpiprof
@@ -29,28 +44,12 @@ REAL_RAMP = False    # track full ramp
 MONITORING = False   # turn off plots and monitors
 
 
-from blond.input_parameters.ring import Ring
-from blond.input_parameters.rf_parameters import RFStation
-from blond.trackers.tracker import RingAndRFTracker, FullRingAndRF
-from blond.llrf.beam_feedback import BeamFeedback
-from blond.llrf.rf_noise import FlatSpectrum, LHCNoiseFB
-from blond.beam.beam import Beam, Proton
-from blond.beam.distributions import bigaussian  # matched_from_distribution_function
-from blond.beam.profile import Profile, CutOptions
-from blond.impedances.impedance_sources import InputTable
-from blond.impedances.impedance import InducedVoltageFreq, TotalInducedVoltage
-from blond.toolbox.next_regular import next_regular
 if MONITORING:
     from blond.monitors.monitors import BunchMonitor
     from blond.plots.plot import Plot
     from blond.plots.plot_beams import plot_long_phase_space
     from blond.plots.plot_slices import plot_beam_profile
 
-from blond.monitors.monitors import SlicesMonitor
-
-from blond.utils.input_parser import parse
-
-from blond.utils import mpi_config as mpiconf
 
 this_directory = os.path.dirname(os.path.realpath(__file__)) + '/'
 
@@ -88,6 +87,7 @@ N_t_reduce = 1
 N_t_monitor = 0
 seed = 0
 
+args = parse()
 
 if args.get('turns', None) is not None:
     N_t = args['turns']
@@ -117,12 +117,11 @@ if args.get('seed', None) is not None:
     seed = args['seed']
 
 
-
-print({'N_t':N_t, 'N_p':N_p, 
-        'timing.mode':timing.mode, 'n_bunches':NB, 
-        'addload': addload,
-        'N_t_reduce':N_t_reduce,
-        'N_t_monitor':N_t_monitor, 'seed':seed, 'log':log})
+print({'N_t': N_t, 'N_p': N_p,
+       'timing.mode': timing.mode, 'n_bunches': NB,
+       'N_t_reduce': N_t_reduce,
+       'N_t_monitor': N_t_monitor,
+       'seed': seed, 'log': log})
 
 # Simulation setup -------------------------------------------------------------
 print("Setting up the simulation...")
@@ -289,7 +288,7 @@ for i in range(N_t):
     # After the first 2/3 of the ramp, regulate down the bunch length
     if i == 9042249:
         noiseFB.bl_targ = 1.1e-9
-    
+
     if (i % N_t_reduce == 0):
         profile.track()
         profile.reduce_histo()
@@ -301,7 +300,6 @@ for i in range(N_t):
 
     if (i % N_t_reduce == 0):
         totVoltage.induced_voltage_sum()
-
 
     tracker.track()
 

@@ -8,7 +8,13 @@ Created on Thu Jan 18 14:09:16 2018
 import numpy as np
 from copy import deepcopy
 from scipy.constants import c
-from ..utils import mpi_config as mpiconf
+try:
+    from pyprof import timing
+    from pyprof import mpiprof
+except ImportError:
+    from ..blond.utils import profile_mock as timing
+    mpiprof = timing
+
 
 ### SPS --- Impedance reduction definition
 class ImpedanceReduction():
@@ -125,14 +131,12 @@ class ImpedanceReduction():
         return 1/(1 + 0.45*self.k * H_comb * (H_lp + lpf*H_hp) * Z_rf)
     #end fb_reduction
     
+    @timing.timeit(key='serial:impedanceReduction')
+    @mpiprof.traceit(key='serial:impedanceReduction')    
     def track(self):
-        
-        master = mpiconf.master
-
-        # master.multi_bcast({'turn': self.counter[0]}, msg=False)
-        # self.impedance[self.affected_indices] = \
-        #     self.initial_impedance[self.affected_indices] \
-        #     * self.filter_func**(self.reduction_factor[self.counter] \
-        #                          * self.FB_strength)
+        self.impedance[self.affected_indices] = \
+            self.initial_impedance[self.affected_indices] \
+            * self.filter_func**(self.reduction_factor[self.counter] \
+                                 * self.FB_strength)
     #end track
 #end definition ImpedanceReduction
