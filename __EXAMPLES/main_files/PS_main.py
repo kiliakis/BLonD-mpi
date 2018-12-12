@@ -40,6 +40,8 @@ from blond.impedances.PS_impedance.impedance_scenario import scenario
 from blond.colormap import colormap
 from blond.monitors.monitors import SlicesMonitor
 
+this_directory = os.path.dirname(os.path.realpath(__file__)) + '/'
+
 
 cmap = colormap.cmap_white_blue_red
 

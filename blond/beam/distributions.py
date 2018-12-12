@@ -27,7 +27,7 @@ from scipy.integrate import cumtrapz
 from ..trackers.utilities import is_in_separatrix
 from ..beam.profile import Profile, CutOptions
 from ..trackers.utilities import potential_well_cut, minmax_location
-
+from ..trackers.tracker import FullRingAndRF
 
 def matched_from_line_density(beam, full_ring_and_RF, line_density_input=None,
                               main_harmonic_option='lowest_freq',
@@ -494,7 +494,8 @@ def matched_from_distribution_function(beam, full_ring_and_RF,
         # Computing the action J by integrating the dE trajectories
         J_array_dE0 = np.zeros(n_points_grid)
         
-        full_ring_and_RF2 = copy.deepcopy(full_ring_and_RF)
+        full_ring_and_RF2 = FullRingAndRF(full_ring_and_RF.RingAndRFSection_list) 
+        # copy.deepcopy(full_ring_and_RF)
         for j in range(n_points_grid):
             # Find left and right time coordinates for a given hamiltonian 
             # value
