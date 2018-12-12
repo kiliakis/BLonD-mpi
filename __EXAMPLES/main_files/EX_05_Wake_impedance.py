@@ -322,7 +322,6 @@ print('dE freq mean: ', np.mean(my_beam_freq.dE))
 print('dE res mean: ', np.mean(my_beam_res.dE))
 
 
-mpiprof.finalize()
 timing.report(total_time=1e3*(end_t-start_t),
               out_dir=args['timedir'],
               out_file='worker-{}.csv'.format(os.getpid()))

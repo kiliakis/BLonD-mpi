@@ -38,7 +38,7 @@ add_op_uint16 = MPI.Op.Create(c_add_uint16, commute=True)
 def print_wrap(f):
     @wraps(f)
     def wrap(*args):
-        msg = '[{}]'.format(worker.rank) + ' '.join([str(a) for a in args])
+        msg = '[{}] '.format(worker.rank) + ' '.join([str(a) for a in args])
         if worker.rank == 0:
             worker.logger.debug(msg)
             return f('[{}]'.format(worker.rank),*args)
@@ -65,15 +65,24 @@ class Worker:
         self.workers = self.intracomm.size
 
         self.hostname = MPI.Get_processor_name()
-
-        if args['log']:
+        self.log = args['log']
+        self.trace = args['trace']
+        
+        if self.log:
             self.logger = MPILog(rank=self.rank, log_dir=args['logdir'])
         else:
             self.logger = MPILog(rank=self.rank)
             self.logger.disable()
 
-    # Define the begin and size numbers in order to split a variable of length size
+        if self.trace:
+            mpiprof.mode = 'tracing'
+            mpiprof.init(logfile=args['tracefile'])
 
+    def __del__(self):
+        # if self.trace:
+        mpiprof.finalize()
+
+    # Define the begin and size numbers in order to split a variable of length size
     @timing.timeit(key='serial:split')
     @mpiprof.traceit(key='serial:split')
     def split(self, size):
@@ -129,6 +138,8 @@ class Worker:
     def sync(self):
         self.logger.debug('sync')
         self.intracomm.Barrier()
+
+
 
 
 class MPILog(object):

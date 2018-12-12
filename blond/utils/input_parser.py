@@ -74,7 +74,7 @@ parser.add_argument('-trace', '--trace', action='store_true',
                     '\nDefault: No tracing.')
 
 parser.add_argument('-tracefile', '--tracefile', type=str, default='mpe-trace',
-                    help='The file name to save the MPE trace (without the file type).'
+                    help='The file name to save the MPE trace (without the file extension).'
                     '\nDefault: mpe-trace')
 
 

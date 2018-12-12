@@ -27,7 +27,7 @@ try:
     from pyprof import timing
     from pyprof import mpiprof
 except ImportError:
-    from ..blond.utils import profile_mock as timing
+    from ..utils import profile_mock as timing
     mpiprof = timing
 
 

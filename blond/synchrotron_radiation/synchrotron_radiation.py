@@ -19,7 +19,12 @@ import numpy as np
 import ctypes
 from scipy.constants import e, c, epsilon_0, hbar
 from ..utils import bmath as bm
-
+try:
+    from pyprof import timing
+    from pyprof import mpiprof
+except ImportError:
+    from ..utils import profile_mock as timing
+    mpiprof = timing
 
 class SynchrotronRadiation(object):
     
@@ -122,6 +127,8 @@ class SynchrotronRadiation(object):
         print( '------------------------------------------------' )
 
     # Track particles with SR only (without quantum excitation)
+    @timing.timeit(key='comp:SR_python')
+    @mpiprof.traceit(key='comp:SR_python')
     def track_SR_python(self):
         i_turn = self.rf_params.counter[0]
         # Recalculate SR parameters if energy changes
@@ -133,6 +140,8 @@ class SynchrotronRadiation(object):
                               self.U0 / self.n_kicks)
     
     # Track particles with SR and quantum excitation
+    @timing.timeit(key='comp:SR_full_python')
+    @mpiprof.traceit(key='comp:SR_full_python')
     def track_full_python(self):
         i_turn = self.rf_params.counter[0]
         # Recalculate SR parameters if energy changes
@@ -148,6 +157,8 @@ class SynchrotronRadiation(object):
 
     # Track particles with SR only (without quantum excitation)
     # C implementation
+    @timing.timeit(key='comp:SR_C')
+    @mpiprof.traceit(key='comp:SR_C')
     def track_SR_C(self):
         i_turn = self.rf_params.counter[0]
         # Recalculate SR parameters if energy changes
@@ -165,6 +176,8 @@ class SynchrotronRadiation(object):
             #  ctypes.c_int(self.n_kicks))
 #      
     # Track particles with SR and quantum excitation. C implementation
+    @timing.timeit(key='comp:SR_full_C')
+    @mpiprof.traceit(key='comp:SR_full_C')
     def track_full_C(self):
         i_turn = self.rf_params.counter[0]
         # Recalculate SR parameters if energy changes

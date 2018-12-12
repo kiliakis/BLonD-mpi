@@ -176,7 +176,6 @@ for i in range(1, N_t+1):
 beam.gather()
 end_t = time.time()
 
-mpiprof.finalize()
 timing.report(total_time=1e3*(end_t-start_t),
               out_dir=args['timedir'],
               out_file='worker-{}.csv'.format(os.getpid()))

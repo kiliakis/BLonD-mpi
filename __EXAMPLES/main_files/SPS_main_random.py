@@ -545,8 +545,6 @@ beam.gather()
 end_t = time.time()
 print('Total time: ', end_t - start_t)
 
-mpiprof.finalize()
-# if report:
 timing.report(total_time=1e3*(end_t-start_t),
               out_dir=args['timedir'],
               out_file='worker-{}.csv'.format(os.getpid()))
