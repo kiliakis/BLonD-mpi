@@ -146,7 +146,7 @@ class Beam(object):
         self.n_macroparticles = int(n_macroparticles)
         self.ratio = self.intensity/self.n_macroparticles
         self.id = np.arange(1, self.n_macroparticles + 1, dtype=int)
-
+        self.losses = 0
     @property
     def n_macroparticles_lost(self):
         '''Number of lost macro-particles, defined as @property.
@@ -300,3 +300,22 @@ class Beam(object):
         self.dt = worker.gather(self.dt, total_size)
         self.dE = worker.gather(self.dE, total_size)
         self.id = worker.gather(self.id, total_size)
+
+    def gather_statistics(self):
+        from ..utils.mpi_config import worker
+        
+        total_size = worker.workers
+        mean_dt_arr = worker.gather(np.array([self.mean_dt]), total_size)
+        mean_dE_arr = worker.gather(np.array([self.mean_dE]), total_size)
+        # sigma_dt_arr = worker.gather(np.array([self.sigma_dt]), total_size)
+        # sigma_dE_arr = worker.gather(np.array([self.sigma_dE]), total_size)
+        losses_arr = worker.gather(np.array([self.n_macroparticles_lost]), total_size)
+
+        self.mean_dt = np.mean(mean_dt_arr)
+        self.mean_dE = np.mean(mean_dE_arr)
+        self.losses = np.sum(losses_arr)
+        # self.sigma_dt = np.sqrt(worker.workers * np.sum(sigma_dt_arr * sigma_dt_arr))
+        # self.sigma_dE = np.sqrt(worker.workers * np.sum(sigma_dE_arr * sigma_dE_arr))
+        # mean_dt_arr = worker.gather([self.mean_dt], total_size)
+        # self.dE = worker.gather(self.dE, total_size)
+        # self.id = worker.gather(self.id, total_size)

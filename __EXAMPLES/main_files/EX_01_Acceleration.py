@@ -29,6 +29,7 @@ except ImportError:
     from blond.utils import profile_mock as timing
     mpiprof = timing
 #  BLonD Imports
+from blond.monitors.monitors import SlicesMonitor
 from blond.input_parameters.ring import Ring
 from blond.input_parameters.rf_parameters import RFStation
 from blond.trackers.tracker import RingAndRFTracker
@@ -69,7 +70,7 @@ workers = 3
 debug = False
 log = None
 report = None
-seed = 0
+seed = 1
 N_t_reduce = 1
 N_t_monitor = 0
 
@@ -131,17 +132,35 @@ beam = Beam(ring, N_p, N_b)
 # Define RF station parameters and corresponding tracker
 rf = RFStation(ring, [h], [V], [dphi])
 
-bigaussian(ring, rf, beam, tau_0/4, reinsertion=True, seed=1)
+bigaussian(ring, rf, beam, tau_0/4, reinsertion=True, seed=seed)
 
 
 # Need slices for the Gaussian fit
 # TODO add the gaussian fit
 profile = Profile(beam, CutOptions(n_slices=N_slices))
-                  # FitOptions(fit_option='gaussian'))
+# FitOptions(fit_option='gaussian'))
 
 long_tracker = RingAndRFTracker(rf, beam)
 
 beam.split()
+
+
+if N_t_monitor > 0:
+    if args.get('monitorfile', None):
+        filename = args['monitorfile']
+    else:
+        filename = 'profiles/{}-t{}-p{}-b{}-sl{}-r{}-m{}-se{}'.format('EX_01_Acceleration',
+                                                                      N_t, N_p,
+                                                                      n_bunches, N_slices,
+                                                                      N_t_reduce,
+                                                                      N_t_monitor,
+                                                                      seed)
+    slicesMonitor = SlicesMonitor(filename=filename,
+                                  n_turns=np.ceil(1.0 * N_t / N_t_monitor),
+                                  profile=profile,
+                                  rf=rf,
+                                  Nbunches=n_bunches)
+
 
 # Accelerator map
 # map_ = [long_tracker, profile]
@@ -172,6 +191,14 @@ for i in range(1, N_t+1):
     profile.track()
     profile.reduce_histo()
 
+    if (N_t_monitor > 0) and (i % N_t_monitor == 0):
+        beam.losses_separatrix(ring, rf)
+        beam.statistics()
+        beam.gather_statistics()
+        if worker.rank == 0:
+            profile.fwhm()
+            slicesMonitor.track(i)
+
 
 beam.gather()
 end_t = time.time()
@@ -187,4 +214,3 @@ print('profile mean: ', np.mean(profile.n_macroparticles))
 print('profile std: ', np.std(profile.n_macroparticles))
 
 print('Done!')
-
