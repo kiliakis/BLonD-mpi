@@ -18,7 +18,7 @@ the corresponding h5 files).
 :Authors: **Danilo Quartullo**
 '''
 
-from __future__ import division, print_function
+# from __future__ import division, print_function
 try:
     from pyprof import timing
     from pyprof import mpiprof
@@ -45,16 +45,13 @@ from blond.plots.plot import Plot
 from blond.plots.plot_impedance import plot_induced_voltage_vs_bin_centers
 from blond.impedances.impedance_sources import Resonators
 from blond.utils.input_parser import parse
-from blond.utils import mpi_config as mpiconf
+
+from blond.utils.mpi_config import worker, print
 
 this_directory = os.path.dirname(os.path.realpath(__file__)) + '/'
 
 
-args = parse()
 
-mpiconf.init(trace=args['trace'], logfile=args['tracefile'])
-
-print(args)
 # try:
 #     os.mkdir('../output_files')
 # except:
@@ -93,7 +90,9 @@ n_bunches = 1
 N_t_reduce = 1
 N_t_monitor = 0
 seed = 0
+log = False
 
+args = parse()
 
 if args.get('turns', None) is not None:
     n_turns = args['turns']
@@ -122,7 +121,7 @@ if args.get('monitor', None) is not None:
 if args.get('seed', None) is not None:
     seed = args['seed']
 
-if 'log' in args:
+if args.get('log', None) is not None:
     log = args['log']
 
 
@@ -132,7 +131,6 @@ print({'N_t': n_turns, 'n_macroparticles': n_macroparticles,
        'n_bunches': n_bunches,
        'N_t_reduce': N_t_reduce,
        'N_t_monitor': N_t_monitor, 'seed': seed, 'log': log})
-
 
 
 
@@ -173,9 +171,11 @@ bigaussian(general_params_freq, RF_sct_par_freq, my_beam_freq,
 bigaussian(general_params_res, RF_sct_par_res, my_beam_res,
            tau_0/4, seed=1)
 
-print('dE mean: ', np.mean(my_beam.dE))
-print('dE freq mean: ', np.mean(my_beam_freq.dE))
-print('dE res mean: ', np.mean(my_beam_res.dE))
+my_beam.split()
+my_beam_freq.split()
+my_beam_res.split()
+
+
 
 cut_options = CutOptions(cut_left=0, cut_right=2*np.pi, n_slices=number_slices,
                          RFSectionParameters=RF_sct_par, cuts_unit='rad')
@@ -189,6 +189,10 @@ cut_options_res = CutOptions(cut_left=0, cut_right=2*np.pi, n_slices=number_slic
 slice_beam_res = Profile(my_beam_res, cut_options_res,
                          FitOptions(fit_option='gaussian'))
 
+
+slice_beam.track()
+slice_beam_freq.track()
+slice_beam_res.track()
 
 # MONITOR----------------------------------------------------------------------
 
@@ -269,139 +273,38 @@ tot_vol_res = TotalInducedVoltage(my_beam_res, slice_beam_res,
 # ACCELERATION MAP-------------------------------------------------------------
 
 map_ = [tot_vol] + [ring_RF_section] + [slice_beam]
-# + [bunchmonitor] + [plots]
 map_freq = [tot_vol_freq] + [ring_RF_section_freq] + [slice_beam_freq]
 map_res = [tot_vol_res] + [ring_RF_section_res] + [slice_beam_res]
-# map_freq = [tot_vol_freq] + [ring_RF_section_freq] + [slice_beam_freq] \
-#     + [bunchmonitor_freq] + [plots_freq]
-# map_res = [tot_vol_res] + [ring_RF_section_res] + [slice_beam_res] \
-#     + [bunchmonitor_res] + [plots_res]
 
 
 # TRACKING + PLOTS-------------------------------------------------------------
 print('Map set')
+print('dE mean: ', np.mean(my_beam.dE))
+print('dE freq mean: ', np.mean(my_beam_freq.dE))
+print('dE res mean: ', np.mean(my_beam_res.dE))
 
-master = mpiconf.Master(log=log)
-
-start_t = time.time()
 print(datetime.datetime.now().time())
-
-init_dict = {
-    'n_rf': ring_RF_section.n_rf,
-    'solver': ring_RF_section.solver,
-    'length_ratio': ring_RF_section.length_ratio,
-    'alpha_order': ring_RF_section.alpha_order,
-    'n_slices': slice_beam.n_slices,
-    'bin_centers': slice_beam.bin_centers,
-    'charge': my_beam.Particle.charge
-}
-master.multi_bcast(init_dict)
-master.logger.debug('Broadcasted initial variables')
-
-
-# Scatter coordinates etc
-vars_dict = {
-    'dt': my_beam.dt,
-    'dE': my_beam.dE
-}
-master.multi_scatter(vars_dict)
-master.logger.debug('Scattered initial coordinates')
-
-
-slice_beam.track()
-
-
-master.switch_context(1)
-
-init_dict = {
-    'bin_centers': slice_beam_freq.bin_centers
-}
-master.logger.debug('Broadcasted initial variables')
-master.multi_bcast(init_dict)
-
-vars_dict = {
-    'dt': my_beam_freq.dt,
-    'dE': my_beam_freq.dE
-}
-master.multi_scatter(vars_dict)
-master.logger.debug('Scattered initial coordinates')
-slice_beam_freq.track()
-
-
-
-master.switch_context(2)
-init_dict = {
-    'bin_centers': slice_beam_res.bin_centers
-}
-master.logger.debug('Broadcasted initial variables')
-master.multi_bcast(init_dict)
-
-vars_dict = {
-    'dt': my_beam_res.dt,
-    'dE': my_beam_res.dE
-}
-master.multi_scatter(vars_dict)
-master.logger.debug('Scattered initial coordinates')
-slice_beam_res.track()
-
-
-# print('dE std: ', np.std(my_beam.dE))
-
-# print('dt mean: ', np.mean(my_beam.dt))
-# print('dt std: ', np.std(my_beam.dt))
+timing.reset()
+start_t = time.time()
 
 for i in np.arange(1, n_turns+1):
 
     if i % 200 == 0:
         print(i)
 
-    master.switch_context(0)
     for m in map_:
         m.track()
 
-    master.switch_context(1)
     for m in map_freq:
         m.track()
 
-    master.switch_context(2)
     for m in map_res:
         m.track()
 
-    # Plots
-    # if (i % dt_plt) == 0:
-    #     plot_induced_voltage_vs_bin_centers(i, general_params, tot_vol,
-    #                                         style='.', dirname='../output_files/EX_05_fig/1')
-    #     plot_induced_voltage_vs_bin_centers(i, general_params_freq,
-    #                                         tot_vol_freq, style='.', dirname='../output_files/EX_05_fig/2')
-    #     plot_induced_voltage_vs_bin_centers(i, general_params_res,
-    #                                         tot_vol_res, style='.', dirname='../output_files/EX_05_fig/3')
+my_beam.gather()
+my_beam_res.gather()
+my_beam_freq.gather()
 
-
-master.switch_context(0)
-vars_dict = {
-    'dt': my_beam.dt,
-    'dE': my_beam.dE
-}
-master.multi_gather(vars_dict)
-
-master.switch_context(1)
-vars_dict = {
-    'dt': my_beam_freq.dt,
-    'dE': my_beam_freq.dE
-}
-master.multi_gather(vars_dict)
-
-master.switch_context(2)
-vars_dict = {
-    'dt': my_beam_res.dt,
-    'dE': my_beam_res.dE
-}
-master.multi_gather(vars_dict)
-
-
-
-master.stop()
-master.disconnect()
 end_t = time.time()
 print(datetime.datetime.now().time())
 
@@ -410,32 +313,10 @@ print('dE mean: ', np.mean(my_beam.dE))
 print('dE freq mean: ', np.mean(my_beam_freq.dE))
 print('dE res mean: ', np.mean(my_beam_res.dE))
 
-# print('dE mean: ', np.mean(my_beam.dE))
-# print('dE std: ', np.std(my_beam.dE))
 
-# print('dt mean: ', np.mean(my_beam.dt))
-# print('dt std: ', np.std(my_beam.dt))
-
-
-# if report:
-timing.report(total_time=1e3*(end_t-start_t),
-               out_dir=args['report'],
-               out_file='master.csv')
 mpiprof.finalize()
-
-# Plotting induced voltages---------------------------------------------------
-# plt.clf()
-# plt.ylabel("induced voltage [arb. unit]")
-# plt.xlabel("time [ns]")
-# plt.plot(1e9*slice_beam.bin_centers, tot_vol.induced_voltage, label='Time')
-# plt.plot(1e9*slice_beam_freq.bin_centers, tot_vol_freq.induced_voltage,
-#          label='Freq')
-# plt.plot(1e9*slice_beam_res.bin_centers, tot_vol_res.induced_voltage,
-#          label='Resonator')
-# plt.plot(1e9*slice_beam.bin_centers, VindGauss, label='Analytic')
-# plt.legend()
-# dirname = '../output_files/EX_05_fig'
-# fign = dirname + '/comparison_induced_voltage.png'
-# plt.savefig(fign)
+timing.report(total_time=1e3*(end_t-start_t),
+               out_dir=args['timingdir'],
+               out_file='worker-{}.csv'.format(os.getpid()))
 
 print("Done!")

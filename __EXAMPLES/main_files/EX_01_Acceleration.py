@@ -14,8 +14,8 @@ No intensity effects
 :Authors: **Helga Timko**
 '''
 #  General Imports
-from __future__ import division, print_function
-from builtins import range
+# from __future__ import division, print_function
+# from builtins import range
 import numpy as np
 import os
 import sys
@@ -39,13 +39,10 @@ from blond.monitors.monitors import BunchMonitor
 from blond.plots.plot import Plot
 from blond.utils.input_parser import parse
 
-from blond.utils import mpi_config as mpiconf
+from blond.utils.mpi_config import worker, print
 
 this_directory = os.path.dirname(os.path.realpath(__file__)) + '/'
 
-
-worker = mpiconf.worker
-print = mpiconf.print_wrap(print)
 
 # Simulation parameters -------------------------------------------------------
 # Bunch parameters

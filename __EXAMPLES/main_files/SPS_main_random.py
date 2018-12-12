@@ -32,15 +32,11 @@ from blond.impedances.impedance_scenario import scenario, impedance2blond
 from blond.impedances.impedance_reduction import ImpedanceReduction
 from blond.utils.input_parser import parse
 from blond.monitors.monitors import SlicesMonitor
-from blond.utils import mpi_config as mpiconf
 
+from blond.utils.mpi_config import worker, print
 
 this_directory = os.path.dirname(os.path.realpath(__file__)) + '/'
 
-args = parse()
-mpiconf.init(trace=args['trace'], logfile=args['tracefile'])
-
-print(args)
 
 
 # --- Simulation parameters -------------------------------------
@@ -87,6 +83,8 @@ nFrev = 2  # multiples of f_rev for frequency resolution
 N_t = n_turns
 N_t_reduce = 1
 N_t_monitor = 0
+log = False
+args = parse()
 
 if args.get('turns', None) is not None:
     N_t = args['turns']
@@ -112,7 +110,7 @@ if args.get('monitor', None) is not None:
 if args.get('seed', None) is not None:
     seed = args['seed']
 
-if 'log' in args:
+if args.get('log', None) is not None:
     log = args['log']
 
 print({'N_t': N_t, 'n_macroparticles_pb': n_macroparticles_pb,
@@ -482,6 +480,9 @@ for copy in range(n_bunches):
     beam.dE[beginIndex:endIndex] = PS_beam.dE
     beginIndex = endIndex
 
+
+beam.split()
+
 # do profile on inital beam
 profile.track()
 
@@ -492,8 +493,6 @@ FBtime = max(longCavityImpedanceReduction.FB_time,
              shortCavityImpedanceReduction.FB_time)/tRev
 
 
-print('dE mean: ', np.mean(beam.dE))
-print('dE std: ', np.std(beam.dE))
 
 if N_t_monitor > 0:
     if args.get('monitorfile', None):
@@ -505,164 +504,52 @@ if N_t_monitor > 0:
     slicesMonitor = SlicesMonitor(filename=filename,
                                   n_turns=np.ceil(1.0 * N_t / N_t_monitor),
                                   profile=profile)
+print("Ready for tracking!\n")
+print('dE mean: ', np.mean(beam.dE))
+print('dE std: ', np.std(beam.dE))
 
-master = mpiconf.Master(log=log)
-
+timing.reset()
 start_t = time.time()
 
-try:
+# for turn in range(ring.n_turns):
+for turn in range(N_t):
 
-    init_dict = {
-        'tracker_t_rev': tracker.t_rev,
-        'tracker_eta_0': tracker.eta_0,
-        'tracker_eta_1': tracker.eta_1,
-        'tracker_eta_2': tracker.eta_2,
-        'rfp_beta': rf_station.beta,
-        'rfp_energy': rf_station.energy,
-        'n_rf': tracker.n_rf,
-        'solver': tracker.solver,
-        'length_ratio': tracker.length_ratio,
-        'alpha_order': tracker.alpha_order,
-        'n_slices': profile.n_slices,
-        'bin_size': profile.bin_size,
-        'bin_centers': profile.bin_centers,
-        'cut_left': profile.cut_left,
-        'cut_right': profile.cut_right,
-        'charge': beam.Particle.charge,
-        'beam_ratio': beam.ratio,
-        'impedList': {
-            'longCavityFreq': {
-                'total_impedance': longCavityFreq.total_impedance,
-                'n_fft': longCavityFreq.n_fft,
-                'n_induced_voltage': longCavityFreq.n_induced_voltage
-            },
-            'shortCavityFreq': {
-                'total_impedance': shortCavityFreq.total_impedance,
-                'n_fft': shortCavityFreq.n_fft,
-                'n_induced_voltage': shortCavityFreq.n_induced_voltage
-            },
-            'SPS_freq': {
-                'total_impedance': SPS_freq.total_impedance,
-                'n_fft': SPS_freq.n_fft,
-                'n_induced_voltage': SPS_freq.n_induced_voltage
-            }
-        },
-        'total_voltage': 0.,
-        'induced_voltage': 0.,
-        'impedanceReduction': [
-            {
-                'impedance': 'longCavityFreq',
-                'initial_impedance': longCavityImpedanceReduction.initial_impedance,
-                'affected_indices': longCavityImpedanceReduction.affected_indices,
-                'filter_func': longCavityImpedanceReduction.filter_func,
-                'reduction_factor': longCavityImpedanceReduction.reduction_factor,
-                'FB_strength': longCavityImpedanceReduction.FB_strength
-            },
-            {
-                'impedance': 'shortCavityFreq',
-                'initial_impedance': shortCavityImpedanceReduction.initial_impedance,
-                'affected_indices': shortCavityImpedanceReduction.affected_indices,
-                'filter_func': shortCavityImpedanceReduction.filter_func,
-                'reduction_factor': shortCavityImpedanceReduction.reduction_factor,
-                'FB_strength': shortCavityImpedanceReduction.FB_strength
-            }
+    if ring.n_turns <= 450 and turn % 10 == 0:
+        print('turn: '+str(turn))
+    elif turn % 1000 == 0:
+        print('turn: '+str(turn))
 
-        ],
-        'rfp_omega_rf': rf_station.omega_rf,
-        'rfp_omega_rf_d': rf_station.omega_rf_d,
-        'rfp_phi_rf': rf_station.phi_rf,
-        'rfp_dphi_rf': rf_station.dphi_rf,
-        'rfp_harmonic': rf_station.harmonic,
-        'rfp_voltage': rf_station.voltage,
-        'rfp_phi_s': rf_station.phi_s,
-        'tracker_acc_kick': tracker.acceleration_kick,
-        'gain': phaseLoop.gain,
-        'gain2': phaseLoop.gain2,
-        'alpha': phaseLoop.alpha,
-        'reference': phaseLoop.reference,
-        'machine': phaseLoop.machine,
-        'time_offset': phaseLoop.time_offset
-    }
+    # Update profile
+    if (turn % N_t_reduce == 0):
+        profile.track()
+        profile.reduce_histo()
 
-    master.multi_bcast(init_dict)
+    if (N_t_monitor > 0) and (turn % N_t_monitor == 0):
+        slicesMonitor.track(turn)
 
-    vars_dict = {
-        'dt': beam.dt,
-        'dE': beam.dE
-    }
-    master.multi_scatter(vars_dict)
+    if SPS_PHASELOOP is True:
+        phaseLoop.track()
 
-    print("Ready for tracking!\n")
+    # reduce impedance, poor man's feedback
+    if (turn < 8*int(FBtime)):
+        longCavityImpedanceReduction.track()
+        shortCavityImpedanceReduction.track()
 
-    # task_list generation
+    # applying this voltage is done by tracker if interpolation=True
+    if (turn % N_t_reduce == 0):
+        inducedVoltage.induced_voltage_sum()
 
-    task_list = []
-    for turn in range(N_t):
-        if (turn % N_t_reduce == 0):
-            task_list += ['histo', 'reduce_histo']
+    tracker.track()
 
-        if (N_t_monitor > 0) and (turn % N_t_monitor == 0):
-            task_list += ['gather_single']
-
-        task_list += ['beamFB']
-        if (turn < 8*int(FBtime)):
-            task_list += ['impedance_reduction']
-
-        if (turn % N_t_reduce == 0):
-            task_list += ['induced_voltage_sum_packed']
-
-        task_list += ['RFVCalc', 'LIKick_n_drift']
-
-    master.bcast(task_list)
-
-    # for turn in range(ring.n_turns):
-    for turn in range(N_t):
-
-        if ring.n_turns <= 450 and turn % 10 == 0:
-            print('turn: '+str(turn))
-        elif turn % 1000 == 0:
-            print('turn: '+str(turn))
-
-        # Update profile
-        if (turn % N_t_reduce == 0):
-            profile.track()
-
-        if (N_t_monitor > 0) and (turn % N_t_monitor == 0):
-            master.gather_single(
-                {'profile': profile.n_macroparticles}, msg=False)
-            slicesMonitor.track(turn)
-
-        if SPS_PHASELOOP is True:
-            phaseLoop.track()
-
-        # reduce impedance, poor man's feedback
-        if (turn < 8*int(FBtime)):
-            longCavityImpedanceReduction.track()
-            # shortCavityImpedanceReduction.track()
-
-        # applying this voltage is done by tracker if interpolation=True
-        if (turn % N_t_reduce == 0):
-            inducedVoltage.induced_voltage_sum()
-
-        tracker.track()
-
-    master.multi_gather(vars_dict)
-    master.stop()
-    master.disconnect()
-
-except Exception as e:
-    print(e)
-    master.quit()
-    master.disconnect()
-
+beam.gather()
 end_t = time.time()
 print('Total time: ', end_t - start_t)
 
 mpiprof.finalize()
 # if report:
 timing.report(total_time=1e3*(end_t-start_t),
-              out_dir=args['report'],
-              out_file='master.csv')
+              out_dir=args['timedir'],
+              out_file='worker-{}.csv'.format(os.getpid()))
 
 print('dE mean: ', np.mean(beam.dE))
 print('dE std: ', np.std(beam.dE))

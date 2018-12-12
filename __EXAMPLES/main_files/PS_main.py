@@ -1,7 +1,6 @@
 '''
 PS longitudinal instability simulation along the ramp
 '''
-
 # General imports
 import numpy as np
 import time
@@ -20,6 +19,8 @@ mpl.use('Agg')
 import matplotlib.pyplot as plt
 
 # BLonD imports
+from blond.utils.input_parser import parse
+from blond.utils.mpi_config import worker, print
 from blond.beam.beam import Proton, Beam
 from blond.input_parameters.ring import Ring, RingOptions
 from blond.input_parameters.rf_parameters import RFStation
@@ -27,35 +28,21 @@ from blond.beam.profile import Profile, CutOptions
 #from blond.beams.distributions import matched_from_line_density
 from blond.beam.distributions_multibunch import match_beam_from_distribution
 from blond.trackers.tracker import RingAndRFTracker, FullRingAndRF
+from blond.impedances.impedance import InducedVoltageTime, InducedVoltageFreq, TotalInducedVoltage, InductiveImpedance
 from blond.impedances.impedance_sources import Resonators
-from blond.impedances.impedance import InducedVoltageTime, InducedVoltageFreq, \
-    TotalInducedVoltage, InductiveImpedance
-
 # LoCa imports
 import blond.LoCa.Base.Machine as mach
 import blond.LoCa.Base.RFProgram as rfp
 import blond.LoCa.Base.Bare_RF as brf
-
 # Impedance scenario import
 from blond.impedances.PS_impedance.impedance_scenario import scenario
-
 # Other imports
 from blond.colormap import colormap
-
 from blond.monitors.monitors import SlicesMonitor
-from blond.utils.input_parser import parse
-from blond.utils import mpi_config as mpiconf
-
-this_directory = os.path.dirname(os.path.realpath(__file__)) + '/'
 
 
 cmap = colormap.cmap_white_blue_red
-currdir = os.path.dirname(os.path.realpath(__file__))
 
-args = parse()
-mpiconf.init(trace=args['trace'], logfile=args['tracefile'])
-
-print(args)
 
 # Simulation parameters -------------------------------------------------------
 
@@ -71,7 +58,7 @@ intensity_per_bunch = 259999999999.99997
 bunch_length = 2.9e-08
 
 
-output_folder = currdir + '/../output_files/bl_%.1f_int_%.2f/' % (
+output_folder = this_directory + '/../output_files/bl_%.1f_int_%.2f/' % (
     bunch_length*1e9, intensity_per_bunch/1e11)
 
 # try:
@@ -81,7 +68,7 @@ output_folder = currdir + '/../output_files/bl_%.1f_int_%.2f/' % (
 
 # Simulation inputs
 
-loaded_program = np.load(currdir + '/../input_files/LHC1.npz')
+loaded_program = np.load(this_directory + '/../input_files/LHC1.npz')
 momentumTime = loaded_program['momentumTime'] / 1e3  # s
 momentum = loaded_program['momentum'] * 1e9  # eV/c
 
@@ -127,6 +114,9 @@ N_t_reduce = 1
 N_t_monitor = 0
 seed = 0
 N_t = 378708
+log = None
+
+args = parse()
 
 
 if args.get('turns', None) is not None:
@@ -143,7 +133,6 @@ if args.get('slices', None) is not None:
 if args.get('mtw', None) is not None:
     n_turns_memory = args['mtw']
 
-
 if args.get('reduce', None) is not None:
     N_t_reduce = args['reduce']
 
@@ -152,7 +141,8 @@ if args.get('monitor', None) is not None:
 
 if args.get('omp', None) is not None:
     os.environ['OMP_NUM_THREADS'] = str(args['omp'])
-if 'log' in args:
+
+if args.get('log', None) is not None:
     log = args['log']
 
 if args.get('time', False) is True:
@@ -162,12 +152,12 @@ if args.get('seed', None) is not None:
     seed = args['seed']
 
 
-print({'N_t':N_t, 'n_macroparticles_per_bunch':n_macroparticles_per_bunch,
-        'n_slices_per_bunch': n_slices_per_bunch,
-        'n_turns_memory':n_turns_memory, 
-        'timing.mode':timing.mode, 'n_bunches':n_bunches, 
-        'N_t_reduce':N_t_reduce,
-        'N_t_monitor':N_t_monitor, 'seed':seed, 'log':log})
+print({'N_t': N_t, 'n_macroparticles_per_bunch': n_macroparticles_per_bunch,
+       'n_slices_per_bunch': n_slices_per_bunch,
+       'n_turns_memory': n_turns_memory,
+       'timing.mode': timing.mode, 'n_bunches': n_bunches,
+       'N_t_reduce': N_t_reduce,
+       'N_t_monitor': N_t_monitor, 'seed': seed, 'log': log})
 
 
 n_macroparticles = n_bunches * n_macroparticles_per_bunch
@@ -189,8 +179,8 @@ emittance_y_norm = 1.5e-6  # for space charge
 # Simulation setup ------------------------------------------------------------
 # General parameters
 
-momentum = momentum[(momentumTime >= c_time_injection) *
-                    (momentumTime <= c_time_extraction)]
+momentum = momentum[(momentumTime >= c_time_injection)
+                    * (momentumTime <= c_time_extraction)]
 momentumTime = momentumTime[(
     momentumTime >= c_time_injection)*(momentumTime <= c_time_extraction)]
 
@@ -382,8 +372,8 @@ gap_prog_group_2 = generate_gap_prog(close_group_2)
 gap_prog_group_1 = generate_gap_prog(close_group_1)
 
 R_S_10MHz_save = np.array(imp10MHzToBLonD.wakeList[0].R_S)
-R_S_program_10MHz = (gap_prog_group_3+gap_prog_group_4 +
-                     gap_prog_group_2+gap_prog_group_1)/10.
+R_S_program_10MHz = (gap_prog_group_3+gap_prog_group_4
+                     + gap_prog_group_2+gap_prog_group_1)/10.
 
 # plt.figure('10 MHz prog')
 # plt.clf()
@@ -418,8 +408,8 @@ front_wake_length = filter_front_wake * ring.t_rev[0]*n_turns_memory
 
 PS_intensity_freq_Rest = InducedVoltageFreq(beam,
                                             profile,
-                                            ResonatorsList10MHz+ImpedanceTableList10MHz +
-                                            ResonatorsListRest+ImpedanceTableListRest,
+                                            ResonatorsList10MHz+ImpedanceTableList10MHz
+                                            + ResonatorsListRest+ImpedanceTableListRest,
                                             frequency_step,
                                             RFParams=rf_params,
                                             multi_turn_wake=True,
@@ -430,8 +420,8 @@ PS_inductive = InductiveImpedance(
 
 PS_intensity_plot = InducedVoltageFreq(beam,
                                        profile,
-                                       ResonatorsList10MHz+ImpedanceTableList10MHz +
-                                       ResonatorsListRest+ImpedanceTableListRest,
+                                       ResonatorsList10MHz+ImpedanceTableList10MHz
+                                       + ResonatorsListRest+ImpedanceTableListRest,
                                        frequency_step,
                                        RFParams=rf_params,
                                        multi_turn_wake=True,
@@ -463,6 +453,8 @@ match_beam_from_distribution(beam, full_tracker, ring,
                              n_iterations=10,
                              n_points_potential=int(1e3),
                              dt_margin_percent=0.1, seed=seed)
+
+beam.split()
 
 # Tracking -------------------------------------------------------------------
 # profile.track()
@@ -518,9 +510,6 @@ match_beam_from_distribution(beam, full_tracker, ring,
 # perf_time = []
 
 
-print('dE mean:', np.mean(beam.dE))
-print('dE std:', np.std(beam.dE))
-
 if N_t_monitor > 0:
     filename = 'profiles/sps-t{}-p{}-b{}-sl{}-r{}-m{}-se{}'.format(
         N_t, n_macroparticles_per_bunch, n_bunches, n_slices,
@@ -529,220 +518,152 @@ if N_t_monitor > 0:
                                   n_turns=np.ceil(1.0 * N_t / N_t_monitor),
                                   profile=profile)
 
-master = mpiconf.Master(log=log)
-
+print('dE mean:', np.mean(beam.dE))
+print('dE std:', np.std(beam.dE))
+print("Ready for tracking!\n")
 timing.reset()
 start_t = time.time()
 
 
-try:
+# for i in range(n_turns):
+for i in range(N_t):
 
-    init_dict = {
-        'tracker_t_rev': tracker.t_rev,
-        'tracker_eta_0': tracker.eta_0,
-        'tracker_eta_1': tracker.eta_1,
-        'tracker_eta_2': tracker.eta_2,
-        'n_rf': tracker.n_rf,
-        'solver': tracker.solver,
-        'tracker_acc_kick': tracker.acceleration_kick,
-        'length_ratio': tracker.length_ratio,
-        'alpha_order': tracker.alpha_order,
-        'rfp_beta': rf_params.beta,
-        'rfp_energy': rf_params.energy,
-        'rfp_omega_rf': rf_params.omega_rf,
-        'rfp_omega_rf_d': rf_params.omega_rf_d,
-        'rfp_phi_rf': rf_params.phi_rf,
-        'rfp_dphi_rf': rf_params.dphi_rf,
-        'rfp_harmonic': rf_params.harmonic,
-        'rfp_voltage': rf_params.voltage,
-        'rfp_phi_s': rf_params.phi_s,
-        'n_slices': profile.n_slices,
-        'bin_size': profile.bin_size,
-        'bin_centers': profile.bin_centers,
-        'cut_left': profile.cut_left,
-        'cut_right': profile.cut_right,
-        'charge': beam.Particle.charge,
-        'beam_ratio': beam.ratio,
-        'impedList': {
-            # 'PS_intensity_freq_10MHz': {
-            #     'type': 'mtw',
-            #     'mtw_mode': 'time',
-            #     'total_impedance': PS_intensity_freq_10MHz.total_impedance,
-            #     'n_fft': PS_intensity_freq_10MHz.n_fft,
-            #     'n_induced_voltage': PS_intensity_freq_10MHz.n_induced_voltage,
-            #     'front_wake_buffer': PS_intensity_freq_10MHz.front_wake_buffer,
-            #     'time_mtw': PS_intensity_freq_10MHz.time_mtw,
-            #     'mtw_memory': PS_intensity_freq_10MHz.mtw_memory},
-            'PS_intensity_freq_Rest': {
-                'type': 'mtw',
-                'mtw_mode': 'time',
-                'total_impedance': PS_intensity_freq_Rest.total_impedance,
-                'n_fft': PS_intensity_freq_Rest.n_fft,
-                'n_induced_voltage': PS_intensity_freq_Rest.n_induced_voltage,
-                'front_wake_buffer': PS_intensity_freq_Rest.front_wake_buffer,
-                'time_mtw': PS_intensity_freq_Rest.time_mtw,
-                'mtw_memory': PS_intensity_freq_Rest.mtw_memory},
-            'PS_inductive': {
-                'type': 'inductive',
-                'deriv_mode': PS_inductive.deriv_mode,
-                'Z_over_n': PS_inductive.Z_over_n,
-                'n_induced_voltage': PS_inductive.n_induced_voltage}
-        },
-        'total_voltage': 0.,
-        'induced_voltage': 0.,
-    }
+    # if (i > 0) and (i % datamatrix_output_step) == 0:
+    #     t0 = time.time()
 
-    master.multi_bcast(init_dict)
+    if (i % N_t_reduce == 0):
+        profile.track()
+        profile.reduce_histo()
 
-    vars_dict = {
-        'dt': beam.dt,
-        'dE': beam.dE
-    }
-    master.multi_scatter(vars_dict)
+    if (N_t_monitor > 0) and (i % N_t_monitor == 0):
+        slicesMonitor.track(i)
 
-    print("Ready for tracking!\n")
+    # Change impedance of 10 MHz only if it changes
+    # if (i > 0) and (R_S_program_10MHz[i] != R_S_program_10MHz[i-1]):
+    #     PS_intensity_freq_10MHz.impedance_source_list[0].R_S[:] = \
+    #         R_S_10MHz_save * R_S_program_10MHz[i]
+    #     PS_intensity_freq_10MHz.sum_impedances(PS_intensity_freq_10MHz.freq)
 
-    task_list = []
-    for i in range(N_t):
+    if (i % N_t_reduce == 0):
+        PS_longitudinal_intensity.induced_voltage_sum()
 
-        if (i % N_t_reduce == 0):
-            task_list += ['histo', 'reduce_histo']
+    # Track
+    tracker.track()
 
-        if (N_t_monitor > 0) and (i % N_t_monitor == 0):
-            task_list += ['gather_single']
-
-        if (i % N_t_reduce == 0):
-            task_list += ['induced_voltage_sum']
-
-        task_list += ['RFVCalc', 'LIKick_n_drift']
-
-    master.bcast(task_list)
-
-    # for i in range(n_turns):
-    for i in range(N_t):
-
-        # if (i > 0) and (i % datamatrix_output_step) == 0:
-        #     t0 = time.time()
-
-        if (i % N_t_reduce == 0):
-            profile.track()
-
-        if (N_t_monitor > 0) and (i % N_t_monitor == 0):
-            master.gather_single(
-                {'profile': profile.n_macroparticles}, msg=False)
-            slicesMonitor.track(i)
-
-        # Change impedance of 10 MHz only if it changes
-        # if (i > 0) and (R_S_program_10MHz[i] != R_S_program_10MHz[i-1]):
-        #     PS_intensity_freq_10MHz.impedance_source_list[0].R_S[:] = \
-        #         R_S_10MHz_save * R_S_program_10MHz[i]
-        #     PS_intensity_freq_10MHz.sum_impedances(PS_intensity_freq_10MHz.freq)
-
-        if (i % N_t_reduce == 0):
-            PS_longitudinal_intensity.induced_voltage_sum()
-
-        # Track
-        tracker.track()
-
-        # Analysis
-
-        # if (i > 0) and (i % bunch_by_bunch_output_step) == 0:
-
-        #     profile.fwhm_multibunch(n_bunches, bunch_spacing_buckets,
-        #                             rf_params.t_rf[0, i], bucket_tolerance=0.)
-
-        #     fwhmBunchPosition[:, int(i/bunch_by_bunch_output_step)
-        #                       ] = profile.bunchPosition - np.arange(n_bunches)*rf_params.t_rf[0, i]
-        #     fwhmBunchLength[:, int(i/bunch_by_bunch_output_step)
-        #                     ] = profile.bunchLength
-
-        #     profile.rms_multibunch(n_bunches, bunch_spacing_buckets,
-        #                            rf_params.t_rf[0, i], bucket_tolerance=0.)
-
-        #     rmsBunchPosition[:, int(i/bunch_by_bunch_output_step)
-        #                      ] = profile.bunchPosition - np.arange(n_bunches)*rf_params.t_rf[0, i]
-        #     rmsBunchLength[:, int(i/bunch_by_bunch_output_step)
-        #                    ] = profile.bunchLength
-
-        # if (i > 0) and (i % datamatrix_output_step) == 0:
-        #     t1 = time.time()
-        #     print('Turn %d' % (i))
-        #     # print('One turn time %.2e' % (t1-t0))
-        #     print('Bunch length :',
-        #           (rmsBunchLength[:, int(i/bunch_by_bunch_output_step)]))
-        #     print('Bunch position :',
-        #           (rmsBunchPosition[:, int(i/bunch_by_bunch_output_step)]))
-
-        #     dataMatrix[int(i/datamatrix_output_step),
-        #                :] = np.array(profile.n_macroparticles)
-        #     dataMatrix_extent = [profile.bin_centers[0]*1e6,
-        #                          profile.bin_centers[-1]*1e6,
-        #                          ring.cycle_time[0]*1e3,
-        #                          ring.cycle_time[::datamatrix_output_step][int(i/datamatrix_output_step)]*1e3]
-
-        # if (i % plot_step == 0) and (i > 0):
-
-        #     plt.figure('Profile')
-        #     plt.clf()
-        #     plt.imshow(dataMatrix[:int(i/datamatrix_output_step), :], origin='bottom', aspect='auto',
-        #                extent=dataMatrix_extent, cmap=cmap)
-        #     plt.xlabel('Time $\\tau$ [$\\mathrm{\\mu s}$]')
-        #     plt.ylabel('Time [ms]')
-        #     plt.savefig(output_folder+'/dataMatrix')
-        #     for indexBunch in range(n_bunches):
-        #         plt.xlim((indexBunch*rf_params.t_rf[0, -1]*1e6,
-        #                   (indexBunch+1)*rf_params.t_rf[0, -1]*1e6))
-        #         plt.savefig(output_folder+'/dataMatrix_%02d' % (indexBunch+1))
-
-        #     plt.figure('Bunch length')
-        #     plt.clf()
-        #     for indexBunch in range(n_bunches):
-        #         plt.plot(ring.cycle_time[::bunch_by_bunch_output_step][:int(
-        #             i/bunch_by_bunch_output_step)]*1e3, rmsBunchLength[indexBunch, :int(i/bunch_by_bunch_output_step)]*1e9)
-        #     plt.xlabel('Time [ms]')
-        #     plt.ylabel('Bunch length $4\\sigma$ [ns]')
-        #     plt.savefig(output_folder+'/bunch_length')
-
-        #     plt.figure('Bunch position')
-        #     plt.clf()
-        #     for indexBunch in range(n_bunches):
-        #         plt.plot(ring.cycle_time[::bunch_by_bunch_output_step][:int(
-        #             i/bunch_by_bunch_output_step)]*1e3, rmsBunchPosition[indexBunch, :int(i/bunch_by_bunch_output_step)]*1e9)
-        #     plt.xlabel('Time [ms]')
-        #     plt.ylabel('Bunch position $\\bar{\\tau}$ [ns]')
-        #     plt.savefig(output_folder+'/bunch_position')
-
-        #     perf_turn.append(i)
-        #     # perf_time.append(t1-t0)
-        #     np.savetxt(output_folder+'/performance.txt',
-        #                np.hstack((np.array(perf_turn, ndmin=2).T,
-        #                           np.array(perf_time, ndmin=2).T)))
-
-        # np.savez_compressed(output_folder+'/saved_data.npz',
-        #                     fwhmBunchPosition=fwhmBunchPosition,
-        #                     fwhmBunchLength=fwhmBunchLength,
-        #                     rmsBunchPosition=rmsBunchPosition,
-        #                     rmsBunchLength=rmsBunchLength,
-        #                     cycle_time=ring.cycle_time[::bunch_by_bunch_output_step])
-
-    master.multi_gather(vars_dict)
-    master.stop()
-    master.disconnect()
-except Exception as e:
-    print(e)
-    master.quit()
-    master.disconnect()
-
-
+beam.gather()
 end_t = time.time()
-print('Total time: ', (end_t-start_t))
+mpiprof.finalize()
+timing.report(total_time=1e3*(end_t-start_t),
+              out_dir=args['timedir'],
+              out_file='worker-{}.csv'.format(os.getpid()))
+
+
 print('dE mean: ', np.mean(beam.dE))
 print('dE std: ', np.std(beam.dE))
+print('profile mean: ', np.mean(profile.n_macroparticles))
+print('profile std: ', np.std(profile.n_macroparticles))
 
-timing.report(total_time=1e3*(end_t-start_t),
-              out_dir=args['report'],
-              out_file='report.csv')
 print('Done!')
+
+# Analysis
+
+# if (i > 0) and (i % bunch_by_bunch_output_step) == 0:
+
+#     profile.fwhm_multibunch(n_bunches, bunch_spacing_buckets,
+#                             rf_params.t_rf[0, i], bucket_tolerance=0.)
+
+#     fwhmBunchPosition[:, int(i/bunch_by_bunch_output_step)
+#                       ] = profile.bunchPosition - np.arange(n_bunches)*rf_params.t_rf[0, i]
+#     fwhmBunchLength[:, int(i/bunch_by_bunch_output_step)
+#                     ] = profile.bunchLength
+
+#     profile.rms_multibunch(n_bunches, bunch_spacing_buckets,
+#                            rf_params.t_rf[0, i], bucket_tolerance=0.)
+
+#     rmsBunchPosition[:, int(i/bunch_by_bunch_output_step)
+#                      ] = profile.bunchPosition - np.arange(n_bunches)*rf_params.t_rf[0, i]
+#     rmsBunchLength[:, int(i/bunch_by_bunch_output_step)
+#                    ] = profile.bunchLength
+
+# if (i > 0) and (i % datamatrix_output_step) == 0:
+#     t1 = time.time()
+#     print('Turn %d' % (i))
+#     # print('One turn time %.2e' % (t1-t0))
+#     print('Bunch length :',
+#           (rmsBunchLength[:, int(i/bunch_by_bunch_output_step)]))
+#     print('Bunch position :',
+#           (rmsBunchPosition[:, int(i/bunch_by_bunch_output_step)]))
+
+#     dataMatrix[int(i/datamatrix_output_step),
+#                :] = np.array(profile.n_macroparticles)
+#     dataMatrix_extent = [profile.bin_centers[0]*1e6,
+#                          profile.bin_centers[-1]*1e6,
+#                          ring.cycle_time[0]*1e3,
+#                          ring.cycle_time[::datamatrix_output_step][int(i/datamatrix_output_step)]*1e3]
+
+# if (i % plot_step == 0) and (i > 0):
+
+#     plt.figure('Profile')
+#     plt.clf()
+#     plt.imshow(dataMatrix[:int(i/datamatrix_output_step), :], origin='bottom', aspect='auto',
+#                extent=dataMatrix_extent, cmap=cmap)
+#     plt.xlabel('Time $\\tau$ [$\\mathrm{\\mu s}$]')
+#     plt.ylabel('Time [ms]')
+#     plt.savefig(output_folder+'/dataMatrix')
+#     for indexBunch in range(n_bunches):
+#         plt.xlim((indexBunch*rf_params.t_rf[0, -1]*1e6,
+#                   (indexBunch+1)*rf_params.t_rf[0, -1]*1e6))
+#         plt.savefig(output_folder+'/dataMatrix_%02d' % (indexBunch+1))
+
+#     plt.figure('Bunch length')
+#     plt.clf()
+#     for indexBunch in range(n_bunches):
+#         plt.plot(ring.cycle_time[::bunch_by_bunch_output_step][:int(
+#             i/bunch_by_bunch_output_step)]*1e3, rmsBunchLength[indexBunch, :int(i/bunch_by_bunch_output_step)]*1e9)
+#     plt.xlabel('Time [ms]')
+#     plt.ylabel('Bunch length $4\\sigma$ [ns]')
+#     plt.savefig(output_folder+'/bunch_length')
+
+#     plt.figure('Bunch position')
+#     plt.clf()
+#     for indexBunch in range(n_bunches):
+#         plt.plot(ring.cycle_time[::bunch_by_bunch_output_step][:int(
+#             i/bunch_by_bunch_output_step)]*1e3, rmsBunchPosition[indexBunch, :int(i/bunch_by_bunch_output_step)]*1e9)
+#     plt.xlabel('Time [ms]')
+#     plt.ylabel('Bunch position $\\bar{\\tau}$ [ns]')
+#     plt.savefig(output_folder+'/bunch_position')
+
+#     perf_turn.append(i)
+#     # perf_time.append(t1-t0)
+#     np.savetxt(output_folder+'/performance.txt',
+#                np.hstack((np.array(perf_turn, ndmin=2).T,
+#                           np.array(perf_time, ndmin=2).T)))
+
+# np.savez_compressed(output_folder+'/saved_data.npz',
+#                     fwhmBunchPosition=fwhmBunchPosition,
+#                     fwhmBunchLength=fwhmBunchLength,
+#                     rmsBunchPosition=rmsBunchPosition,
+#                     rmsBunchLength=rmsBunchLength,
+#                     cycle_time=ring.cycle_time[::bunch_by_bunch_output_step])
+
+#     master.multi_gather(vars_dict)
+#     master.stop()
+#     master.disconnect()
+# except Exception as e:
+#     print(e)
+#     master.quit()
+#     master.disconnect()
+
+
+# end_t = time.time()
+# print('Total time: ', (end_t-start_t))
+# print('dE mean: ', np.mean(beam.dE))
+# print('dE std: ', np.std(beam.dE))
+
+# timing.report(total_time=1e3*(end_t-start_t),
+#               out_dir=args['report'],
+#               out_file='report.csv')
+# print('Done!')
 
 
 # np.savez_compressed(output_folder+'/saved_data.npz',

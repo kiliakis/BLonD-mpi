@@ -17,7 +17,6 @@ from ..utils import bmath as bm
 worker = None
 
 
-
 def c_add_uint32(xmem, ymem, dt):
     x = np.frombuffer(xmem, dtype=np.uint32)
     y = np.frombuffer(ymem, dtype=np.uint32)
@@ -41,6 +40,7 @@ def print_wrap(f):
             # pass
     return wrap
 
+print = print_wrap(print)
 
 class Worker:
     @timing.timeit(key='serial:init')
