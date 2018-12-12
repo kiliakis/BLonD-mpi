@@ -87,6 +87,13 @@ def add(a, b, result=None, inplace=False):
         else:
             __lib.add_uint16_vector(__getPointer(a), __getPointer(b),
                                     __getLen(a), __getPointer(result))
+    elif (a.dtype == 'uint32'):
+        if inplace:
+            __lib.add_uint32_vector_inplace(__getPointer(a), __getPointer(b),
+                                            __getLen(a))
+        else:
+            __lib.add_uint32_vector(__getPointer(a), __getPointer(b),
+                                    __getLen(a), __getPointer(result))
 
     else:
         raise TypeError('type ', a.dtype, ' is not supported')

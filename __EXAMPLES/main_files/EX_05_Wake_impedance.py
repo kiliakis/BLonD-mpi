@@ -51,7 +51,6 @@ from blond.utils.mpi_config import worker, print
 this_directory = os.path.dirname(os.path.realpath(__file__)) + '/'
 
 
-
 # try:
 #     os.mkdir('../output_files')
 # except:
@@ -133,7 +132,6 @@ print({'N_t': n_turns, 'n_macroparticles': n_macroparticles,
        'N_t_monitor': N_t_monitor, 'seed': seed, 'log': log})
 
 
-
 # DEFINE RING------------------------------------------------------------------
 print("Setting up the simulation...")
 
@@ -171,10 +169,16 @@ bigaussian(general_params_freq, RF_sct_par_freq, my_beam_freq,
 bigaussian(general_params_res, RF_sct_par_res, my_beam_res,
            tau_0/4, seed=1)
 
+
+print('dE mean: ', np.mean(my_beam.dE))
+print('dE freq mean: ', np.mean(my_beam_freq.dE))
+print('dE res mean: ', np.mean(my_beam_res.dE))
+
+
+
 my_beam.split()
 my_beam_freq.split()
 my_beam_res.split()
-
 
 
 cut_options = CutOptions(cut_left=0, cut_right=2*np.pi, n_slices=number_slices,
@@ -191,8 +195,11 @@ slice_beam_res = Profile(my_beam_res, cut_options_res,
 
 
 slice_beam.track()
+slice_beam.reduce_histo()
 slice_beam_freq.track()
+slice_beam_freq.reduce_histo()
 slice_beam_res.track()
+slice_beam_res.reduce_histo()
 
 # MONITOR----------------------------------------------------------------------
 
@@ -279,9 +286,6 @@ map_res = [tot_vol_res] + [ring_RF_section_res] + [slice_beam_res]
 
 # TRACKING + PLOTS-------------------------------------------------------------
 print('Map set')
-print('dE mean: ', np.mean(my_beam.dE))
-print('dE freq mean: ', np.mean(my_beam_freq.dE))
-print('dE res mean: ', np.mean(my_beam_res.dE))
 
 print(datetime.datetime.now().time())
 timing.reset()
@@ -294,12 +298,16 @@ for i in np.arange(1, n_turns+1):
 
     for m in map_:
         m.track()
+        slice_beam.reduce_histo()
 
     for m in map_freq:
         m.track()
+        slice_beam_freq.reduce_histo()
+
 
     for m in map_res:
         m.track()
+        slice_beam_res.reduce_histo()
 
 my_beam.gather()
 my_beam_res.gather()
@@ -316,7 +324,7 @@ print('dE res mean: ', np.mean(my_beam_res.dE))
 
 mpiprof.finalize()
 timing.report(total_time=1e3*(end_t-start_t),
-               out_dir=args['timingdir'],
-               out_file='worker-{}.csv'.format(os.getpid()))
+              out_dir=args['timedir'],
+              out_file='worker-{}.csv'.format(os.getpid()))
 
 print("Done!")

@@ -52,6 +52,17 @@ extern "C" {
         }
     }
 
+    void add_uint32_vector(const uint32_t *__restrict__ a,
+                           const uint32_t *__restrict__ b,
+                           const int size,
+                           uint32_t *__restrict__ result)
+    {
+        #pragma omp parallel for
+        for (int i = 0; i < size; ++i) {
+            result[i] = a[i] + b[i];
+        }
+    }
+
 
     void add_longint_vector(const long *__restrict__ a,
                             const long *__restrict__ b,
@@ -89,6 +100,16 @@ extern "C" {
 
     void add_uint16_vector_inplace(uint16_t *__restrict__ a,
                                    const uint16_t *__restrict__ b,
+                                   const int size)
+    {
+        #pragma omp parallel for
+        for (int i = 0; i < size; ++i) {
+            a[i] = a[i] + b[i];
+        }
+    }
+
+    void add_uint32_vector_inplace(uint32_t *__restrict__ a,
+                                   const uint32_t *__restrict__ b,
                                    const int size)
     {
         #pragma omp parallel for

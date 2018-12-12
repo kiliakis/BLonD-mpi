@@ -22,25 +22,33 @@ def c_add_uint32(xmem, ymem, dt):
     y = np.frombuffer(ymem, dtype=np.uint32)
     bm.add(y, x, inplace=True)
 
+
+add_op_uint32 = MPI.Op.Create(c_add_uint32, commute=True)
+
+
 def c_add_uint16(xmem, ymem, dt):
     x = np.frombuffer(xmem, dtype=np.uint16)
     y = np.frombuffer(ymem, dtype=np.uint16)
     bm.add(y, x, inplace=True)
 
 
+add_op_uint16 = MPI.Op.Create(c_add_uint16, commute=True)
+
+
 def print_wrap(f):
     @wraps(f)
     def wrap(*args):
+        msg = '[{}]'.format(worker.rank) + ' '.join([str(a) for a in args])
         if worker.rank == 0:
-            # worker.logger.debug(*args)
-            worker.logger.debug(' '.join([str(a) for a in args]))
-            return f(*args)
+            worker.logger.debug(msg)
+            return f('[{}]'.format(worker.rank),*args)
         else:
-            return worker.logger.debug(' '.join([str(a) for a in args]))
-            # pass
+            return worker.logger.debug(msg)
     return wrap
 
+
 print = print_wrap(print)
+
 
 class Worker:
     @timing.timeit(key='serial:init')
@@ -63,38 +71,26 @@ class Worker:
         else:
             self.logger = MPILog(rank=self.rank)
             self.logger.disable()
-        logging.debug('Initialized.')
-
-        self.add_op_uint32 = MPI.Op.Create(c_add_uint32, commute=True)
-        self.add_op_uint16 = MPI.Op.Create(c_add_uint16, commute=True)
-
-        # master = self
-
-        # Get the neighbors
-        # self.intercomm.bcast(self.hostname, root=MPI.ROOT)
-        # self.neighbors = np.empty(self.workers, dtype=int)
-        # self.intercomm.Gather(self.neighbors, self.neighbors, root=MPI.ROOT)
-        # self.weights = (1. + self.neighbors*add_load) / \
-        #     np.sum(1. + self.neighbors*add_load)
-        # print('Master, add_load: {}, weights {}'.format(add_load, self.weights))
 
     # Define the begin and size numbers in order to split a variable of length size
+
     @timing.timeit(key='serial:split')
     @mpiprof.traceit(key='serial:split')
     def split(self, size):
-
+        self.logger.debug('split')
         counts = [size // self.workers + 1 if i < size % self.workers
                   else size // self.workers for i in range(self.workers)]
         displs = np.append([0], np.cumsum(counts[:-1])).astype(int)
 
         return displs[self.rank], counts[self.rank]
 
-
     # args are the buffers to fill with the gathered values
     # e.g. (comm, beam.dt, beam.dE)
+
     @timing.timeit(key='comm:gather')
     @mpiprof.traceit(key='comm:gather')
     def gather(self, var, size):
+        self.logger.debug('gather')
         if self.rank == 0:
             counts = [size // self.workers + 1 if i < size % self.workers
                       else size // self.workers for i in range(self.workers)]
@@ -113,26 +109,26 @@ class Worker:
     @timing.timeit(key='comm:allreduce')
     @mpiprof.traceit(key='comm:allreduce')
     def allreduce(self, sendbuf, recvbuf=None, dtype=np.uint32):
-        if (recvbuf is None) or (sendbuf is recvbuf):
-            if dtype == np.uint32:
-                self.intracomm.Allreduce(
-                    MPI.IN_PLACE, sendbuf, op=self.add_op_uint32)
-            elif dtype == np.uint16:
-                self.intracomm.Allreduce(
-                    MPI.IN_PLACE, sendbuf, op=self.add_op_uint16)
+        self.logger.debug('allreduce')
+
+        if dtype == np.uint32:
+            op = add_op_uint32
+        elif dtype == np.uint16:
+            op = add_op_uint16
         else:
-            if dtype == np.uint32:
-                self.intracomm.Allreduce(
-                    sendbuf, recvbuf, op=self.add_op_uint32)
-            elif dtype == np.uint16:
-                self.intracomm.Allreduce(
-                    sendbuf, recvbuf, op=self.add_op_uint16)
+            print('Error: Not recognized dtype:{}'.format(dtype))
+            exit(-1)
+
+        if (recvbuf is None) or (sendbuf is recvbuf):
+            self.intracomm.Allreduce(MPI.IN_PLACE, sendbuf, op=op)
+        else:
+            self.intracomm.Allreduce(sendbuf, recvbuf, op=op)
 
     @timing.timeit(key='serial:sync')
     @mpiprof.traceit(key='serial:sync')
     def sync(self):
+        self.logger.debug('sync')
         self.intracomm.Barrier()
-
 
 
 class MPILog(object):
@@ -147,7 +143,7 @@ class MPILog(object):
 
     """
 
-    def __init__(self, rank=-1, log_dir='./logs'):
+    def __init__(self, rank=0, log_dir='./logs'):
 
         # Root logger on DEBUG level
         self.disabled = False
@@ -172,7 +168,7 @@ class MPILog(object):
         self.file_handler.setLevel(logging.DEBUG)
         self.file_handler.setFormatter(log_format)
         self.root_logger.addHandler(self.file_handler)
-        logging.debug("Start logging")
+        logging.debug("Initialized")
         # if debug == True:
         #     logging.debug("Logger in debug mode")
 
@@ -195,55 +191,5 @@ class MPILog(object):
             logging.info(string)
 
 
-# def init(trace=False, logfile='mpe-trace'):
-#     rank = MPI.COMM_WORLD.rank
-#     if trace == True:
-#         mpiprof.mode = 'tracing'
-#         mpiprof.init(logfile=logfile)
-
-#     if rank != 0:
-#         worker.main()
-#         exit(0)
-
 if worker is None:
     worker = Worker()
-
-
-# mpi_type = {
-#     'd': MPI.DOUBLE,
-#     'float64': MPI.DOUBLE,
-#     'numpy.float64': MPI.DOUBLE,
-#     '<f8': MPI.DOUBLE,
-#     'i': MPI.INT,
-#     'int32': MPI.INT,
-#     'numpy.int32': MPI.INT,
-#     '<i4': MPI.INT,
-#     'uint8': MPI.UINT8_T,
-#     'B': MPI.UINT8_T,
-#     '|u1': MPI.UINT8_T
-# }
-
-
-# task_id = {
-#     'kick': np.uint8(0),
-#     'drift': np.uint8(1),
-#     'histo': np.uint8(2),
-#     'LIKick': np.uint8(3),
-#     'RFVCalc': np.uint8(4),
-#     'gather': np.uint8(5),
-#     'bcast': np.uint8(6),
-#     'scatter': np.uint8(7),
-#     'barrier': np.uint8(8),
-#     'quit': np.uint8(9),
-#     'switch_context': np.uint8(10),
-#     'induced_voltage_sum': np.uint8(11),
-#     # 'histo_and_induced_voltage': np.uint8(12),
-#     'gather_single': np.uint8(13),
-#     'beamFB': np.uint8(14),
-#     'reduce_histo': np.uint8(15),
-#     'scale_histo': np.uint8(16),
-#     'LIKick_n_drift': np.uint8(17),
-#     'impedance_reduction': np.uint8(18),
-#     'induced_voltage_sum_packed': np.uint8(19),
-#     'stop': np.uint8(255)
-# }
