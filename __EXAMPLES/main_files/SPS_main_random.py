@@ -480,6 +480,8 @@ for copy in range(n_bunches):
     beam.dE[beginIndex:endIndex] = PS_beam.dE
     beginIndex = endIndex
 
+print('dE mean: ', np.mean(beam.dE))
+print('dE std: ', np.std(beam.dE))
 
 beam.split()
 
@@ -505,8 +507,6 @@ if N_t_monitor > 0:
                                   n_turns=np.ceil(1.0 * N_t / N_t_monitor),
                                   profile=profile)
 print("Ready for tracking!\n")
-print('dE mean: ', np.mean(beam.dE))
-print('dE std: ', np.std(beam.dE))
 
 timing.reset()
 start_t = time.time()

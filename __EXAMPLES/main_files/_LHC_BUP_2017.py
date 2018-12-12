@@ -9,6 +9,19 @@
 #
 # H. Timko
 
+import os
+import datetime
+import sys
+import time
+import numpy as np
+import matplotlib as mpl
+mpl.use('Agg')
+try:
+    from pyprof import timing
+    from pyprof import mpiprof
+except ImportError:
+    from blond.utils import profile_mock as timing
+    mpiprof = timing
 
 from blond.utils.input_parser import parse
 from blond.monitors.monitors import SlicesMonitor
@@ -24,19 +37,6 @@ from blond.llrf.beam_feedback import BeamFeedback
 from blond.trackers.tracker import RingAndRFTracker, FullRingAndRF
 from blond.input_parameters.rf_parameters import RFStation
 from blond.input_parameters.ring import Ring
-import os
-import datetime
-import sys
-import time
-import numpy as np
-import matplotlib as mpl
-mpl.use('Agg')
-try:
-    from pyprof import timing
-    from pyprof import mpiprof
-except ImportError:
-    from blond.utils import profile_mock as timing
-    mpiprof = timing
 
 
 REAL_RAMP = False    # track full ramp
@@ -223,6 +223,9 @@ fullring = FullRingAndRF([tracker])
 # Initial losses, slicing, statistics
 beam.losses_separatrix(ring, rf)
 
+print('dE mean: ', np.mean(beam.dE))
+print('dE std: ', np.std(beam.dE))
+
 beam.split()
 
 print("Statistics set...")
@@ -266,8 +269,6 @@ if N_t_monitor > 0:
 print("Map set")
 
 
-print('dE mean: ', np.mean(beam.dE))
-print('dE std: ', np.std(beam.dE))
 
 timing.reset()
 start_t = time.time()

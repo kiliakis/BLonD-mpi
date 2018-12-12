@@ -17,7 +17,14 @@ for the CERN machines**
 from __future__ import division
 from builtins import object
 import numpy as np
+try:
+    from pyprof import timing
+    from pyprof import mpiprof
+except ImportError:
+    from ..utils import profile_mock as timing
+    mpiprof = timing
 
+from ..utils import bmath as bm
 
 class BeamFeedback(object):
     '''
@@ -265,7 +272,7 @@ class BeamFeedback(object):
         if self.time_offset is None:
             # indexes = np.ones(self.profile.n_slices, dtype=bool)
             # time_offset = 0.0
-            coeff = bm.beam_phase(self, omegarf, phirf)
+            coeff = bm.beam_phase(self, omega_rf, phi_rf)
         else:
             indexes = self.profile.bin_centers >= self.time_offset
             time_offset = self.time_offset

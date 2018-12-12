@@ -454,6 +454,9 @@ match_beam_from_distribution(beam, full_tracker, ring,
                              n_points_potential=int(1e3),
                              dt_margin_percent=0.1, seed=seed)
 
+print('dE mean:', np.mean(beam.dE))
+print('dE std:', np.std(beam.dE))
+
 beam.split()
 
 # Tracking -------------------------------------------------------------------
@@ -518,8 +521,7 @@ if N_t_monitor > 0:
                                   n_turns=np.ceil(1.0 * N_t / N_t_monitor),
                                   profile=profile)
 
-print('dE mean:', np.mean(beam.dE))
-print('dE std:', np.std(beam.dE))
+
 print("Ready for tracking!\n")
 timing.reset()
 start_t = time.time()

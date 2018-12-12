@@ -309,7 +309,8 @@ else:  # use bunch length modulation
             beam.dE[beginIndex:endIndex] = PS_dE[indices]
             beginIndex = endIndex
 
-
+print('dE mean: ', np.mean(beam.dE))
+print('dE std: ', np.std(beam.dE))
 beam.split()
 
 
@@ -489,8 +490,7 @@ if N_t_monitor > 0:
 
 
 print("Ready for tracking!\n")
-print('dE mean: ', np.mean(beam.dE))
-print('dE std: ', np.std(beam.dE))
+
 
 timing.reset()
 start_t = time.time()
