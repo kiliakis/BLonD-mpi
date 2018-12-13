@@ -13,10 +13,10 @@ from time import sleep
 home = os.environ['HOME'] + '/git/BLonD-mpi'
 result_dir = home + '/results/raw/{}/{}/{}'
 
-exe = home + '/__EXAMPLES/mpi_main_files/_LHC_BUP_2017.py'
-batch_script = home + '/mpi_scripts/batch-simple.sh'
-setup_script = home + '/mpi_scripts/batch-setup.sh'
-job_name_form = '{}/_p{}_b{}_s{}_t{}_w{}_o{}_N{}_'
+exe = home + '/__EXAMPLES/main_files/_LHC_BUP_2017.py'
+batch_script = home + '/scripts/batch-simple.sh'
+setup_script = home + '/scripts/batch-setup.sh'
+job_name_form = '{}/_p{}_b{}_s{}_t{}_w{}_o{}_N{}_r{}_'
 
 configs = {
 
@@ -81,84 +81,81 @@ configs = {
     #                                          'partition': cycle(['be-long'])
     #                                          },
 
-    'LHC-96B-2MPPB-uint16-nobcast-r2-2': {'p': cycle([2000000]),
-                                             'b': cycle([96]),
-                                             's': cycle([1000]),
-                                             't': cycle([10000]),
-                                             'reduce': cycle([2]),
-                                             'load': cycle([0]),
-                                             'w': []
-                                             + list(np.arange(2, 17, 1))
-                                             + list(np.arange(2, 9, 1)),
-                                             # + list([3]),
-                                             # + list([7]),
+    # 'LHC-96B-2MPPB-uint16-nobcast-r2-2': {'p': cycle([2000000]),
+    #                                          'b': cycle([96]),
+    #                                          's': cycle([1000]),
+    #                                          't': cycle([10000]),
+    #                                          'reduce': cycle([2]),
+    #                                          'load': cycle([0]),
+    #                                          'w': []
+    #                                          + list(np.arange(2, 17, 1))
+    #                                          + list(np.arange(2, 9, 1)),
+    #                                          # + list([3]),
+    #                                          # + list([7]),
 
-                                             'o': []
-                                             + [10]*15
-                                             + [20]*7,
+    #                                          'o': []
+    #                                          + [10]*15
+    #                                          + [20]*7,
 
-                                             'time': cycle([45]),
-                                             'partition': cycle(['be-short'])
-                                             },
-    'LHC-96B-2MPPB-uint16-nobcast-r3-2': {'p': cycle([2000000]),
-                                             'b': cycle([96]),
-                                             's': cycle([1000]),
-                                             't': cycle([10000]),
-                                             'reduce': cycle([3]),
-                                             'load': cycle([0]),
-                                             'w': []
-                                             + list(np.arange(2, 17, 1))
-                                             + list(np.arange(2, 9, 1)),
-                                             # + list([3]),
-                                             # + list([7]),
+    #                                          'time': cycle([45]),
+    #                                          'partition': cycle(['be-short'])
+    #                                          },
+    # 'LHC-96B-2MPPB-uint16-nobcast-r3-2': {'p': cycle([2000000]),
+    #                                          'b': cycle([96]),
+    #                                          's': cycle([1000]),
+    #                                          't': cycle([10000]),
+    #                                          'reduce': cycle([3]),
+    #                                          'load': cycle([0]),
+    #                                          'w': []
+    #                                          + list(np.arange(2, 17, 1))
+    #                                          + list(np.arange(2, 9, 1)),
+    #                                          # + list([3]),
+    #                                          # + list([7]),
 
-                                             'o': []
-                                             + [10]*15
-                                             + [20]*7,
+    #                                          'o': []
+    #                                          + [10]*15
+    #                                          + [20]*7,
 
-                                             'time': cycle([45]),
-                                             'partition': cycle(['be-short'])
-                                             },
-    'LHC-96B-2MPPB-uint16-nobcast-r4-2': {'p': cycle([2000000]),
-                                             'b': cycle([96]),
-                                             's': cycle([1000]),
-                                             't': cycle([10000]),
-                                             'reduce': cycle([4]),
-                                             'load': cycle([0]),
-                                             'w': []
-                                             + list(np.arange(2, 17, 1))
-                                             + list(np.arange(2, 9, 1)),
-                                             # + list([3]),
-                                             # + list([7]),
+    #                                          'time': cycle([45]),
+    #                                          'partition': cycle(['be-short'])
+    #                                          },
+    # 'LHC-96B-2MPPB-uint16-nobcast-r4-2': {'p': cycle([2000000]),
+    #                                          'b': cycle([96]),
+    #                                          's': cycle([1000]),
+    #                                          't': cycle([10000]),
+    #                                          'reduce': cycle([4]),
+    #                                          'load': cycle([0]),
+    #                                          'w': []
+    #                                          + list(np.arange(2, 17, 1))
+    #                                          + list(np.arange(2, 9, 1)),
+    #                                          # + list([3]),
+    #                                          # + list([7]),
 
-                                             'o': []
-                                             + [10]*15
-                                             + [20]*7,
+    #                                          'o': []
+    #                                          + [10]*15
+    #                                          + [20]*7,
 
-                                             'time': cycle([45]),
-                                             'partition': cycle(['be-short'])
-                                             },
+    #                                          'time': cycle([45]),
+    #                                          'partition': cycle(['be-short'])
+    #                                          },
 
 
-    # 'LHC-96B-4MPPB-uint16-nobcast-r1-2': {'p': cycle([4000000]),
-    #                                     'b': cycle([96]),
-    #                                     's': cycle([1000]),
-    #                                     't': cycle([10000]),
-    #                                     'reduce': cycle([1]),
-    #                                     'load': cycle([0]),
+    'LHC-96B-2MPPB-uint16-nobcast-r1-3': {'p': cycle([2000000]),
+                                        'b': cycle([96]),
+                                        's': cycle([1000]),
+                                        't': cycle([10000]),
+                                        'reduce': cycle([1]),
+                                        'load': cycle([0]),
+                                        'w': []
+                                        + list(np.arange(2, 17, 1)),
+                                        # + list(np.arange(2, 9, 1)),
+                                        'o': []
+                                        + [10]*15,
+                                        # + [20]*7,
 
-    #                                     'w': []
-    #                                     + list(np.arange(2, 17, 1))
-    #                                     + list(np.arange(2, 9, 1)),
-
-    #                                     'o': []
-    #                                     + [10]*15
-    #                                     + [20]*7,
-
-    #                                     'time': cycle([45]),
-    #                                     'partition': cycle(['be-short'])
-    #                                     }
-
+                                        'time': cycle([45]),
+                                        'partition': cycle(['be-short'])
+                                        }
 
 }
 
