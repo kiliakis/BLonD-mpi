@@ -13,46 +13,33 @@ from time import sleep
 home = os.environ['HOME'] + '/git/BLonD-mpi'
 result_dir = home + '/results/raw/{}/{}/{}'
 
-exe = home + '/__EXAMPLES/mpi_main_files/SPS_main.py'
-batch_script = home + '/mpi_scripts/batch-simple.sh'
-setup_script = home + '/mpi_scripts/batch-setup.sh'
-job_name_form = '{}/_p{}_b{}_s{}_t{}_w{}_o{}_N{}_'
+exe = home + '/__EXAMPLES/main_files/SPS_main.py'
+batch_script = home + '/scripts/batch-simple.sh'
+setup_script = home + '/scripts/batch-setup.sh'
+job_name_form = '{}/_p{}_b{}_s{}_t{}_w{}_o{}_N{}_r{}'
 
 configs = {
 
-    # 'SPS-8n-72B-packed-mul-uint16-r1': {'p': cycle([4000000]),
+    'SPS-72B-4MPPB-uint16': {'p': cycle([4000000]),
+                                  'b': cycle([72]),
+                                  's': cycle([1408]),
+                                  't': cycle([4000]),
+                                  'reduce': cycle([1]),
+                                  'w': [] +
+                                        list(np.arange(2, 17, 1)) +
+                                  list(np.arange(2, 9, 1)),
+                                  'o': [] +
+                                        [10]*15 +
+                                  [20]*7,
+                                  'time': cycle([45]),
+                                  'partition': cycle(['be-short'])
+                                  },
+
+    # 'SPS-72B-4MPPB-uint16-r3-2': {'p': cycle([4000000]),
     #                                     'b': cycle([72]),
     #                                     's': cycle([1408]),
     #                                     't': cycle([4000]),
-    #                                     'reduce': cycle([1]),
-    #                                     'w': []
-    #                                     # + list(np.arange(2, 81, 2))
-    #                                     # + list(np.arange(2, 41, 2))
-    #                                     # + list(np.arange(2, 33, 1))
-    #                                     + list(np.arange(4, 17, 1))
-    #                                     + list(np.arange(4, 9, 1)),
-    #                                     #  + list([16, 32])
-    #                                     #  + list([8, 16])
-    #                                     #  + list([4, 8]),
-
-    #                                     'o': []
-    #                                     #  + [5]*2
-    #                                     #  + [10]*2
-    #                                     #  + [20]*2,
-    #                                     # + [5]*31
-    #                                     + [10]*13
-    #                                     + [20]*5,
-
-    #                                     'time': cycle([40]),
-    #                                     'partition': cycle(['be-long'])
-    #                                     }
-
-
-    # 'SPS-72B-2MPPB-uint16-r1-2': {'p': cycle([2000000]),
-    #                                     'b': cycle([72]),
-    #                                     's': cycle([1408]),
-    #                                     't': cycle([4000]),
-    #                                     'reduce': cycle([1]),
+    #                                     'reduce': cycle([3]),
     #                                     'w': []
     #                                     + list(np.arange(2, 17, 1))
     #                                     + list(np.arange(2, 9, 1)),
@@ -64,58 +51,22 @@ configs = {
     #                                     'time': cycle([45]),
     #                                     'partition': cycle(['be-short'])
     #                                     },
+    # 'SPS-72B-4MPPB-uint16-r4-2': {'p': cycle([4000000]),
+    #                                     'b': cycle([72]),
+    #                                     's': cycle([1408]),
+    #                                     't': cycle([4000]),
+    #                                     'reduce': cycle([4]),
+    #                                     'w': []
+    #                                     + list(np.arange(2, 17, 1))
+    #                                     + list(np.arange(2, 9, 1)),
 
+    #                                     'o': []
+    #                                     + [10]*15
+    #                                     + [20]*7,
 
-
-    'SPS-72B-4MPPB-uint16-r2-2': {'p': cycle([4000000]),
-                                        'b': cycle([72]),
-                                        's': cycle([1408]),
-                                        't': cycle([4000]),
-                                        'reduce': cycle([2]),
-                                        'w': []
-                                        + list(np.arange(2, 17, 1))
-                                        + list(np.arange(2, 9, 1)),
-
-                                        'o': []
-                                        + [10]*15
-                                        + [20]*7,
-
-                                        'time': cycle([45]),
-                                        'partition': cycle(['be-short'])
-                                        },
-
-    'SPS-72B-4MPPB-uint16-r3-2': {'p': cycle([4000000]),
-                                        'b': cycle([72]),
-                                        's': cycle([1408]),
-                                        't': cycle([4000]),
-                                        'reduce': cycle([3]),
-                                        'w': []
-                                        + list(np.arange(2, 17, 1))
-                                        + list(np.arange(2, 9, 1)),
-
-                                        'o': []
-                                        + [10]*15
-                                        + [20]*7,
-
-                                        'time': cycle([45]),
-                                        'partition': cycle(['be-short'])
-                                        },
-    'SPS-72B-4MPPB-uint16-r4-2': {'p': cycle([4000000]),
-                                        'b': cycle([72]),
-                                        's': cycle([1408]),
-                                        't': cycle([4000]),
-                                        'reduce': cycle([4]),
-                                        'w': []
-                                        + list(np.arange(2, 17, 1))
-                                        + list(np.arange(2, 9, 1)),
-
-                                        'o': []
-                                        + [10]*15
-                                        + [20]*7,
-
-                                        'time': cycle([45]),
-                                        'partition': cycle(['be-short'])
-                                        }
+    #                                     'time': cycle([45]),
+    #                                     'partition': cycle(['be-short'])
+    #                                     }
 
 
 }
@@ -151,7 +102,7 @@ for analysis, config in configs.items():
                                                     oss, times, partitions):
         N = (w * o + 20-1) // 20
 
-        job_name = job_name_form.format(analysis, p, b, s, t, w, o, N)
+        job_name = job_name_form.format(analysis, p, b, s, t, w, o, N, r)
         # if(N < 5):
         #     partition = 'be-short'
         #     # continue
@@ -174,7 +125,7 @@ for analysis, config in configs.items():
                         # '-s', str(s),
                         '-b', str(b),
                         '-t', str(t), '-time',
-                        '-o', str(o), '-r', report_dir,
+                        '-o', str(o), '-timedir', report_dir,
                         '--reduce', str(r)]
             print(job_name, timestr)
             batch_args = ['-N', str(N), '-n', str(w),
@@ -190,5 +141,5 @@ for analysis, config in configs.items():
                             stderr=stdout, env=os.environ.copy())
             # sleep(5)
             current_sim += 1
-            print("%lf %% is completed" % (100.0 * current_sim /
-                                           total_sims))
+            print("%lf %% is completed" % (100.0 * current_sim
+                                           / total_sims))

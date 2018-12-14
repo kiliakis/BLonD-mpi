@@ -13,69 +13,69 @@ from time import sleep
 home = os.environ['HOME'] + '/git/BLonD-mpi'
 result_dir = home + '/results/raw/{}/{}/{}'
 
-exe = home + '/__EXAMPLES/mpi_main_files/PS_main.py'
-batch_script = home + '/mpi_scripts/batch-simple.sh'
-setup_script = home + '/mpi_scripts/batch-setup.sh'
-job_name_form = '{}/_p{}_b{}_s{}_t{}_w{}_o{}_N{}_'
+exe = home + '/__EXAMPLES/main_files/PS_main.py'
+batch_script = home + '/scripts/batch-simple.sh'
+setup_script = home + '/scripts/batch-setup.sh'
+job_name_form = '{}/_p{}_b{}_s{}_t{}_w{}_o{}_N{}_r{}'
 
 configs = {
 
-    # 'PS-2MPPB-comb-r1': {'p': cycle([2000000]),
-    #                      'b': cycle([21]),
-    #                      's': cycle([128]),
-    #                      't': cycle([10000]),
-    #                      'reduce': cycle([1]),
-    #                      'load': cycle([0.0]),
-    #                      'mtw': cycle([100]),
-    #                      'w': []
-    #                      # + [16],
-    #                      + list(np.arange(2, 17, 1)),
-    #                      # + list(np.arange(2, 9, 1)),
-    #                      'o': []
-    #                      # + [10],
-    #                      + [10]*15,
-    #                      # + [20]*7,
-    #                      'time': cycle([25]),
-    #                      'partition': cycle(['be-short'])
-    #                      },
+    'PS-4MPPB-comb-mtw50': {'p': cycle([4000000]),
+                         'b': cycle([21]),
+                         's': cycle([128]),
+                         't': cycle([10000]),
+                         'reduce': cycle([1]),
+                         'load': cycle([0.0]),
+                         'mtw': cycle([50]),
+                         'w': []
+                         + [16],
+                         # + list(np.arange(2, 17, 1))
+                         # + list(np.arange(2, 9, 1)),
+                         'o': []
+                         + [10],
+                         # + [10]*15
+                         # + [20]*7,
+                         'time': cycle([45]),
+                         'partition': cycle(['be-short'])
+                         },
 
-    'PS-2MPPB-comb1-mtw50-r1-2': {'p': cycle([2000000]),
-                                'b': cycle([21]),
-                                's': cycle([128]),
-                                't': cycle([10000]),
-                                'reduce': cycle([1]),
-                                'load': cycle([0.0]),
-                                'mtw': cycle([50]),
-                                'w': []
-                                # + [16],
-                                + list(np.arange(2, 17, 1))
-                                + list(np.arange(2, 9, 1)),
-                                'o': []
-                                # + [10],
-                                + [10]*15
-                                + [20]*7,
-                                'time': cycle([45]),
-                                'partition': cycle(['be-short'])
-                                },
+    # 'PS-2MPPB-comb1-mtw50-r1-2': {'p': cycle([2000000]),
+    #                             'b': cycle([21]),
+    #                             's': cycle([128]),
+    #                             't': cycle([10000]),
+    #                             'reduce': cycle([1]),
+    #                             'load': cycle([0.0]),
+    #                             'mtw': cycle([50]),
+    #                             'w': []
+    #                             # + [16],
+    #                             + list(np.arange(2, 17, 1))
+    #                             + list(np.arange(2, 9, 1)),
+    #                             'o': []
+    #                             # + [10],
+    #                             + [10]*15
+    #                             + [20]*7,
+    #                             'time': cycle([45]),
+    #                             'partition': cycle(['be-short'])
+    #                             },
 
-    'PS-4MPPB-comb1-mtw50-r1-2': {'p': cycle([4000000]),
-                                'b': cycle([21]),
-                                's': cycle([128]),
-                                't': cycle([10000]),
-                                'reduce': cycle([1]),
-                                'load': cycle([0.0]),
-                                'mtw': cycle([50]),
-                                'w': []
-                                # + [16],
-                                + list(np.arange(2, 17, 1))
-                                + list(np.arange(2, 9, 1)),
-                                'o': []
-                                # + [10],
-                                + [10]*15
-                                + [20]*7,
-                                'time': cycle([45]),
-                                'partition': cycle(['be-short'])
-                                },
+    # 'PS-4MPPB-comb1-mtw50-r1-2': {'p': cycle([4000000]),
+    #                             'b': cycle([21]),
+    #                             's': cycle([128]),
+    #                             't': cycle([10000]),
+    #                             'reduce': cycle([1]),
+    #                             'load': cycle([0.0]),
+    #                             'mtw': cycle([50]),
+    #                             'w': []
+    #                             # + [16],
+    #                             + list(np.arange(2, 17, 1))
+    #                             + list(np.arange(2, 9, 1)),
+    #                             'o': []
+    #                             # + [10],
+    #                             + [10]*15
+    #                             + [20]*7,
+    #                             'time': cycle([45]),
+    #                             'partition': cycle(['be-short'])
+    #                             },
 
 
     # 'PS-2MPPB-interp-r2': {'p': cycle([2000000]),
@@ -150,7 +150,7 @@ for analysis, config in configs.items():
                                                                loads, mtws):
         N = (w * o + 20-1) // 20
 
-        job_name = job_name_form.format(analysis, p, b, s, t, w, o, N)
+        job_name = job_name_form.format(analysis, p, b, s, t, w, o, N, r)
         # if(N < 13):
         #     partition = 'be-short'
         # else:
@@ -176,7 +176,7 @@ for analysis, config in configs.items():
                         '-p', str(p), '-s', str(s),
                         '-b', str(b), '-addload', str(load),
                         '-t', str(t), '-time',
-                        '-o', str(o), '-r', report_dir,
+                        '-o', str(o), '-timedir', report_dir,
                         '--reduce', str(r),
                         '-mtw', str(mtw)]
             print(job_name, timestr)

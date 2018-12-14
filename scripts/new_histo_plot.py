@@ -71,63 +71,9 @@ plots_config = {
     # },
 
 
-    # 'plot4': {
-    #     'files': {
-    #         res_dir+'raw/LHC-96B-2MPPB-uint16-nobcast-r1-2/comm-comp-report.csv': {
-    #                 'lines': {
-    #                     'omp': ['2', '5', '10', '20'],
-    #                     'type': ['comp', 'serial', 'comm', 'other', 'overhead']}
-    #         }
-
-    #     },
-    #     'labels': {
-    #         # '1': 'hyb-T1',
-    #         # '2': 'hyb-T2',
-    #         # '4': 'hyb-T4',
-    #         '5': 'hyb-T5',
-    #         '10': 'hyb-T10',
-    #         '20': 'hybrid-T20'
-    #     },
-    #     'colors': {
-    #         # 'comm': 'tab:green',
-    #         # 'comp': 'tab:blue',
-    #         # 'serial': 'tab:orange',
-    #         # 'other': 'tab:purple'
-    #         'comm': '0.2',
-    #         'comp': '0.6',
-    #         'serial': '1',
-    #         # 'other': '1'
-
-    #         # '10': 'tab:red'
-    #         # '20000000-20-comp': 'tab:purple'
-    #     },
-    #     'hatches': {
-    #         # '5': '/',
-    #         '10': '',
-    #         '20': 'x',
-    #     },
-    #     'order': ['comm', 'serial', 'comp'],
-    #     # 'exclude': [['v1', 'notcm'], ['v2', 'notcm'], ['v4', 'notcm']],
-    #     'x_name': 'n',
-    #     'width': 3,
-    #     'displs': 3.5,
-    #     'omp_name': 'omp',
-    #     'y_name': 'avg_percent',
-    #     'y_err_name': 'std',
-    #     'xlabel': 'Cores (x10)',
-    #     'ylabel': 'Percent',
-    #     'title': 'Run-Time breakdown',
-    #     'ylim': [0, 100],
-    #     'figsize': (5, 3),
-    #     'image_name': images_dir + 'LHC-96B-2MPPB-uint16-nobcast-r1-2-newhisto.pdf'
-
-    # },
-
-
-
-    'plot3': {
+    'plot4': {
         'files': {
-            res_dir+'raw/SPS-72B-4MPPB-uint16-r1-2/comm-comp-report.csv': {
+            res_dir+'raw/LHC-96B-2MPPB-uint16/comm-comp-report.csv': {
                     'lines': {
                         'omp': ['2', '5', '10', '20'],
                         'type': ['comp', 'serial', 'comm', 'other', 'overhead']}
@@ -173,9 +119,63 @@ plots_config = {
         'title': 'Run-Time breakdown',
         'ylim': [0, 100],
         'figsize': (5, 3),
-        'image_name': images_dir + 'SPS-72B-4MPPB-uint16-r1-2-newhisto.pdf'
+        'image_name': images_dir + 'LHC-96B-2MPPB-uint16-newhisto.pdf'
 
     },
+
+
+
+    # 'plot3': {
+    #     'files': {
+    #         res_dir+'raw/SPS-72B-4MPPB-uint16-r1-2/comm-comp-report.csv': {
+    #                 'lines': {
+    #                     'omp': ['2', '5', '10', '20'],
+    #                     'type': ['comp', 'serial', 'comm', 'other', 'overhead']}
+    #         }
+
+    #     },
+    #     'labels': {
+    #         # '1': 'hyb-T1',
+    #         # '2': 'hyb-T2',
+    #         # '4': 'hyb-T4',
+    #         '5': 'hyb-T5',
+    #         '10': 'hyb-T10',
+    #         '20': 'hybrid-T20'
+    #     },
+    #     'colors': {
+    #         # 'comm': 'tab:green',
+    #         # 'comp': 'tab:blue',
+    #         # 'serial': 'tab:orange',
+    #         # 'other': 'tab:purple'
+    #         'comm': '0.2',
+    #         'comp': '0.6',
+    #         'serial': '1',
+    #         # 'other': '1'
+
+    #         # '10': 'tab:red'
+    #         # '20000000-20-comp': 'tab:purple'
+    #     },
+    #     'hatches': {
+    #         # '5': '/',
+    #         '10': '',
+    #         '20': 'x',
+    #     },
+    #     'order': ['comm', 'serial', 'comp'],
+    #     # 'exclude': [['v1', 'notcm'], ['v2', 'notcm'], ['v4', 'notcm']],
+    #     'x_name': 'n',
+    #     'width': 3,
+    #     'displs': 3.5,
+    #     'omp_name': 'omp',
+    #     'y_name': 'avg_percent',
+    #     'y_err_name': 'std',
+    #     'xlabel': 'Cores (x10)',
+    #     'ylabel': 'Percent',
+    #     'title': 'Run-Time breakdown',
+    #     'ylim': [0, 100],
+    #     'figsize': (5, 3),
+    #     'image_name': images_dir + 'SPS-72B-4MPPB-uint16-r1-2-newhisto.pdf'
+
+    # },
 
 
 
@@ -241,16 +241,16 @@ if __name__ == '__main__':
                 if len(x) > len(xticks):
                     xticks = x
 
-                if phase == 'serial':
-                    y += np.array(final_dir[omp]['overhead']
-                                  [:, header.index(config['y_name'])], float)
-                    y_err += np.array(final_dir[omp]['overhead']
-                                      [:, header.index(config['y_err_name'])], float)
+                # if phase == 'serial':
+                #     y += np.array(final_dir[omp]['overhead']
+                #                   [:, header.index(config['y_name'])], float)
+                #     y_err += np.array(final_dir[omp]['overhead']
+                #                       [:, header.index(config['y_err_name'])], float)
 
-                    y += np.array(final_dir[omp]['other']
-                                  [:, header.index(config['y_name'])], float)
-                    y_err += np.array(final_dir[omp]['other']
-                                      [:, header.index(config['y_err_name'])], float)
+                #     y += np.array(final_dir[omp]['other']
+                #                   [:, header.index(config['y_name'])], float)
+                #     y_err += np.array(final_dir[omp]['other']
+                #                       [:, header.index(config['y_err_name'])], float)
 
                 # print(bot, y)
                 plt.bar(x + displs, y, width=config['width'],
