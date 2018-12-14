@@ -26,11 +26,15 @@ configs = {
                                   't': cycle([4000]),
                                   'reduce': cycle([1]),
                                   'w': [] +
-                                        list(np.arange(2, 17, 1)) +
-                                  list(np.arange(2, 9, 1)),
+                                        [16, 8],
+                                  #       list(np.arange(2, 17, 1)) +
+                                  # list(np.arange(2, 9, 1)),
                                   'o': [] +
-                                        [10]*15 +
-                                  [20]*7,
+                                        [10]*1 +
+                                  [20]*1,
+
+                                  #       [10]*15 +
+                                  # [20]*7,
                                   'time': cycle([45]),
                                   'partition': cycle(['be-short'])
                                   },

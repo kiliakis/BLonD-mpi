@@ -17,6 +17,9 @@
 
 BLOND=$HOME/git/BLonD-mpi
 # echo $BLOND
+# source /cvmfs/projects.cern.ch/intelsw/psxe/linux/setup.sh
+# source /cvmfs/projects.cern.ch/intelsw/psxe/linux/x86_64/2019/compilers_and_libraries/linux/bin/compilervars.sh -arch intel64 -platform linux
+export PATH=$HOME/install/anaconda3/bin:$PATH
 
 which python
 python --version

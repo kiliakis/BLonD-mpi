@@ -20,7 +20,7 @@ job_name_form = '{}/_p{}_b{}_s{}_t{}_w{}_o{}_N{}_r{}'
 
 configs = {
 
-    'PS-4MPPB-comb-mtw50': {'p': cycle([4000000]),
+    'PS-4MPPB-comb-mtw50-icc': {'p': cycle([4000000]),
                          'b': cycle([21]),
                          's': cycle([128]),
                          't': cycle([10000]),
@@ -116,7 +116,7 @@ configs = {
 
 }
 
-repeats = 10
+repeats = 5
 
 
 total_sims = repeats * \

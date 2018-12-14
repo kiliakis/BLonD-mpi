@@ -440,64 +440,104 @@ extern "C" {
     void scalar_mul_int32(const int * __restrict__ a, const int b,
                           const int n, int * __restrict__ res)
     {
-        std::transform(a, a + n, res, bind2nd(multiplies<int>(), b));
+        #pragma omp parallel for
+        for (int i = 0; i < n; ++i) {
+            res[i] = a[i] * b;
+        }
+        // std::transform(a, a + n, res, bind2nd(multiplies<int>(), b));
     }
 
     void scalar_mul_int64(const long * __restrict__ a, const long b,
                           const int n, long * __restrict__ res)
     {
-        std::transform(a, a + n, res, bind2nd(multiplies<long>(), b));
+        #pragma omp parallel for
+        for (int i = 0; i < n; ++i) {
+            res[i] = a[i] * b;
+        }
+        // std::transform(a, a + n, res, bind2nd(multiplies<long>(), b));
     }
 
     void scalar_mul_float32(const float * __restrict__ a, const float b,
                             const int n, float * __restrict__ res)
     {
-        std::transform(a, a + n, res, bind2nd(multiplies<float>(), b));
+        #pragma omp parallel for
+        for (int i = 0; i < n; ++i) {
+            res[i] = a[i] * b;
+        }
+        // std::transform(a, a + n, res, bind2nd(multiplies<float>(), b));
     }
 
     void scalar_mul_float64(const double * __restrict__ a, const double b,
                             const int n, double * __restrict__ res)
     {
-        std::transform(a, a + n, res, bind2nd(multiplies<double>(), b));
+        #pragma omp parallel for
+        for (int i = 0; i < n; ++i) {
+            res[i] = a[i] * b;
+        }
+        // std::transform(a, a + n, res, bind2nd(multiplies<double>(), b));
     }
 
     void scalar_mul_complex64(const complex<float> * __restrict__ a,
                               const complex<float> b,
                               const int n, complex<float> * __restrict__ res)
     {
-        std::transform(a, a + n, res, bind2nd(multiplies<complex<float>>(), b));
+        #pragma omp parallel for
+        for (int i = 0; i < n; ++i) {
+            res[i] = a[i] * b;
+        }
+        // std::transform(a, a + n, res, bind2nd(multiplies<complex<float>>(), b));
     }
 
     void scalar_mul_complex128(const complex<double> * __restrict__ a,
                                const complex<double> b,
                                const int n, complex<double> * __restrict__ res)
     {
-        std::transform(a, a + n, res, bind2nd(multiplies<complex<double>>(), b));
+        #pragma omp parallel for
+        for (int i = 0; i < n; ++i) {
+            res[i] = a[i] * b;
+        }
+        // std::transform(a, a + n, res, bind2nd(multiplies<complex<double>>(), b));
     }
 
     void vector_mul_int32(const int * __restrict__ a, const int *__restrict__ b,
                           const int n, int * __restrict__ res)
     {
-        std::transform(a, a + n, b, res, multiplies<int>());
+        #pragma omp parallel for
+        for (int i = 0; i < n; ++i) {
+            res[i] = a[i] * b[i];
+        }
+        // std::transform(a, a + n, b, res, multiplies<int>());
     }
 
     void vector_mul_int64(const long * __restrict__ a, const long *__restrict__ b,
                           const int n, long * __restrict__ res)
     {
-        std::transform(a, a + n, b, res, multiplies<long>());
+        #pragma omp parallel for
+        for (int i = 0; i < n; ++i) {
+            res[i] = a[i] * b[i];
+        }
+        // std::transform(a, a + n, b, res, multiplies<long>());
     }
 
     void vector_mul_float32(const float * __restrict__ a, const float *__restrict__ b,
                             const int n, float * __restrict__ res)
     {
-        std::transform(a, a + n, b, res, multiplies<float>());
+        #pragma omp parallel for
+        for (int i = 0; i < n; ++i) {
+            res[i] = a[i] * b[i];
+        }
+        // std::transform(a, a + n, b, res, multiplies<float>());
 
     }
 
     void vector_mul_float64(const double * __restrict__ a, const double *__restrict__ b,
                             const int n, double * __restrict__ res)
     {
-        std::transform(a, a + n, b, res, multiplies<double>());
+        #pragma omp parallel for
+        for (int i = 0; i < n; ++i) {
+            res[i] = a[i] * b[i];
+        }        
+        // std::transform(a, a + n, b, res, multiplies<double>());
 
     }
 
@@ -505,7 +545,11 @@ extern "C" {
                               const complex<float> *__restrict__ b,
                               const int n, complex<float> * __restrict__ res)
     {
-        std::transform(a, a + n, b, res, multiplies<complex<float>>());
+        #pragma omp parallel for
+        for (int i = 0; i < n; ++i) {
+            res[i] = a[i] * b[i];
+        }
+        // std::transform(a, a + n, b, res, multiplies<complex<float>>());
 
     }
 
@@ -513,7 +557,11 @@ extern "C" {
                                const complex<double> *__restrict__ b,
                                const int n, complex<double> * __restrict__ res)
     {
-        std::transform(a, a + n, b, res, multiplies<complex<double>>());
+        #pragma omp parallel for
+        for (int i = 0; i < n; ++i) {
+            res[i] = a[i] * b[i];
+        }
+        // std::transform(a, a + n, b, res, multiplies<complex<double>>());
 
     }
 

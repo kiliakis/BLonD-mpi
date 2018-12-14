@@ -93,11 +93,7 @@ class TotalInducedVoltage(object):
         """
         Method to sum all the induced voltages in one single array.
         """
-        # self.profile.beam_spectrum_dict = {}
-        # for obj in self.induced_voltage_list:
-        #     if isinstance(obj, (InducedVoltageTime, InducedVoltageFreq)) and \
-        #             (obj.n_fft not in self.profile.beam_spectrum_dict):
-        #         self.profile.beam_spectrum_generation(obj.n_fft)
+        
         beam_spectrum_dict = {}
         temp_induced_voltage = 0
         for induced_voltage_object in self.induced_voltage_list:
@@ -119,7 +115,7 @@ class TotalInducedVoltage(object):
         #         self.profile.beam_spectrum_generation(obj.n_fft)
 
 
-        # Assuming the same n_fft for all
+        # Assuming the same n_fft for all, we take only the first one
         self.induced_voltage_list[0].profile.beam_spectrum_generation(
             self.induced_voltage_list[0].n_fft)
         beam_spectrum = self.induced_voltage_list[0].profile.beam_spectrum
@@ -129,7 +125,7 @@ class TotalInducedVoltage(object):
                 self.induced_voltage = []
                 min_idx = self.profile.n_slices
                 for obj in self.induced_voltage_list:
-                    temp_induced_voltage.append(
+                    self.induced_voltage.append(
                         bm.mul(obj.total_impedance, beam_spectrum))
                     min_idx = min(obj.n_induced_voltage, min_idx)
 
