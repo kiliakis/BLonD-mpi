@@ -39,7 +39,7 @@ def print_wrap(f):
     @wraps(f)
     def wrap(*args):
         msg = '[{}] '.format(worker.rank) + ' '.join([str(a) for a in args])
-        if worker.rank == 0:
+        if worker.isMaster:
             worker.logger.debug(msg)
             return f('[{}]'.format(worker.rank),*args)
         else:
@@ -82,6 +82,10 @@ class Worker:
         # if self.trace:
         mpiprof.finalize()
 
+    @property
+    def isMaster(self):
+        return self.rank == 0
+
     # Define the begin and size numbers in order to split a variable of length size
     @timing.timeit(key='serial:split')
     @mpiprof.traceit(key='serial:split')
@@ -100,7 +104,7 @@ class Worker:
     @mpiprof.traceit(key='comm:gather')
     def gather(self, var, size):
         self.logger.debug('gather')
-        if self.rank == 0:
+        if self.isMaster:
             counts = [size // self.workers + 1 if i < size % self.workers
                       else size // self.workers for i in range(self.workers)]
             displs = np.append([0], np.cumsum(counts[:-1]))
@@ -138,6 +142,14 @@ class Worker:
     def sync(self):
         self.logger.debug('sync')
         self.intracomm.Barrier()
+
+    @timing.timeit(key='serial:finalize')
+    @mpiprof.traceit(key='serial:finalize')
+    def finalize(self):
+        self.logger.debug('finalize')
+        if not self.isMaster:
+            sys.exit(0)
+
 
 
 
