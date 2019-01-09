@@ -125,7 +125,7 @@ if (__name__ == "__main__"):
     subprocess.call([compiler, '--version'])
 
     try:
-        os.remove(os.path.join(basepath, 'cpp_routines/libblond.so'))
+        os.remove(libname)
     except OSError as e:
         pass
 
