@@ -206,7 +206,7 @@ end_t = time.time()
 timing.report(total_time=1e3*(end_t-start_t),
               out_dir=args['timedir'],
               out_file='worker-{}.csv'.format(os.getpid()))
-
+worker.finalize()
 
 print('dE mean: ', np.mean(beam.dE))
 print('dE std: ', np.std(beam.dE))
