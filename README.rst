@@ -95,6 +95,17 @@ Confirm proper installation
         $ python __EXAMPLES/main_files/EX_02_Main_long_ps_booster.py
         $ etc..
 
+
+Setting up the MPI installation
+-------------------------------
+
+* Add the module loads for gcc, mpich and batch/be in your bashrc
+* Download and install anaconda3
+* Download and install fftw3 (with the appropriate flags)
+* install mpi4py with pip
+* clone this repo, compile the library and link with fftw3_omp
+* adjust your main file as needed
+
 CURRENT DEVELOPERS
 ==================
 
