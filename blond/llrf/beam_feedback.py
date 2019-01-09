@@ -368,7 +368,8 @@ class BeamFeedback(object):
 #        self.average_dE = np.mean(self.profile.Beam.dE[(self.profile.Beam.dt >
 #            self.profile.bin_centers[0])*(self.profile.Beam.dt <
 #                                         self.profile.bin_centers[-1])])
-        self.average_dE = np.mean(self.profile.Beam.dE)
+        self.average_dE = self.profile.Beam.gather_mean_dE()
+        # self.average_dE = np.mean(self.profile.Beam.dE)
 
         self.drho = self.ring.alpha_0[0, counter] * \
             self.ring.ring_radius*self.average_dE / \
