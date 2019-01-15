@@ -451,9 +451,9 @@ class Profile(object):
         with timing.timed_region('serial:conversion'):
             with mpiprof.traced_region('serial:conversion'):
                 self.n_macroparticles = self.n_macroparticles.astype(
-                    np.uint16, order='C')
+                    np.uint32, order='C')
 
-        worker.allreduce(self.n_macroparticles, dtype=np.uint16)
+        worker.allreduce(self.n_macroparticles, dtype=np.uint32)
 
         with timing.timed_region('serial:conversion'):
             with mpiprof.traced_region('serial:conversion'):
