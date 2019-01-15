@@ -50,29 +50,30 @@ Install Steps
 -------------
 
 
-* The easy way: 
-    .. code-block:: bash
+* The easy way:
 
-        $ pip install blond
+  .. code-block:: bash
+
+      $ pip install blond
 
 
 * If this fails try this:
 
   1. Clone the repository from github or download and extract the zip from here_.
-
   2. Navigate to the downloaded BLonD directory and run:
 
-    .. code-block:: bash
+  .. code-block:: bash
 
-        $ python setup.py install
+      $ python setup.py install
 
 
-* If it still fails, navigate to the BLonD directory and run:
+* If it still fails:
 
-  1.  
-    .. code-block:: bash
+  1. Navigate to the BLonD directory and run:
+    
+  .. code-block:: bash
       
-       $ python setup.py compile
+      $ python setup.py compile
 
   2. Then you have to use the PYTHONPATH variable or some other mechanism to point to the BLonD installation.
 
@@ -84,27 +85,82 @@ Confirm proper installation
 ---------------------------
 
 * Run the unittests with pytest (may need to be installed first with pip install pytest):
-    .. code-block:: bash
 
-        $ pytest -v unittests
+  .. code-block:: bash
+
+    $ pytest -v unittests
 
 * Try to run some of the main files found in the examples:
-    .. code-block:: bash
 
-        $ python __EXAMPLES/main_files/EX_01_Acceleration.py
-        $ python __EXAMPLES/main_files/EX_02_Main_long_ps_booster.py
-        $ etc..
+  .. code-block:: bash
+
+    $ python __EXAMPLES/main_files/EX_01_Acceleration.py
+    $ python __EXAMPLES/main_files/EX_02_Main_long_ps_booster.py
+    $ etc..
 
 
 Setting up the MPI installation
 -------------------------------
 
-* Add the module loads for gcc, mpich and batch/be in your bashrc
+* Add the module loads for gcc, mpich and batch/be in your bashrc:
+
+  .. code-block:: bash
+    module load compiler/gcc7
+    module load mpi/mpich/3.2.1
+    module load slurm/be
+  
 * Download and install anaconda3
 * Download and install fftw3 (with the appropriate flags)
 * install mpi4py with pip
 * clone this repo, compile the library and link with fftw3_omp
 * adjust your main file as needed
+
+
+Changes required in the main file
+---------------------------------
+
+
+1. This import in the beginning of your script:
+	
+.. code-block:: python
+  
+  from blond.utils.mpi_config import worker, print
+   	
+2. After having initialized the beam and preferably just before the start of the main loop:
+  
+.. code-block:: python
+  
+    beam.split()
+   
+This line splits the beam coordinates equally between the workers.
+
+3. If there is code block that you want it to be executed by a single worker only, you need to surround it with this if condition:
+  
+.. code-block:: python
+  
+    if worker.isMaster:
+        foo()
+        ...
+   
+4. If you need to re-assemble the whole beam back to the master worker you need to run:
+  
+.. code-block:: python
+  
+    beam.gather()
+	
+5. After calling the profile.track() function, each worker has the histogram of its own part of the beam only. To make the global histogram available to all workers you need to run:
+  
+.. code-block:: python 
+  
+    profile.track() 
+    profile.reducte_histo() 
+
+6. Finally, in the end of the simulation main loop, you can terminate all workers except from the master with:
+
+.. code-block:: python
+  
+    worker.finalize()
+
 
 CURRENT DEVELOPERS
 ==================
