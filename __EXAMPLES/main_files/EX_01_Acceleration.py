@@ -111,7 +111,7 @@ if args.get('log', None) is not None:
     log = args['log']
 
 if args.get('approx', None) is not None:
-    approx = args['approx']
+    approx = int(args['approx'])
 
 
 print({'N_t': N_t, 'n_macroparticles': N_p,

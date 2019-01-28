@@ -112,7 +112,7 @@ if args.get('seed', None) is not None:
     seed = args['seed']
 
 if args.get('approx', None) is not None:
-    approx = args['approx']
+    approx = int(args['approx'])
 
 
 print({'N_t': N_t, 'N_p': N_p,
@@ -265,8 +265,8 @@ if N_t_monitor > 0 and worker.isMaster:
     if args.get('monitorfile', None):
         filename = args['monitorfile']
     else:
-        filename = 'profiles/LHC-v0-t{}-p{}-b{}-sl{}-r{}-m{}-se{}'.format(
-            N_t, N_p, NB, nSlices, N_t_reduce, N_t_monitor, seed)
+        filename = 'profiles/LHC-v0-t{}-p{}-b{}-sl{}-r{}-m{}-se{}-w{}'.format(
+            N_t, N_p, NB, nSlices, N_t_reduce, N_t_monitor, seed, worker.workers)
     slicesMonitor = SlicesMonitor(filename=filename,
                                   n_turns=np.ceil(1.0 * N_t / N_t_monitor),
                                   profile=profile,
@@ -322,8 +322,13 @@ for turn in range(N_t):
     elif (approx == 2):
         profile.scale_histo()
 
-    if (N_t_monitor > 0) and (turn % N_t_monitor == 0) and worker.isMaster:
-        slicesMonitor.track(turn)
+
+    if (N_t_monitor > 0) and (turn % N_t_monitor == 0):
+        beam.statistics()
+        beam.gather_statistics()
+        if worker.isMaster:
+            profile.fwhm()
+            slicesMonitor.track(turn)
 
     if (approx == 0) or (approx == 2):
         totVoltage.induced_voltage_sum()

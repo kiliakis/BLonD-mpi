@@ -158,7 +158,7 @@ if args.get('seed', None) is not None:
 
 
 if args.get('approx', None) is not None:
-    approx = args['approx']
+    approx = int(args['approx'])
 
 
 print({'N_t': N_t, 'n_macroparticles_per_bunch': n_macroparticles_per_bunch,

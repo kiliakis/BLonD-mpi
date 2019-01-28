@@ -113,14 +113,14 @@ if args.get('log', None) is not None:
 
 
 if args.get('approx', None) is not None:
-    approx = args['approx']
+    approx = int(args['approx'])
 
 
 print({'N_t': N_t, 'n_macroparticles_pb': n_macroparticles_pb,
        'timing.mode': timing.mode, 'n_bunches': n_bunches,
        'N_t_reduce': N_t_reduce,
        'N_t_monitor': N_t_monitor, 'seed': seed, 'log': log,
-        'approx': approx})
+       'approx': approx})
 
 
 # initialize simulation
@@ -238,8 +238,8 @@ PS_folder = this_directory + '/../input_files/'
 
 if BUNCHLENGTH_MODULATION is False:
     print('Loading PS beam')
-    with h5py.File(PS_folder+'bunch_rotation_'+PS_case
-                   + '_bunch_rotation/after_rotation_PS_beam.hd5', "r") as h5file:
+    with h5py.File(PS_folder+'bunch_rotation_'+PS_case +
+                   '_bunch_rotation/after_rotation_PS_beam.hd5', "r") as h5file:
         PS_dt = h5file['PS_dt'].value
         # place PS beam in SPS RF-bucket 0
         PS_dt += 0.5*t_rf - np.mean(PS_dt)
@@ -265,8 +265,8 @@ if BUNCHLENGTH_MODULATION is False:
     for copy in range(PS_bunchCopies):
         # randomly select macroparticles from PS bunch according to
         # intensity modulation
-        numSelectedMPs = int(np.round(n_bunches*n_macroparticles_pb/PS_bunchCopies
-                                      * intensityModulation[copy]))
+        numSelectedMPs = int(np.round(n_bunches*n_macroparticles_pb/PS_bunchCopies *
+                                      intensityModulation[copy]))
         indices = np.zeros(len(PS_dt), dtype=bool)
         randices = np.random.choice(len(indices), numSelectedMPs, replace=False)
         indices[randices] = True
@@ -287,8 +287,8 @@ else:  # use bunch length modulation
 
     beginIndex = 0
     for case, PS_case in enumerate(PS_cases):
-        with h5py.File(PS_folder+'bunch_rotation_'+PS_case
-                       + '_bunch_rotation/after_rotation_PS_beam.hd5', "r") as h5file:
+        with h5py.File(PS_folder+'bunch_rotation_'+PS_case +
+                       '_bunch_rotation/after_rotation_PS_beam.hd5', "r") as h5file:
             PS_dt = h5file['PS_dt'].value
             # place PS beam in SPS RF-bucket 0
             PS_dt += 0.5*t_rf - np.mean(PS_dt)
@@ -335,9 +335,9 @@ cut_right = t_batch_end + profile_margin
 
 # number of rf-buckets of the beam
 # + rf-buckets before the beam + rf-buckets after the beam
-n_slices = n_bins_rf * (bunch_spacing * (n_bunches-1) + 1
-                        + int(np.round((t_batch_begin - cut_left)/t_rf))
-                        + int(np.round((cut_right - t_batch_end)/t_rf)))
+n_slices = n_bins_rf * (bunch_spacing * (n_bunches-1) + 1 +
+                        int(np.round((t_batch_begin - cut_left)/t_rf)) +
+                        int(np.round((cut_right - t_batch_end)/t_rf)))
 
 profile = Profile(beam, CutOptions=CutOptions(cut_left=cut_left,
                                               cut_right=cut_right, n_slices=n_slices))
@@ -487,11 +487,13 @@ FBtime = max(longCavityImpedanceReduction.FB_time,
              shortCavityImpedanceReduction.FB_time)/tRev
 
 
-
 if N_t_monitor > 0 and worker.isMaster:
-    filename = 'profiles/sps-t{}-p{}-b{}-sl{}-r{}-m{}-se{}'.format(
-        N_t, n_macroparticles_pb, n_bunches, n_slices,
-        N_t_reduce, N_t_monitor, seed)
+    if args.get('monitorfile', None):
+        filename = args['monitorfile']
+    else:
+        filename = 'profiles/sps-t{}-p{}-b{}-sl{}-r{}-m{}-se{}-w{}'.format(
+            N_t, n_macroparticles_pb, n_bunches, n_slices,
+            N_t_reduce, N_t_monitor, seed, worker.workers)
     slicesMonitor = SlicesMonitor(filename=filename,
                                   n_turns=np.ceil(1.0 * N_t / N_t_monitor),
                                   profile=profile,
@@ -523,8 +525,12 @@ for turn in range(N_t):
     elif (approx == 2):
         profile.scale_histo()
 
-    if (N_t_monitor > 0) and (turn % N_t_monitor == 0) and worker.isMaster:
-        slicesMonitor.track(turn)
+    if (N_t_monitor > 0) and (turn % N_t_monitor == 0):
+        beam.statistics()
+        beam.gather_statistics()
+        if worker.isMaster:
+            profile.fwhm()
+            slicesMonitor.track(turn)
 
     if SPS_PHASELOOP is True:
         phaseLoop.track()
