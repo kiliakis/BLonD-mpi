@@ -161,6 +161,12 @@ This line splits the beam coordinates equally between the workers.
   
     worker.finalize()
 
+7. To run your script, you need to pass it to **mpirun** or **mpiexec**. To spawn P MPI processes run:
+
+.. code-block:: bash
+    
+    $ mpirun -n P python main_file.py
+
 
 CURRENT DEVELOPERS
 ==================
