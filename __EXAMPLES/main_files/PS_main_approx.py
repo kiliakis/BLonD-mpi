@@ -461,7 +461,7 @@ match_beam_from_distribution(beam, full_tracker, ring,
 print('dE mean:', np.mean(beam.dE))
 print('dE std:', np.std(beam.dE))
 
-beam.split()
+beam.split_random()
 
 # Tracking -------------------------------------------------------------------
 # profile.track()
@@ -521,7 +521,7 @@ if N_t_monitor > 0 and worker.isMaster:
     if args.get('monitorfile', None):
         filename = args['monitorfile']
     else:
-        filename = 'profiles/ps-t{}-p{}-b{}-sl{}-r{}-m{}-se{}-w{}'.format(
+        filename = 'profiles/ps_approx-t{}-p{}-b{}-sl{}-r{}-m{}-se{}-w{}'.format(
             N_t, n_macroparticles_per_bunch, n_bunches, n_slices,
             N_t_reduce, N_t_monitor, seed, worker.workers)
     slicesMonitor = SlicesMonitor(filename=filename,
@@ -544,7 +544,7 @@ for i in range(N_t):
 
     if (i % N_t_reduce == 0):
         profile.track()
-        profile.reduce_histo()
+        profile.scale_histo()
 
     if (N_t_monitor > 0) and (i % N_t_monitor == 0):
         beam.statistics()

@@ -11,7 +11,9 @@ from time import sleep
 
 # home = '/afs/cern.ch/work/k/kiliakis/git/BLonD-mpi'
 home = os.environ['HOME'] + '/git/BLonD-mpi'
+blond_repos = os.environ['HOME'] + '/git/blond_repos'
 result_dir = home + '/results/raw/{}/{}/{}'
+os.environ['PYTHONPATH'] = '{}:{}'.format(blond_repos, os.environ['PYTHONPATH'])
 
 exe = home + '/__EXAMPLES/main_files/SPS_main.py'
 batch_script = home + '/scripts/batch-simple.sh'
@@ -75,7 +77,7 @@ configs = {
 
 }
 
-repeats = 5
+repeats = 1
 
 
 total_sims = repeats * \

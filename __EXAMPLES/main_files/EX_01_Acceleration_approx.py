@@ -142,14 +142,14 @@ profile = Profile(beam, CutOptions(n_slices=N_slices))
 
 long_tracker = RingAndRFTracker(rf, beam)
 
-beam.split()
+beam.split_random()
 
 
 if N_t_monitor > 0 and worker.isMaster:
     if args.get('monitorfile', None):
         filename = args['monitorfile']
     else:
-        filename = 'profiles/{}-t{}-p{}-b{}-sl{}-r{}-m{}-se{}-w{}'.format('EX_01_Acceleration',
+        filename = 'profiles/{}-t{}-p{}-b{}-sl{}-r{}-m{}-se{}-w{}'.format('EX_01_Acceleration_apprx',
                                                                       N_t, N_p,
                                                                       n_bunches, N_slices,
                                                                       N_t_reduce,
@@ -190,7 +190,8 @@ for i in range(1, N_t+1):
 
     # Calc local profile and then allreduce for the global one
     profile.track()
-    profile.reduce_histo()
+    profile.scale_histo()
+    # profile.reduce_histo()
 
     if (N_t_monitor > 0) and (i % N_t_monitor == 0):
         beam.losses_separatrix(ring, rf)
@@ -208,6 +209,7 @@ timing.report(total_time=1e3*(end_t-start_t),
               out_dir=args['timedir'],
               out_file='worker-{}.csv'.format(os.getpid()))
 worker.finalize()
+
 if N_t_monitor > 0:
     slicesMonitor.close()
 

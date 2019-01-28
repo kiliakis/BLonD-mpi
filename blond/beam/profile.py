@@ -460,11 +460,14 @@ class Profile(object):
                 self.n_macroparticles = self.n_macroparticles.astype(
                     np.float64, order='C')
 
+
     @timing.timeit(key='serial:scale_histo')
     @mpiprof.traceit(key='serial:scale_histo')
     def scale_histo(self):
         from ..utils.mpi_config import worker
-        self.n_macroparticles *= worker.workers
+        bm.mul(self.n_macroparticles, worker.workers, self.n_macroparticles)
+
+        # self.n_macroparticles *= worker.workers
 
     def _slice_smooth(self):
         """

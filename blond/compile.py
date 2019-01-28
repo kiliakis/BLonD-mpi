@@ -48,8 +48,11 @@ parser.add_argument('-c', '--compiler', type=str, default='g++',
                     help='C++ compiler that will be used to compile the'
                     ' source files. Default: g++')
 
-parser.add_argument('-l', '--libs', type=str, default='',
+parser.add_argument('--libs', type=str, default='',
                     help='Any extra libraries needed to compile')
+
+parser.add_argument('--flags', type=str, default='',
+                    help='Additional compile flags.')
 
 # If True you can launch with 'OMP_NUM_THREADS=xx python MAIN_FILE.py'
 # where xx is the number of threads that you want to launch
@@ -61,13 +64,13 @@ boost = False
 # latest version)
 boost_path = None
 
+libs = []
 # EXAMPLE FLAGS: -Ofast -std=c++11 -fopt-info-vec -march=native
 #                -mfma4 -fopenmp -ftree-vectorizer-verbose=1
 cflags = ['-O3', '-ffast-math', '-g', '-std=c++11', '-shared',
           '-march=native', '-Wno-psabi']
 # cflags = ['-Ofast', '-std=c++11']
 # libs = ['-L/afs/cern.ch/work/k/kiliakis/install/lib','-lfftw3', '-lm']
-libs = []
 
 cpp_files = [
     os.path.join(basepath, 'cpp_routines/kick.cpp'),
@@ -131,6 +134,9 @@ if (__name__ == "__main__"):
 
     subprocess.call(command)
 
-    print('\nIF THE COMPILATION IS CORRECT A FILE NAMED libblond.{so,dll} SHOULD'
-          ' APPEAR IN THE cpp_routines FOLDER. OTHERWISE YOU HAVE TO'
-          ' CORRECT THE ERRORS AND COMPILE AGAIN.')
+    try:
+        libblond = ctypes.CDLL(libname)
+        print('\nThe blond library has been successfully compiled.')
+    except Exception as e:
+        print('\nCompilation failed.')
+        print(e)

@@ -147,6 +147,7 @@ class Beam(object):
         self.ratio = self.intensity/self.n_macroparticles
         self.id = np.arange(1, self.n_macroparticles + 1, dtype=int)
         self.losses = 0
+
     @property
     def n_macroparticles_lost(self):
         '''Number of lost macro-particles, defined as @property.
@@ -184,8 +185,8 @@ class Beam(object):
             self.n_macroparticles = len(self.beam.dt)
         else:
             # AllParticlesLost
-            raise RuntimeError("ERROR in Beams: all particles lost and"
-                               + " eliminated!")
+            raise RuntimeError("ERROR in Beams: all particles lost and" +
+                               " eliminated!")
 
     def statistics(self):
         '''
@@ -292,6 +293,23 @@ class Beam(object):
             self.id = self.id[start: start + size]
             worker.indices['beam'] = {'start': start,
                                       'size': size,
+                                      'stride': 1,
+                                      'total_size': self.n_macroparticles}
+            self.n_macroparticles = size
+
+    def split_random(self):
+        from ..utils.mpi_config import worker
+        if len(worker.indices) == 0 or worker.isMaster:
+            # start, size = worker.split(self.n_macroparticles)
+            start = worker.rank
+            stride = worker.workers
+            self.dt = np.ascontiguousarray(self.dt[start:: stride])
+            self.dE = np.ascontiguousarray(self.dE[start:: stride])
+            self.id = np.ascontiguousarray(self.id[start:: stride])
+            size = len(self.dt)
+            worker.indices['beam'] = {'start': start,
+                                      'size': size,
+                                      'stride': stride,
                                       'total_size': self.n_macroparticles}
             self.n_macroparticles = size
 
@@ -306,11 +324,12 @@ class Beam(object):
 
     def gather_statistics(self):
         from ..utils.mpi_config import worker
-        
+
         total_size = worker.workers
         mean_dt_arr = worker.gather(np.array([self.mean_dt]), total_size)
         mean_dE_arr = worker.gather(np.array([self.mean_dE]), total_size)
-        losses_arr = worker.gather(np.array([self.n_macroparticles_lost]), total_size)
+        losses_arr = worker.gather(
+            np.array([self.n_macroparticles_lost]), total_size)
 
         self.mean_dt = np.mean(mean_dt_arr)
         self.mean_dE = np.mean(mean_dE_arr)
@@ -318,7 +337,7 @@ class Beam(object):
 
     def gather_mean_dE(self):
         from ..utils.mpi_config import worker
-        
+
         total_size = worker.workers
         self.mean_dE = np.mean(self.dE)
         mean_dE_arr = worker.gather(np.array([self.mean_dE]), total_size)
@@ -327,7 +346,7 @@ class Beam(object):
 
     def gather_mean_dt(self):
         from ..utils.mpi_config import worker
-        
+
         total_size = worker.workers
         self.mean_dt = np.mean(self.dt)
         mean_dt_arr = worker.gather(np.array([self.mean_dt]), total_size)
@@ -336,8 +355,9 @@ class Beam(object):
 
     def gather_losses(self):
         from ..utils.mpi_config import worker
-        
+
         total_size = worker.workers
-        losses_arr = worker.gather(np.array([self.n_macroparticles_lost]), total_size)
+        losses_arr = worker.gather(
+            np.array([self.n_macroparticles_lost]), total_size)
         self.losses = np.mean(losses_arr)
-        return self.losses 
+        return self.losses

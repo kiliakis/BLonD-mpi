@@ -256,7 +256,7 @@ print("Statistics set...")
 #     map_ = [totVoltage] + [profile] + [tracker] + [noiseFB]
 
 
-if N_t_monitor > 0:
+if N_t_monitor > 0 and worker.isMaster:
     if args.get('monitorfile', None):
         filename = args['monitorfile']
     else:
@@ -264,7 +264,9 @@ if N_t_monitor > 0:
             N_t, N_p, NB, nSlices, N_t_reduce, N_t_monitor, seed)
     slicesMonitor = SlicesMonitor(filename=filename,
                                   n_turns=np.ceil(1.0 * N_t / N_t_monitor),
-                                  profile=profile)
+                                  profile=profile,
+                                  rf=rf,
+                                  Nbunches=NB)
 
 print("Map set")
 
@@ -310,7 +312,7 @@ for i in range(N_t):
         profile.track()
         profile.reduce_histo()
 
-    if (N_t_monitor > 0) and (i % N_t_monitor == 0):
+    if (N_t_monitor > 0) and (i % N_t_monitor == 0) and worker.isMaster:
         slicesMonitor.track(i)
 
     if (i % N_t_reduce == 0):
@@ -322,11 +324,15 @@ for i in range(N_t):
 beam.gather()
 end_t = time.time()
 
-mpiprof.finalize()
 timing.report(total_time=1e3*(end_t-start_t),
               out_dir=args['timedir'],
               out_file='worker-{}.csv'.format(os.getpid()))
 
+mpiprof.finalize()
+worker.finalize()
+
+if N_t_monitor > 0:
+    slicesMonitor.close()
 
 print('dE mean: ', np.mean(beam.dE))
 print('dE std: ', np.std(beam.dE))

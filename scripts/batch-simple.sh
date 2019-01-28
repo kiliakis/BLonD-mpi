@@ -29,7 +29,7 @@ mpirun --version
 # mpicc --version
 
 # python setup_cpp.py -p
-export PYTHONPATH="$BLOND:$HOME/install/"
+export PYTHONPATH="$BLOND:$HOME/install/:$PYTHONPATH"
 # export OMP_NUM_THREADS=$OMP_NUM_THREADS
 # echo $PYTHONPATH
 # echo "OMP_NUM_THREADS=${OMP_NUM_THREADS}"
@@ -38,3 +38,5 @@ export PYTHONPATH="$BLOND:$HOME/install/"
 # mpiexec -n 1 python -m mpi4py $@
 # mpirun $@
 srun $@
+# mpirun $@
+# python $@

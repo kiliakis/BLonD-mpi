@@ -7,7 +7,7 @@ Created on Thu Mar 22 16:11:42 2018
 
 import numpy as np
 import os
-# import h5py
+import h5py
 try:
     from pyprof import timing
     from pyprof import mpiprof
@@ -17,6 +17,9 @@ except ImportError:
 
 import time
 from scipy.constants import c
+
+from SPSimpedanceModel.impedance_scenario import scenario, impedance2blond
+from impedance_reduction_dir.impedance_reduction import ImpedanceReduction
 
 # BLonD imports
 from blond.beam.distributions import matched_from_distribution_function
@@ -28,15 +31,11 @@ from blond.impedances.impedance import InducedVoltageFreq, TotalInducedVoltage
 from blond.impedances.impedance_sources import TravelingWaveCavity
 from blond.trackers.tracker import RingAndRFTracker, FullRingAndRF
 from blond.llrf.beam_feedback import BeamFeedback
-from blond.impedances.impedance_scenario import scenario, impedance2blond
-from blond.impedances.impedance_reduction import ImpedanceReduction
 from blond.utils.input_parser import parse
 from blond.monitors.monitors import SlicesMonitor
-
 from blond.utils.mpi_config import worker, print
 
 this_directory = os.path.dirname(os.path.realpath(__file__)) + '/'
-
 
 
 # --- Simulation parameters -------------------------------------
@@ -306,28 +305,19 @@ if SPS_IMPEDANCE == True:
     # The main 200MHz impedance is effectively 0.0
 
     impedance_scenario = scenario(MODEL=impedance_model_str,
-
                                   Flange_VVSA_R_factor=number_vvsa/31,
-
                                   Flange_VVSB_R_factor=number_vvsb/33,
-
                                   HOM_630_R_factor=HOM_630_factor,
-
                                   HOM_630_Q_factor=HOM_630_factor,
-
                                   UPP_R_factor=UPP_factor,
-
                                   Flange_BPHQF_R_factor=BPH_factor,
-
                                   FB_attenuation=-1000)
 
     impedance_scenario.importImpedanceSPS(VVSA_shielded=shield_vvsa,
-
                                           VVSB_shielded=shield_vvsb,
-
-                                          kickerMario=new_MKE, noMKP=False,
-
-                                          BPH_shield=BPH_shield)
+                                          # kickerMario=new_MKE, noMKP=False,
+                                          # BPH_shield=BPH_shield
+                                          )
 
     # Convert to formats known to BLonD
 
@@ -496,7 +486,7 @@ FBtime = max(longCavityImpedanceReduction.FB_time,
 
 
 
-if N_t_monitor > 0:
+if N_t_monitor > 0 and worker.isMaster:
     if args.get('monitorfile', None):
         filename = args['monitorfile']
     else:
@@ -505,7 +495,9 @@ if N_t_monitor > 0:
             N_t_reduce, N_t_monitor, seed)
     slicesMonitor = SlicesMonitor(filename=filename,
                                   n_turns=np.ceil(1.0 * N_t / N_t_monitor),
-                                  profile=profile)
+                                  profile=profile,
+                                  rf=rf_station,
+                                  Nbunches=n_bunches)
 print("Ready for tracking!\n")
 
 timing.reset()
@@ -524,7 +516,7 @@ for turn in range(N_t):
         profile.track()
         profile.reduce_histo()
 
-    if (N_t_monitor > 0) and (turn % N_t_monitor == 0):
+    if (N_t_monitor > 0) and (turn % N_t_monitor == 0) and worker.isMaster:
         slicesMonitor.track(turn)
 
     if SPS_PHASELOOP is True:
@@ -548,6 +540,10 @@ print('Total time: ', end_t - start_t)
 timing.report(total_time=1e3*(end_t-start_t),
               out_dir=args['timedir'],
               out_file='worker-{}.csv'.format(os.getpid()))
+
+worker.finalize()
+if N_t_monitor > 0:
+    slicesMonitor.close()
 
 print('dE mean: ', np.mean(beam.dE))
 print('dE std: ', np.std(beam.dE))
