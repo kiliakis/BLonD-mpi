@@ -362,7 +362,7 @@ class SlicesMonitor(object):
         self.create_data(
             'turns', self.h5file['default'], (self.n_turns, ), dtype='int32')
 
-        self.create_data('n_particles', self.h5file['default'],
+        self.create_data('losses', self.h5file['default'],
                          (self.n_turns, self.Nbunches), dtype='int')
 
         self.create_data(
@@ -397,7 +397,7 @@ class SlicesMonitor(object):
         self.b_profile = np.zeros(
             (self.buffer_size, self.profile.n_slices), dtype='int32')
         self.b_turns = np.zeros(self.buffer_size, dtype='int32')
-        self.b_n_particles = np.zeros(
+        self.b_losses = np.zeros(
             (self.buffer_size, self.Nbunches), dtype='int32')
         self.b_mean_dE = np.zeros(
             (self.buffer_size, self.Nbunches), dtype=float)
@@ -461,7 +461,7 @@ class SlicesMonitor(object):
         self.b_bunch_position[idx] = self.profile.bunchPosition
         self.b_bunch_length[idx] = self.profile.bunchLength
 
-        self.b_n_particles[idx] = self.beam.n_macroparticles_alive
+        self.b_losses[idx] = self.beam.losses
         self.b_turns[idx] = turn
 
     def write_data(self):
@@ -483,7 +483,7 @@ class SlicesMonitor(object):
         self.h5group['bunch_position'][i1_h5:i2_h5] = self.b_bunch_position[i1_b:i2_b]
         self.h5group['bunch_length'][i1_h5:i2_h5] = self.b_bunch_length[i1_b:i2_b]
         self.h5group['turns'][i1_h5:i2_h5] = self.b_turns[i1_b:i2_b]
-        self.h5group['n_particles'][i1_h5:i2_h5] = self.b_n_particles[i1_b:i2_b]
+        self.h5group['losses'][i1_h5:i2_h5] = self.b_losses[i1_b:i2_b]
 
     def track(self, turn):
 

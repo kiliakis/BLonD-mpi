@@ -119,6 +119,7 @@ N_t_monitor = 0
 seed = 0
 N_t = 378708
 log = None
+approx = 0
 
 args = parse()
 
@@ -156,12 +157,17 @@ if args.get('seed', None) is not None:
     seed = args['seed']
 
 
+if args.get('approx', None) is not None:
+    approx = args['approx']
+
+
 print({'N_t': N_t, 'n_macroparticles_per_bunch': n_macroparticles_per_bunch,
        'n_slices_per_bunch': n_slices_per_bunch,
        'n_turns_memory': n_turns_memory,
        'timing.mode': timing.mode, 'n_bunches': n_bunches,
        'N_t_reduce': N_t_reduce,
-       'N_t_monitor': N_t_monitor, 'seed': seed, 'log': log})
+       'N_t_monitor': N_t_monitor, 'seed': seed, 'log': log,
+        'approx': approx})
 
 
 n_macroparticles = n_bunches * n_macroparticles_per_bunch
@@ -537,21 +543,25 @@ start_t = time.time()
 
 
 # for i in range(n_turns):
-for i in range(N_t):
+for turn in range(N_t):
 
     # if (i > 0) and (i % datamatrix_output_step) == 0:
     #     t0 = time.time()
 
-    if (i % N_t_reduce == 0):
-        profile.track()
+    profile.track()
+    if (approx == 0):
         profile.reduce_histo()
+    elif (approx == 1) and (turn % N_t_reduce == 0):
+        profile.reduce_histo()
+    elif (approx == 2):
+        profile.scale_histo()
 
-    if (N_t_monitor > 0) and (i % N_t_monitor == 0):
+    if (N_t_monitor > 0) and (turn % N_t_monitor == 0):
         beam.statistics()
         beam.gather_statistics()
         if worker.isMaster:
             profile.fwhm()
-            slicesMonitor.track(i)
+            slicesMonitor.track(turn)
 
     # Change impedance of 10 MHz only if it changes
     # if (i > 0) and (R_S_program_10MHz[i] != R_S_program_10MHz[i-1]):
@@ -559,7 +569,9 @@ for i in range(N_t):
     #         R_S_10MHz_save * R_S_program_10MHz[i]
     #     PS_intensity_freq_10MHz.sum_impedances(PS_intensity_freq_10MHz.freq)
 
-    if (i % N_t_reduce == 0):
+    if (approx == 0) or (approx == 2):
+        PS_longitudinal_intensity.induced_voltage_sum()
+    elif (approx == 1) and (turn % N_t_reduce == 0):
         PS_longitudinal_intensity.induced_voltage_sum()
 
     # Track

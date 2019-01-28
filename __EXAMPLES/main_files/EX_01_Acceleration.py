@@ -73,6 +73,7 @@ report = None
 seed = 1
 N_t_reduce = 1
 N_t_monitor = 0
+approx = 0
 
 
 args = parse()
@@ -109,13 +110,17 @@ if args.get('seed', None) is not None:
 if args.get('log', None) is not None:
     log = args['log']
 
+if args.get('approx', None) is not None:
+    approx = args['approx']
+
 
 print({'N_t': N_t, 'n_macroparticles': N_p,
        'N_slices': N_slices,
        'timing.mode': timing.mode,
        'n_bunches': n_bunches,
        'N_t_reduce': N_t_reduce,
-       'N_t_monitor': N_t_monitor, 'seed': seed, 'log': log})
+       'N_t_monitor': N_t_monitor, 'seed': seed, 'log': log,  'approx': approx})
+
 
 
 # Simulation setup ------------------------------------------------------------
@@ -172,11 +177,11 @@ start_t = time.time()
 # print(datetime.datetime.now().time())
 
 
-for i in range(1, N_t+1):
+for turn in range(1, N_t+1):
 
     # Plot has to be done before tracking (at least for cases with separatrix)
-    if (i % dt_plt) == 0:
-        print("Outputting at time step %d..." % i)
+    if (turn % dt_plt) == 0:
+        print("Outputting at time step %d..." % turn)
         print("   Beam momentum %.6e eV" % beam.momentum)
         print("   Beam gamma %3.3f" % beam.gamma)
         print("   Beam beta %3.3f" % beam.beta)
@@ -188,17 +193,22 @@ for i in range(1, N_t+1):
     # Track
     long_tracker.track()
 
-    # Calc local profile and then allreduce for the global one
+    # Update profile
     profile.track()
-    profile.reduce_histo()
+    if (approx == 0):
+        profile.reduce_histo()
+    elif (approx == 1) and (turn % N_t_reduce == 0):
+        profile.reduce_histo()
+    elif (approx == 2):
+        profile.scale_histo()
 
-    if (N_t_monitor > 0) and (i % N_t_monitor == 0):
+    if (N_t_monitor > 0) and (turn % N_t_monitor == 0):
         beam.losses_separatrix(ring, rf)
         beam.statistics()
         beam.gather_statistics()
         if worker.isMaster:
             profile.fwhm()
-            slicesMonitor.track(i)
+            slicesMonitor.track(turn)
 
 
 beam.gather()

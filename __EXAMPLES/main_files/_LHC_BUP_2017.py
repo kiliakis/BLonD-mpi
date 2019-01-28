@@ -81,6 +81,7 @@ report = None
 N_t_reduce = 1
 N_t_monitor = 0
 seed = 0
+approx = 0
 
 args = parse()
 
@@ -110,12 +111,16 @@ if args.get('time', False) is True:
 if args.get('seed', None) is not None:
     seed = args['seed']
 
+if args.get('approx', None) is not None:
+    approx = args['approx']
+
 
 print({'N_t': N_t, 'N_p': N_p,
        'timing.mode': timing.mode, 'n_bunches': NB,
        'N_t_reduce': N_t_reduce,
        'N_t_monitor': N_t_monitor,
-       'seed': seed, 'log': log})
+       'seed': seed, 'log': log,  'approx': approx})
+
 
 # Simulation setup -------------------------------------------------------------
 print("Setting up the simulation...")
@@ -275,7 +280,7 @@ print("Map set")
 timing.reset()
 start_t = time.time()
 
-for i in range(N_t):
+for turn in range(N_t):
     # Plots and outputting
     # if MONITORING and (i % dt_plt) == 0:
     # if (i % dt_plt) == 0:
@@ -305,17 +310,24 @@ for i in range(N_t):
     #     beam.losses_separatrix(ring, rf)
 
     # After the first 2/3 of the ramp, regulate down the bunch length
-    if i == 9042249:
+    if turn == 9042249:
         noiseFB.bl_targ = 1.1e-9
 
-    if (i % N_t_reduce == 0):
-        profile.track()
+    # Update profile
+    profile.track()
+    if (approx == 0):
         profile.reduce_histo()
+    elif (approx == 1) and (turn % N_t_reduce == 0):
+        profile.reduce_histo()
+    elif (approx == 2):
+        profile.scale_histo()
 
-    if (N_t_monitor > 0) and (i % N_t_monitor == 0) and worker.isMaster:
-        slicesMonitor.track(i)
+    if (N_t_monitor > 0) and (turn % N_t_monitor == 0) and worker.isMaster:
+        slicesMonitor.track(turn)
 
-    if (i % N_t_reduce == 0):
+    if (approx == 0) or (approx == 2):
+        totVoltage.induced_voltage_sum()
+    elif (approx == 1) and (turn % N_t_reduce == 0):
         totVoltage.induced_voltage_sum()
 
     tracker.track()

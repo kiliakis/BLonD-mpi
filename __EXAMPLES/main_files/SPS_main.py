@@ -80,6 +80,7 @@ nFrev = 2  # multiples of f_rev for frequency resolution
 N_t = n_turns
 N_t_reduce = 1
 N_t_monitor = 0
+approx = 0
 
 args = parse()
 
@@ -111,10 +112,16 @@ if args.get('log', None) is not None:
     log = args['log']
 
 
+if args.get('approx', None) is not None:
+    approx = args['approx']
+
+
 print({'N_t': N_t, 'n_macroparticles_pb': n_macroparticles_pb,
        'timing.mode': timing.mode, 'n_bunches': n_bunches,
        'N_t_reduce': N_t_reduce,
-       'N_t_monitor': N_t_monitor, 'seed': seed, 'log': log})
+       'N_t_monitor': N_t_monitor, 'seed': seed, 'log': log,
+        'approx': approx})
+
 
 # initialize simulation
 
@@ -508,9 +515,13 @@ for turn in range(N_t):
         print('turn: '+str(turn))
 
     # Update profile
-    if (turn % N_t_reduce == 0):
-        profile.track()
+    profile.track()
+    if (approx == 0):
         profile.reduce_histo()
+    elif (approx == 1) and (turn % N_t_reduce == 0):
+        profile.reduce_histo()
+    elif (approx == 2):
+        profile.scale_histo()
 
     if (N_t_monitor > 0) and (turn % N_t_monitor == 0) and worker.isMaster:
         slicesMonitor.track(turn)
@@ -524,7 +535,9 @@ for turn in range(N_t):
         shortCavityImpedanceReduction.track()
 
     # applying this voltage is done by tracker if interpolation=True
-    if (turn % N_t_reduce == 0):
+    if (approx == 0) or (approx == 2):
+        inducedVoltage.induced_voltage_sum()
+    elif (approx == 1) and (turn % N_t_reduce == 0):
         inducedVoltage.induced_voltage_sum()
 
     tracker.track()

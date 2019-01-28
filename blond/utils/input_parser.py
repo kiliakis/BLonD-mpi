@@ -34,6 +34,10 @@ parser.add_argument('-beginafter', '--beginafter', type=int,
                     help='Start the approximation after so many turns.')
 
 
+parser.add_argument('-approx', '--approx', type=int, choices=['0', '1', '2'],
+                    help='Which approximation to use: 0 (No approx), 1 (global reduce), 2 (scale histo).')
+
+
 parser.add_argument('-o', '--omp', type=int, default=1,
                     help='Number of openmp threads to use.'
                     '\nDefault: 1')

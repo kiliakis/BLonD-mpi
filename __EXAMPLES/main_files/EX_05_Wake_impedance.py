@@ -90,6 +90,7 @@ N_t_reduce = 1
 N_t_monitor = 0
 seed = 0
 log = False
+approx = 0
 
 args = parse()
 
@@ -123,13 +124,17 @@ if args.get('seed', None) is not None:
 if args.get('log', None) is not None:
     log = args['log']
 
+if args.get('approx', None) is not None:
+    approx = args['approx']
+
 
 print({'N_t': n_turns, 'n_macroparticles': n_macroparticles,
        'N_slices': number_slices,
        'timing.mode': timing.mode,
        'n_bunches': n_bunches,
        'N_t_reduce': N_t_reduce,
-       'N_t_monitor': N_t_monitor, 'seed': seed, 'log': log})
+       'N_t_monitor': N_t_monitor, 'seed': seed, 'log': log,  'approx': approx})
+
 
 
 # DEFINE RING------------------------------------------------------------------
@@ -291,23 +296,76 @@ print(datetime.datetime.now().time())
 timing.reset()
 start_t = time.time()
 
-for i in np.arange(1, n_turns+1):
+for turn in np.arange(1, n_turns+1):
 
-    if i % 200 == 0:
-        print(i)
+    if turn % 200 == 0:
+        print(turn)
 
-    for m in map_:
-        m.track()
+
+    # Beam 1
+    if (approx == 0) or (approx == 2):
+        tot_vol.induced_voltage_sum()
+    elif (approx == 1) and (turn % N_t_reduce == 0):
+        tot_vol.induced_voltage_sum()
+
+    ring_RF_section.track()
+
+    # Update profile
+    slice_beam.track()
+    if (approx == 0):
         slice_beam.reduce_histo()
+    elif (approx == 1) and (turn % N_t_reduce == 0):
+        slice_beam.reduce_histo()
+    elif (approx == 2):
+        slice_beam.scale_histo()
 
-    for m in map_freq:
-        m.track()
+    # Beam 2
+    if (approx == 0) or (approx == 2):
+        tot_vol_freq.induced_voltage_sum()
+    elif (approx == 1) and (turn % N_t_reduce == 0):
+        tot_vol_freq.induced_voltage_sum()
+
+    ring_RF_section_freq.track()
+
+    # Update profile
+    slice_beam_freq.track()
+    if (approx == 0):
         slice_beam_freq.reduce_histo()
+    elif (approx == 1) and (turn % N_t_reduce == 0):
+        slice_beam_freq.reduce_histo()
+    elif (approx == 2):
+        slice_beam_freq.scale_histo()
 
 
-    for m in map_res:
-        m.track()
+        # Beam 2
+    if (approx == 0) or (approx == 2):
+        tot_vol_res.induced_voltage_sum()
+    elif (approx == 1) and (turn % N_t_reduce == 0):
+        tot_vol_res.induced_voltage_sum()
+
+    ring_RF_section_res.track()
+
+    # Update profile
+    slice_beam_res.track()
+    if (approx == 0):
         slice_beam_res.reduce_histo()
+    elif (approx == 1) and (turn % N_t_reduce == 0):
+        slice_beam_res.reduce_histo()
+    elif (approx == 2):
+        slice_beam_res.scale_histo()
+
+    # for m in map_:
+    #     m.track()
+    #     slice_beam.reduce_histo()
+
+    # for m in map_freq:
+    #     m.track()
+    #     slice_beam_freq.reduce_histo()
+
+
+    # for m in map_res:
+    #     m.track()
+    #     slice_beam_res.reduce_histo()
 
 my_beam.gather()
 my_beam_res.gather()
@@ -317,13 +375,16 @@ end_t = time.time()
 print(datetime.datetime.now().time())
 
 
-print('dE mean: ', np.mean(my_beam.dE))
-print('dE freq mean: ', np.mean(my_beam_freq.dE))
-print('dE res mean: ', np.mean(my_beam_res.dE))
-
 
 timing.report(total_time=1e3*(end_t-start_t),
               out_dir=args['timedir'],
               out_file='worker-{}.csv'.format(os.getpid()))
+
+
+worker.finalize()
+
+print('dE mean: ', np.mean(my_beam.dE))
+print('dE freq mean: ', np.mean(my_beam_freq.dE))
+print('dE res mean: ', np.mean(my_beam_res.dE))
 
 print("Done!")
