@@ -102,18 +102,71 @@ Confirm proper installation
 Setting up the MPI installation
 -------------------------------
 
-* Add the module loads for gcc, mpich and batch/be in your bashrc:
+* Add the following lines in your ~/.bashrc, then source it:
 
   .. code-block:: bash
-    module load compiler/gcc7
-    module load mpi/mpich/3.2.1
-    module load slurm/be
+  	
+	# Environment variables definitions
+	export LD_LIBRARY_PATH="$HOME/install/lib"
+	export C_INCLUDE_PATH="$HOME/install/include"
+	export CXX_INCLUDE_PATH="$HOME/install/include"
+	export CPLUS_INCLUDE_PATH="$HOME/install/include"
+	export PATH="$HOME/install/anaconda3/bin:$PATH"
+	
+	# User aliases
+	alias mysqueue="squeue -u $USER"
+	alias myscancel="scancel -u $USER"
+	alias mywatch="watch -n 30 'squeue -u $USER'"
+	
+	# Module loads
+	module load compiler/gcc7
+	module load slurm/be
+	module load mpi/mpich/3.2.1
+
   
-* Download and install anaconda3
-* Download and install fftw3 (with the appropriate flags)
-* install mpi4py with pip
+* Download and install anaconda3:
+  
+  .. code-block:: bash
+  
+    cd ~
+    mkdir -p ~/downloads
+    cd downloads
+    wget https://repo.continuum.io/archive/Anaconda3-2018.12-Linux-x86_64.sh
+    bash Anaconda3-2018.12-Linux-x86_64.sh -b -p $HOME/install/anaconda3
+    
+* Download and install fftw3 (with the appropriate flags):
+
+  .. code-block:: bash
+  
+    cd ~
+    mkdir -p ~/downloads
+    cd downloads
+    wget http://www.fftw.org/fftw-3.3.8.tar.gz
+    tar -xzvf fftw-3.3.8.tar.gz
+    cd fftw-3.3.8
+    ./configure --prefix=$HOME/install/ --enable-openmp --enable-sse2 --enable-avx --enable-avx2 --enable-fma --enable-avx-128-fma  --with-our-malloc --disable-fortran --enable-shared --enable-mpi
+    make -j4
+    make install
+
+
+* install mpi4py with pip:
+
+  .. code-block:: bash
+  
+    pip install mpi4py
+  
 * clone this repo, compile the library and link with fftw3_omp
-* adjust your main file as needed
+  
+  .. code-block:: bash
+  
+    cd ~
+    mkdir -p git
+    cd git
+    git clone --branch=master https://github.com/kiliakis/BLonD-mpi.git
+    cd BLonD-mpi
+    python blond/compile.py -p --libs="-L$HOME/install/lib -lfftw3_omp"
+  
+* adjust your main file as needed (described bellow).
 
 
 Changes required in the main file
