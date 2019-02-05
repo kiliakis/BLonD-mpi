@@ -18,7 +18,7 @@ plots_config = {
 
     'plot1': {
         'files': {
-            res_dir+'raw/SPS-72B-4MPPB-uint16-r1-2/comm-comp-report.csv': {
+            res_dir+'raw/SPS-b1-4MPPB-approx-time/comm-comp-report.csv': {
                 'key': 'SPS',
                 # 'reference':  {'time': 430., 'parts': 4000000, 'turns': 100},
                 'lines': {
@@ -26,7 +26,7 @@ plots_config = {
                     'type': ['total']
                 }
             },
-            res_dir+'raw/PS-4MPPB-comb1-mtw50-r1-2/comm-comp-report.csv': {
+            res_dir+'raw/PS-b1-approx-time/comm-comp-report.csv': {
                 'key': 'PS',
                 # 'reference':  {'time': 1623.7, 'parts': 4000000, 'turns': 2000},
                 'lines': {
@@ -34,7 +34,7 @@ plots_config = {
                     'type': ['total']
                 }
             },
-            res_dir+'raw/LHC-96B-2MPPB-uint16-nobcast-r1-2/comm-comp-report.csv': {
+            res_dir+'raw/LHC-b1-2MPPB-approx-time/comm-comp-report.csv': {
                 'key': 'LHC',
                 # 'reference':  {'time': 2120., 'parts': 2000000, 'turns': 1000},
                 'lines': {
@@ -75,12 +75,12 @@ plots_config = {
         'ylabel': 'Speedup',
         'title': '',
         'ylim': {
-            'speedup': [0, 120]
+            'speedup': [0, 140]
         },
         'nticks': 6,
         'legend_loc': 'upper left',
         'figsize': (5, 3),
-        'image_name': images_dir + 'all-testcases-speedup.pdf'
+        'image_name': images_dir + 'all-tc-approx2-speedup.pdf'
 
     },
 
@@ -231,7 +231,7 @@ if __name__ == '__main__':
             x = np.array(values[:, header.index(config['x_name'])], float)
             omp = np.array(
                 values[:, header.index(config['omp_name'])], float)
-            x = (x-1) * omp
+            x = (x) * omp
 
             y = np.array(values[:, header.index(config['y_name'])], float)
             parts = np.array(values[:, header.index('parts')], float)

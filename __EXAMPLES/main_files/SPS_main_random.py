@@ -232,7 +232,7 @@ beam = Beam(ring, n_macroparticles, intensity)
 
 # PS_n_bunches = 1
 
-n_shift = 500  # how many rf-buckets to shift beam
+n_shift = 0  # how many rf-buckets to shift beam
 
 # PS_folder = this_directory +'/../input_files/'
 
@@ -478,11 +478,14 @@ for copy in range(n_bunches):
 
 print('dE mean: ', np.mean(beam.dE))
 print('dE std: ', np.std(beam.dE))
+# profile.track()
+# profile.reduce_histo()
+# print('profile sum: ', np.sum(profile.n_macroparticles))
+
 
 beam.split()
 
 # do profile on inital beam
-profile.track()
 
 
 # SPS --- Tracking -------------------------------------
@@ -563,6 +566,7 @@ if N_t_monitor > 0:
 
 print('dE mean: ', np.mean(beam.dE))
 print('dE std: ', np.std(beam.dE))
+print('profile sum: ', np.sum(profile.n_macroparticles))
 
 # --- Saving results ----------------------------------------------------
 

@@ -22,32 +22,56 @@ job_name_form = '_p{}_b{}_s{}_t{}_w{}_o{}_N{}_r{}_m{}_seed{}_approx{}_'
 
 configs = {
 
-    'LHC-b1-2MPPB-approx': {
+    # 'LHC-b1-2MPPB-approx': {
+    #     'exe': cycle([home + '/__EXAMPLES/main_files/_LHC_BUP_2017.py']),
+    #     'p': cycle([2000000]),
+    #     'b': cycle([1]),  # 96
+    #     's': cycle([1000]),
+    #     't': cycle([1000000]),
+    #     'm': cycle([1000]),
+    #     'reduce': cycle([1]),
+    #     'load': cycle([0.0]),
+    #     'mtw': cycle([50]),
+    #     'approx': cycle([2]),
+    #     'timing': cycle(['']),  # otherwise pass -time
+    #     'seed': [1] * 5 + [2] * 5,
+    #     'w': []
+    #     + [1, 2, 4, 8, 16]
+    #     + [1, 2, 4, 8, 16],
+    #     # + list(np.arange(2, 9, 1)),
+    #     'o': []
+    #     + [10] * 5
+    #     + [10] * 5,
+    #     # + [10]*16,
+    #     # + [20]*7,
+    #     'time': cycle([90]),
+    #     'partition': cycle(['be-short'])
+    # }
+
+    'LHC-b1-2MPPB-approx-time': {
         'exe': cycle([home + '/__EXAMPLES/main_files/_LHC_BUP_2017.py']),
         'p': cycle([2000000]),
-        'b': cycle([1]),  # 96
+        'b': cycle([96]),  # 96
         's': cycle([1000]),
-        't': cycle([1000000]),
-        'm': cycle([1000]),
+        't': cycle([10000]),
+        'm': cycle([0]),
         'seed': cycle([0]),
         'reduce': cycle([1]),
         'load': cycle([0.0]),
         'mtw': cycle([50]),
         'approx': cycle([2]),
-        'timing': cycle(['']),  # otherwise pass -time
+        'timing': cycle(['-time']),  # otherwise pass -time
         'w': []
-        + [1, 2, 4, 8, 16],
-        # + list(np.arange(2, 17, 1))
+        # + [1, 2, 4, 8, 16],
+        + list(np.arange(2, 17, 1)),
         # + list(np.arange(2, 9, 1)),
         'o': []
-        + [10] * 5,
-        # + [10]*15
+        # + [10] * 5,
+        + [10]*15,
         # + [20]*7,
-        'time': cycle([80]),
-        'partition': cycle(['be-long'])
+        'time': cycle([90]),
+        'partition': cycle(['be-short'])
     }
-
-
 
     # 'LHC-96B-2MPPB-uint16-r1': {'p': cycle([2000000]),
     #                             'b': cycle([96]),
@@ -68,7 +92,7 @@ configs = {
 
 }
 
-repeats = 1
+repeats = 10
 
 
 total_sims = repeats * \
@@ -141,7 +165,7 @@ for analysis, config in configs.items():
                 '-n', str(w), 'python', exe,
                 '-p', str(p), '-s', str(s),
                 '-b', str(b), '-addload', str(load),
-                '-t', str(t), '-o', str(o),
+                '-t', str(t), '-o', str(o), '-seed', str(seed),
                 str(timing), '-timedir', report_dir,
                 '-m', str(m), '-monitorfile', monitorfile,
                 '--reduce', str(r), '-mtw', str(mtw),

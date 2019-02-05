@@ -37,6 +37,6 @@ export PYTHONPATH="$BLOND:$HOME/install/:$PYTHONPATH"
 # mpiexec -n 1 python -m mpi4py $BLOND/mpi/EX_01_Acceleration-master.py
 # mpiexec -n 1 python -m mpi4py $@
 # mpirun $@
-srun $@
+srun --cores-per-socket=10 --cpu-bind=sockets --exclusive $@
 # mpirun $@
 # python $@

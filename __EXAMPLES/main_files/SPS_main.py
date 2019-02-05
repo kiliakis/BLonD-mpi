@@ -562,6 +562,7 @@ if N_t_monitor > 0:
 
 print('dE mean: ', np.mean(beam.dE))
 print('dE std: ', np.std(beam.dE))
+print('profile sum: ', np.sum(profile.n_macroparticles))
 
 # --- Saving results ----------------------------------------------------
 

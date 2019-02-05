@@ -22,28 +22,55 @@ job_name_form = '_p{}_b{}_s{}_t{}_w{}_o{}_N{}_r{}_m{}_seed{}_approx{}_'
 
 configs = {
 
-    'SPS-b1-4MPPB-approx': {
-        'exe': cycle([home + '/__EXAMPLES/main_files/SPS_main.py']),
+    'SPS-rand-b1-4MPPB-approx': {
+        'exe': cycle([home + '/__EXAMPLES/main_files/SPS_main_random.py']),
         'p': cycle([4000000]),
-        'b': cycle([1]), # 72
+        'b': cycle([1]),  # 72
         's': cycle([1408]),
-        't': cycle([43349]), # 4000
+        't': cycle([43349]),  # 4000
         'm': cycle([50]),
-        'seed': cycle([0]),
         'reduce': cycle([1]),
         'load': cycle([0.0]),
         'mtw': cycle([0]),
         'approx': cycle([2]),
-        'timing': cycle(['']), # otherwise pass -time
+        'timing': cycle(['']),  # otherwise pass -time
+        'seed': [0] * 5 + [1] * 5 + [2] * 5,
         'w': []
+        + [1, 2, 4, 8, 16]
+        + [1, 2, 4, 8, 16]
         + [1, 2, 4, 8, 16],
         #       list(np.arange(2, 17, 1)) +
         # list(np.arange(2, 9, 1)),
         'o': []
-        + [10]*5,
+        + [10]*15,
+        # + [10]*5,
         'time': cycle([60]),
-        'partition': cycle(['be-long'])
+        'partition': cycle(['be-short'])
     },
+
+
+    # 'SPS-b1-4MPPB-approx-time': {
+    #     'exe': cycle([home + '/__EXAMPLES/main_files/SPS_main.py']),
+    #     'p': cycle([4000000]),
+    #     'b': cycle([72]), # 72
+    #     's': cycle([1408]),
+    #     't': cycle([4000]), # 4000
+    #     'm': cycle([0]),
+    #     'reduce': cycle([1]),
+    #     'load': cycle([0.0]),
+    #     'mtw': cycle([0]),
+    #     'approx': cycle([2]),
+    #     'timing': cycle(['-time']), # otherwise pass -time
+    #     'seed': cycle([0]),
+    #     'w': []
+    #     # + [1, 2, 4, 8, 16],
+    #     + list(np.arange(2, 17, 1)),
+    #     # list(np.arange(2, 9, 1)),
+    #     'o': []
+    #     + [10]*15,
+    #     'time': cycle([90]),
+    #     'partition': cycle(['be-long'])
+    # },
 
 }
 
@@ -78,15 +105,15 @@ for analysis, config in configs.items():
     ms = config['m']
     seeds = config['seed']
     approxs = config['approx']
-    timings  = config['timing']
+    timings = config['timing']
     stdout = open(analysis + '.txt', 'w')
 
     for (p, b, s, t, r, w, o, time,
          partition, load, mtw, m,
          seed, exe, approx, timing) in zip(ps, bs, ss, ts, rs, ws,
-                                   oss, times, partitions,
-                                   loads, mtws, ms, seeds, 
-                                   exes, approxs, timings):
+                                           oss, times, partitions,
+                                           loads, mtws, ms, seeds,
+                                           exes, approxs, timings):
         N = (w * o + 20-1) // 20
 
         job_name = job_name_form.format(p, b, s, t, w, o, N, r, m, seed, approx)
@@ -100,11 +127,14 @@ for analysis, config in configs.items():
         for i in range(repeats):
             timestr = datetime.now().strftime('%d%b%y.%H-%M-%S')
             timestr = timestr + '-' + str(random.randint(0, 100))
-            output = result_dir.format(analysis, job_name, timestr, 'output.txt')
+            output = result_dir.format(
+                analysis, job_name, timestr, 'output.txt')
             error = result_dir.format(analysis, job_name, timestr, 'error.txt')
-            monitorfile = result_dir.format(analysis, job_name, timestr, 'monitor')
+            monitorfile = result_dir.format(
+                analysis, job_name, timestr, 'monitor')
             log_dir = result_dir.format(analysis, job_name, timestr, 'log')
-            report_dir = result_dir.format(analysis, job_name, timestr, 'report')
+            report_dir = result_dir.format(
+                analysis, job_name, timestr, 'report')
             for d in [log_dir, report_dir]:
                 if not os.path.exists(d):
                     os.makedirs(d)
@@ -113,7 +143,7 @@ for analysis, config in configs.items():
                 '-n', str(w), 'python', exe,
                 '-p', str(p), '-s', str(s),
                 '-b', str(b), '-addload', str(load),
-                '-t', str(t), '-o', str(o),
+                '-t', str(t), '-o', str(o), '-seed', str(seed),
                 str(timing), '-timedir', report_dir,
                 '-m', str(m), '-monitorfile', monitorfile,
                 '--reduce', str(r), '-mtw', str(mtw),
