@@ -157,8 +157,8 @@ LHCnoise = FlatSpectrum(ring, rf, fmin_s0=0.8571, fmax_s0=1.001,
                         initial_amplitude=1.e-5,
                         predistortion='weightfunction')
 LHCnoise.dphi = np.genfromtxt(
-    # wrkDir+r'input/LHCNoise_fmin0.8571_fmax1.001_ampl1e-5_weightfct_6.5TeV.dat',
-    wrkDir+r'input/LHCNoise_fmin0.8571_fmax1.001_ampl1e-5_weightfct.dat',
+    wrkDir+r'input/LHCNoise_fmin0.8571_fmax1.001_ampl1e-5_weightfct_6.5TeV.dat',
+    # (?# wrkDir+r'input/LHCNoise_fmin0.8571_fmax1.001_ampl1e-5_weightfct.dat',)
     unpack=True,
     max_rows=N_t+1)
 LHCnoise.dphi = np.ascontiguousarray(LHCnoise.dphi[0:N_t+1])

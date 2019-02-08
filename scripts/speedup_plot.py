@@ -18,24 +18,88 @@ plots_config = {
 
     'plot1': {
         'files': {
-            res_dir+'raw/SPS-b1-4MPPB-approx-time/comm-comp-report.csv': {
-                'key': 'SPS',
+            # res_dir+'raw/SPS-b72-4MPPB-approx-time/comm-comp-report.csv': {
+            #     'key': 'SPS-t4k',
+            #     # 'reference':  {'time': 430., 'parts': 4000000, 'turns': 100},
+            #     'lines': {
+            #         'omp': ['10'],
+            #         'type': ['total']
+            #     }
+            # },
+
+            res_dir+'raw/SPS-b72-4MPPB-t43k-approx-time/comm-comp-report.csv': {
+                'key': 'SPS-t43k',
                 # 'reference':  {'time': 430., 'parts': 4000000, 'turns': 100},
                 'lines': {
                     'omp': ['10'],
                     'type': ['total']
                 }
             },
-            res_dir+'raw/PS-b1-approx-time/comm-comp-report.csv': {
-                'key': 'PS',
+
+
+            res_dir+'raw/SPS-b72-4MPPB-t10k/comm-comp-report.csv': {
+                'key': 'SPS-no-approx',
+                # 'reference':  {'time': 430., 'parts': 4000000, 'turns': 100},
+                'lines': {
+                    'omp': ['10'],
+                    'type': ['total']
+                }
+            },
+
+
+            # res_dir+'raw/SPS-b1-4MPPB-approx-time/comm-comp-report.csv': {
+            #     'key': 'SPS',
+            #     # 'reference':  {'time': 430., 'parts': 4000000, 'turns': 100},
+            #     'lines': {
+            #         'omp': ['10'],
+            #         'type': ['total']
+            #     }
+            # },
+            res_dir+'raw/PS-b21-approx-t100k-time/comm-comp-report.csv': {
+                'key': 'PS-t100k',
                 # 'reference':  {'time': 1623.7, 'parts': 4000000, 'turns': 2000},
                 'lines': {
                     'omp': ['10'],
                     'type': ['total']
                 }
             },
-            res_dir+'raw/LHC-b1-2MPPB-approx-time/comm-comp-report.csv': {
-                'key': 'LHC',
+
+            # res_dir+'raw/PS-b21-approx-time/comm-comp-report.csv': {
+            #     'key': 'PS-t10k',
+            #     # 'reference':  {'time': 1623.7, 'parts': 4000000, 'turns': 2000},
+            #     'lines': {
+            #         'omp': ['10'],
+            #         'type': ['total']
+            #     }
+            # },
+            res_dir+'raw/PS-4MPPB-comb-mtw50/comm-comp-report.csv': {
+                'key': 'PS-no-approx',
+                # 'reference':  {'time': 1623.7, 'parts': 4000000, 'turns': 2000},
+                'lines': {
+                    'omp': ['10'],
+                    'type': ['total']
+                }
+            },
+
+            # res_dir+'raw/LHC-b96-2MPPB-t100k-approx-time/comm-comp-report.csv': {
+            #     'key': 'LHC-t100k',
+            #     # 'reference':  {'time': 2120., 'parts': 2000000, 'turns': 1000},
+            #     'lines': {
+            #         'omp': ['10'],
+            #         'type': ['total']
+            #     }
+            # },
+
+            res_dir+'raw/LHC-b96-2MPPB-approx-time/comm-comp-report.csv': {
+                'key': 'LHC-t10k',
+                # 'reference':  {'time': 2120., 'parts': 2000000, 'turns': 1000},
+                'lines': {
+                    'omp': ['10'],
+                    'type': ['total']
+                }
+            },
+            res_dir+'raw/LHC-96B-2MPPB-t10k/comm-comp-report.csv': {
+                'key': 'LHC-no-approx',
                 # 'reference':  {'time': 2120., 'parts': 2000000, 'turns': 1000},
                 'lines': {
                     'omp': ['10'],
@@ -45,24 +109,54 @@ plots_config = {
 
         },
         'labels': {
-            'SPS': 'SPS',
-            'PS': 'PS',
-            'LHC': 'LHC',
+            'SPS-t43k': 'SPS-t43k',
+            'SPS-t4k': 'SPS-t4k',
+            'SPS-no-approx': 'SPS-no-approx',
+            'PS-t100k': 'PS-t100k',
+            'PS-t10k': 'PS-t10k',
+            'PS-no-approx': 'PS-no-approx',
+            'LHC-t100k': 'LHC-t100k',
+            'LHC-t10k': 'LHC-t10k',
+            'LHC-no-approx': 'LHC-no-approx',
         },
         # 'markers': {
         #     '10-total': 's',
         #     '20-total': 'o'
         # },
         'colors': {
-            'SPS': 'tab:blue',
-            'PS': 'tab:orange',
-            'LHC': 'tab:brown',
+            'SPS-t43k': 'tab:blue',
+            'SPS-t4k': 'tab:blue',
+            'SPS-no-approx': 'tab:blue',
+            'PS-t100k': 'tab:orange',
+            'PS-t10k': 'tab:orange',
+            'PS-no-approx': 'tab:orange',
+            'LHC-t100k': 'tab:brown',
+            'LHC-t10k': 'tab:brown',
+            'LHC-no-approx': 'tab:brown',
+            # '': 'tab:red'
+        },
+        'ls': {
+            'SPS-t43k': '-',
+            'SPS-t4k': '--',
+            'SPS-no-approx': ':',
+            'PS-t100k': '-',
+            'PS-t10k': '--',
+            'PS-no-approx': ':',
+            'LHC-t100k': '-',
+            'LHC-t10k': '-',
+            'LHC-no-approx': ':',
             # '': 'tab:red'
         },
         'reference': {
-            'SPS': {'time': 430., 'parts': 4000000, 'turns': 100},
-            'LHC': {'time': 2120., 'parts': 2000000, 'turns': 1000},
-            'PS': {'time': 1623.7, 'parts': 4000000, 'turns': 2000}
+            'SPS-t43k': {'time': 430., 'parts': 4000000, 'turns': 100},
+            'SPS-t4k': {'time': 430., 'parts': 4000000, 'turns': 100},
+            'SPS-no-approx': {'time': 430., 'parts': 4000000, 'turns': 100},
+            'LHC-t100k': {'time': 2120., 'parts': 2000000, 'turns': 1000},
+            'LHC-t10k': {'time': 2120., 'parts': 2000000, 'turns': 1000},
+            'LHC-no-approx': {'time': 2120., 'parts': 2000000, 'turns': 1000},
+            'PS-t100k': {'time': 1623.7, 'parts': 4000000, 'turns': 2000},
+            'PS-t10k': {'time': 1623.7, 'parts': 4000000, 'turns': 2000},
+            'PS-no-approx': {'time': 1623.7, 'parts': 4000000, 'turns': 2000}
         },
         # 'reference': {'time': 430., 'parts': 4000000, 'turns': 100},
 
@@ -80,7 +174,7 @@ plots_config = {
         'nticks': 6,
         'legend_loc': 'upper left',
         'figsize': (5, 3),
-        'image_name': images_dir + 'all-tc-approx2-speedup.pdf'
+        'image_name': images_dir + 'all-tc-approx2-speedup-2.pdf'
 
     },
 
@@ -252,12 +346,13 @@ if __name__ == '__main__':
             # We want speedup, compared to 1 worker with 1 thread
             plt.errorbar(x//10, speedup, yerr=None, color=config['colors'][key],
                          capsize=2, marker=None, markersize=4,
-                         linewidth=2., label=label)
+                         linewidth=2., label=label,
+                         ls=config['ls'][key])
 
             # if '10' in key:
             #     plt.xticks(x//10)
             # annotate_max(plt.gca(), x//10, speedup, ha='center', va='bottom',
-                         # size='9')
+            # size='9')
 
             # ax2.errorbar(x//10, efficiency, yerr=None, color=config['colors']['efficiency'],
             #              capsize=2, marker=config['markers'][key], markersize=4,

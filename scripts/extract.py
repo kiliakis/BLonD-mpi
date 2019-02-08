@@ -8,6 +8,7 @@ import subprocess
 import argparse
 
 
+this_directory = os.path.dirname(os.path.realpath(__file__)) + '/'
 average_fname = 'avg.csv'
 average_worker_fname = 'avg-workers.csv'
 comm_comp_fname = 'comm-comp.csv'
@@ -16,7 +17,7 @@ comm_comp_worker_fname = 'comm-comp-workers.csv'
 parser = argparse.ArgumentParser(description='Generate a csv report from the input raw data.',
                                  usage='python extract.py -i [indir] -o [outfile]')
 
-parser.add_argument('-o', '--outfile', type=str, default='sys.stdout',
+parser.add_argument('-o', '--outfile', type=str, default='file',
                     choices=['sys.stdout', 'file'],
                     help='The file to save the report.'
                     ' Default: (indir)-report.csv')
@@ -28,7 +29,7 @@ parser.add_argument('-r', '--report', type=str, default='all',
                     choices=['generate', 'collect', 'aggregate', 'all'],
                     help='The report type.')
 
-parser.add_argument('-s', '--script', type=str, default='report_workers.py',
+parser.add_argument('-s', '--script', type=str, default=this_directory + 'report_workers.py',
                     help='The path to the report_workers script.')
 
 
@@ -97,11 +98,17 @@ def aggregate_reports(input):
             continue
         files = [os.path.join(dirs, s, comm_comp_worker_fname) for s in sdirs]
         # print(files)
-        write_avg(files, open(os.path.join(dirs, comm_comp_fname), 'w'))
+        try:
+            write_avg(files, open(os.path.join(dirs, comm_comp_fname), 'w'))
+        except Exception as e:
+            print('[Error] Dir ', dirs)
+        
 
         files = [os.path.join(dirs, s, average_worker_fname) for s in sdirs]
-        write_avg(files, open(os.path.join(dirs, average_fname), 'w'))
-
+        try:
+            write_avg(files, open(os.path.join(dirs, average_fname), 'w'))
+        except Exception as e:
+            print('[Error] Dir ', dirs)
 
 def collect_reports(input, outfile, filename):
     # pass
@@ -112,24 +119,27 @@ def collect_reports(input, outfile, filename):
             continue
 
         print(dirs)
-        config = dirs.split('/')[-1]
-        ts = config.split('_t')[1].split('_')[0]
-        ps = config.split('_p')[1].split('_')[0]
-        bs = config.split('_b')[1].split('_')[0]
-        ss = config.split('_s')[1].split('_')[0]
-        ws = config.split('_w')[1].split('_')[0]
-        oss = config.split('_o')[1].split('_')[0]
-        Ns = config.split('_N')[1].split('_')[0]
-        rs = config.split('_r')[1].split('_')[0]
+        try:
+            config = dirs.split('/')[-1]
+            ts = config.split('_t')[1].split('_')[0]
+            ps = config.split('_p')[1].split('_')[0]
+            bs = config.split('_b')[1].split('_')[0]
+            ss = config.split('_s')[1].split('_')[0]
+            ws = config.split('_w')[1].split('_')[0]
+            oss = config.split('_o')[1].split('_')[0]
+            Ns = config.split('_N')[1].split('_')[0]
+            rs = config.split('_r')[1].split('_')[0]
 
-        data = np.genfromtxt(os.path.join(dirs, filename),
-                             dtype=str, delimiter='\t')
+            data = np.genfromtxt(os.path.join(dirs, filename),
+                                 dtype=str, delimiter='\t')
 
-        data_head = data[0]
-        data = data[1:]
-        for r in data:
-            records.append([ps, bs, ss, ts, ws, oss, Ns, rs] + list(r))
-
+            data_head = data[0]
+            data = data[1:]
+            for r in data:
+                records.append([ps, bs, ss, ts, ws, oss, Ns, rs] + list(r))
+        except:
+            print('[Error] dir ', dirs)
+            continue
     records.sort(key=lambda a: (int(a[0]), int(a[1]), int(a[2]),
                                 int(a[3]), int(a[4]), int(a[5]), int(a[6])))
     writer = csv.writer(outfile, delimiter='\t')

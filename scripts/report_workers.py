@@ -190,7 +190,11 @@ def report_avg(indir, files, outfile):
         else:
             acc_data += data
         num += 1
-    acc_data = np.around(acc_data/num, 2)
+    try:
+        acc_data = np.around(acc_data/num, 2)
+    except TypeError as e:
+        print('[Error] with dir ', indir)
+        return
 
     writer = csv.writer(outfile, delimiter='\t')
     writer.writerow(default_header)

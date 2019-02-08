@@ -48,7 +48,32 @@ configs = {
     #     'partition': cycle(['be-short'])
     # }
 
-    'LHC-b1-2MPPB-approx-time': {
+    # 'LHC-b96-2MPPB-t100k-approx-time': {
+    #     'exe': cycle([home + '/__EXAMPLES/main_files/_LHC_BUP_2017.py']),
+    #     'p': cycle([2000000]),
+    #     'b': cycle([96]),  # 96
+    #     's': cycle([1000]),
+    #     't': cycle([100000]),
+    #     'm': cycle([0]),
+    #     'seed': cycle([0]),
+    #     'reduce': cycle([1]),
+    #     'load': cycle([0.0]),
+    #     'mtw': cycle([50]),
+    #     'approx': cycle([2]),
+    #     'timing': cycle(['-time']),  # otherwise pass -time
+    #     'w': []
+    #      # + [1, 2, 4, 8, 16],
+    #     + list(np.arange(4, 17, 2)),
+    #     # + list(np.arange(2, 9, 1)),
+    #     'o': cycle([10]),
+    #      # + [10] * 5,
+    #     # + [10]*7,
+    #     # + [20]*7,
+    #     'time': cycle([120]),
+    #     'partition': cycle(['be-short'])
+    # }
+
+    'LHC-96B-2MPPB-t10k': {
         'exe': cycle([home + '/__EXAMPLES/main_files/_LHC_BUP_2017.py']),
         'p': cycle([2000000]),
         'b': cycle([96]),  # 96
@@ -59,36 +84,20 @@ configs = {
         'reduce': cycle([1]),
         'load': cycle([0.0]),
         'mtw': cycle([50]),
-        'approx': cycle([2]),
+        'approx': cycle([0]),
         'timing': cycle(['-time']),  # otherwise pass -time
         'w': []
-        # + [1, 2, 4, 8, 16],
-        + list(np.arange(2, 17, 1)),
+         # + [1, 2, 4, 8, 16],
+        + list(np.arange(2, 8, 1)),
+        # + list(np.arange(2, 17, 2)),
         # + list(np.arange(2, 9, 1)),
-        'o': []
-        # + [10] * 5,
-        + [10]*15,
+        'o': cycle([10]),
+         # + [10] * 5,
+        # + [10]*8,
         # + [20]*7,
-        'time': cycle([90]),
+        'time': cycle([180]),
         'partition': cycle(['be-short'])
     }
-
-    # 'LHC-96B-2MPPB-uint16-r1': {'p': cycle([2000000]),
-    #                             'b': cycle([96]),
-    #                             's': cycle([1000]),
-    #                             't': cycle([10000]),
-    #                             'reduce': cycle([1]),
-    #                             'load': cycle([0]),
-    #                             'w': []
-    #                             # + list(np.arange(2, 17, 1)),
-    #                             + list(np.arange(2, 9, 1)),
-    #                             'o': []
-    #                             # + [10]*15,
-    #                             + [20]*7,
-
-    #                             'time': cycle([45]),
-    #                             'partition': cycle(['be-short'])
-    #                             }
 
 }
 
@@ -185,5 +194,5 @@ for analysis, config in configs.items():
                             stderr=stdout, env=os.environ.copy())
             # sleep(5)
             current_sim += 1
-            print("%lf %% is completed" % (100.0 * current_sim
-                                           / total_sims))
+            print("%lf %% is completed" % (100.0 * current_sim /
+                                           total_sims))

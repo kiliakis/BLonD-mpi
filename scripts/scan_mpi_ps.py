@@ -51,12 +51,12 @@ configs = {
     # }
 
 
-    'PS-b1-approx-time': {
+    'PS-b21-approx-t100k-time': {
         'exe': cycle([home + '/__EXAMPLES/main_files/PS_main.py']),
         'p': cycle([4000000]),
         'b': cycle([21]), # 21
         's': cycle([128]),
-        't': cycle([10000]),
+        't': cycle([100000]),
         'm': cycle([0]),
         'seed': cycle([0]),
         'reduce': cycle([1]),
@@ -66,11 +66,11 @@ configs = {
         'timing': cycle(['-time']), # otherwise pass -time
         'w': []
         # + [1, 2, 4, 8, 16],
-        + list(np.arange(2, 17, 1)),
+        + list(np.arange(2, 17, 2)),
         # + list(np.arange(2, 9, 1)),
         'o': []
         # + [10] * 5,
-        + [10]*15,
+        + [10]*8,
         # + [20]*7,
         'time': cycle([90]),
         'partition': cycle(['be-short'])
@@ -79,7 +79,7 @@ configs = {
 
 }
 
-repeats = 10
+repeats = 5
 
 
 total_sims = repeats * \
