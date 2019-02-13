@@ -8,7 +8,6 @@
 # Preprocess_LHC_noise.py
 #
 # H. Timko
-
 import os
 import datetime
 import sys
@@ -23,13 +22,11 @@ except ImportError:
     from blond.utils import profile_mock as timing
     mpiprof = timing
 
-from blond.utils.input_parser import parse
 from blond.monitors.monitors import SlicesMonitor
 from blond.toolbox.next_regular import next_regular
 from blond.impedances.impedance import InducedVoltageFreq, TotalInducedVoltage
 from blond.impedances.impedance_sources import InputTable
 from blond.beam.profile import Profile, CutOptions
-# matched_from_distribution_function
 from blond.beam.distributions import bigaussian
 from blond.beam.beam import Beam, Proton
 from blond.llrf.rf_noise import FlatSpectrum, LHCNoiseFB
@@ -37,9 +34,15 @@ from blond.llrf.beam_feedback import BeamFeedback
 from blond.trackers.tracker import RingAndRFTracker, FullRingAndRF
 from blond.input_parameters.rf_parameters import RFStation
 from blond.input_parameters.ring import Ring
+from blond.utils.mpi_config import worker, print
+from blond.utils.input_parser import parse
+
+# from blond.plots.plot_beams import plot_long_phase_space
+
+# matched_from_distribution_function
 
 
-REAL_RAMP = False    # track full ramp
+REAL_RAMP = True    # track full ramp
 MONITORING = False   # turn off plots and monitors
 
 if MONITORING:
@@ -48,7 +51,6 @@ if MONITORING:
     from blond.plots.plot_beams import plot_long_phase_space
     from blond.plots.plot_slices import plot_beam_profile
 
-from blond.utils.mpi_config import worker, print
 
 this_directory = os.path.dirname(os.path.realpath(__file__)) + '/'
 
@@ -129,8 +131,9 @@ wrkDir = r'/afs/cern.ch/work/k/kiliakis/public/helga/'
 
 # Import pre-processed momentum and voltage for the acceleration ramp
 if REAL_RAMP:
-    ps = np.loadtxt(wrkDir+r'input/LHC_momentum_programme_6.5TeV.dat',
-                    unpack=True)
+    ps = np.load(wrkDir+r'input/LHC_momentum_programme_6.5TeV.npz')['arr_0']
+    # ps = np.loadtxt(wrkDir+r'input/LHC_momentum_programme_6.5TeV.dat',
+    # unpack=True)
     ps = np.ascontiguousarray(ps)
     ps = np.concatenate((ps, np.ones(436627)*6.5e12))
 else:
@@ -156,11 +159,13 @@ print("RF parameters set...")
 LHCnoise = FlatSpectrum(ring, rf, fmin_s0=0.8571, fmax_s0=1.001,
                         initial_amplitude=1.e-5,
                         predistortion='weightfunction')
-LHCnoise.dphi = np.genfromtxt(
-    wrkDir+r'input/LHCNoise_fmin0.8571_fmax1.001_ampl1e-5_weightfct_6.5TeV.dat',
-    # (?# wrkDir+r'input/LHCNoise_fmin0.8571_fmax1.001_ampl1e-5_weightfct.dat',)
-    unpack=True,
-    max_rows=N_t+1)
+# LHCnoise.dphi = np.genfromtxt(
+#     wrkDir+r'input/LHCNoise_fmin0.8571_fmax1.001_ampl1e-5_weightfct_6.5TeV.dat',
+#     # (?# wrkDir+r'input/LHCNoise_fmin0.8571_fmax1.001_ampl1e-5_weightfct.dat',)
+#     unpack=True,
+#     max_rows=N_t+1)
+LHCnoise.dphi = np.load(
+    wrkDir+r'input/LHCNoise_fmin0.8571_fmax1.001_ampl1e-5_weightfct_6.5TeV.npz')['arr_0']
 LHCnoise.dphi = np.ascontiguousarray(LHCnoise.dphi[0:N_t+1])
 print("RF phase noise loaded...")
 
@@ -168,8 +173,10 @@ print("RF phase noise loaded...")
 bunch = Beam(ring, N_p, N_b)
 beam = Beam(ring, N_p*NB, N_b)
 bigaussian(ring, rf, bunch, 0.3e-9, reinsertion=True, seed=seed)
+bunch_spacing_buckets = 10
+
 for i in np.arange(NB):
-    beam.dt[i*N_p:(i+1)*N_p] = bunch.dt[0:N_p] + i*25.e-9
+    beam.dt[i*N_p:(i+1)*N_p] = bunch.dt[0:N_p] + i*rf.t_rf[0, 0]*10
     beam.dE[i*N_p:(i+1)*N_p] = bunch.dE[0:N_p]
 
 
@@ -215,6 +222,7 @@ totVoltage = TotalInducedVoltage(beam, profile, [indVoltage])
 # TODO add the noiseFB
 tracker = RingAndRFTracker(rf, beam, BeamFeedback=PL, Profile=profile,
                            interpolation=True, TotalInducedVoltage=totVoltage)
+# interpolation=True, TotalInducedVoltage=None)
 print("PL, SL, and tracker set...")
 # Fill beam distribution
 fullring = FullRingAndRF([tracker])
@@ -230,8 +238,16 @@ beam.losses_separatrix(ring, rf)
 
 print('dE mean: ', np.mean(beam.dE))
 print('dE std: ', np.std(beam.dE))
+print('dt mean, 1st bunch: ', np.mean(beam.dt[:N_p]))
+print('shift ', rf.phi_rf[0, 0]/rf.omega_rf[0, 0])
+# plots = Plot(ring, rf, beam, dt_plt, dt_save, 0, 2.5e-9, -1500e6, 1500e6,
+#              separatrix_plot=True, Profile=profile, h5file='output_data',
+#              output_frequency=dt_mon, PhaseLoop=PL, LHCNoiseFB=None)
+# if worker.isMaster:
+#     plot_long_phase_space(ring, rf, beam, 0, 2.5e-9, -1500e6, 1500e6,
+#                           separatrix_plot=True)
 
-beam.split()
+beam.split_random()
 
 print("Statistics set...")
 
@@ -276,7 +292,6 @@ if N_t_monitor > 0 and worker.isMaster:
 print("Map set")
 
 
-
 timing.reset()
 start_t = time.time()
 
@@ -314,20 +329,23 @@ for turn in range(N_t):
         noiseFB.bl_targ = 1.1e-9
 
     # Update profile
-    profile.track()
     if (approx == 0):
+        profile.track()
         profile.reduce_histo()
     elif (approx == 1) and (turn % N_t_reduce == 0):
+        profile.track()
         profile.reduce_histo()
     elif (approx == 2):
+        profile.track()
         profile.scale_histo()
-
 
     if (N_t_monitor > 0) and (turn % N_t_monitor == 0):
         beam.statistics()
         beam.gather_statistics()
         if worker.isMaster:
-            profile.fwhm()
+            profile.fwhm_multibunch(NB, bunch_spacing_buckets, rf.t_rf[0, turn],
+                                    bucket_tolerance=0.,
+                                    shiftX=-rf.phi_rf[0, turn]/rf.omega_rf[0, turn])
             slicesMonitor.track(turn)
 
     if (approx == 0) or (approx == 2):
@@ -336,7 +354,12 @@ for turn in range(N_t):
         totVoltage.induced_voltage_sum()
 
     tracker.track()
+    # import matplotlib.pyplot as plt
+    # plt.figure()
+    # plt.plot(profile.bin_centers[-200:], profile.n_macroparticles[-200:])
+    # plt.savefig('plot' + str(turn) + '.png')
 
+    # plt.show()
 
 beam.gather()
 end_t = time.time()
@@ -345,14 +368,22 @@ timing.report(total_time=1e3*(end_t-start_t),
               out_dir=args['timedir'],
               out_file='worker-{}.csv'.format(os.getpid()))
 
-mpiprof.finalize()
+# mpiprof.finalize()
 worker.finalize()
+
+
+# plot_long_phase_space(ring, rf, beam, 0, 2.5e-9, -1500e6, 1500e6,
+#                       separatrix_plot=True)
 
 if N_t_monitor > 0:
     slicesMonitor.close()
 
+
 print('dE mean: ', np.mean(beam.dE))
 print('dE std: ', np.std(beam.dE))
+print('dt mean, 1st bunch: ', np.mean(beam.dt[:N_p]))
+print('shift ', rf.phi_rf[0, turn]/rf.omega_rf[0, turn])
+
 print('profile mean: ', np.mean(profile.n_macroparticles))
 print('profile std: ', np.std(profile.n_macroparticles))
 

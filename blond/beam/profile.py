@@ -115,8 +115,8 @@ class CutOptions(object):
 
         if self.cuts_unit == 'rad' and self.RFParams is None:
             # CutError
-            raise RuntimeError('You should pass an RFParams object to ' +
-                               'convert from radians to seconds')
+            raise RuntimeError('You should pass an RFParams object to '
+                               + 'convert from radians to seconds')
         if self.cuts_unit != 'rad' and self.cuts_unit != 's':
             # CutError
             raise RuntimeError('cuts_unit should be "s" or "rad"')
@@ -423,7 +423,6 @@ class Profile(object):
         if OtherSlicesOptions.direct_slicing:
             self.track()
 
-
     def set_slices_parameters(self):
         self.n_slices, self.cut_left, self.cut_right, self.n_sigma, \
             self.edges, self.bin_centers, self.bin_size = \
@@ -459,7 +458,6 @@ class Profile(object):
             with mpiprof.traced_region('serial:conversion'):
                 self.n_macroparticles = self.n_macroparticles.astype(
                     np.float64, order='C')
-
 
     @timing.timeit(key='serial:scale_histo')
     @mpiprof.traceit(key='serial:scale_histo')
@@ -518,17 +516,19 @@ class Profile(object):
             self.n_macroparticles, self.bin_centers, n_bunches,
             bunch_spacing_buckets, bucket_size_tau, bucket_tolerance)
 
-    def fwhm(self, shift=0):
+    def fwhm(self, shift=0, shiftX=0):
         """
         Computation of the bunch length and position from the FWHM
         assuming Gaussian line density.
         """
 
         self.bunchPosition, self.bunchLength = ffroutines.fwhm(
-            self.n_macroparticles, self.bin_centers, shift)
+            self.n_macroparticles, self.bin_centers, shift=shift,
+            shiftX=shiftX)
 
     def fwhm_multibunch(self, n_bunches, bunch_spacing_buckets,
-                        bucket_size_tau, bucket_tolerance=0.40, shift=0):
+                        bucket_size_tau, bucket_tolerance=0.40, 
+                        shift=0, shiftX=0):
         """
         Computation of the bunch length and position from the FWHM
         assuming Gaussian line density for multibunch case.
@@ -536,7 +536,8 @@ class Profile(object):
 
         self.bunchPosition, self.bunchLength = ffroutines.fwhm_multibunch(
             self.n_macroparticles, self.bin_centers, n_bunches,
-            bunch_spacing_buckets, bucket_size_tau, bucket_tolerance, shift)
+            bunch_spacing_buckets, bucket_size_tau, bucket_tolerance, 
+            shift=shift, shiftX=shiftX)
 
     def beam_spectrum_freq_generation(self, n_sampling_fft):
         """

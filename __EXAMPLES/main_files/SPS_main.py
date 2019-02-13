@@ -232,14 +232,14 @@ beam = Beam(ring, n_macroparticles, intensity)
 
 PS_n_bunches = 1
 
-n_shift = 500  # how many rf-buckets to shift beam
+n_shift = 0  # how many rf-buckets to shift beam
 
 PS_folder = this_directory + '/../input_files/'
 
 if BUNCHLENGTH_MODULATION is False:
     print('Loading PS beam')
-    with h5py.File(PS_folder+'bunch_rotation_'+PS_case +
-                   '_bunch_rotation/after_rotation_PS_beam.hd5', "r") as h5file:
+    with h5py.File(PS_folder+'bunch_rotation_'+PS_case
+                   + '_bunch_rotation/after_rotation_PS_beam.hd5', "r") as h5file:
         PS_dt = h5file['PS_dt'].value
         # place PS beam in SPS RF-bucket 0
         PS_dt += 0.5*t_rf - np.mean(PS_dt)
@@ -265,8 +265,8 @@ if BUNCHLENGTH_MODULATION is False:
     for copy in range(PS_bunchCopies):
         # randomly select macroparticles from PS bunch according to
         # intensity modulation
-        numSelectedMPs = int(np.round(n_bunches*n_macroparticles_pb/PS_bunchCopies *
-                                      intensityModulation[copy]))
+        numSelectedMPs = int(np.round(n_bunches*n_macroparticles_pb/PS_bunchCopies
+                                      * intensityModulation[copy]))
         indices = np.zeros(len(PS_dt), dtype=bool)
         randices = np.random.choice(len(indices), numSelectedMPs, replace=False)
         indices[randices] = True
@@ -287,8 +287,8 @@ else:  # use bunch length modulation
 
     beginIndex = 0
     for case, PS_case in enumerate(PS_cases):
-        with h5py.File(PS_folder+'bunch_rotation_'+PS_case +
-                       '_bunch_rotation/after_rotation_PS_beam.hd5', "r") as h5file:
+        with h5py.File(PS_folder+'bunch_rotation_'+PS_case
+                       + '_bunch_rotation/after_rotation_PS_beam.hd5', "r") as h5file:
             PS_dt = h5file['PS_dt'].value
             # place PS beam in SPS RF-bucket 0
             PS_dt += 0.5*t_rf - np.mean(PS_dt)
@@ -319,7 +319,7 @@ else:  # use bunch length modulation
 
 print('dE mean: ', np.mean(beam.dE))
 print('dE std: ', np.std(beam.dE))
-beam.split()
+beam.split_random()
 
 
 # SPS --- Profile -------------------------------------------
@@ -335,9 +335,9 @@ cut_right = t_batch_end + profile_margin
 
 # number of rf-buckets of the beam
 # + rf-buckets before the beam + rf-buckets after the beam
-n_slices = n_bins_rf * (bunch_spacing * (n_bunches-1) + 1 +
-                        int(np.round((t_batch_begin - cut_left)/t_rf)) +
-                        int(np.round((cut_right - t_batch_end)/t_rf)))
+n_slices = n_bins_rf * (bunch_spacing * (n_bunches-1) + 1
+                        + int(np.round((t_batch_begin - cut_left)/t_rf))
+                        + int(np.round((cut_right - t_batch_end)/t_rf)))
 
 profile = Profile(beam, CutOptions=CutOptions(cut_left=cut_left,
                                               cut_right=cut_right, n_slices=n_slices))
@@ -517,19 +517,23 @@ for turn in range(N_t):
         print('turn: '+str(turn))
 
     # Update profile
-    profile.track()
     if (approx == 0):
+        profile.track()
         profile.reduce_histo()
     elif (approx == 1) and (turn % N_t_reduce == 0):
+        profile.track()
         profile.reduce_histo()
     elif (approx == 2):
+        profile.track()
         profile.scale_histo()
 
     if (N_t_monitor > 0) and (turn % N_t_monitor == 0):
         beam.statistics()
         beam.gather_statistics()
         if worker.isMaster:
-            profile.fwhm()
+            profile.fwhm_multibunch(n_bunches, bunch_spacing,
+                                    rf_station.t_rf[0, turn], bucket_tolerance=1.5,
+                                    shift=0.)
             slicesMonitor.track(turn)
 
     if SPS_PHASELOOP is True:
@@ -547,6 +551,41 @@ for turn in range(N_t):
         inducedVoltage.induced_voltage_sum()
 
     tracker.track()
+
+    if SPS_PHASELOOP is True:
+        if turn % PL_save_turns == 0 and turn > 0:
+            # present beam position
+            beamPosFromPhase = (phaseLoop.phi_beam - rf_station.phi_rf[0, turn])\
+                / rf_station.omega_rf[0, turn] + t_batch_begin
+            # how much to shift the bin_centers
+            delta = beamPosPrev - beamPosFromPhase
+            beamPosPrev = beamPosFromPhase
+
+            # if SAVE_DATA == True:
+            #     PLdelta[PL_save_counter] = delta
+            #     PL_save_counter += 1
+
+            profile.bin_centers -= delta
+            profile.cut_left -= delta
+            profile.cut_right -= delta
+            profile.edges -= delta
+
+            # profileCoarse.bin_centers -= delta
+            # profileCoarse.cut_left -= delta
+            # profileCoarse.cut_right -= delta
+            # profileCoarse.edges -= delta
+
+            # shift time_offset of phase loop as well, so that it starts at correct
+            # bin_center corresponding to time_offset
+            if phaseLoop.alpha != 0:
+                phaseLoop.time_offset -= delta
+
+            # update plot ranges
+            # if SAVE_DATA == True:
+            #     for it, bunch in enumerate(bunches_to_plot):
+            #         l_bounds[it] = profile.cut_left + profile_margin \
+            #             + t_rf*(bunch*bunch_spacing - margin)
+            #         r_bounds[it] = l_bounds[it] + t_rf*(1 + 2*margin)
 
 beam.gather()
 end_t = time.time()

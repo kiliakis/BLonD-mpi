@@ -23,63 +23,89 @@ job_name_form = '_p{}_b{}_s{}_t{}_w{}_o{}_N{}_r{}_m{}_seed{}_approx{}_'
 
 configs = {
 
-    # 'PS-b1-approx': {
+    # 'PS-21B-approx2': {
     #     'exe': cycle([home + '/__EXAMPLES/main_files/PS_main.py']),
     #     'p': cycle([4000000]),
-    #     'b': cycle([1]),  # 21
+    #     'b': cycle([21]),  # 21
     #     's': cycle([128]),
-    #     't': cycle([378708]),
-    #     'm': cycle([50]),
+    #     't': cycle([200000]), #378708
+    #     'm': cycle([100]),
     #     'reduce': cycle([1]),
     #     'load': cycle([0.0]),
     #     'mtw': cycle([50]),
     #     'approx': cycle([2]),
     #     'timing': cycle(['']),  # otherwise pass -time
-    #     'seed': [1] * 5 + [2] * 5,
+    #     # 'seed': [0] * 5 + [1] * 5 + [2] * 5,
+    #     'seed': [0] * 5 + [1] * 5 + [2] * 5,
     #     'w': []
+    #     # + [1, 1, 1],
+    #     + [1, 2, 4, 8, 16]
     #     + [1, 2, 4, 8, 16]
     #     + [1, 2, 4, 8, 16],
     #     # + list(np.arange(2, 17, 1))
     #     # + list(np.arange(2, 9, 1)),
-    #     'o': []
-    #     + [10] * 5
-    #     + [10] * 5,
+    #     'o': cycle([10]),
+    #     # + [10] * 5
     #     # + [10]*15
     #     # + [20]*7,
-    #     'time': cycle([60]),
+    #     'time': cycle([480]),
+    #     'partition': cycle(['be-short'])
+    # },
+
+
+
+    'PS-21B-approx1': {
+        'exe': cycle([home + '/__EXAMPLES/main_files/PS_main.py']),
+        'p': cycle([4000000]),
+        'b': cycle([21]),  # 21
+        's': cycle([128]),
+        't': cycle([200000]), #378708
+        'm': cycle([100]),
+        'load': cycle([0.0]),
+        'mtw': cycle([50]),
+        'approx': cycle([1]),
+        'timing': cycle(['']),  # otherwise pass -time
+        'seed': [0] * 3 + [1] * 3 + [2] * 3,
+        'reduce': []
+        + [1, 2, 3]
+        + [1, 2, 3]
+        + [1, 2, 3],
+        'w': [16] * 9,
+        'o': cycle([10]),
+        'time': cycle([480]),
+        'partition': cycle(['be-long'])
+    }
+
+
+    # 'PS-b21-approx-t100k-time': {
+    #     'exe': cycle([home + '/__EXAMPLES/main_files/PS_main.py']),
+    #     'p': cycle([4000000]),
+    #     'b': cycle([21]), # 21
+    #     's': cycle([128]),
+    #     't': cycle([100000]),
+    #     'm': cycle([0]),
+    #     'seed': cycle([0]),
+    #     'reduce': cycle([1]),
+    #     'load': cycle([0.0]),
+    #     'mtw': cycle([50]),
+    #     'approx': cycle([2]),
+    #     'timing': cycle(['-time']), # otherwise pass -time
+    #     'w': []
+    #     # + [1, 2, 4, 8, 16],
+    #     + list(np.arange(2, 17, 2)),
+    #     # + list(np.arange(2, 9, 1)),
+    #     'o': []
+    #     # + [10] * 5,
+    #     + [10]*8,
+    #     # + [20]*7,
+    #     'time': cycle([90]),
     #     'partition': cycle(['be-short'])
     # }
 
 
-    'PS-b21-approx-t100k-time': {
-        'exe': cycle([home + '/__EXAMPLES/main_files/PS_main.py']),
-        'p': cycle([4000000]),
-        'b': cycle([21]), # 21
-        's': cycle([128]),
-        't': cycle([100000]),
-        'm': cycle([0]),
-        'seed': cycle([0]),
-        'reduce': cycle([1]),
-        'load': cycle([0.0]),
-        'mtw': cycle([50]),
-        'approx': cycle([2]),
-        'timing': cycle(['-time']), # otherwise pass -time
-        'w': []
-        # + [1, 2, 4, 8, 16],
-        + list(np.arange(2, 17, 2)),
-        # + list(np.arange(2, 9, 1)),
-        'o': []
-        # + [10] * 5,
-        + [10]*8,
-        # + [20]*7,
-        'time': cycle([90]),
-        'partition': cycle(['be-short'])
-    }
-
-
 }
 
-repeats = 5
+repeats = 1
 
 
 total_sims = repeats * \

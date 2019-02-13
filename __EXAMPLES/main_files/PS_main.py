@@ -18,28 +18,28 @@ import matplotlib as mpl
 mpl.use('Agg')
 import matplotlib.pyplot as plt
 
-# Impedance scenario import
-from PS_impedance.impedance_scenario import scenario
-# LoCa imports
-import LoCa.Base.Bare_RF as brf
-import LoCa.Base.RFProgram as rfp
-import LoCa.Base.Machine as mach
-# Other imports
-from colormap import colormap
 
 # BLonD imports
 #from blond.beams.distributions import matched_from_line_density
-from blond.monitors.monitors import SlicesMonitor
-from blond.impedances.impedance_sources import Resonators
-from blond.impedances.impedance import InducedVoltageTime, InducedVoltageFreq, TotalInducedVoltage, InductiveImpedance
-from blond.trackers.tracker import RingAndRFTracker, FullRingAndRF
-from blond.beam.distributions_multibunch import match_beam_from_distribution
-from blond.beam.profile import Profile, CutOptions
-from blond.input_parameters.rf_parameters import RFStation
-from blond.input_parameters.ring import Ring, RingOptions
-from blond.beam.beam import Proton, Beam
-from blond.utils.mpi_config import worker, print
 from blond.utils.input_parser import parse
+from blond.utils.mpi_config import worker, print
+from blond.beam.beam import Proton, Beam
+from blond.input_parameters.ring import Ring, RingOptions
+from blond.input_parameters.rf_parameters import RFStation
+from blond.beam.profile import Profile, CutOptions
+from blond.beam.distributions_multibunch import match_beam_from_distribution
+from blond.trackers.tracker import RingAndRFTracker, FullRingAndRF
+from blond.impedances.impedance import InducedVoltageTime, InducedVoltageFreq, TotalInducedVoltage, InductiveImpedance
+from blond.impedances.impedance_sources import Resonators
+from blond.monitors.monitors import SlicesMonitor
+# Other imports
+from colormap import colormap
+# LoCa imports
+import LoCa.Base.Machine as mach
+import LoCa.Base.RFProgram as rfp
+import LoCa.Base.Bare_RF as brf
+# Impedance scenario import
+from PS_impedance.impedance_scenario import scenario
 
 
 this_directory = os.path.dirname(os.path.realpath(__file__)) + '/'
@@ -167,7 +167,7 @@ print({'N_t': N_t, 'n_macroparticles_per_bunch': n_macroparticles_per_bunch,
        'timing.mode': timing.mode, 'n_bunches': n_bunches,
        'N_t_reduce': N_t_reduce,
        'N_t_monitor': N_t_monitor, 'seed': seed, 'log': log,
-        'approx': approx})
+       'approx': approx})
 
 
 n_macroparticles = n_bunches * n_macroparticles_per_bunch
@@ -467,7 +467,7 @@ match_beam_from_distribution(beam, full_tracker, ring,
 print('dE mean:', np.mean(beam.dE))
 print('dE std:', np.std(beam.dE))
 
-beam.split()
+beam.split_random()
 
 # Tracking -------------------------------------------------------------------
 # profile.track()
@@ -548,19 +548,23 @@ for turn in range(N_t):
     # if (i > 0) and (i % datamatrix_output_step) == 0:
     #     t0 = time.time()
 
-    profile.track()
     if (approx == 0):
+        profile.track()
         profile.reduce_histo()
     elif (approx == 1) and (turn % N_t_reduce == 0):
+        profile.track()
         profile.reduce_histo()
     elif (approx == 2):
+        profile.track()
         profile.scale_histo()
 
     if (N_t_monitor > 0) and (turn % N_t_monitor == 0):
         beam.statistics()
         beam.gather_statistics()
         if worker.isMaster:
-            profile.fwhm()
+            profile.fwhm_multibunch(n_bunches, bunch_spacing_buckets,
+                                    rf_params.t_rf[0, turn], bucket_tolerance=0.,
+                                    shift=0.)
             slicesMonitor.track(turn)
 
     # Change impedance of 10 MHz only if it changes

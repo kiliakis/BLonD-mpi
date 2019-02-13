@@ -483,7 +483,7 @@ print('dE std: ', np.std(beam.dE))
 # print('profile sum: ', np.sum(profile.n_macroparticles))
 
 
-beam.split()
+beam.split_random()
 
 # do profile on inital beam
 
@@ -521,12 +521,14 @@ for turn in range(N_t):
         print('turn: '+str(turn))
 
     # Update profile
-    profile.track()
     if (approx == 0):
+        profile.track()
         profile.reduce_histo()
     elif (approx == 1) and (turn % N_t_reduce == 0):
+        profile.track()
         profile.reduce_histo()
     elif (approx == 2):
+        profile.track()
         profile.scale_histo()
 
 
@@ -534,8 +536,12 @@ for turn in range(N_t):
         beam.statistics()
         beam.gather_statistics()
         if worker.isMaster:
-            profile.fwhm()
+            profile.fwhm_multibunch(n_bunches, bunch_spacing,
+                                    rf_station.t_rf[0, turn], 
+                                    bucket_tolerance=1.5,
+                                    shift=0.)
             slicesMonitor.track(turn)
+
     if SPS_PHASELOOP is True:
         phaseLoop.track()
 
@@ -551,6 +557,43 @@ for turn in range(N_t):
         inducedVoltage.induced_voltage_sum()
 
     tracker.track()
+
+
+    if SPS_PHASELOOP is True:
+        if turn % PL_save_turns == 0 and turn > 0:
+            # present beam position
+            beamPosFromPhase = (phaseLoop.phi_beam - rf_station.phi_rf[0, turn])\
+                / rf_station.omega_rf[0, turn] + t_batch_begin
+            # how much to shift the bin_centers
+            delta = beamPosPrev - beamPosFromPhase
+            beamPosPrev = beamPosFromPhase
+
+            # if SAVE_DATA == True:
+            #     PLdelta[PL_save_counter] = delta
+            #     PL_save_counter += 1
+
+            profile.bin_centers -= delta
+            profile.cut_left -= delta
+            profile.cut_right -= delta
+            profile.edges -= delta
+
+            # profileCoarse.bin_centers -= delta
+            # profileCoarse.cut_left -= delta
+            # profileCoarse.cut_right -= delta
+            # profileCoarse.edges -= delta
+
+            # shift time_offset of phase loop as well, so that it starts at correct
+            # bin_center corresponding to time_offset
+            if phaseLoop.alpha != 0:
+                phaseLoop.time_offset -= delta
+
+            # update plot ranges
+            # if SAVE_DATA == True:
+            #     for it, bunch in enumerate(bunches_to_plot):
+            #         l_bounds[it] = profile.cut_left + profile_margin \
+            #             + t_rf*(bunch*bunch_spacing - margin)
+            #         r_bounds[it] = l_bounds[it] + t_rf*(1 + 2*margin)
+
 
 beam.gather()
 end_t = time.time()

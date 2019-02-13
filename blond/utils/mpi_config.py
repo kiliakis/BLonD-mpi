@@ -119,6 +119,27 @@ class Worker:
             self.intracomm.Gatherv(var, recvbuf, root=0)
             return var
 
+    @timing.timeit(key='comm:scatter')
+    @mpiprof.traceit(key='comm:scatter')
+    def scatter(self, var, size):
+        self.logger.debug('scatter')
+        if self.isMaster:
+            counts = [size // self.workers + 1 if i < size % self.workers
+                      else size // self.workers for i in range(self.workers)]
+            displs = np.append([0], np.cumsum(counts[:-1]))
+            # sendbuf = np.copy(var)
+            recvbuf = np.empty(counts[worker.rank], dtype=var.dtype.char)
+            self.intracomm.Scatterv([var, counts, displs, var.dtype.char],
+                                    recvbuf, root=0)
+        else:
+            counts = [size // self.workers + 1 if i < size % self.workers
+                      else size // self.workers for i in range(self.workers)]
+            sendbuf = None
+            recvbuf = np.empty(counts[worker.rank], dtype=var.dtype.char)
+            self.intracomm.Scatterv(sendbuf, recvbuf, root=0)
+
+        return recvbuf
+
     @timing.timeit(key='comm:allreduce')
     @mpiprof.traceit(key='comm:allreduce')
     def allreduce(self, sendbuf, recvbuf=None, dtype=np.uint32):

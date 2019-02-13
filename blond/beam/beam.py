@@ -297,21 +297,40 @@ class Beam(object):
                                       'total_size': self.n_macroparticles}
             self.n_macroparticles = size
 
+    # def split_random(self):
+    #     from ..utils.mpi_config import worker
+    #     if len(worker.indices) == 0 or worker.isMaster:
+    #         # start, size = worker.split(self.n_macroparticles)
+    #         start = worker.rank
+    #         stride = worker.workers
+    #         self.dt = np.ascontiguousarray(self.dt[start:: stride])
+    #         self.dE = np.ascontiguousarray(self.dE[start:: stride])
+    #         self.id = np.ascontiguousarray(self.id[start:: stride])
+    #         size = len(self.dt)
+    #         worker.indices['beam'] = {'start': start,
+    #                                   'size': size,
+    #                                   'stride': stride,
+    #                                   'total_size': self.n_macroparticles}
+    #         self.n_macroparticles = size
+
+
     def split_random(self):
         from ..utils.mpi_config import worker
-        if len(worker.indices) == 0 or worker.isMaster:
-            # start, size = worker.split(self.n_macroparticles)
-            start = worker.rank
-            stride = worker.workers
-            self.dt = np.ascontiguousarray(self.dt[start:: stride])
-            self.dE = np.ascontiguousarray(self.dE[start:: stride])
-            self.id = np.ascontiguousarray(self.id[start:: stride])
-            size = len(self.dt)
-            worker.indices['beam'] = {'start': start,
-                                      'size': size,
-                                      'stride': stride,
-                                      'total_size': self.n_macroparticles}
-            self.n_macroparticles = size
+        import random
+
+        ids = np.arange(self.n_macroparticles)
+        random.shuffle(ids)
+        ids = worker.scatter(ids, self.n_macroparticles)
+        self.dt = np.ascontiguousarray(self.dt[ids])
+        self.dE = np.ascontiguousarray(self.dE[ids])
+        self.id = np.ascontiguousarray(self.id[ids])
+        size = len(self.dt)
+        worker.indices['beam'] = {'start': 0,
+                                  'stride': 0,
+                                  'size': size,
+                                  'total_size': self.n_macroparticles}
+        self.n_macroparticles = size
+
 
     def gather(self):
         from ..utils.mpi_config import worker
