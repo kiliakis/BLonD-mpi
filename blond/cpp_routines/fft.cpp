@@ -17,7 +17,7 @@
 
 // FFTW_PATIENT: run a lot of ffts to discover the best plan.
 // Will not use the multithreaded version unless the fft size
-// is reasonable enough
+// is big enough
 
 // FFTW_MEASURE : run some ffts to find the best plan.
 // (first run should take some more seconds)
@@ -269,7 +269,7 @@ extern "C" {
         n = n == 0 ? n = inSize : n;
         const int outSize = n / 2 + 1;
 
-        auto plan = find_plan(outSize, n, RFFT, omp_get_max_threads(), planV);
+        auto plan = find_plan(outSize, n, RFFT, threads, planV);
         auto from = (double *)plan.in;
         auto to = (complex_t *)plan.out;
 
@@ -295,7 +295,7 @@ extern "C" {
         outSize = outSize == 0 ? outSize = 2 * (inSize - 1) : outSize;
         const int n = outSize / 2 + 1;
 
-        auto plan = find_plan(outSize, n, IRFFT, omp_get_max_threads(), planV);
+        auto plan = find_plan(outSize, n, IRFFT, threads, planV);
         auto from = (complex_t *)plan.in;
         auto to = (double *)plan.out;
 
@@ -328,7 +328,7 @@ extern "C" {
 
         const int n = outSize / 2 + 1;
 
-        auto plan = find_plan_packed(outSize, howmany, n, IRFFT, omp_get_max_threads(), planV);
+        auto plan = find_plan_packed(outSize, howmany, n, IRFFT, threads, planV);
 
         auto from = (complex_t *) plan.in;
         auto to = (double *) plan.out;
@@ -360,7 +360,7 @@ extern "C" {
     {
         if (fftSize == 0) fftSize = inSize;
 
-        auto plan = find_plan(fftSize, inSize, IFFT, omp_get_max_threads(), planV);
+        auto plan = find_plan(fftSize, inSize, IFFT, threads, planV);
         auto from = (complex_t *)plan.in;
         auto to = (complex_t *)plan.out;
         if (fftSize <= inSize)
@@ -388,7 +388,7 @@ extern "C" {
     {
         if (fftSize == 0) fftSize = inSize;
 
-        auto plan = find_plan(fftSize, inSize, FFT, omp_get_max_threads(), planV);
+        auto plan = find_plan(fftSize, inSize, FFT, threads, planV);
         auto from = (complex_t *)plan.in;
         auto to = (complex_t *)plan.out;
 

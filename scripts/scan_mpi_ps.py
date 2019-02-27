@@ -65,15 +65,17 @@ configs = {
         'mtw': cycle([50]),
         'approx': cycle([1]),
         'timing': cycle(['']),  # otherwise pass -time
-        'seed': [0] * 3 + [1] * 3 + [2] * 3,
-        'reduce': []
-        + [1, 2, 3]
-        + [1, 2, 3]
-        + [1, 2, 3],
-        'w': [16] * 9,
+        # 'seed': [0] * 3 + [1] * 3 + [2] * 3,
+        'seed': [2, 0],
+        'reduce': [1, 3],
+        # + [1, 2, 3]
+        # + [1, 2, 3]
+        # + [1, 2, 3],
+        # 'w': [16] * 9,
+        'w': [16] * 2,
         'o': cycle([10]),
         'time': cycle([480]),
-        'partition': cycle(['be-long'])
+        'partition': cycle(['be-short'])
     }
 
 

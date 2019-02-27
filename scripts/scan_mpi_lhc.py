@@ -22,31 +22,29 @@ job_name_form = '_p{}_b{}_s{}_t{}_w{}_o{}_N{}_r{}_m{}_seed{}_approx{}_'
 
 configs = {
 
-    # 'LHC-12B-2MPPB-approx2': {
-    #     'exe': cycle([home + '/__EXAMPLES/main_files/_LHC_BUP_2017.py']),
-    #     'p': cycle([2000000]),
-    #     'b': cycle([12]),  # 96
-    #     's': cycle([1000]),
-    #     't': cycle([200000]),
-    #     'm': cycle([250]),
-    #     'reduce': cycle([1]),
-    #     'load': cycle([0.0]),
-    #     'mtw': cycle([50]),
-    #     'approx': cycle([2]),
-    #     'timing': cycle(['']),  # otherwise pass -time
-    #     'seed': [0] * 5 + [1] * 5 + [2] * 5,
-    #     'w': []
-    #     + [1, 2, 4, 8, 16]
-    #     + [1, 2, 4, 8, 16]
-    #     + [1, 2, 4, 8, 16],
-    #     # + list(np.arange(2, 9, 1)),
-    #     'o': cycle([10]),
-    #     # + [10] * 5,
-    #     # + [10]*16,
-    #     # + [20]*7,
-    #     'time': cycle([360]),
-    #     'partition': cycle(['be-long'])
-    # },
+    'LHC-12B-2MPPB-approx2': {
+        'exe': cycle([home + '/__EXAMPLES/main_files/_LHC_BUP_2017.py']),
+        'p': cycle([2000000]),
+        'b': cycle([12]),  # 96
+        's': cycle([1000]),
+        't': cycle([200000]),
+        'm': cycle([250]),
+        'reduce': cycle([1]),
+        'load': cycle([0.0]),
+        'mtw': cycle([50]),
+        'approx': cycle([2]),
+        'timing': cycle(['']),  # otherwise pass -time
+        'seed': [0] * 5 + [1] * 5 + [2] * 5 + [3] * 5 + [4] * 5 + [5] * 5,
+        'w': []
+        + [1, 2, 4, 8, 16] * 6,
+        # + list(np.arange(2, 9, 1)),
+        'o': cycle([10]),
+        # + [10] * 5,
+        # + [10]*16,
+        # + [20]*7,
+        'time': cycle([360]),
+        'partition': cycle(['be-short'])
+    },
 
 
     'LHC-12B-2MPPB-approx1': {
@@ -60,15 +58,13 @@ configs = {
         'mtw': cycle([50]),
         'approx': cycle([1]),
         'timing': cycle(['']),  # otherwise pass -time
-        'seed': [0] * 3 + [1] * 3 + [2] * 3,
+        'seed': [0] * 3 + [1] * 3 + [2] * 3 + [3] * 3 + [4] * 3 + [5] * 3,        
         'reduce': []
-        + [1, 2, 3]
-        + [1, 2, 3]
-        + [1, 2, 3],
-        'w': [16] * 9,
+        + [1, 2, 3] * 6,
+        'w': [16] * 18,
         'o': cycle([10]),
         'time': cycle([360]),
-        'partition': cycle(['be-short'])
+        'partition': cycle(['be-long'])
     }
 
     # 'LHC-b96-2MPPB-t100k-approx-time': {

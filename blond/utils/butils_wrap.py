@@ -7,8 +7,10 @@ BLonD math wrapper functions
 
 import ctypes as ct
 import numpy as np
+import os
 # from setup_cpp import libblondmath as __lib
 from .. import libblond as __lib
+
 
 def __getPointer(x):
     return x.ctypes.data_as(ct.c_void_p)
@@ -44,6 +46,7 @@ class c_complex64(ct.Structure):
     def to_complex(self):
         # Convert to Python complex
         return self.real + (1.j) * self.imag
+
 
 def add(a, b, result=None, inplace=False):
     if(len(a) != len(b)):
@@ -159,10 +162,9 @@ def mul(a, b, result=None):
     return result
 
 
-
 def convolve(signal, kernel, mode='full', result=None):
     if mode != 'full':
-        #ConvolutionError
+        # ConvolutionError
         raise RuntimeError('[convolve] Only full mode is supported')
     if result is None:
         result = np.empty(len(signal) + len(kernel) - 1, dtype=float)
@@ -179,9 +181,11 @@ def rfft(signal, fftsize=0, result=None):
         result = np.empty(fftsize//2 + 1, dtype=np.complex128)
 
     __lib.rfft(__getPointer(signal),
-                __getLen(signal),
-                __getPointer(result),
-                fftsize)
+               __getLen(signal),
+               __getPointer(result),
+               ct.c_int(int(fftsize)),
+               ct.c_int(int(os.environ.get('OMP_NUM_THREADS', 1))))
+
     return result
 
 
@@ -193,9 +197,10 @@ def irfft(signal, fftsize=0, result=None):
         result = np.empty(fftsize, dtype=np.float64)
 
     __lib.irfft(__getPointer(signal),
-                 __getLen(signal),
-                 __getPointer(result),
-                 fftsize)
+                __getLen(signal),
+                __getPointer(result),
+                ct.c_int(int(fftsize)),
+                ct.c_int(int(os.environ.get('OMP_NUM_THREADS', 1))))
     return result
 
 
@@ -212,15 +217,15 @@ def irfft_packed(signal, fftsize=0, result=None):
         result = np.empty(howmany * fftsize, dtype=np.float64)
 
     __lib.irfft_packed(__getPointer(signal),
-                        n0,
-                        howmany,
-                        __getPointer(result),
-                        fftsize)
+                       n0,
+                       howmany,
+                       __getPointer(result),
+                       ct.c_int(int(fftsize)),
+                       ct.c_int(int(os.environ.get('OMP_NUM_THREADS', 1))))
 
     result = np.reshape(result, (howmany, -1))
 
     return result
-
 
 
 def mean(x):
@@ -243,7 +248,7 @@ def sin(x, result=None):
         __lib.fast_sin.restype = ct.c_double
         return __lib.fast_sin(ct.c_double(x))
     else:
-        #TypeError
+        # TypeError
         raise RuntimeError('[sin] The type %s is not supported', type(x))
 
 
@@ -257,7 +262,7 @@ def cos(x, result=None):
         __lib.fast_cos.restype = ct.c_double
         return __lib.fast_cos(ct.c_double(x))
     else:
-        #TypeError
+        # TypeError
         raise RuntimeError('[cos] The type %s is not supported', type(x))
 
 
@@ -271,7 +276,7 @@ def exp(x, result=None):
         __lib.fast_exp.restype = ct.c_double
         return __lib.fast_exp(ct.c_double(x))
     else:
-        #TypeError
+        # TypeError
         raise RuntimeError('[exp] The type %s is not supported', type(x))
 
 
@@ -308,10 +313,9 @@ def interp_const_space(x, xp, yp, left=None, right=None, result=None):
     return result
 
 
-
 def cumtrapz(y, x=None, dx=1.0, initial=None, result=None):
     if x is not None:
-        #IntegrationError
+        # IntegrationError
         raise RuntimeError('[cumtrapz] x attribute is not yet supported')
     if initial:
         if result is None:
@@ -386,6 +390,6 @@ def sort(x, reverse=False):
     elif x.dtype == 'int64':
         __lib.sort_longint(__getPointer(x), __getLen(x), ct.c_bool(reverse))
     else:
-        #SortError
+        # SortError
         raise RuntimeError('[sort] Datatype %s not supported' % x.dtype)
     return x

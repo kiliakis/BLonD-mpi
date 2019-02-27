@@ -34,7 +34,8 @@ configs = {
     #     'mtw': cycle([0]),
     #     'approx': cycle([2]),
     #     'timing': cycle(['']),  # otherwise pass -time
-    #     'seed': [0] * 5 + [1] * 5 + [2] * 5,
+    #     # 'seed': [0] * 5 + [1] * 5 + [2] * 5,
+    #     'seed': [3] * 5 + [4] * 5 + [5] * 5,
     #     'w': []
     #     + [1, 2, 4, 8, 16]
     #     + [1, 2, 4, 8, 16]
@@ -48,61 +49,140 @@ configs = {
     #     'partition': cycle(['be-short'])
     # },
 
-    'SPS-rand-12B-4MPPB-approx1': {
+    # 'SPS-rand-12B-4MPPB-approx1': {
+    #     'exe': cycle([home + '/__EXAMPLES/main_files/SPS_main_random.py']),
+    #     'p': cycle([4000000]),
+    #     'b': cycle([12]),  # 72
+    #     's': cycle([1408]),
+    #     't': cycle([43349]),  # 4000
+    #     'm': cycle([50]),
+    #     'load': cycle([0.0]),
+    #     'mtw': cycle([0]),
+    #     'approx': cycle([1]),
+    #     'timing': cycle(['']),  # otherwise pass -time
+    #     # 'seed': [0] * 3 + [1] * 3 + [2] * 3,
+    #     'seed': [3] * 3 + [4] * 3 + [5] * 3,
+    #     # 'seed': [0, 1, 2, 3, 4, 5],
+    #     'reduce': []
+    #     # + [4] * 6,
+    #     + [1, 2, 3]
+    #     + [1, 2, 3]
+    #     + [1, 2, 3],
+    #     'w': [16] * 9,
+    #     'o': cycle([10]),
+    #     'time': cycle([360]),
+    #     'partition': cycle(['be-short'])
+    # },
+
+
+    'SPS-b72-4MPPB-t10k-approx-time-3': {
         'exe': cycle([home + '/__EXAMPLES/main_files/SPS_main_random.py']),
         'p': cycle([4000000]),
-        'b': cycle([12]),  # 72
+        'b': cycle([72]), # 72
         's': cycle([1408]),
-        't': cycle([43349]),  # 4000
-        'm': cycle([50]),
+        't': cycle([10000]), # 4000
+        'm': cycle([0]),
+        'reduce': cycle([1]),
         'load': cycle([0.0]),
         'mtw': cycle([0]),
-        'approx': cycle([1]),
-        'timing': cycle(['']),  # otherwise pass -time
-        'seed': [0] * 3 + [1] * 3 + [2] * 3,
-        'reduce': []
-        + [1, 2, 3]
-        + [1, 2, 3]
-        + [1, 2, 3],
-        'w': [16] * 9,
+        'approx': cycle([2]),
+        'timing': cycle(['-time']), # otherwise pass -time
+        'seed': cycle([0]),
+        'w': []
+        + [16],
+        # + [1, 2, 4, 8, 16],
+        # + list(np.arange(2, 17, 2)),
+        # list(np.arange(2, 9, 1)),
         'o': cycle([10]),
-        'time': cycle([360]),
-        'partition': cycle(['be-short'])
+        # + [10]*8,
+        'time': cycle([180]),
+        'partition': cycle(['be-short']),
+        # 'repeats': cycle([5])
     },
 
-
-    # 'SPS-b72-4MPPB-t43k-approx-time': {
-    #     'exe': cycle([home + '/__EXAMPLES/main_files/SPS_main.py']),
+    # 'SPS-b72-4MPPB-t10k-red2-time-2': {
+    #     'exe': cycle([home + '/__EXAMPLES/main_files/SPS_main_random.py']),
     #     'p': cycle([4000000]),
     #     'b': cycle([72]), # 72
     #     's': cycle([1408]),
-    #     't': cycle([43349]), # 4000
+    #     't': cycle([5000]), # 4000
     #     'm': cycle([0]),
-    #     'reduce': cycle([1]),
+    #     'reduce': cycle([2]),
     #     'load': cycle([0.0]),
     #     'mtw': cycle([0]),
-    #     'approx': cycle([2]),
+    #     'approx': cycle([1]),
     #     'timing': cycle(['-time']), # otherwise pass -time
     #     'seed': cycle([0]),
     #     'w': []
     #     # + [1, 2, 4, 8, 16],
-    #     + list(np.arange(2, 11, 1)),
+    #     + list(np.arange(2, 17, 2)),
     #     # list(np.arange(2, 9, 1)),
     #     'o': cycle([10]),
     #     # + [10]*8,
     #     'time': cycle([180]),
-    #     'partition': cycle(['be-long']),
+    #     'partition': cycle(['be-short']),
+    #     # 'repeats': cycle([5])
+    # },
+
+
+    # 'SPS-b72-4MPPB-t10k-red3-time-3': {
+    #     'exe': cycle([home + '/__EXAMPLES/main_files/SPS_main_random.py']),
+    #     'p': cycle([4000000]),
+    #     'b': cycle([72]), # 72
+    #     's': cycle([1408]),
+    #     't': cycle([5000]), # 4000
+    #     'm': cycle([0]),
+    #     'reduce': cycle([3]),
+    #     'load': cycle([0.0]),
+    #     'mtw': cycle([0]),
+    #     'approx': cycle([1]),
+    #     'timing': cycle(['-time']), # otherwise pass -time
+    #     'seed': cycle([0]),
+    #     'w': []
+    #     # + [1, 2, 4, 8, 16],
+    #     + list(np.arange(2, 17, 2)),
+    #     # list(np.arange(2, 9, 1)),
+    #     'o': cycle([10]),
+    #     # + [10]*8,
+    #     'time': cycle([180]),
+    #     'partition': cycle(['be-short']),
+    #     # 'repeats': cycle([5])
+    # },
+
+
+    # 'SPS-b72-4MPPB-t10k-red4-time-3': {
+    #     'exe': cycle([home + '/__EXAMPLES/main_files/SPS_main_random.py']),
+    #     'p': cycle([4000000]),
+    #     'b': cycle([72]), # 72
+    #     's': cycle([1408]),
+    #     't': cycle([5000]), # 4000
+    #     'm': cycle([0]),
+    #     'reduce': cycle([4]),
+    #     'load': cycle([0.0]),
+    #     'mtw': cycle([0]),
+    #     'approx': cycle([1]),
+    #     'timing': cycle(['-time']), # otherwise pass -time
+    #     'seed': cycle([0]),
+    #     'w': []
+    #     # + [1, 2, 4, 8, 16],
+    #     + list(np.arange(2, 17, 2)),
+    #     # list(np.arange(2, 9, 1)),
+    #     'o': cycle([10]),
+    #     # + [10]*8,
+    #     'time': cycle([180]),
+    #     'partition': cycle(['be-short']),
     #     # 'repeats': cycle([5])
     # },
 
 
 
-    # 'SPS-b72-4MPPB-t10k': {
-    #     'exe': cycle([home + '/__EXAMPLES/main_files/SPS_main.py']),
+
+    # 'SPS-b72-4MPPB-t10k-2': {
+    #     'exe': cycle([home + '/__EXAMPLES/main_files/SPS_main_random.py']),
     #     'p': cycle([4000000]),
     #     'b': cycle([72]), # 72
     #     's': cycle([1408]),
-    #     't': cycle([10000]), # 4000
+    #     't': cycle([5000]), # 4000
     #     'm': cycle([0]),
     #     'reduce': cycle([1]),
     #     'load': cycle([0.0]),
@@ -111,19 +191,19 @@ configs = {
     #     'timing': cycle(['-time']), # otherwise pass -time
     #     'seed': cycle([0]),
     #     'w': []
-    #     # + [1, 2, 4, 8, 16],
+    #     # + [16],
     #     + list(np.arange(2, 17, 2)),
     #     # list(np.arange(2, 9, 1)),
-    #     'o': []
-    #     + [10]*8,
-    #     'time': cycle([120]),
-    #     'partition': cycle(['be-long']),
+    #     'o': cycle([10]),
+    #     # + [10]*8,
+    #     'time': cycle([180]),
+    #     'partition': cycle(['be-short']),
     #     # 'repeats': cycle([5])
     # },
 
 }
 
-repeats = 1
+repeats = 10
 
 
 total_sims = repeats * \

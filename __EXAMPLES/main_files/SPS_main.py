@@ -503,7 +503,7 @@ if N_t_monitor > 0 and worker.isMaster:
 
 print("Ready for tracking!\n")
 
-
+delta = 0
 timing.reset()
 start_t = time.time()
 
@@ -533,7 +533,8 @@ for turn in range(N_t):
         if worker.isMaster:
             profile.fwhm_multibunch(n_bunches, bunch_spacing,
                                     rf_station.t_rf[0, turn], bucket_tolerance=1.5,
-                                    shift=0.)
+                                    shift=0.,
+                                    shiftX=-rf_station.phi_rf[0, turn] / rf_station.omega_rf[0, turn] + delta)
             slicesMonitor.track(turn)
 
     if SPS_PHASELOOP is True:

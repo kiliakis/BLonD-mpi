@@ -18,150 +18,85 @@ plots_config = {
 
     'plot1': {
         'files': {
-            # res_dir+'raw/SPS-b72-4MPPB-approx-time/comm-comp-report.csv': {
-            #     'key': 'SPS-t4k',
-            #     # 'reference':  {'time': 430., 'parts': 4000000, 'turns': 100},
-            #     'lines': {
-            #         'omp': ['10'],
-            #         'type': ['total']
-            #     }
-            # },
 
-            res_dir+'raw/SPS-b72-4MPPB-t43k-approx-time/comm-comp-report.csv': {
-                'key': 'SPS-t43k',
+            res_dir+'raw/SPS-b72-4MPPB-t10k-2/comm-comp-report.csv': {
+                'key': 'exact',
                 # 'reference':  {'time': 430., 'parts': 4000000, 'turns': 100},
                 'lines': {
-                    'omp': ['10'],
+                    'omp': ['10', '20'],
                     'type': ['total']
                 }
             },
+            # res_dir+'raw/SPS-b72-4MPPB-t10k-approx-time-2/comm-comp-report.csv': {
+            #     'key': 'method2',
+            #     # 'reference':  {'time': 430., 'parts': 4000000, 'turns': 100},
+            #     'lines': {
+            #         'omp': ['10', '20'],
+            #         'type': ['total']
+            #     }
+            # },
 
-
-            res_dir+'raw/SPS-b72-4MPPB-t10k/comm-comp-report.csv': {
-                'key': 'SPS-no-approx',
+            res_dir+'raw/SPS-b72-4MPPB-t10k-red2-time-2/comm-comp-report.csv': {
+                'key': '2turns',
                 # 'reference':  {'time': 430., 'parts': 4000000, 'turns': 100},
                 'lines': {
-                    'omp': ['10'],
+                    'omp': ['10', '20'],
                     'type': ['total']
                 }
             },
-
-            # res_dir+'raw/SPS-72B-4MPPB-uint16-r2-2/comm-comp-report.csv': {
-            #     'key': 'red-2',
-            #     # 'reference':  {'time': 430., 'parts': 4000000, 'turns': 100},
-            #     'lines': {
-            #         'omp': ['10'],
-            #         'type': ['total']
-            #     }
-            # },
-
-            # res_dir+'raw/SPS-72B-4MPPB-uint16-r3-2/comm-comp-report.csv': {
-            #     'key': 'red-3',
-            #     # 'reference':  {'time': 430., 'parts': 4000000, 'turns': 100},
-            #     'lines': {
-            #         'omp': ['10'],
-            #         'type': ['total']
-            #     }
-            # },
-
-            # res_dir+'raw/SPS-72B-4MPPB-uint16-r4-2/comm-comp-report.csv': {
-            #     'key': 'red-4',
-            #     # 'reference':  {'time': 430., 'parts': 4000000, 'turns': 100},
-            #     'lines': {
-            #         'omp': ['10'],
-            #         'type': ['total']
-            #     }
-            # },
-
-
-
-            # res_dir+'raw/SPS-b1-4MPPB-approx-time/comm-comp-report.csv': {
-            #     'key': 'SPS',
-            #     # 'reference':  {'time': 430., 'parts': 4000000, 'turns': 100},
-            #     'lines': {
-            #         'omp': ['10'],
-            #         'type': ['total']
-            #     }
-            # },
-            # res_dir+'raw/PS-b21-approx-t100k-time/comm-comp-report.csv': {
-            #     'key': 'PS-t100k',
-            #     # 'reference':  {'time': 1623.7, 'parts': 4000000, 'turns': 2000},
-            #     'lines': {
-            #         'omp': ['10'],
-            #         'type': ['total']
-            #     }
-            # },
-
-            # res_dir+'raw/PS-b21-approx-time/comm-comp-report.csv': {
-            #     'key': 'PS-t10k',
-            #     # 'reference':  {'time': 1623.7, 'parts': 4000000, 'turns': 2000},
-            #     'lines': {
-            #         'omp': ['10'],
-            #         'type': ['total']
-            #     }
-            # },
-            # res_dir+'raw/PS-4MPPB-comb-mtw50/comm-comp-report.csv': {
-            #     'key': 'PS-no-approx',
-            #     # 'reference':  {'time': 1623.7, 'parts': 4000000, 'turns': 2000},
-            #     'lines': {
-            #         'omp': ['10'],
-            #         'type': ['total']
-            #     }
-            # },
-
-            # res_dir+'raw/LHC-b96-2MPPB-t100k-approx-time/comm-comp-report.csv': {
-            #     'key': 'LHC-t100k',
-            #     # 'reference':  {'time': 2120., 'parts': 2000000, 'turns': 1000},
-            #     'lines': {
-            #         'omp': ['10'],
-            #         'type': ['total']
-            #     }
-            # },
-
-            # res_dir+'raw/LHC-b96-2MPPB-approx-time/comm-comp-report.csv': {
-            #     'key': 'LHC-t10k',
-            #     # 'reference':  {'time': 2120., 'parts': 2000000, 'turns': 1000},
-            #     'lines': {
-            #         'omp': ['10'],
-            #         'type': ['total']
-            #     }
-            # },
-            # res_dir+'raw/LHC-96B-2MPPB-t10k/comm-comp-report.csv': {
-            #     'key': 'LHC-no-approx',
-            #     # 'reference':  {'time': 2120., 'parts': 2000000, 'turns': 1000},
-            #     'lines': {
-            #         'omp': ['10'],
-            #         'type': ['total']
-            #     }
-            # },
-
+            res_dir+'raw/SPS-b72-4MPPB-t10k-red3-time-3/comm-comp-report.csv': {
+                'key': '3turns',
+                # 'reference':  {'time': 430., 'parts': 4000000, 'turns': 100},
+                'lines': {
+                    'omp': ['10', '20'],
+                    'type': ['total']
+                }
+            },
+            res_dir+'raw/SPS-b72-4MPPB-t10k-red4-time-3/comm-comp-report.csv': {
+                'key': '4turns',
+                # 'reference':  {'time': 430., 'parts': 4000000, 'turns': 100},
+                'lines': {
+                    'omp': ['10', '20'],
+                    'type': ['total']
+                }
+            },
         },
         'labels': {
-            'SPS-t43k': 'method2',
+            'exact': 'exact',
+            '2turns': '2turns',
+            '3turns': '3turns',
+            '4turns': '4turns',
+            'method2': 'method2',
+            'SPS-t43k': 'SPS-t43k',
             'SPS-t4k': 'SPS-t4k',
-            # 'SPS-no-approx': 'SPS-no-approx',
-            'SPS-no-approx': 'exact',
-            'red-2': 'red-2',
-            'red-3': 'red-3',
-            'red-4': 'red-4',
+            'SPS-no-approx': 'SPS-no-approx',
             'PS-t100k': 'PS-t100k',
             'PS-t10k': 'PS-t10k',
             'PS-no-approx': 'PS-no-approx',
             'LHC-t100k': 'LHC-t100k',
             'LHC-t10k': 'LHC-t10k',
             'LHC-no-approx': 'LHC-no-approx',
+            '10-total': '10 Cores/Task',
+            '20-total': '20 Cores/Task'
         },
-        # 'markers': {
-        #     '10-total': 's',
-        #     '20-total': 'o'
-        # },
+        'markers': {
+            'exact': 's',
+            '2turns': 'o',
+            '3turns': 'o',
+            '4turns': 'o',
+            'method2': 'o'
+        },
         'colors': {
+            'exact': 'black',
+            '2turns': 'tab:blue',
+            '3turns': 'tab:orange',
+            '4turns': 'tab:green',
+            'method2': 'tab:blue',
+            '10-total': 'tab:blue',
+            '20-total': 'tab:orange',
             'SPS-t43k': 'tab:blue',
             'SPS-t4k': 'tab:blue',
-            'SPS-no-approx': 'black',
-            'red-2': 'tab:blue',
-            'red-3': 'tab:blue',
-            'red-4': 'tab:blue',
+            'SPS-no-approx': 'tab:blue',
             'PS-t100k': 'tab:orange',
             'PS-t10k': 'tab:orange',
             'PS-no-approx': 'tab:orange',
@@ -171,12 +106,16 @@ plots_config = {
             # '': 'tab:red'
         },
         'ls': {
+            'exact': '-',
+            '2turns': '--',
+            '3turns': '--',
+            '4turns': '--',
+            'method2': '--',
+            '10-total': '-',
+            '20-total': '-',
             'SPS-t43k': '-',
             'SPS-t4k': '--',
             'SPS-no-approx': ':',
-            'red-2': ':',
-            'red-3': ':',
-            'red-4': ':',
             'PS-t100k': '-',
             'PS-t10k': '--',
             'PS-no-approx': ':',
@@ -186,12 +125,16 @@ plots_config = {
             # '': 'tab:red'
         },
         'reference': {
+            'exact': {'time': 430., 'parts': 4000000, 'turns': 100},
+            '2turns': {'time': 430., 'parts': 4000000, 'turns': 100},
+            '3turns': {'time': 430., 'parts': 4000000, 'turns': 100},
+            '4turns': {'time': 430., 'parts': 4000000, 'turns': 100},
+            'method2': {'time': 430., 'parts': 4000000, 'turns': 100},
+            '10-total': {'time': 430., 'parts': 4000000, 'turns': 100},
+            '20-total': {'time': 430., 'parts': 4000000, 'turns': 100},
             'SPS-t43k': {'time': 430., 'parts': 4000000, 'turns': 100},
             'SPS-t4k': {'time': 430., 'parts': 4000000, 'turns': 100},
             'SPS-no-approx': {'time': 430., 'parts': 4000000, 'turns': 100},
-            'red-2': {'time': 430., 'parts': 4000000, 'turns': 100},
-            'red-3': {'time': 430., 'parts': 4000000, 'turns': 100},
-            'red-4': {'time': 430., 'parts': 4000000, 'turns': 100},
             'LHC-t100k': {'time': 2120., 'parts': 2000000, 'turns': 1000},
             'LHC-t10k': {'time': 2120., 'parts': 2000000, 'turns': 1000},
             'LHC-no-approx': {'time': 2120., 'parts': 2000000, 'turns': 1000},
@@ -209,13 +152,13 @@ plots_config = {
         'xlabel': 'Cores (x10)',
         'ylabel': 'Speedup',
         'title': '',
-        # 'ylim': {
-        #     'speedup': [0, 140]
-        # },
+        'ylim': {
+            'speedup': [0, 140]
+        },
         'nticks': 6,
         'legend_loc': 'upper left',
-        'figsize': (5, 3),
-        'image_name': images_dir + 'sps-all-approx.pdf'
+        'figsize': (4, 4),
+        'image_name': images_dir + 'SPS-speedup-liu-method1-with-two-axis.pdf'
 
     },
 
@@ -343,6 +286,7 @@ if __name__ == '__main__':
         fig = plt.figure(figsize=config['figsize'])
         # ax1 = fig.add_subplot(111)
         # ax2 = ax1.twinx()
+        ax1 = plt.gca()
 
         plt.grid(True, which='major', axis='y', alpha=1)
         plt.grid(False, which='both', axis='x', alpha=0)
@@ -352,9 +296,8 @@ if __name__ == '__main__':
         plt.title(config['title'])
         # ax1.set_title(config['title'])
         plt.xlabel(config['xlabel'])
-        plt.ylabel(config['ylabel'])
-        if 'ylim' in config:
-            plt.ylim(config['ylim']['speedup'])
+        plt.ylabel(config['ylabel'], color='tab:blue')
+        # plt.ylim(config['ylim']['speedup'])
         # , size='12', weight='semibold')
 
         # plt.yscale('log', basex=2)
@@ -386,15 +329,21 @@ if __name__ == '__main__':
             # efficiency = 100 * speedup / x
 
             # We want speedup, compared to 1 worker with 1 thread
-            plt.errorbar(x//10, speedup, yerr=None, color=config['colors'][key],
-                         capsize=2, marker=None, markersize=4,
+            if key == 'exact':
+                color = 'black'
+            else:
+                color = 'tab:blue'
+            plt.errorbar(x//10, speedup, yerr=None, 
+                         # color=config['colors'][key],
+                         color=color,
+                         capsize=2, marker=config['markers'][key], markersize=4,
                          linewidth=2., label=label,
                          ls=config['ls'][key])
 
             # if '10' in key:
             #     plt.xticks(x//10)
-            # annotate_max(plt.gca(), x//10, speedup, ha='center', va='bottom',
-            # size='9')
+            annotate_max(plt.gca(), x//10, speedup, ha='center', va='bottom',
+                         size='10')
 
             # ax2.errorbar(x//10, efficiency, yerr=None, color=config['colors']['efficiency'],
             #              capsize=2, marker=config['markers'][key], markersize=4,
@@ -415,6 +364,58 @@ if __name__ == '__main__':
         #     line = mlines.Line2D([], [], color='black',
         #                          marker=v, label=config['labels'][k])
         #     handles.append(line)
+
+        ax2 = ax1.twinx()
+        plt.sca(ax2)
+        plt.ylabel('Speedup over exact', color='tab:red')
+        
+        # Get the exact throughput
+
+        valexact = plots_dir['exact']
+        yexact = np.array(valexact[:, header.index(config['y_name'])], float)
+        parts = np.array(valexact[:, header.index('parts')], float)
+        turns = np.array(valexact[:, header.index('turns')], float)
+        # This is the throughput
+        yexact = parts * turns / yexact
+
+        for key, values in plots_dir.items():
+            # print(values)
+            if key == 'exact':
+                continue
+
+            label = config['labels'][key]
+            x = np.array(values[:, header.index(config['x_name'])], float)
+            omp = np.array(
+                values[:, header.index(config['omp_name'])], float)
+            x = (x) * omp
+
+            y = np.array(values[:, header.index(config['y_name'])], float)
+            parts = np.array(values[:, header.index('parts')], float)
+            turns = np.array(values[:, header.index('turns')], float)
+            # This is the throughput
+            y = parts * turns / y
+
+            # speedup = 100. * (y - yexact) / yexact
+            speedup = (y) / yexact
+
+            # efficiency = 100 * speedup / x
+
+            # We want speedup, compared to 1 worker with 1 thread
+            plt.errorbar(x//10, speedup, yerr=None, 
+                         color='tab:red',
+                         capsize=2, marker=config['markers'][key], markersize=4,
+                         linewidth=2., 
+                         # label=label,
+                         ls=config['ls'][key])
+
+            # annotate_max(plt.gca(), x//10, speedup, ha='center', va='bottom',
+            #              size='10')
+
+        for tl in ax2.get_yticklabels():
+            tl.set_color('tab:red')
+        for tl in ax1.get_yticklabels():
+            tl.set_color('tab:blue')
+        plt.sca(ax1)
         plt.xticks(x//10)
         plt.legend(loc=config['legend_loc'], fancybox=True, fontsize=10.5,
                    labelspacing=0, borderpad=0.5, framealpha=0.4,

@@ -8,6 +8,20 @@
 # Preprocess_LHC_noise.py
 #
 # H. Timko
+from blond.utils.input_parser import parse
+from blond.utils.mpi_config import worker, print
+from blond.input_parameters.ring import Ring
+from blond.input_parameters.rf_parameters import RFStation
+from blond.trackers.tracker import RingAndRFTracker, FullRingAndRF
+from blond.llrf.beam_feedback import BeamFeedback
+from blond.llrf.rf_noise import FlatSpectrum, LHCNoiseFB
+from blond.beam.beam import Beam, Proton
+from blond.beam.distributions import bigaussian
+from blond.beam.profile import Profile, CutOptions
+from blond.impedances.impedance_sources import InputTable
+from blond.impedances.impedance import InducedVoltageFreq, TotalInducedVoltage
+from blond.toolbox.next_regular import next_regular
+from blond.monitors.monitors import SlicesMonitor
 import os
 import datetime
 import sys
@@ -22,20 +36,6 @@ except ImportError:
     from blond.utils import profile_mock as timing
     mpiprof = timing
 
-from blond.monitors.monitors import SlicesMonitor
-from blond.toolbox.next_regular import next_regular
-from blond.impedances.impedance import InducedVoltageFreq, TotalInducedVoltage
-from blond.impedances.impedance_sources import InputTable
-from blond.beam.profile import Profile, CutOptions
-from blond.beam.distributions import bigaussian
-from blond.beam.beam import Beam, Proton
-from blond.llrf.rf_noise import FlatSpectrum, LHCNoiseFB
-from blond.llrf.beam_feedback import BeamFeedback
-from blond.trackers.tracker import RingAndRFTracker, FullRingAndRF
-from blond.input_parameters.rf_parameters import RFStation
-from blond.input_parameters.ring import Ring
-from blond.utils.mpi_config import worker, print
-from blond.utils.input_parser import parse
 
 # from blond.plots.plot_beams import plot_long_phase_space
 
@@ -199,8 +199,8 @@ SL_gain = PL_gain/10.
 
 # Noise injected in the PL delayed by one turn and opposite sign
 config = {'machine': 'LHC', 'PL_gain': PL_gain, 'SL_gain': SL_gain}
-PL = BeamFeedback(ring, rf, profile, config, PhaseNoise=LHCnoise)
-# LHCNoiseFB=noiseFB)
+PL = BeamFeedback(ring, rf, profile, config, PhaseNoise=LHCnoise,
+                  LHCNoiseFB=noiseFB)
 print("   PL gain is %.4e 1/s for initial turn T0 = %.4e s" % (PL.gain,
                                                                ring.t_rev[0]))
 print("   SL gain is %.4e turns" % PL.gain2)

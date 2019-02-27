@@ -494,7 +494,6 @@ FBtime = max(longCavityImpedanceReduction.FB_time,
              shortCavityImpedanceReduction.FB_time)/tRev
 
 
-
 if N_t_monitor > 0 and worker.isMaster:
     if args.get('monitorfile', None):
         filename = args['monitorfile']
@@ -509,8 +508,10 @@ if N_t_monitor > 0 and worker.isMaster:
                                   Nbunches=n_bunches)
 print("Ready for tracking!\n")
 
+delta = 0
 timing.reset()
 start_t = time.time()
+
 
 # for turn in range(ring.n_turns):
 for turn in range(N_t):
@@ -531,15 +532,15 @@ for turn in range(N_t):
         profile.track()
         profile.scale_histo()
 
-
     if (N_t_monitor > 0) and (turn % N_t_monitor == 0):
         beam.statistics()
         beam.gather_statistics()
         if worker.isMaster:
             profile.fwhm_multibunch(n_bunches, bunch_spacing,
-                                    rf_station.t_rf[0, turn], 
+                                    rf_station.t_rf[0, turn],
                                     bucket_tolerance=1.5,
-                                    shift=0.)
+                                    shift=0.,
+                                    shiftX=-rf_station.phi_rf[0, turn] / rf_station.omega_rf[0, turn] + delta)
             slicesMonitor.track(turn)
 
     if SPS_PHASELOOP is True:
@@ -552,12 +553,12 @@ for turn in range(N_t):
 
     # applying this voltage is done by tracker if interpolation=True
     if (approx == 0) or (approx == 2):
+        # inducedVoltage.induced_voltage_sum()
         inducedVoltage.induced_voltage_sum()
     elif (approx == 1) and (turn % N_t_reduce == 0):
         inducedVoltage.induced_voltage_sum()
 
     tracker.track()
-
 
     if SPS_PHASELOOP is True:
         if turn % PL_save_turns == 0 and turn > 0:
