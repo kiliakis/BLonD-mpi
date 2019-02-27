@@ -18,6 +18,12 @@ parser = argparse.ArgumentParser(
 parser.add_argument('-i', '--infiles', type=str, default=[], nargs='+',
                     help='Input file names.')
 
+#  parser.add_argument('-s', '--slices', type=int, default=[], nargs='+',
+#                      help='Slices used in each input file.')
+
+parser.add_argument('-n', '--names', type=str, default=[], nargs='+',
+                    help='Names for the plot lines.')
+
 parser.add_argument('-o', '--outdir', type=str, default=None,
                     help='Directory to store the results.')
 
@@ -33,7 +39,27 @@ parser.add_argument('-t', '--ts', type=str, default=['1'], nargs='+',
 parser.add_argument('-reduce', '--reduce', type=int, default=1,
                     help='Reduce value for which the error will be calculated.')
 
+parser.add_argument('-points', '--points', type=int, default=1000,
+                    help='Number of points in the plot.')
+
 errors = ['n_macroparticles', 'mean_dt', 'mean_dE', 'std_dE', 'std_dt']
+
+
+config = {
+    'LHC': {
+        'slices': 144,
+        'dE_ref': 450.e9,
+        'dt_ref': 2.5e-9,
+        'n_macroparticles': 2e6
+    },
+    'SPS': {
+        'slices': 10496,
+        'dE_ref': 25.9e9,
+        'dt_ref': 5.e-9,
+        'n_macroparticles': 2e6
+
+    }
+}
 
 if __name__ == '__main__':
     args = parser.parse_args()
@@ -42,6 +68,9 @@ if __name__ == '__main__':
     infiles = args['infiles']
     outdir = args['outdir']
     tss = args['ts']
+    names = cycle(args['names'])
+    points = int(args['points'])
+    #  slicess = cycle(args['slices'])
     if not os.path.exists(outdir):
         os.makedirs(outdir)
 
@@ -51,6 +80,7 @@ if __name__ == '__main__':
                         error + '_' + error + '.jpeg']
 
             fig = plt.figure(figsize=(6, 4))
+            plt.yscale('log')
             lines = 0
             plt.grid()
             if args.get('ymin', None):
@@ -68,6 +98,8 @@ if __name__ == '__main__':
 
             for file in infiles:
                 # fullfile = indir + '/' + file
+                name = next(names)
+
                 ts_file = file.split('ts')[1].split('.h5')[0]
                 if ts_file != ts:
                     continue
@@ -76,13 +108,6 @@ if __name__ == '__main__':
                     os.makedirs(outdir + '/ts' + ts + '/')
 
                 inh5file = h5py.File(file, 'r')
-
-                # if 'SPS' in file:
-
-                # elif 'LHC' in file:
-
-                # else:
-                #     sys.exit('Not an LHC or SPS testcase: {}'.format(file))
 
                 for bunchkey in ['bunch_1']:
                     inh5 = inh5file[bunchkey]
@@ -95,57 +120,33 @@ if __name__ == '__main__':
                                 plt_data['base_error'] = []
                             plt_data['base_error'].append(
                                 inh5[error][i])
+                            x = inh5['turns'][i]
                         else:
                             continue
-                        # elif inh5['reduce'][i][1] != 1 and \
-                        #         (len(args['reduce']) == 0 or
-                        #             inh5['reduce'][i][1] in args['reduce']):
-
-                        #     key = '{}-r_{}'.format(bunchkey,
-                        #                            inh5['reduce'][i][1])
-                        #     plt_data[key] = inh5[error][i]
-                        # elif inh5['seed'][i][1] == 1980:
-                        #     key = 'r-{}'.format(inh5['reduce'][i][1])
-                        #     plt_data[key] = inh5['errors'][i]
 
                     avg_base_error = np.mean(plt_data['base_error'], axis=0)
-                    # std_base_error = np.std(plt_data['base_error'], axis=0)
                     sem_base_error = stats.sem(plt_data['base_error'], axis=0)
-                    # sem_base_error = np.abs(sem_base_error / avg_base_error)
 
-                    if 'SPS' in file:
-                        label = 'SPS' + '-' + file.split('/')[-2]
-                    elif 'LHC' in file:
-                        label = 'LHC' + '-' + file.split('/')[-2]
-                    else:
-                        sys.exit('Not an LHC or SPS testcase: {}'.format(file))
+                    if 'dt' in error:
+                        avg_base_error /= (config[name]['dt_ref'])**2
+                        sem_base_error /= (config[name]['dt_ref'])**2
+                    if 'dE' in error:
+                        avg_base_error /= (config[name]['dE_ref')**2
+                        sem_base_error /= (config[name]['dE_ref')**2
+                    if 'n_macroparticles' in error:
+                        avg_base_error /= (config[name]['slices']
+                                           * config[name]['n_macroparticles'])**2
+                        sem_base_error /= (config[name]['slices']
+                                           * config[name]['n_macroparticles'])**2
 
-                    x = np.arange(len(avg_base_error))
-                    plt.errorbar(x[::50], avg_base_error[::50], yerr=sem_base_error[::50],
-                                 label=label, linestyle='', marker=marker,
+                    intv = (len(x) + points - 1) // points
+                    plt.errorbar(x[::intv], avg_base_error[::intv], yerr=sem_base_error[::intv],
+                                 label=name, linestyle='', marker=marker,
                                  markersize=4, color=next(colors))
-                    if label == 'SPS-indvolt_no_ploop':
-                        if error == 'mean_dt':
-                            annotate_max(plt.gca(), x, avg_base_error,
-                                         size='medium', ha='right')
-                    else:
-                        annotate_max(plt.gca(), x, avg_base_error,
-                                     size='medium', ha='right')
+                    annotate_max(plt.gca(), x, avg_base_error,
+                                 size='medium', ha='right', clip_on=True)
 
                     lines += 1
-                    # del plt_data['base_error']
-
-                    # print('Base error std', 100 * std_base_error/ avg_base_error)
-
-                    # for k, v in plt_data.items():
-                    #     x = np.arange(len(v))
-                    #     y = v / avg_base_error
-                    #     err = y * sem_base_error
-                    #     # plt.errorbar(x, y, yerr=err, label=k, linestyle='',
-                    #     #              marker=marker, markersize=5, color=next(colors))
-                    #     plt.errorbar(x[::50], y[::50], yerr=None, label=k, linestyle='',
-                    #                  marker=marker, markersize=4, color=next(colors))
-                    #     lines += 1
 
                 inh5file.close()
 
@@ -156,6 +157,6 @@ if __name__ == '__main__':
 
             plt.tight_layout()
             for outfile in outfiles:
-                save_and_crop(fig, outfile, dpi=900, bbox_inches='tight')
+                save_and_crop(fig, outfile, dpi=600, bbox_inches='tight')
             plt.show()
             plt.close()

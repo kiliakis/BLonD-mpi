@@ -30,7 +30,15 @@ parser.add_argument('-ymax', '--ymax', type=float, default=None,
 parser.add_argument('-reduce', '--reduce', type=int, default=[], nargs='+',
                     help='Max value for y axis.')
 
-errors = ['n_macroparticles', 'mean_dt', 'mean_dE', 'std_dE', 'std_dt']
+parser.add_argument('-b', '--bunch', type=str, default=['1'], nargs='+',
+                    help='Plot only the lines with so many bunches.')
+
+
+parser.add_argument('-points', '--points', type=int, default=100,
+                    help='Num of points in the plot.')
+
+
+errors = ['profile', 'mean_dt', 'mean_dE', 'std_dE', 'std_dt']
 
 if __name__ == '__main__':
     args = parser.parse_args()
@@ -38,6 +46,9 @@ if __name__ == '__main__':
 
     indir = args['indir']
     outdir = args['outdir']
+    points = args['points']
+    bunches = args['bunch']
+    bunches = ['bunch_{}'.format(b) for b in bunches]
     if not os.path.exists(outdir):
         os.makedirs(outdir)
 
@@ -68,6 +79,8 @@ if __name__ == '__main__':
             markers = cycle(['+', 'x', 'v'])
 
             for bunchkey in inh5file.keys():
+                if bunchkey not in bunches:
+                    continue
                 inh5 = inh5file[bunchkey]
                 plt_data = {}
                 marker = next(markers)
@@ -79,32 +92,30 @@ if __name__ == '__main__':
                             plt_data['base_error'] = []
                         plt_data['base_error'].append(
                             inh5[error][i])
+                        x = inh5['turns'][i]
                     elif inh5['reduce'][i][1] != 1 and \
                             (len(args['reduce']) == 0 or
                                 inh5['reduce'][i][1] in args['reduce']):
-
                         key = '{}-r_{}'.format(bunchkey, inh5['reduce'][i][1])
                         plt_data[key] = inh5[error][i]
-                    # elif inh5['seed'][i][1] == 1980:
-                    #     key = 'r-{}'.format(inh5['reduce'][i][1])
-                    #     plt_data[key] = inh5['errors'][i]
+                        x = inh5['turns'][i]
 
                 avg_base_error = np.mean(plt_data['base_error'], axis=0)
-                # std_base_error = np.std(plt_data['base_error'], axis=0)
                 sem_base_error = stats.sem(plt_data['base_error'], axis=0)
                 sem_base_error = np.abs(sem_base_error / avg_base_error)
 
                 del plt_data['base_error']
 
                 # print('Base error std', 100 * std_base_error/ avg_base_error)
+                intv = int(np.ceil(len(x)/points))
 
                 for k, v in plt_data.items():
-                    x = np.arange(len(v))
+                    #  x = np.arange(len(v))
                     y = v / avg_base_error
                     err = y * sem_base_error
                     # plt.errorbar(x, y, yerr=err, label=k, linestyle='',
                     #              marker=marker, markersize=5, color=next(colors))
-                    plt.errorbar(x[::50], y[::50], yerr=None, label=k, linestyle='',
+                    plt.errorbar(x[::intv], y[::intv], yerr=None, label=k, linestyle='',
                                  marker=marker, markersize=4, color=next(colors))
                     lines += 1
 

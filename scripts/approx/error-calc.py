@@ -28,7 +28,7 @@ parser.add_argument('-t', '--ts', type=int, default=[1, 100], nargs='+',
 # parser.add_argument('-q', '--quantities', type=str, default=[], nargs='+',
 #                     help='The quantities for which the error will be computed.')
 
-quantities = ['n_macroparticles', 'mean_dE', 'mean_dt', 'std_dt', 'std_dE']
+quantities = ['profile', 'mean_dE', 'mean_dt', 'std_dt', 'std_dE']
 
 
 def calc_error(f1, f2, ts):
@@ -36,11 +36,16 @@ def calc_error(f1, f2, ts):
     f2 = h5py.File(f2, 'r')
 
     errors = {}
-
+    turns = f1['default/turns'].value
+    turns = turns[:len(turns)-ts]
+    real_slices = np.zeros(len(turns)-ts+1, dtype='int32')
+    particles = np.zeros((2, len(turns)-ts+1), dtype='int32')
+    particles[0] = f1['default/n_particles'].value[:-ts].reshape(len(turns)-ts+1)
+    particles[1] = f2['default/n_particles'].value[:-ts].reshape(len(turns)-ts+1)
     for key in quantities:
 
-        f1data = f1['Slices'][key].value
-        f2data = f2['Slices'][key].value
+        f1data = f1['default'][key].value
+        f2data = f2['default'][key].value
 
         errors[key] = np.empty(len(f1data)-ts, dtype=float)
         f1sum = np.sum(f1data[0:ts-1], axis=0)
@@ -48,7 +53,9 @@ def calc_error(f1, f2, ts):
         for i in range(len(f1data)-ts):
             f1sum += f1data[ts-1]
             f2sum += f2data[ts-1]
-            errors[key][i] = np.sum((f1sum/ts - f2sum/ts)**2)
+            if key == 'profile':
+                real_slices[i] = np.sum((f1sum > 0) + (f2sum > 0))
+            errors[key][i] = np.sum(((f1sum - f2sum)/ts)**2)
             f1sum -= f1data[i]
             f2sum -= f2data[i]
 
@@ -57,12 +64,12 @@ def calc_error(f1, f2, ts):
     f1.close()
     f2.close()
 
-    return errors
+    return errors, turns, real_slices, particles
 
 
 def getDim(file):
     h5file = h5py.File(file, 'r')
-    length = h5file['Slices']['n_macroparticles'].len()
+    length = h5file['default']['profile'].len()
     h5file.close()
     return length
 
@@ -79,7 +86,8 @@ def calc_and_write(indir, basefiles, approxfiles, reffile, bunch, ts, outh5):
             # print('\n------------------------')
             print('Calculating the error between the basefiles with ' +
                   'seeds {} and {}'.format(seed1, seed2))
-            err = calc_error(indir + '/' + bf1, indir + '/' + bf2, ts)
+            err, turns, real_slices, particles = calc_error(
+                indir + '/' + bf1, indir + '/' + bf2, ts)
             for key in err.keys():
                 outh5[key][calc_and_write.idx] = err[key]
                 if key not in errors:
@@ -87,7 +95,9 @@ def calc_and_write(indir, basefiles, approxfiles, reffile, bunch, ts, outh5):
                 errors[key].append(err[key])
             outh5['seeds'][calc_and_write.idx] = [seed1, seed2]
             outh5['reduce'][calc_and_write.idx] = [1, 1]
-
+            outh5['turns'][calc_and_write.idx] = turns
+            outh5['real_slices'][calc_and_write.idx] = real_slices
+            outh5['particles'][calc_and_write.idx] = particles
             calc_and_write.idx += 1
 
             # print('The error is: {}'.format(errors[-1]))
@@ -104,8 +114,8 @@ def calc_and_write(indir, basefiles, approxfiles, reffile, bunch, ts, outh5):
         print('Calculating the error between the files with ' +
               'reduce {} and {}'.format(red, 1))
 
-        err = calc_error(indir + '/' + approxfile,
-                         indir + '/' + reffile, ts)
+        err, turns, real_slices, particles = calc_error(indir + '/' + approxfile,
+                                                        indir + '/' + reffile, ts)
         for key in err.keys():
             outh5[key][calc_and_write.idx] = err[key]
             # err[key] = err[key] / avg_base_error[key]
@@ -114,6 +124,9 @@ def calc_and_write(indir, basefiles, approxfiles, reffile, bunch, ts, outh5):
         # outh5['errors'][calc_and_write.idx] = err
         outh5['seeds'][calc_and_write.idx] = [seed, seed]
         outh5['reduce'][calc_and_write.idx] = [1, red]
+        outh5['turns'][calc_and_write.idx] = turns
+        outh5['real_slices'][calc_and_write.idx] = real_slices
+        outh5['particles'][calc_and_write.idx] = particles
         calc_and_write.idx += 1
 
 
@@ -172,7 +185,7 @@ if __name__ == '__main__':
             outh5file.create_group('bunch_{}'.format(bunch))
             outh5 = outh5file['bunch_{}'.format(bunch)]
 
-            outh5.create_dataset('n_macroparticles', (datasets, turns - ts),
+            outh5.create_dataset('profile', (datasets, turns - ts),
                                  compression='gzip', compression_opts=4,
                                  dtype='float64')
 
@@ -190,6 +203,18 @@ if __name__ == '__main__':
             outh5.create_dataset('std_dt', (datasets, turns - ts),
                                  compression='gzip', compression_opts=4,
                                  dtype='float64')
+
+            outh5.create_dataset('turns', (datasets, turns-ts),
+                                 compression='gzip', compression_opts=4,
+                                 dtype='int32')
+
+            outh5.create_dataset('real_slices', (datasets, turns-ts),
+                                 compression='gzip', compression_opts=4,
+                                 dtype='int32')
+
+            outh5.create_dataset('particles', (datasets, 2, turns-ts),
+                                 compression='gzip', compression_opts=4,
+                                 dtype='int32')
 
             outh5.create_dataset('seeds', (datasets, 2), compression='gzip',
                                  compression_opts=4, dtype='int32')
