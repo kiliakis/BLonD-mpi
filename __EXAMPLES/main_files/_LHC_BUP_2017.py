@@ -7,6 +7,20 @@
 # Preprocess_ramp.py
 # Preprocess_LHC_noise.py
 #
+import os
+import datetime
+import sys
+import time
+import numpy as np
+import matplotlib as mpl
+mpl.use('Agg')
+try:
+    from pyprof import timing
+    from pyprof import mpiprof
+except ImportError:
+    from blond.utils import profile_mock as timing
+    mpiprof = timing
+
 # H. Timko
 from blond.utils.input_parser import parse
 from blond.utils.mpi_config import worker, print
@@ -22,25 +36,6 @@ from blond.impedances.impedance_sources import InputTable
 from blond.impedances.impedance import InducedVoltageFreq, TotalInducedVoltage
 from blond.toolbox.next_regular import next_regular
 from blond.monitors.monitors import SlicesMonitor
-import os
-import datetime
-import sys
-import time
-import numpy as np
-import matplotlib as mpl
-mpl.use('Agg')
-try:
-    from pyprof import timing
-    from pyprof import mpiprof
-except ImportError:
-    from blond.utils import profile_mock as timing
-    mpiprof = timing
-
-
-# from blond.plots.plot_beams import plot_long_phase_space
-
-# matched_from_distribution_function
-
 
 REAL_RAMP = True    # track full ramp
 MONITORING = False   # turn off plots and monitors
@@ -51,6 +46,9 @@ if MONITORING:
     from blond.plots.plot_beams import plot_long_phase_space
     from blond.plots.plot_slices import plot_beam_profile
 
+# from blond.plots.plot_beams import plot_long_phase_space
+
+# matched_from_distribution_function
 
 this_directory = os.path.dirname(os.path.realpath(__file__)) + '/'
 

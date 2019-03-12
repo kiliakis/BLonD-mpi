@@ -147,7 +147,7 @@ profile = Profile(beam, CutOptions(n_slices=N_slices))
 
 long_tracker = RingAndRFTracker(rf, beam)
 
-beam.split()
+beam.split_random()
 
 
 if N_t_monitor > 0 and worker.isMaster:
@@ -194,12 +194,14 @@ for turn in range(1, N_t+1):
     long_tracker.track()
 
     # Update profile
-    profile.track()
     if (approx == 0):
+        profile.track()
         profile.reduce_histo()
     elif (approx == 1) and (turn % N_t_reduce == 0):
+        profile.track()
         profile.reduce_histo()
     elif (approx == 2):
+        profile.track()
         profile.scale_histo()
 
     if (N_t_monitor > 0) and (turn % N_t_monitor == 0):
