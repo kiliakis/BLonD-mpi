@@ -11,10 +11,10 @@ from scipy import stats
 from cycler import cycle
 import bisect
 
-# Same as the approx2-raw but reads from different file organization. 
+# Same as the approx2-raw but reads from different file organization.
 
 parser = argparse.ArgumentParser(
-    description='Evaluate approx2 raw data.')
+    description='Evaluate approx raw data.')
 
 
 parser.add_argument('-i', '--indir', type=str, default=None,
@@ -55,10 +55,11 @@ def running_mean(x, N, axis=None):
     cumsum = np.cumsum(np.insert(x, 0, 0, axis=0), axis=0)
     return (cumsum[N:] - cumsum[:-N])/N
 
+
 def remove_nan(x):
     i = 0
     while np.isnan(x[i]):
-        i+=1
+        i += 1
     x[0:i] = x[i]
     val = x[i]
     while i < len(x):
@@ -66,7 +67,8 @@ def remove_nan(x):
             x[i] = val
         else:
             val = x[i]
-        i+=1
+        i += 1
+
 
 if __name__ == '__main__':
     args = parser.parse_args()
@@ -84,7 +86,6 @@ if __name__ == '__main__':
     for dirpath, dirnames, filenames in os.walk(indir):
         if 'monitor.h5' not in filenames:
             continue
-
 
         particles = dirpath.split('_p')[1].split('_')[0]
         bunches = dirpath.split('_b')[1].split('_')[0]
@@ -156,39 +157,110 @@ if __name__ == '__main__':
         if not os.path.exists(os.path.dirname(outdir + '/ts' + ts+'/')):
             os.makedirs(os.path.dirname(outdir + '/ts' + ts+'/'))
         for error in plot_dir.keys():
-            lines = 0
-            fig = plt.figure(figsize=(4, 4))
             outfiles = [
                 # '{}/ts{}/{}.pdf'.format(outdir, ts, error),
                 '{}/ts{}/{}.jpeg'.format(outdir, ts, error)]
+            if error == 'profile':
+                fig, ax_arr = plt.subplots(
+                    nrows=1, ncols=2, figsize=(4, 4), sharey=True)
+                fig.suptitle('Ts: {}, Variable: {}'.format(ts, error), fontsize=8)
 
-            plt.grid()
-            if args.get('ymin', None):
-                plt.ylim(ymin=args['ymin'])
-            if args.get('ymax', None):
-                plt.ylim(ymax=args['ymax'])
+                for approx_knob, data in plot_dir[error].items():
+                    x = data['turns']
+                    y = data['sum'] / data['num']
+                    ymin = data['min']
+                    ymax = data['max']
+                    intv = int(np.ceil(len(x)/points))
+                    label = 'apprx{}_{}'.format(approx, approx_knob)
+                    marker = markers.get(
+                        'apprx{}_{}'.format(approx, approx_knob), None)
+                    # Here I need a way to isolate the first and the last bunch only
+                    # A tuple of three indices, start, max, end
+                    bunch = []
+                    min_parts = np.max(y)/100.
+                    i = 0
+                    phase = 'start'
+                    while i < len(y):
+                        # First we look for a slice with more that 1% parts for 10
+                        # slices in a row
+                        if phase == 'start':
+                            if (y[i] >= min_parts) and (np.min(y[i:i+10]) > min_parts):
+                                bunch.append([i, i])
+                                phase = 'end'
+                        # Finally we look for the end of the bunch, a region
+                        # with very few particles per slice for some slices in a row
+                        elif phase == 'end':
+                            if (y[i] < min_parts) and (np.max(y[i:i+10]) < min_parts):
+                                bunch[-1][1] = i
+                                phase = 'start'
+                        i += 1
+                    if (len(bunch) != int(bunches)):
+                        print('WARNING: Knob {}, detected {} instead of {} bunches.'.format(
+                            approx_knob, len(bunch), bunches))
 
-            plt.title('Ts: {}, Variable: {}'.format(ts, error))
-            plt.xlabel('#Turn')
-            plt.ylabel('Raw value')
+                    bunch_idx = [0, -1]
+                    for idx in bunch_idx:
+                        plt.sca(ax_arr[idx])
+                        b = bunch[idx]
+                        x1 = np.arange(b[0], b[1])
+                        y1 = y[x1]
+                        ymin1 = ymin[x1]
+                        ymax1 = ymax[x1]
+                        # x1 = np.arange(len(x1))
+                        if (approx_knob == '1'):
+                            plt.fill_between(
+                                x1, ymin1, ymax1, facecolor='0.6', interpolate=True)
+                            plt.plot(x1, ymax1, color='black', linewidth=1)
+                            plt.plot(x1, ymin1, color='black',
+                                     linewidth=1, label=label)
+                        else:
+                            # print(label, y)
+                            plt.errorbar(x1, y1,
+                                         yerr=[y1-ymin1, ymax1-y1],
+                                         label=label, linestyle='--',
+                                         marker=marker, markersize=0,
+                                         linewidth=1,
+                                         # color=next(colors),
+                                         # alpha=0.5,
+                                         capsize=1, elinewidth=1)
 
-            for approx_knob, data in plot_dir[error].items():
-                x = data['turns']
-                y = data['sum'] / data['num']
-                ymin = data['min']
-                ymax = data['max']
-                intv = int(np.ceil(len(x)/points))
-                label = 'apprx{}_{}'.format(approx, approx_knob)
-                marker = markers.get('apprx{}_{}'.format(approx, approx_knob), None)
-                if (error == 'profile'):
-                    # y = y[-1]
-                    nonzero = np.flatnonzero(ymax)
-                    y = y[nonzero[0]:nonzero[-1]]
-                    ymin = ymin[nonzero[0]:nonzero[-1]]
-                    ymax = ymax[nonzero[0]:nonzero[-1]]
-                    x = np.arange(len(y))
-                    plt.xlabel('#Bin')
-                else:
+                        plt.grid()
+                        plt.xlabel('#bin', fontsize=8)
+                        plt.xticks(fontsize=8)
+                        plt.yticks(fontsize=8)
+                        plt.ticklabel_format(
+                            axis='y', style='sci', scilimits=(0, 0))
+                        plt.gca().tick_params(pad=1, top=1, bottom=1, left=1,
+                                              direction='inout', length=3, width=0.5)
+                        if idx == 0:
+                            plt.ylabel('#particles', fontsize=8)
+                            plt.title('First bunch', fontsize=8, pad=1)
+                        elif idx == -1:
+                            plt.title('Last bunch', fontsize=8, pad=1)
+                            plt.legend(loc='best', fancybox=True, fontsize=8,
+                                           ncol=(lines+2)//3, columnspacing=1,
+                                           labelspacing=0.1, borderpad=0.2, framealpha=0.5,
+                                           handletextpad=0.2, handlelength=1.5, borderaxespad=0)
+
+            else:
+
+                lines = 0
+                fig = plt.figure(figsize=(4, 4))
+
+                plt.grid()
+                plt.title('Ts: {}, Variable: {}'.format(ts, error), fontsize=8)
+                plt.xlabel('#Turn', fontsize=8)
+                plt.ylabel('Raw value', fontsize=8)
+
+                for approx_knob, data in plot_dir[error].items():
+                    x = data['turns']
+                    y = data['sum'] / data['num']
+                    ymin = data['min']
+                    ymax = data['max']
+                    intv = int(np.ceil(len(x)/points))
+                    label = 'apprx{}_{}'.format(approx, approx_knob)
+                    marker = markers.get(
+                        'apprx{}_{}'.format(approx, approx_knob), None)
                     y = running_mean(y, int(ts))
                     ymin = running_mean(ymin, int(ts))
                     ymax = running_mean(ymax, int(ts))
@@ -196,28 +268,36 @@ if __name__ == '__main__':
                     y = y[::intv]
                     ymin = ymin[::intv]
                     ymax = ymax[::intv]
-                if (approx_knob == '1'):
-                    plt.fill_between(
-                        x, ymin, ymax, facecolor='0.6', interpolate=True)
-                    plt.plot(x, ymax, color='black', linewidth=1)
-                    plt.plot(x, ymin, color='black',  linewidth=1, label=label)
-                else:
-                    # print(label, y)
-                    plt.errorbar(x, y,
-                             yerr=[y-ymin, ymax-y],
-                             label=label, linestyle='--',
-                             marker=marker, markersize=0,
-                             # color=next(colors),
-                             # alpha=0.5,
-                             capsize=1, elinewidth=1)
-                lines += 1
-            plt.ticklabel_format(axis='y', style='sci', scilimits=(0, 0))
-            plt.legend(loc='upper left', fancybox=True, fontsize=9,
-                           ncol=(lines+2)//3, columnspacing=1,
-                           labelspacing=0.1, borderpad=0.2, framealpha=0.5,
-                           handletextpad=0.2, handlelength=1.5, borderaxespad=0)
+                    if (approx_knob == '1'):
+                        plt.fill_between(
+                            x, ymin, ymax, facecolor='0.6', interpolate=True)
+                        plt.plot(x, ymax, color='black', linewidth=1)
+                        plt.plot(x, ymin, color='black',
+                                 linewidth=1, label=label)
+                    else:
+                        # print(label, y)
+                        plt.errorbar(x, y,
+                                     yerr=[y-ymin, ymax-y],
+                                     label=label, linestyle='--',
+                                     marker=marker, markersize=0,
+                                     linewidth=1,
+                                     # color=next(colors),
+                                     # alpha=0.5,
+                                     capsize=1, elinewidth=1)
+                    lines += 1
+                plt.xticks(fontsize=8)
+                plt.yticks(fontsize=8)
+                plt.ticklabel_format(axis='y', style='sci', scilimits=(0, 0))
+                plt.gca().tick_params(pad=1, top=1, bottom=1, left=1,
+                      direction='inout', length=3, width=0.5)
+                plt.legend(loc='upper left', fancybox=True, fontsize=8,
+                               ncol=(lines+2)//3, columnspacing=1,
+                               labelspacing=0.1, borderpad=0.2, framealpha=0.5,
+                               handletextpad=0.2, handlelength=1.5, borderaxespad=0)
 
             plt.tight_layout()
+            plt.subplots_adjust(wspace=0.0)
+            
             for outfile in outfiles:
                 save_and_crop(fig, outfile, dpi=900, bbox_inches='tight')
                 # fig.savefig(outfile, dpi=900, bbox_inches='tight')

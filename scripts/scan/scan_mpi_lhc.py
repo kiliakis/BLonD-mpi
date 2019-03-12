@@ -59,12 +59,14 @@ configs = {
         'approx': cycle([1]),
         'timing': cycle(['']),  # otherwise pass -time
         'seed': [0] * 3 + [1] * 3 + [2] * 3 + [3] * 3 + [4] * 3 + [5] * 3,        
+        # 'seed': [1, 2],        
         'reduce': []
         + [1, 2, 3] * 6,
+        # + [1, 2],
         'w': [16] * 18,
         'o': cycle([10]),
         'time': cycle([360]),
-        'partition': cycle(['be-long'])
+        'partition': cycle(['be-short'])
     }
 
     # 'LHC-b96-2MPPB-t100k-approx-time': {
