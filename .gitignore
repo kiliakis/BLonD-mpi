@@ -10,6 +10,7 @@
 *__doc/_build
 *__EXAMPLES/output_files/
 *.log
+*results/*
 *results/raw*
 *.clog*
 *.slog*

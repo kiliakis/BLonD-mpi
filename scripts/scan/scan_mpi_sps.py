@@ -1,24 +1,21 @@
 import subprocess
 import os
-from functools import reduce
-from operator import mul
+import sys
 from cycler import cycle
 from math import ceil
 from datetime import datetime
 import numpy as np
 import random
-from time import sleep
+import yaml
 
-# home = '/afs/cern.ch/work/k/kiliakis/git/BLonD-mpi'
-home = os.environ['HOME'] + '/git/BLonD-mpi'
-blond_repos = os.environ['HOME'] + '/git/blond_repos'
-result_dir = home + '/results/raw/{}/{}/{}/{}'
-os.environ['PYTHONPATH'] = '{}:{}'.format(blond_repos, os.environ['PYTHONPATH'])
+this_directory = os.path.dirname(os.path.realpath(__file__)) + "/"
+this_filename = sys.argv[0].split('/')[-1]
 
-# exe = home + '/__EXAMPLES/main_files/SPS_main.py'
-batch_script = home + '/scripts/batch-simple.sh'
-setup_script = home + '/scripts/batch-setup.sh'
-job_name_form = '_p{}_b{}_s{}_t{}_w{}_o{}_N{}_r{}_m{}_seed{}_approx{}_'
+yc = yaml.load(open(this_directory + 'config.yml', 'r'))
+result_dir = yc['result_dir'] + '{}/{}/{}/{}'
+os.environ['PYTHONPATH'] = '{}:{}'.format(
+    yc['blond_repos'], os.environ['PYTHONPATH'])
+job_name_form = '_p{}_b{}_s{}_t{}_w{}_o{}_N{}_r{}_m{}_seed{}_approx{}_mpi{}'
 
 configs = {
 
@@ -75,30 +72,30 @@ configs = {
     # },
 
 
-    'SPS-b72-4MPPB-t10k-approx-time-3': {
-        'exe': cycle([home + '/__EXAMPLES/main_files/SPS_main_random.py']),
-        'p': cycle([4000000]),
-        'b': cycle([72]), # 72
-        's': cycle([1408]),
-        't': cycle([10000]), # 4000
-        'm': cycle([0]),
-        'reduce': cycle([1]),
-        'load': cycle([0.0]),
-        'mtw': cycle([0]),
-        'approx': cycle([2]),
-        'timing': cycle(['-time']), # otherwise pass -time
-        'seed': cycle([0]),
-        'w': []
-        + [16],
-        # + [1, 2, 4, 8, 16],
-        # + list(np.arange(2, 17, 2)),
-        # list(np.arange(2, 9, 1)),
-        'o': cycle([10]),
-        # + [10]*8,
-        'time': cycle([180]),
-        'partition': cycle(['be-short']),
-        # 'repeats': cycle([5])
-    },
+    # 'SPS-b72-4MPPB-t10k-approx-time-3': {
+    #     'exe': cycle([home + '/__EXAMPLES/main_files/SPS_main_random.py']),
+    #     'p': cycle([4000000]),
+    #     'b': cycle([72]), # 72
+    #     's': cycle([1408]),
+    #     't': cycle([10000]), # 4000
+    #     'm': cycle([0]),
+    #     'reduce': cycle([1]),
+    #     'load': cycle([0.0]),
+    #     'mtw': cycle([0]),
+    #     'approx': cycle([2]),
+    #     'timing': cycle(['-time']), # otherwise pass -time
+    #     'seed': cycle([0]),
+    #     'w': []
+    #     + [16],
+    #     # + [1, 2, 4, 8, 16],
+    #     # + list(np.arange(2, 17, 2)),
+    #     # list(np.arange(2, 9, 1)),
+    #     'o': cycle([10]),
+    #     # + [10]*8,
+    #     'time': cycle([180]),
+    #     'partition': cycle(['be-short']),
+    #     # 'repeats': cycle([5])
+    # },
 
     # 'SPS-b72-4MPPB-t10k-red2-time-2': {
     #     'exe': cycle([home + '/__EXAMPLES/main_files/SPS_main_random.py']),
@@ -177,33 +174,85 @@ configs = {
 
 
 
-    # 'SPS-b72-4MPPB-t10k-2': {
-    #     'exe': cycle([home + '/__EXAMPLES/main_files/SPS_main_random.py']),
-    #     'p': cycle([4000000]),
-    #     'b': cycle([72]), # 72
-    #     's': cycle([1408]),
-    #     't': cycle([5000]), # 4000
-    #     'm': cycle([0]),
-    #     'reduce': cycle([1]),
-    #     'load': cycle([0.0]),
-    #     'mtw': cycle([0]),
-    #     'approx': cycle([0]),
-    #     'timing': cycle(['-time']), # otherwise pass -time
-    #     'seed': cycle([0]),
-    #     'w': []
-    #     # + [16],
-    #     + list(np.arange(2, 17, 2)),
-    #     # list(np.arange(2, 9, 1)),
-    #     'o': cycle([10]),
-    #     # + [10]*8,
-    #     'time': cycle([180]),
-    #     'partition': cycle(['be-short']),
-    #     # 'repeats': cycle([5])
-    # },
+    'SPS-b72-4MPPB-t10k-mpich3': {
+        'exe': cycle([yc['exe_home'] + 'SPS_main_random.py']),
+        'p': cycle([4000000]),
+        'b': cycle([72]), # 72
+        's': cycle([1408]),
+        't': cycle([10000]), # 4000
+        'm': cycle([0]),
+        'reduce': cycle([1]),
+        'load': cycle([0.0]),
+        'mtw': cycle([0]),
+        'approx': cycle([0]),
+        'timing': cycle(['-time']), # otherwise pass -time
+        'seed': cycle([0]),
+        'w': []
+        # + [16],
+        + list(np.arange(2, 17, 2)),
+        # list(np.arange(2, 9, 1)),
+        'o': cycle([10]),
+        # + [10]*8,
+        'mpi': cycle(['mpich3']),
+        'time': cycle([180]),
+        'partition': cycle(['be-long']),
+        # 'repeats': cycle([5])
+    },
+
+    'SPS-b72-4MPPB-t10k-openmpi3': {
+        'exe': cycle([yc['exe_home'] + 'SPS_main_random.py']),
+        'p': cycle([4000000]),
+        'b': cycle([72]), # 72
+        's': cycle([1408]),
+        't': cycle([10000]), # 4000
+        'm': cycle([0]),
+        'reduce': cycle([1]),
+        'load': cycle([0.0]),
+        'mtw': cycle([0]),
+        'approx': cycle([0]),
+        'timing': cycle(['-time']), # otherwise pass -time
+        'seed': cycle([0]),
+        'w': []
+        # + [16],
+        + list(np.arange(2, 17, 2)),
+        # list(np.arange(2, 9, 1)),
+        'o': cycle([10]),
+        # + [10]*8,
+        'mpi': cycle(['openmpi3']),
+        'time': cycle([180]),
+        'partition': cycle(['be-long']),
+        # 'repeats': cycle([5])
+    },
+
+    'SPS-b72-4MPPB-t10k-mvapich2': {
+        'exe': cycle([yc['exe_home'] + 'SPS_main_random.py']),
+        'p': cycle([4000000]),
+        'b': cycle([72]), # 72
+        's': cycle([1408]),
+        't': cycle([10000]), # 4000
+        'm': cycle([0]),
+        'reduce': cycle([1]),
+        'load': cycle([0.0]),
+        'mtw': cycle([0]),
+        'approx': cycle([0]),
+        'timing': cycle(['-time']), # otherwise pass -time
+        'seed': cycle([0]),
+        'w': []
+        # + [16],
+        + list(np.arange(2, 17, 2)),
+        # list(np.arange(2, 9, 1)),
+        'o': cycle([10]),
+        # + [10]*8,
+        'mpi': cycle(['mvapich2']),
+        'time': cycle([180]),
+        'partition': cycle(['be-long']),
+        # 'repeats': cycle([5])
+    },
 
 }
 
-repeats = 10
+
+repeats = 5
 
 
 total_sims = repeats * \
@@ -211,11 +260,13 @@ total_sims = repeats * \
 
 print("Total runs: ", total_sims)
 current_sim = 0
-os.chdir(home)
+os.chdir(yc['blond_home'])
+
 
 # compile first
 # subprocess.call(['srun', '-t1', '-N1', '-n1', '-p',
 #                  'be-short', 'bash', setup_script])
+
 
 for analysis, config in configs.items():
     ps = config['p']
@@ -235,24 +286,21 @@ for analysis, config in configs.items():
     seeds = config['seed']
     approxs = config['approx']
     timings = config['timing']
+    mpis = config['mpi']
     stdout = open(analysis + '.txt', 'w')
 
     for (p, b, s, t, r, w, o, time,
          partition, load, mtw, m,
-         seed, exe, approx, timing) in zip(ps, bs, ss, ts, rs, ws,
-                                           oss, times, partitions,
-                                           loads, mtws, ms, seeds,
-                                           exes, approxs, timings):
+         seed, exe, approx, timing, mpi) in zip(ps, bs, ss, ts, rs, ws,
+                                                oss, times, partitions,
+                                                loads, mtws, ms, seeds,
+                                                exes, approxs, timings, mpis):
         N = (w * o + 20-1) // 20
 
-        job_name = job_name_form.format(p, b, s, t, w, o, N, r, m, seed, approx)
+        job_name = job_name_form.format(p, b, s, t, w, o, N,
+                                        r, m, seed, approx, mpi)
+        mpi_config = yc['mpi_versions'][mpi]
 
-        # if(N < 5):
-        #     partition = 'be-short'
-        #     # continue
-        # else:
-        #     partition = 'be-long'
-        # os.environ['OMP_NUM_THREADS'] = str(o)
         for i in range(repeats):
             timestr = datetime.now().strftime('%d%b%y.%H-%M-%S')
             timestr = timestr + '-' + str(random.randint(0, 100))
@@ -269,7 +317,10 @@ for analysis, config in configs.items():
                     os.makedirs(d)
             # exe_args = ['-n', str('python', exe,
             exe_args = [
-                '-n', str(w), 'python', exe,
+                # '-n', str(w),
+                mpi_config['module_name'],
+                mpi_config['path'],
+                mpi_config['path']+'python', exe,
                 '-p', str(p), '-s', str(s),
                 '-b', str(b), '-addload', str(load),
                 '-t', str(t), '-o', str(o), '-seed', str(seed),
@@ -281,13 +332,13 @@ for analysis, config in configs.items():
             print(job_name, timestr)
             batch_args = ['-N', str(N), '-n', str(w),
                           '--ntasks-per-node', str(ceil(w/N)),
-                          '-c', str(o),
+                          '-c', str(o),  # str(o),
                           '-t', str(time), '-p', partition,
                           '-o', output,
                           '-e', error,
                           '-J', job_name.split('/')[0] + '-' + str(i)]
 
-            all_args = ['sbatch'] + batch_args + [batch_script] + exe_args
+            all_args = ['sbatch'] + batch_args + [yc['batch_script']] + exe_args
             subprocess.call(all_args, stdout=stdout,
                             stderr=stdout, env=os.environ.copy())
             # sleep(5)

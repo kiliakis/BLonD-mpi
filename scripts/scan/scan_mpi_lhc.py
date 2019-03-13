@@ -1,39 +1,20 @@
 import subprocess
 import os
+import sys
 from cycler import cycle
 from math import ceil
 from datetime import datetime
 import numpy as np
 import random
+import yaml
 
+this_directory = os.path.dirname(os.path.realpath(__file__)) + "/"
+this_filename = sys.argv[0].split('/')[-1]
 
-# def load_module(module_name):
-
-#     # unload any loaded mpi config
-#     module_list = subprocess.run(['module list'], shell=True,
-#                                  stderr=subprocess.PIPE, stdout=subprocess.PIPE)
-#     old_module = re.compile('(mpi/\w+/[\d\.]+)').search(str(module_list.stderr))
-#     if old_module:
-#         old_module = old_module.group(0).strip()
-#         print('Old module: ', old_module)
-#         if old_module != module_name:
-#             subprocess.run(['module switch {} {}'.format(old_module, module_name)],
-#                            shell=True)
-#     else:
-#         subprocess.run(['module load {}'.format(module_name)], shell=True)
-
-yc = yaml.load(open('config.yml', 'r'))
-# home = yc['home']
-# blond_home = yc['blond_home']
-# exe_home = yc['exe_home']
-# blond_repos = yc['blond_repos']
+yc = yaml.load(open(this_directory + 'config.yml', 'r'))
 result_dir = yc['result_dir'] + '{}/{}/{}/{}'
-# batch_script = yc['batch_script']
-# setup_script = yc['batch_setup']
 os.environ['PYTHONPATH'] = '{}:{}'.format(
     yc['blond_repos'], os.environ['PYTHONPATH'])
-
-# setup_script = home + '/scripts/other/batch-setup.sh'
 job_name_form = '_p{}_b{}_s{}_t{}_w{}_o{}_N{}_r{}_m{}_seed{}_approx{}_mpi{}'
 
 configs = {
@@ -110,39 +91,12 @@ configs = {
     #     'partition': cycle(['be-short'])
     # }
 
-    # 'LHC-96B-2MPPB-t10k': {
-    #     'exe': cycle([home + '/__EXAMPLES/main_files/_LHC_BUP_2017.py']),
-    #     'p': cycle([2000000]),
-    #     'b': cycle([96]),  # 96
-    #     's': cycle([1000]),
-    #     't': cycle([10000]),
-    #     'm': cycle([0]),
-    #     'seed': cycle([0]),
-    #     'reduce': cycle([1]),
-    #     'load': cycle([0.0]),
-    #     'mtw': cycle([50]),
-    #     'approx': cycle([0]),
-    #     'timing': cycle(['-time']),  # otherwise pass -time
-    #     'w': []
-    #      # + [1, 2, 4, 8, 16],
-    #     # + list(np.arange(2, 8, 1)),
-    #     + list(np.arange(2, 17, 2)),
-    #     # + list(np.arange(2, 9, 1)),
-    #     'o': cycle([10]),
-    #      # + [10] * 5,
-    #     # + [10]*8,
-    #     # + [20]*7,
-    #     'mpi': cycle(['mpi/mpich/3.2.1', 'mpi/openmpi/3.0.0']),
-    #     'time': cycle([180]),
-    #     'partition': cycle(['be-short'])
-    # },
-
-    'test': {
-        'exe': cycle([yc['exe_home'] + 'EX_01_Acceleration.py']),
-        'p': cycle([100000]),
-        'b': cycle([1]),  # 96
+    'LHC-96B-2MPPB-t10k-mpich3': {
+        'exe': cycle([yc['exe_home'] + '_LHC_BUP_2017.py']),
+        'p': cycle([2000000]),
+        'b': cycle([96]),  # 96
         's': cycle([1000]),
-        't': cycle([2000]),
+        't': cycle([10000]),
         'm': cycle([0]),
         'seed': cycle([0]),
         'reduce': cycle([1]),
@@ -150,24 +104,106 @@ configs = {
         'mtw': cycle([50]),
         'approx': cycle([0]),
         'timing': cycle(['-time']),  # otherwise pass -time
-        'w': [2] * 3,
-        # + [1, 2, 4, 8, 16],
+        'w': []
+         # + [1, 2, 4, 8, 16],
         # + list(np.arange(2, 8, 1)),
-        # + list(np.arange(2, 17, 2)),
+        + list(np.arange(2, 17, 2)),
         # + list(np.arange(2, 9, 1)),
         'o': cycle([10]),
-        # + [10] * 5,
+         # + [10] * 5,
         # + [10]*8,
         # + [20]*7,
-        'mpi': ['mpich3', 'openmpi3', 'mvapich2'],
-        'time': cycle([20]),
+        'mpi': cycle(['mpich3']),
+        'time': cycle([180]),
         'partition': cycle(['be-short'])
-    }
+    },
+
+    'LHC-96B-2MPPB-t10k-openmpi3': {
+        'exe': cycle([yc['exe_home'] + '_LHC_BUP_2017.py']),
+        'p': cycle([2000000]),
+        'b': cycle([96]),  # 96
+        's': cycle([1000]),
+        't': cycle([10000]),
+        'm': cycle([0]),
+        'seed': cycle([0]),
+        'reduce': cycle([1]),
+        'load': cycle([0.0]),
+        'mtw': cycle([50]),
+        'approx': cycle([0]),
+        'timing': cycle(['-time']),  # otherwise pass -time
+        'w': []
+         # + [1, 2, 4, 8, 16],
+        # + list(np.arange(2, 8, 1)),
+        + list(np.arange(2, 17, 2)),
+        # + list(np.arange(2, 9, 1)),
+        'o': cycle([10]),
+         # + [10] * 5,
+        # + [10]*8,
+        # + [20]*7,
+        'mpi': cycle(['openmpi3']),
+        'time': cycle([180]),
+        'partition': cycle(['be-short'])
+    },
+
+    'LHC-96B-2MPPB-t10k-mvapich2': {
+        'exe': cycle([yc['exe_home'] + '_LHC_BUP_2017.py']),
+        'p': cycle([2000000]),
+        'b': cycle([96]),  # 96
+        's': cycle([1000]),
+        't': cycle([10000]),
+        'm': cycle([0]),
+        'seed': cycle([0]),
+        'reduce': cycle([1]),
+        'load': cycle([0.0]),
+        'mtw': cycle([50]),
+        'approx': cycle([0]),
+        'timing': cycle(['-time']),  # otherwise pass -time
+        'w': []
+         # + [1, 2, 4, 8, 16],
+        # + list(np.arange(2, 8, 1)),
+        + list(np.arange(2, 17, 2)),
+        # + list(np.arange(2, 9, 1)),
+        'o': cycle([10]),
+         # + [10] * 5,
+        # + [10]*8,
+        # + [20]*7,
+        'mpi': cycle(['mvapich2']),
+        'time': cycle([180]),
+        'partition': cycle(['be-short'])
+    },
+
+
+    # 'test': {
+    #     'exe': cycle([yc['exe_home'] + 'EX_01_Acceleration.py']),
+    #     'p': cycle([100000]),
+    #     'b': cycle([1]),  # 96
+    #     's': cycle([1000]),
+    #     't': cycle([2000]),
+    #     'm': cycle([0]),
+    #     'seed': cycle([0]),
+    #     'reduce': cycle([1]),
+    #     'load': cycle([0.0]),
+    #     'mtw': cycle([50]),
+    #     'approx': cycle([0]),
+    #     'timing': cycle(['-time']),  # otherwise pass -time
+    #     'w': [2] * 3,
+    #     # + [1, 2, 4, 8, 16],
+    #     # + list(np.arange(2, 8, 1)),
+    #     # + list(np.arange(2, 17, 2)),
+    #     # + list(np.arange(2, 9, 1)),
+    #     'o': cycle([10]),
+    #     # + [10] * 5,
+    #     # + [10]*8,
+    #     # + [20]*7,
+    #     'mpi': ['mpich3', 'openmpi3', 'mvapich2'],
+    #     'time': cycle([20]),
+    #     'partition': cycle(['be-short'])
+    # }
 
 
 }
 
-repeats = 1
+repeats = 5
 
 
 total_sims = repeats * \
@@ -175,7 +211,7 @@ total_sims = repeats * \
 
 print("Total runs: ", total_sims)
 current_sim = 0
-os.chdir(home)
+os.chdir(yc['blond_home'])
 
 
 # compile first
@@ -215,14 +251,8 @@ for analysis, config in configs.items():
         job_name = job_name_form.format(p, b, s, t, w, o, N,
                                         r, m, seed, approx, mpi)
         mpi_config = yc['mpi_versions'][mpi]
-        # load_module(mpi)
 
-        # os.environ['OMP_NUM_THREADS'] = str(o)
         for i in range(repeats):
-            # if(current_sim % 2 == 0):
-            #     partition = 'be-short'
-            # else:
-            #     partition = 'be-long'
             timestr = datetime.now().strftime('%d%b%y.%H-%M-%S')
             timestr = timestr + '-' + str(random.randint(0, 100))
             output = result_dir.format(
@@ -239,9 +269,9 @@ for analysis, config in configs.items():
             # exe_args = ['-n', str('python', exe,
             exe_args = [
                 # '-n', str(w),
-                mpi_config[module_name],
-                mpi_config[path],
-                mpi_config[path]+'python', exe,
+                mpi_config['module_name'],
+                mpi_config['path'],
+                mpi_config['path']+'python', exe,
                 '-p', str(p), '-s', str(s),
                 '-b', str(b), '-addload', str(load),
                 '-t', str(t), '-o', str(o), '-seed', str(seed),
