@@ -40,7 +40,7 @@ from blond.monitors.monitors import BunchMonitor
 from blond.plots.plot import Plot
 from blond.utils.input_parser import parse
 
-from blond.utils.mpi_config import worker, print
+from blond.utils.mpi_config import worker, mpiprint
 
 this_directory = os.path.dirname(os.path.realpath(__file__)) + '/'
 
@@ -75,6 +75,14 @@ N_t_reduce = 1
 N_t_monitor = 0
 approx = 0
 
+
+worker.greet()
+if worker.isMaster:
+    worker.print_version()
+
+# mpiprint('Done!')
+# worker.finalize()
+# exit()
 
 args = parse()
 if args.get('turns', None) is not None:
@@ -114,7 +122,7 @@ if args.get('approx', None) is not None:
     approx = int(args['approx'])
 
 
-print({'N_t': N_t, 'n_macroparticles': N_p,
+mpiprint({'N_t': N_t, 'n_macroparticles': N_p,
        'N_slices': N_slices,
        'timing.mode': timing.mode,
        'n_bunches': n_bunches,
@@ -124,7 +132,7 @@ print({'N_t': N_t, 'n_macroparticles': N_p,
 
 
 # Simulation setup ------------------------------------------------------------
-print("Setting up the simulation...")
+mpiprint("Setting up the simulation...")
 
 
 # Define general parameters
@@ -170,25 +178,25 @@ if N_t_monitor > 0 and worker.isMaster:
 
 # Accelerator map
 # map_ = [long_tracker, profile]
-print("Map set")
+mpiprint("Map set")
 
 timing.reset()
 start_t = time.time()
-# print(datetime.datetime.now().time())
+# mpiprint(datetime.datetime.now().time())
 
 
 for turn in range(1, N_t+1):
 
     # Plot has to be done before tracking (at least for cases with separatrix)
     if (turn % dt_plt) == 0:
-        print("Outputting at time step %d..." % turn)
-        print("   Beam momentum %.6e eV" % beam.momentum)
-        print("   Beam gamma %3.3f" % beam.gamma)
-        print("   Beam beta %3.3f" % beam.beta)
-        print("   Beam energy %.6e eV" % beam.energy)
-        print("   Four-times r.m.s. bunch length %.4e s" % (4.*beam.sigma_dt))
-        print("   Gaussian bunch length %.4e s" % profile.bunchLength)
-        print("")
+        mpiprint("Outputting at time step %d..." % turn)
+        mpiprint("   Beam momentum %.6e eV" % beam.momentum)
+        mpiprint("   Beam gamma %3.3f" % beam.gamma)
+        mpiprint("   Beam beta %3.3f" % beam.beta)
+        mpiprint("   Beam energy %.6e eV" % beam.energy)
+        mpiprint("   Four-times r.m.s. bunch length %.4e s" % (4.*beam.sigma_dt))
+        mpiprint("   Gaussian bunch length %.4e s" % profile.bunchLength)
+        mpiprint("")
 
     # Track
     long_tracker.track()
@@ -223,9 +231,9 @@ worker.finalize()
 if N_t_monitor > 0:
     slicesMonitor.close()
 
-print('dE mean: ', np.mean(beam.dE))
-print('dE std: ', np.std(beam.dE))
-print('profile mean: ', np.mean(profile.n_macroparticles))
-print('profile std: ', np.std(profile.n_macroparticles))
+mpiprint('dE mean: ', np.mean(beam.dE))
+mpiprint('dE std: ', np.std(beam.dE))
+mpiprint('profile mean: ', np.mean(profile.n_macroparticles))
+mpiprint('profile std: ', np.std(profile.n_macroparticles))
 
-print('Done!')
+mpiprint('Done!')

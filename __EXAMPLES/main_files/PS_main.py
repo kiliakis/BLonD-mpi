@@ -22,7 +22,7 @@ import matplotlib.pyplot as plt
 # BLonD imports
 #from blond.beams.distributions import matched_from_line_density
 from blond.utils.input_parser import parse
-from blond.utils.mpi_config import worker, print
+from blond.utils.mpi_config import worker, mpiprint
 from blond.beam.beam import Proton, Beam
 from blond.input_parameters.ring import Ring, RingOptions
 from blond.input_parameters.rf_parameters import RFStation
@@ -40,12 +40,15 @@ import LoCa.Base.RFProgram as rfp
 import LoCa.Base.Bare_RF as brf
 # Impedance scenario import
 from PS_impedance.impedance_scenario import scenario
+cmap = colormap.cmap_white_blue_red
 
 
 this_directory = os.path.dirname(os.path.realpath(__file__)) + '/'
 
+worker.greet()
+if worker.isMaster:
+    worker.print_version()
 
-cmap = colormap.cmap_white_blue_red
 
 
 # Simulation parameters -------------------------------------------------------
@@ -161,7 +164,7 @@ if args.get('approx', None) is not None:
     approx = int(args['approx'])
 
 
-print({'N_t': N_t, 'n_macroparticles_per_bunch': n_macroparticles_per_bunch,
+mpiprint({'N_t': N_t, 'n_macroparticles_per_bunch': n_macroparticles_per_bunch,
        'n_slices_per_bunch': n_slices_per_bunch,
        'n_turns_memory': n_turns_memory,
        'timing.mode': timing.mode, 'n_bunches': n_bunches,
@@ -464,8 +467,8 @@ match_beam_from_distribution(beam, full_tracker, ring,
                              n_points_potential=int(1e3),
                              dt_margin_percent=0.1, seed=seed)
 
-print('dE mean:', np.mean(beam.dE))
-print('dE std:', np.std(beam.dE))
+mpiprint('dE mean:', np.mean(beam.dE))
+mpiprint('dE std:', np.std(beam.dE))
 
 beam.split_random()
 
@@ -537,7 +540,7 @@ if N_t_monitor > 0 and worker.isMaster:
                                   Nbunches=n_bunches)
 
 
-print("Ready for tracking!\n")
+mpiprint("Ready for tracking!\n")
 timing.reset()
 start_t = time.time()
 
@@ -591,12 +594,12 @@ worker.finalize()
 if N_t_monitor > 0:
     slicesMonitor.close()
 
-print('dE mean: ', np.mean(beam.dE))
-print('dE std: ', np.std(beam.dE))
-print('profile mean: ', np.mean(profile.n_macroparticles))
-print('profile std: ', np.std(profile.n_macroparticles))
+mpiprint('dE mean: ', np.mean(beam.dE))
+mpiprint('dE std: ', np.std(beam.dE))
+mpiprint('profile mean: ', np.mean(profile.n_macroparticles))
+mpiprint('profile std: ', np.std(profile.n_macroparticles))
 
-print('Done!')
+mpiprint('Done!')
 
 # Analysis
 

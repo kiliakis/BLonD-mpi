@@ -41,13 +41,13 @@ def print_wrap(f):
         msg = '[{}] '.format(worker.rank) + ' '.join([str(a) for a in args])
         if worker.isMaster:
             worker.logger.debug(msg)
-            return f('[{}]'.format(worker.rank),*args)
+            return f('[{}]'.format(worker.rank), *args)
         else:
             return worker.logger.debug(msg)
     return wrap
 
 
-print = print_wrap(print)
+mpiprint = print_wrap(print)
 
 
 class Worker:
@@ -67,7 +67,7 @@ class Worker:
         self.hostname = MPI.Get_processor_name()
         self.log = args['log']
         self.trace = args['trace']
-        
+
         if self.log:
             self.logger = MPILog(rank=self.rank, log_dir=args['logdir'])
         else:
@@ -171,8 +171,15 @@ class Worker:
         if not self.isMaster:
             sys.exit(0)
 
+    def greet(self):
+        self.logger.debug('greet')
+        print('[{}]@{}: Hello World!'.format(self.rank, self.hostname))
 
-
+    def print_version(self):
+        self.logger.debug('version')
+        # print('[{}] Library version: {}'.format(self.rank, MPI.Get_library_version()))
+        # print('[{}] Version: {}'.format(self.rank,MPI.Get_version()))
+        print('[{}] Library: {}'.format(self.rank, MPI.get_vendor()))
 
 
 class MPILog(object):

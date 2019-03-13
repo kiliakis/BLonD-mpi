@@ -23,7 +23,7 @@ except ImportError:
 
 # H. Timko
 from blond.utils.input_parser import parse
-from blond.utils.mpi_config import worker, print
+from blond.utils.mpi_config import worker, mpiprint
 from blond.input_parameters.ring import Ring
 from blond.input_parameters.rf_parameters import RFStation
 from blond.trackers.tracker import RingAndRFTracker, FullRingAndRF
@@ -52,6 +52,9 @@ if MONITORING:
 
 this_directory = os.path.dirname(os.path.realpath(__file__)) + '/'
 
+worker.greet()
+if worker.isMaster:
+    worker.print_version()
 
 # Simulation parameters --------------------------------------------------------
 # Bunch parameters
@@ -115,7 +118,7 @@ if args.get('approx', None) is not None:
     approx = int(args['approx'])
 
 
-print({'N_t': N_t, 'N_p': N_p,
+mpiprint({'N_t': N_t, 'N_p': N_p,
        'timing.mode': timing.mode, 'n_bunches': NB,
        'N_t_reduce': N_t_reduce,
        'N_t_monitor': N_t_monitor,
@@ -123,8 +126,8 @@ print({'N_t': N_t, 'N_p': N_p,
 
 
 # Simulation setup -------------------------------------------------------------
-print("Setting up the simulation...")
-print("")
+mpiprint("Setting up the simulation...")
+mpiprint("")
 wrkDir = r'/afs/cern.ch/work/k/kiliakis/public/helga/'
 
 # Import pre-processed momentum and voltage for the acceleration ramp
@@ -136,22 +139,22 @@ if REAL_RAMP:
     ps = np.concatenate((ps, np.ones(436627)*6.5e12))
 else:
     ps = 450.e9*np.ones(N_t+1)
-print("Flat top momentum %.4e eV" % ps[-1])
+mpiprint("Flat top momentum %.4e eV" % ps[-1])
 if REAL_RAMP:
     V = np.concatenate((np.linspace(6.e6, 12.e6, 13563374),
                         np.ones(436627)*12.e6))
 else:
     V = 6.e6*np.ones(N_t+1)
-print("Flat top voltage %.4e V" % V[-1])
-print("Momentum and voltage loaded...")
+mpiprint("Flat top voltage %.4e V" % V[-1])
+mpiprint("Momentum and voltage loaded...")
 
 # Define general parameters
 ring = Ring(C, alpha, ps[0:N_t+1], Proton(), n_turns=N_t)
-print("General parameters set...")
+mpiprint("General parameters set...")
 
 # Define RF parameters (noise to be added for CC case)
 rf = RFStation(ring, [h], [V[0:N_t+1]], [0.])
-print("RF parameters set...")
+mpiprint("RF parameters set...")
 
 # Generate RF phase noise
 LHCnoise = FlatSpectrum(ring, rf, fmin_s0=0.8571, fmax_s0=1.001,
@@ -165,7 +168,7 @@ LHCnoise = FlatSpectrum(ring, rf, fmin_s0=0.8571, fmax_s0=1.001,
 LHCnoise.dphi = np.load(
     wrkDir+r'input/LHCNoise_fmin0.8571_fmax1.001_ampl1e-5_weightfct_6.5TeV.npz')['arr_0']
 LHCnoise.dphi = np.ascontiguousarray(LHCnoise.dphi[0:N_t+1])
-print("RF phase noise loaded...")
+mpiprint("RF phase noise loaded...")
 
 # FULL BEAM
 bunch = Beam(ring, N_p, N_b)
@@ -184,12 +187,12 @@ nSlices = np.int(cutRange/0.025e-9 + 1)
 nSlices = next_regular(nSlices)
 profile = Profile(beam, CutOptions(n_slices=nSlices, cut_left=-0.5e-9,
                                    cut_right=(cutRange-0.5e-9)))
-print("Beam generated, profile set...")
-print("Using %d slices" % nSlices)
+mpiprint("Beam generated, profile set...")
+mpiprint("Using %d slices" % nSlices)
 
 # Define emittance BUP feedback
 noiseFB = LHCNoiseFB(rf, profile, bl_target)
-print("Phase noise feedback set...")
+mpiprint("Phase noise feedback set...")
 
 # Define phase loop and frequency loop gain
 PL_gain = 1./(5.*ring.t_rev[0])
@@ -199,13 +202,13 @@ SL_gain = PL_gain/10.
 config = {'machine': 'LHC', 'PL_gain': PL_gain, 'SL_gain': SL_gain}
 PL = BeamFeedback(ring, rf, profile, config, PhaseNoise=LHCnoise,
                   LHCNoiseFB=noiseFB)
-print("   PL gain is %.4e 1/s for initial turn T0 = %.4e s" % (PL.gain,
+mpiprint("   PL gain is %.4e 1/s for initial turn T0 = %.4e s" % (PL.gain,
                                                                ring.t_rev[0]))
-print("   SL gain is %.4e turns" % PL.gain2)
-print("   Omega_s0 = %.4e s at flat bottom, %.4e s at flat top"
+mpiprint("   SL gain is %.4e turns" % PL.gain2)
+mpiprint("   Omega_s0 = %.4e s at flat bottom, %.4e s at flat top"
       % (rf.omega_s0[0], rf.omega_s0[N_t]))
-print("   SL a_i = %.4f a_f = %.4f" % (PL.lhc_a[0], PL.lhc_a[N_t]))
-print("   SL t_i = %.4f t_f = %.4f" % (PL.lhc_t[0], PL.lhc_t[N_t]))
+mpiprint("   SL a_i = %.4f a_f = %.4f" % (PL.lhc_a[0], PL.lhc_a[N_t]))
+mpiprint("   SL t_i = %.4f t_f = %.4f" % (PL.lhc_t[0], PL.lhc_t[N_t]))
 
 # Injecting noise in the cavity, PL on
 
@@ -221,7 +224,7 @@ totVoltage = TotalInducedVoltage(beam, profile, [indVoltage])
 tracker = RingAndRFTracker(rf, beam, BeamFeedback=PL, Profile=profile,
                            interpolation=True, TotalInducedVoltage=totVoltage)
 # interpolation=True, TotalInducedVoltage=None)
-print("PL, SL, and tracker set...")
+mpiprint("PL, SL, and tracker set...")
 # Fill beam distribution
 fullring = FullRingAndRF([tracker])
 # Juan's fit to LHC profiles: binomial w/ exponent 1.5
@@ -234,10 +237,10 @@ fullring = FullRingAndRF([tracker])
 # Initial losses, slicing, statistics
 beam.losses_separatrix(ring, rf)
 
-print('dE mean: ', np.mean(beam.dE))
-print('dE std: ', np.std(beam.dE))
-print('dt mean, 1st bunch: ', np.mean(beam.dt[:N_p]))
-print('shift ', rf.phi_rf[0, 0]/rf.omega_rf[0, 0])
+mpiprint('dE mean: ', np.mean(beam.dE))
+mpiprint('dE std: ', np.std(beam.dE))
+mpiprint('dt mean, 1st bunch: ', np.mean(beam.dt[:N_p]))
+mpiprint('shift ', rf.phi_rf[0, 0]/rf.omega_rf[0, 0])
 # plots = Plot(ring, rf, beam, dt_plt, dt_save, 0, 2.5e-9, -1500e6, 1500e6,
 #              separatrix_plot=True, Profile=profile, h5file='output_data',
 #              output_frequency=dt_mon, PhaseLoop=PL, LHCNoiseFB=None)
@@ -247,7 +250,7 @@ print('shift ', rf.phi_rf[0, 0]/rf.omega_rf[0, 0])
 
 beam.split_random()
 
-print("Statistics set...")
+mpiprint("Statistics set...")
 
 # Define what to save in file
 # if MONITORING:
@@ -265,8 +268,8 @@ print("Statistics set...")
 #                           separatrix_plot=True)
 #     plot_beam_profile(profile, 0)
 
-#     print("Initial mean bunch position %.4e s" % (beam.mean_dt))
-#     print("Initial four-times r.m.s. bunch length %.4e s" % (4.*beam.sigma_dt))
+#     mpiprint("Initial mean bunch position %.4e s" % (beam.mean_dt))
+#     mpiprint("Initial four-times r.m.s. bunch length %.4e s" % (4.*beam.sigma_dt))
 
 #     # Accelerator map
 #     map_ = [totVoltage] + [profile] + [tracker] + \
@@ -287,7 +290,7 @@ if N_t_monitor > 0 and worker.isMaster:
                                   rf=rf,
                                   Nbunches=NB)
 
-print("Map set")
+mpiprint("Map set")
 
 
 timing.reset()
@@ -297,25 +300,25 @@ for turn in range(N_t):
     # Plots and outputting
     # if MONITORING and (i % dt_plt) == 0:
     # if (i % dt_plt) == 0:
-    #     print("Outputting at time step %d, tracking time %.4e s..." % (i, t0))
-    #     print("RF tracker counter is %d" % rf.counter[0])
-    #     print("   Beam momentum %0.6e eV" % beam.momentum)
-    #     print("   Beam energy %.6e eV" % beam.energy)
-    #     print("   Design RF revolution frequency %.10e Hz" %
+    #     mpiprint("Outputting at time step %d, tracking time %.4e s..." % (i, t0))
+    #     mpiprint("RF tracker counter is %d" % rf.counter[0])
+    #     mpiprint("   Beam momentum %0.6e eV" % beam.momentum)
+    #     mpiprint("   Beam energy %.6e eV" % beam.energy)
+    #     mpiprint("   Design RF revolution frequency %.10e Hz" %
     #           rf.omega_rf_d[0, i])
-    #     print("   RF revolution frequency %.10e Hz" % rf.omega_rf[0, i])
-    #     print("   RF phase %.4f rad" % rf.phi_rf[0, i])
-    #     print("   Beam phase %.4f rad" % PL.phi_beam)
-    #     print("   Phase noise %.4f rad" % (noiseFB.x*LHCnoise.dphi[i]))
-    #     print("   PL phase error %.4f rad" % PL.RFnoise.dphi[i])
-    #     print("   Synchronous phase %.4f rad" % rf.phi_s[i])
-    #     print("   PL phase correction %.4f rad" % PL.dphi)
-    #     print("   SL recursion variable %.4e" % PL.lhc_y)
-    #     print("   Mean bunch position %.4e s" % (beam.mean_dt))
-    #     print("   Four-times r.m.s. bunch length %.4e s" %
+    #     mpiprint("   RF revolution frequency %.10e Hz" % rf.omega_rf[0, i])
+    #     mpiprint("   RF phase %.4f rad" % rf.phi_rf[0, i])
+    #     mpiprint("   Beam phase %.4f rad" % PL.phi_beam)
+    #     mpiprint("   Phase noise %.4f rad" % (noiseFB.x*LHCnoise.dphi[i]))
+    #     mpiprint("   PL phase error %.4f rad" % PL.RFnoise.dphi[i])
+    #     mpiprint("   Synchronous phase %.4f rad" % rf.phi_s[i])
+    #     mpiprint("   PL phase correction %.4f rad" % PL.dphi)
+    #     mpiprint("   SL recursion variable %.4e" % PL.lhc_y)
+    #     mpiprint("   Mean bunch position %.4e s" % (beam.mean_dt))
+    #     mpiprint("   Four-times r.m.s. bunch length %.4e s" %
     #           (4.*beam.sigma_dt))
-    #     print("   FWHM bunch length %.4e s" % noiseFB.bl_meas)
-    #     print("")
+    #     mpiprint("   FWHM bunch length %.4e s" % noiseFB.bl_meas)
+    #     mpiprint("")
     #     sys.stdout.flush()
     # Remove lost particles to obtain a correct r.m.s. value
     # if (i % 1000) == 0:  # reduce computational costs
@@ -377,12 +380,12 @@ if N_t_monitor > 0:
     slicesMonitor.close()
 
 
-print('dE mean: ', np.mean(beam.dE))
-print('dE std: ', np.std(beam.dE))
-print('dt mean, 1st bunch: ', np.mean(beam.dt[:N_p]))
-print('shift ', rf.phi_rf[0, turn]/rf.omega_rf[0, turn])
+mpiprint('dE mean: ', np.mean(beam.dE))
+mpiprint('dE std: ', np.std(beam.dE))
+mpiprint('dt mean, 1st bunch: ', np.mean(beam.dt[:N_p]))
+mpiprint('shift ', rf.phi_rf[0, turn]/rf.omega_rf[0, turn])
 
-print('profile mean: ', np.mean(profile.n_macroparticles))
-print('profile std: ', np.std(profile.n_macroparticles))
+mpiprint('profile mean: ', np.mean(profile.n_macroparticles))
+mpiprint('profile std: ', np.std(profile.n_macroparticles))
 
-print('Done!')
+mpiprint('Done!')

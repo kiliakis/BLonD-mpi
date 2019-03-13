@@ -33,10 +33,12 @@ from blond.trackers.tracker import RingAndRFTracker, FullRingAndRF
 from blond.llrf.beam_feedback import BeamFeedback
 from blond.utils.input_parser import parse
 from blond.monitors.monitors import SlicesMonitor
-from blond.utils.mpi_config import worker, print
+from blond.utils.mpi_config import worker, mpiprint
 
 this_directory = os.path.dirname(os.path.realpath(__file__)) + '/'
-
+worker.greet()
+if worker.isMaster:
+    worker.print_version()
 
 # --- Simulation parameters -------------------------------------
 
@@ -117,7 +119,7 @@ if args.get('log', None) is not None:
 if args.get('approx', None) is not None:
     approx = int(args['approx'])
 
-print({'N_t': N_t, 'n_macroparticles_pb': n_macroparticles_pb,
+mpiprint({'N_t': N_t, 'n_macroparticles_pb': n_macroparticles_pb,
        'timing.mode': timing.mode, 'n_bunches': n_bunches,
        'N_t_reduce': N_t_reduce,
        'N_t_monitor': N_t_monitor, 'seed': seed, 'log': log,
@@ -156,8 +158,8 @@ case += '_'+FB_strength+'FBstr'
 
 case += '_seed'+str(seed) + '_'+str(n_macroparticles_pb/1e6)+'Mmppb'
 case += '_'+str(n_bins_rf)+'binRF_' + str(nFrev)+'fRes'
-print('simulating case: '+case)
-print('saving in: '+save_folder)
+mpiprint('simulating case: '+case)
+mpiprint('saving in: '+save_folder)
 save_file_name = case + '_data'
 
 if INTENSITY_MODULATION:
@@ -238,7 +240,7 @@ n_shift = 0  # how many rf-buckets to shift beam
 
 
 # SPS --- Profile -------------------------------------------
-print('Setting up profile')
+mpiprint('Setting up profile')
 
 profile_margin = 20 * t_rf
 
@@ -258,11 +260,11 @@ profile = Profile(beam, CutOptions=CutOptions(cut_left=cut_left,
                                               cut_right=cut_right, n_slices=n_slices))
 
 
-print('Profile set!')
+mpiprint('Profile set!')
 
 
 # SPS --- Impedance and induced voltage ------------------------------
-print('Setting up impedance')
+mpiprint('Setting up impedance')
 
 frequency_step = nFrev*ring.f_rev[0]
 
@@ -342,7 +344,7 @@ if SPS_IMPEDANCE == True:
 
 #    induced_voltage = TotalInducedVoltage(beam, profile, [SPS_freq])
 
-print('SPS impedance model set!')
+mpiprint('SPS impedance model set!')
 
 R2 = 27.1e3  # series impedance [kOhm/m^2]
 vg = 0.0946*c  # group velocity [m/s]
@@ -420,7 +422,7 @@ else:
 
 if SPS_PHASELOOP is True:
 
-    print('Setting up phase-loop')
+    mpiprint('Setting up phase-loop')
     PLgain = 5e3  # [1/s]
     try:
         PLalpha = -1/PLrange / t_rf
@@ -445,14 +447,14 @@ if SPS_PHASELOOP is True:
 
 # SPS --- Tracker Setup ----------------------------------------
 
-print('Setting up tracker')
+mpiprint('Setting up tracker')
 tracker = RingAndRFTracker(rf_station, beam, Profile=profile,
                            TotalInducedVoltage=inducedVoltage,
                            interpolation=True)
 fulltracker = FullRingAndRF([tracker])
 
 
-print('Creating SPS bunch from PS bunch')
+mpiprint('Creating SPS bunch from PS bunch')
 # create 72 bunches from PS bunch
 
 beginIndex = 0
@@ -476,11 +478,11 @@ for copy in range(n_bunches):
     beam.dE[beginIndex:endIndex] = PS_beam.dE
     beginIndex = endIndex
 
-print('dE mean: ', np.mean(beam.dE))
-print('dE std: ', np.std(beam.dE))
+mpiprint('dE mean: ', np.mean(beam.dE))
+mpiprint('dE std: ', np.std(beam.dE))
 # profile.track()
 # profile.reduce_histo()
-# print('profile sum: ', np.sum(profile.n_macroparticles))
+# mpiprint('profile sum: ', np.sum(profile.n_macroparticles))
 
 
 beam.split_random()
@@ -506,7 +508,7 @@ if N_t_monitor > 0 and worker.isMaster:
                                   profile=profile,
                                   rf=rf_station,
                                   Nbunches=n_bunches)
-print("Ready for tracking!\n")
+mpiprint("Ready for tracking!\n")
 
 delta = 0
 timing.reset()
@@ -517,9 +519,9 @@ start_t = time.time()
 for turn in range(N_t):
 
     if ring.n_turns <= 450 and turn % 10 == 0:
-        print('turn: '+str(turn))
+        mpiprint('turn: '+str(turn))
     elif turn % 1000 == 0:
-        print('turn: '+str(turn))
+        mpiprint('turn: '+str(turn))
 
     # Update profile
     if (approx == 0):
@@ -598,7 +600,7 @@ for turn in range(N_t):
 
 beam.gather()
 end_t = time.time()
-print('Total time: ', end_t - start_t)
+mpiprint('Total time: ', end_t - start_t)
 
 timing.report(total_time=1e3*(end_t-start_t),
               out_dir=args['timedir'],
@@ -608,10 +610,10 @@ worker.finalize()
 if N_t_monitor > 0:
     slicesMonitor.close()
 
-print('dE mean: ', np.mean(beam.dE))
-print('dE std: ', np.std(beam.dE))
-print('profile sum: ', np.sum(profile.n_macroparticles))
+mpiprint('dE mean: ', np.mean(beam.dE))
+mpiprint('dE std: ', np.std(beam.dE))
+mpiprint('profile sum: ', np.sum(profile.n_macroparticles))
 
 # --- Saving results ----------------------------------------------------
 
-print('Done!')
+mpiprint('Done!')

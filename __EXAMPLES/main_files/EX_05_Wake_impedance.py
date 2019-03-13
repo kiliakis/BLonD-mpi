@@ -46,10 +46,13 @@ from blond.plots.plot_impedance import plot_induced_voltage_vs_bin_centers
 from blond.impedances.impedance_sources import Resonators
 from blond.utils.input_parser import parse
 
-from blond.utils.mpi_config import worker, print
+from blond.utils.mpi_config import worker, mpiprint
 
 this_directory = os.path.dirname(os.path.realpath(__file__)) + '/'
 
+worker.greet()
+if worker.isMaster:
+    worker.print_version()
 
 # try:
 #     os.mkdir('../output_files')
@@ -128,7 +131,7 @@ if args.get('approx', None) is not None:
     approx = args['approx']
 
 
-print({'N_t': n_turns, 'n_macroparticles': n_macroparticles,
+mpiprint({'N_t': n_turns, 'n_macroparticles': n_macroparticles,
        'N_slices': number_slices,
        'timing.mode': timing.mode,
        'n_bunches': n_bunches,
@@ -138,7 +141,7 @@ print({'N_t': n_turns, 'n_macroparticles': n_macroparticles,
 
 
 # DEFINE RING------------------------------------------------------------------
-print("Setting up the simulation...")
+mpiprint("Setting up the simulation...")
 
 general_params = Ring(C, momentum_compaction,
                       sync_momentum, Proton(), n_turns)
@@ -175,9 +178,9 @@ bigaussian(general_params_res, RF_sct_par_res, my_beam_res,
            tau_0/4, seed=1)
 
 
-print('dE mean: ', np.mean(my_beam.dE))
-print('dE freq mean: ', np.mean(my_beam_freq.dE))
-print('dE res mean: ', np.mean(my_beam_res.dE))
+mpiprint('dE mean: ', np.mean(my_beam.dE))
+mpiprint('dE freq mean: ', np.mean(my_beam_freq.dE))
+mpiprint('dE res mean: ', np.mean(my_beam_res.dE))
 
 
 
@@ -222,7 +225,7 @@ slice_beam_res.reduce_histo()
 
 # LOAD IMPEDANCE TABLE--------------------------------------------------------
 
-# print(os.getcwd())
+# mpiprint(os.getcwd())
 table = np.loadtxt(
     '__EXAMPLES/input_files/EX_05_new_HQ_table.dat', comments='!')
 
@@ -290,16 +293,16 @@ map_res = [tot_vol_res] + [ring_RF_section_res] + [slice_beam_res]
 
 
 # TRACKING + PLOTS-------------------------------------------------------------
-print('Map set')
+mpiprint('Map set')
 
-print(datetime.datetime.now().time())
+mpiprint(datetime.datetime.now().time())
 timing.reset()
 start_t = time.time()
 
 for turn in np.arange(1, n_turns+1):
 
     if turn % 200 == 0:
-        print(turn)
+        mpiprint(turn)
 
 
     # Beam 1
@@ -372,7 +375,7 @@ my_beam_res.gather()
 my_beam_freq.gather()
 
 end_t = time.time()
-print(datetime.datetime.now().time())
+mpiprint(datetime.datetime.now().time())
 
 
 
@@ -383,8 +386,8 @@ timing.report(total_time=1e3*(end_t-start_t),
 
 worker.finalize()
 
-print('dE mean: ', np.mean(my_beam.dE))
-print('dE freq mean: ', np.mean(my_beam_freq.dE))
-print('dE res mean: ', np.mean(my_beam_res.dE))
+mpiprint('dE mean: ', np.mean(my_beam.dE))
+mpiprint('dE freq mean: ', np.mean(my_beam_freq.dE))
+mpiprint('dE res mean: ', np.mean(my_beam_res.dE))
 
-print("Done!")
+mpiprint("Done!")
