@@ -10,7 +10,7 @@ mpi_versions:
         module_name: 'mpi/openmpi/3.0.0'
         path: '/hpcscratch/user/kiliakis/install/miniconda3-openmpi3.0.0/bin/'
     mvapich2:
-        module_name: 'mpi/mvapich/2.3'
+        module_name: 'mpi/mvapich2/2.3'
         path: '/hpcscratch/user/kiliakis/install/miniconda3-mvapich2.3/bin/'
     mpich3:
         module_name: 'mpi/mpich/3.2.1'

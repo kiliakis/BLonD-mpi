@@ -184,9 +184,9 @@ mpiprint('dE res mean: ', np.mean(my_beam_res.dE))
 
 
 
-my_beam.split()
-my_beam_freq.split()
-my_beam_res.split()
+my_beam.split_random()
+my_beam_freq.split_random()
+my_beam_res.split_random()
 
 
 cut_options = CutOptions(cut_left=0, cut_right=2*np.pi, n_slices=number_slices,
@@ -202,12 +202,12 @@ slice_beam_res = Profile(my_beam_res, cut_options_res,
                          FitOptions(fit_option='gaussian'))
 
 
-slice_beam.track()
-slice_beam.reduce_histo()
-slice_beam_freq.track()
-slice_beam_freq.reduce_histo()
-slice_beam_res.track()
-slice_beam_res.reduce_histo()
+# slice_beam.track()
+# slice_beam.reduce_histo()
+# slice_beam_freq.track()
+# slice_beam_freq.reduce_histo()
+# slice_beam_res.track()
+# slice_beam_res.reduce_histo()
 
 # MONITOR----------------------------------------------------------------------
 
@@ -295,6 +295,7 @@ map_res = [tot_vol_res] + [ring_RF_section_res] + [slice_beam_res]
 # TRACKING + PLOTS-------------------------------------------------------------
 mpiprint('Map set')
 
+
 mpiprint(datetime.datetime.now().time())
 timing.reset()
 start_t = time.time()
@@ -304,8 +305,18 @@ for turn in np.arange(1, n_turns+1):
     if turn % 200 == 0:
         mpiprint(turn)
 
-
     # Beam 1
+    # Update profile
+    if (approx == 0):
+        slice_beam.track()
+        slice_beam.reduce_histo()
+    elif (approx == 1) and (turn % N_t_reduce == 0):
+        slice_beam.track()
+        slice_beam.reduce_histo()
+    elif (approx == 2):
+        slice_beam.track()
+        slice_beam.scale_histo()
+
     if (approx == 0) or (approx == 2):
         tot_vol.induced_voltage_sum()
     elif (approx == 1) and (turn % N_t_reduce == 0):
@@ -313,16 +324,18 @@ for turn in np.arange(1, n_turns+1):
 
     ring_RF_section.track()
 
-    # Update profile
-    slice_beam.track()
-    if (approx == 0):
-        slice_beam.reduce_histo()
-    elif (approx == 1) and (turn % N_t_reduce == 0):
-        slice_beam.reduce_histo()
-    elif (approx == 2):
-        slice_beam.scale_histo()
-
     # Beam 2
+    # Update profile
+    if (approx == 0):
+        slice_beam_freq.track()
+        slice_beam_freq.reduce_histo()
+    elif (approx == 1) and (turn % N_t_reduce == 0):
+        slice_beam_freq.track()
+        slice_beam_freq.reduce_histo()
+    elif (approx == 2):
+        slice_beam_freq.track()
+        slice_beam_freq.scale_histo()
+
     if (approx == 0) or (approx == 2):
         tot_vol_freq.induced_voltage_sum()
     elif (approx == 1) and (turn % N_t_reduce == 0):
@@ -330,45 +343,25 @@ for turn in np.arange(1, n_turns+1):
 
     ring_RF_section_freq.track()
 
+
+    # Beam 2
     # Update profile
-    slice_beam_freq.track()
     if (approx == 0):
-        slice_beam_freq.reduce_histo()
+        slice_beam_res.track()
+        slice_beam_res.reduce_histo()
     elif (approx == 1) and (turn % N_t_reduce == 0):
-        slice_beam_freq.reduce_histo()
+        slice_beam_res.track()
+        slice_beam_res.reduce_histo()
     elif (approx == 2):
-        slice_beam_freq.scale_histo()
+        slice_beam_res.track()
+        slice_beam_res.scale_histo()
 
-
-        # Beam 2
     if (approx == 0) or (approx == 2):
         tot_vol_res.induced_voltage_sum()
     elif (approx == 1) and (turn % N_t_reduce == 0):
         tot_vol_res.induced_voltage_sum()
 
     ring_RF_section_res.track()
-
-    # Update profile
-    slice_beam_res.track()
-    if (approx == 0):
-        slice_beam_res.reduce_histo()
-    elif (approx == 1) and (turn % N_t_reduce == 0):
-        slice_beam_res.reduce_histo()
-    elif (approx == 2):
-        slice_beam_res.scale_histo()
-
-    # for m in map_:
-    #     m.track()
-    #     slice_beam.reduce_histo()
-
-    # for m in map_freq:
-    #     m.track()
-    #     slice_beam_freq.reduce_histo()
-
-
-    # for m in map_res:
-    #     m.track()
-    #     slice_beam_res.reduce_histo()
 
 my_beam.gather()
 my_beam_res.gather()

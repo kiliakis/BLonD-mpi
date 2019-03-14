@@ -91,32 +91,32 @@ configs = {
     #     'partition': cycle(['be-short'])
     # }
 
-    'LHC-96B-2MPPB-t10k-mpich3': {
-        'exe': cycle([yc['exe_home'] + '_LHC_BUP_2017.py']),
-        'p': cycle([2000000]),
-        'b': cycle([96]),  # 96
-        's': cycle([1000]),
-        't': cycle([10000]),
-        'm': cycle([0]),
-        'seed': cycle([0]),
-        'reduce': cycle([1]),
-        'load': cycle([0.0]),
-        'mtw': cycle([50]),
-        'approx': cycle([0]),
-        'timing': cycle(['-time']),  # otherwise pass -time
-        'w': []
-         # + [1, 2, 4, 8, 16],
-        # + list(np.arange(2, 8, 1)),
-        + list(np.arange(2, 17, 2)),
-        # + list(np.arange(2, 9, 1)),
-        'o': cycle([10]),
-         # + [10] * 5,
-        # + [10]*8,
-        # + [20]*7,
-        'mpi': cycle(['mpich3']),
-        'time': cycle([180]),
-        'partition': cycle(['be-short'])
-    },
+    # 'LHC-96B-2MPPB-t10k-mpich3': {
+    #     'exe': cycle([yc['exe_home'] + '_LHC_BUP_2017.py']),
+    #     'p': cycle([2000000]),
+    #     'b': cycle([96]),  # 96
+    #     's': cycle([1000]),
+    #     't': cycle([10000]),
+    #     'm': cycle([0]),
+    #     'seed': cycle([0]),
+    #     'reduce': cycle([1]),
+    #     'load': cycle([0.0]),
+    #     'mtw': cycle([50]),
+    #     'approx': cycle([0]),
+    #     'timing': cycle(['-time']),  # otherwise pass -time
+    #     'w': []
+    #      # + [1, 2, 4, 8, 16],
+    #     # + list(np.arange(2, 8, 1)),
+    #     + list(np.arange(2, 17, 2)),
+    #     # + list(np.arange(2, 9, 1)),
+    #     'o': cycle([10]),
+    #      # + [10] * 5,
+    #     # + [10]*8,
+    #     # + [20]*7,
+    #     'mpi': cycle(['mpich3']),
+    #     'time': cycle([180]),
+    #     'partition': cycle(['be-short'])
+    # },
 
     'LHC-96B-2MPPB-t10k-openmpi3': {
         'exe': cycle([yc['exe_home'] + '_LHC_BUP_2017.py']),
@@ -124,6 +124,7 @@ configs = {
         'b': cycle([96]),  # 96
         's': cycle([1000]),
         't': cycle([10000]),
+        # 't': cycle([100]),
         'm': cycle([0]),
         'seed': cycle([0]),
         'reduce': cycle([1]),
@@ -132,45 +133,34 @@ configs = {
         'approx': cycle([0]),
         'timing': cycle(['-time']),  # otherwise pass -time
         'w': []
-         # + [1, 2, 4, 8, 16],
-        # + list(np.arange(2, 8, 1)),
         + list(np.arange(2, 17, 2)),
-        # + list(np.arange(2, 9, 1)),
         'o': cycle([10]),
-         # + [10] * 5,
-        # + [10]*8,
-        # + [20]*7,
         'mpi': cycle(['openmpi3']),
         'time': cycle([180]),
         'partition': cycle(['be-short'])
     },
 
-    'LHC-96B-2MPPB-t10k-mvapich2': {
-        'exe': cycle([yc['exe_home'] + '_LHC_BUP_2017.py']),
-        'p': cycle([2000000]),
-        'b': cycle([96]),  # 96
-        's': cycle([1000]),
-        't': cycle([10000]),
-        'm': cycle([0]),
-        'seed': cycle([0]),
-        'reduce': cycle([1]),
-        'load': cycle([0.0]),
-        'mtw': cycle([50]),
-        'approx': cycle([0]),
-        'timing': cycle(['-time']),  # otherwise pass -time
-        'w': []
-         # + [1, 2, 4, 8, 16],
-        # + list(np.arange(2, 8, 1)),
-        + list(np.arange(2, 17, 2)),
-        # + list(np.arange(2, 9, 1)),
-        'o': cycle([10]),
-         # + [10] * 5,
-        # + [10]*8,
-        # + [20]*7,
-        'mpi': cycle(['mvapich2']),
-        'time': cycle([180]),
-        'partition': cycle(['be-short'])
-    },
+    # 'LHC-96B-2MPPB-t10k-mvapich2': {
+    #     'exe': cycle([yc['exe_home'] + '_LHC_BUP_2017.py']),
+    #     'p': cycle([2000000]),
+    #     'b': cycle([96]),  # 96
+    #     's': cycle([1000]),
+    #     # 't': cycle([10000]),
+    #     't': cycle([100]),
+    #     'm': cycle([0]),
+    #     'seed': cycle([0]),
+    #     'reduce': cycle([1]),
+    #     'load': cycle([0.0]),
+    #     'mtw': cycle([50]),
+    #     'approx': cycle([0]),
+    #     'timing': cycle(['-time']),  # otherwise pass -time
+    #     'w': [16],
+    #     # + list(np.arange(2, 17, 2)),
+    #     'o': cycle([10]),
+    #     'mpi': cycle(['mvapich2']),
+    #     'time': cycle([180]),
+    #     'partition': cycle(['be-short'])
+    # },
 
 
     # 'test': {
@@ -287,7 +277,7 @@ for analysis, config in configs.items():
                           '-t', str(time), '-p', partition,
                           '-o', output,
                           '-e', error,
-                          '-J', job_name.split('/')[0] + '-' + str(i)]
+                          '-J', analysis + job_name.split('/')[0] + '-' + str(i)]
 
             all_args = ['sbatch'] + batch_args + [yc['batch_script']] + exe_args
             subprocess.call(all_args, stdout=stdout,

@@ -174,30 +174,30 @@ configs = {
 
 
 
-    'SPS-b72-4MPPB-t10k-mpich3': {
-        'exe': cycle([yc['exe_home'] + 'SPS_main_random.py']),
-        'p': cycle([4000000]),
-        'b': cycle([72]), # 72
-        's': cycle([1408]),
-        't': cycle([10000]), # 4000
-        'm': cycle([0]),
-        'reduce': cycle([1]),
-        'load': cycle([0.0]),
-        'mtw': cycle([0]),
-        'approx': cycle([0]),
-        'timing': cycle(['-time']), # otherwise pass -time
-        'seed': cycle([0]),
-        'w': []
-        # + [16],
-        + list(np.arange(2, 17, 2)),
-        # list(np.arange(2, 9, 1)),
-        'o': cycle([10]),
-        # + [10]*8,
-        'mpi': cycle(['mpich3']),
-        'time': cycle([180]),
-        'partition': cycle(['be-long']),
-        # 'repeats': cycle([5])
-    },
+    # 'SPS-b72-4MPPB-t10k-mpich3': {
+    #     'exe': cycle([yc['exe_home'] + 'SPS_main_random.py']),
+    #     'p': cycle([4000000]),
+    #     'b': cycle([72]), # 72
+    #     's': cycle([1408]),
+    #     't': cycle([10000]), # 4000
+    #     'm': cycle([0]),
+    #     'reduce': cycle([1]),
+    #     'load': cycle([0.0]),
+    #     'mtw': cycle([0]),
+    #     'approx': cycle([0]),
+    #     'timing': cycle(['-time']), # otherwise pass -time
+    #     'seed': cycle([0]),
+    #     'w': []
+    #     # + [16],
+    #     + list(np.arange(2, 17, 2)),
+    #     # list(np.arange(2, 9, 1)),
+    #     'o': cycle([10]),
+    #     # + [10]*8,
+    #     'mpi': cycle(['mpich3']),
+    #     'time': cycle([180]),
+    #     'partition': cycle(['be-long']),
+    #     # 'repeats': cycle([5])
+    # },
 
     'SPS-b72-4MPPB-t10k-openmpi3': {
         'exe': cycle([yc['exe_home'] + 'SPS_main_random.py']),
@@ -224,30 +224,30 @@ configs = {
         # 'repeats': cycle([5])
     },
 
-    'SPS-b72-4MPPB-t10k-mvapich2': {
-        'exe': cycle([yc['exe_home'] + 'SPS_main_random.py']),
-        'p': cycle([4000000]),
-        'b': cycle([72]), # 72
-        's': cycle([1408]),
-        't': cycle([10000]), # 4000
-        'm': cycle([0]),
-        'reduce': cycle([1]),
-        'load': cycle([0.0]),
-        'mtw': cycle([0]),
-        'approx': cycle([0]),
-        'timing': cycle(['-time']), # otherwise pass -time
-        'seed': cycle([0]),
-        'w': []
-        # + [16],
-        + list(np.arange(2, 17, 2)),
-        # list(np.arange(2, 9, 1)),
-        'o': cycle([10]),
-        # + [10]*8,
-        'mpi': cycle(['mvapich2']),
-        'time': cycle([180]),
-        'partition': cycle(['be-long']),
-        # 'repeats': cycle([5])
-    },
+    # 'SPS-b72-4MPPB-t10k-mvapich2': {
+    #     'exe': cycle([yc['exe_home'] + 'SPS_main_random.py']),
+    #     'p': cycle([4000000]),
+    #     'b': cycle([72]), # 72
+    #     's': cycle([1408]),
+    #     't': cycle([10000]), # 4000
+    #     'm': cycle([0]),
+    #     'reduce': cycle([1]),
+    #     'load': cycle([0.0]),
+    #     'mtw': cycle([0]),
+    #     'approx': cycle([0]),
+    #     'timing': cycle(['-time']), # otherwise pass -time
+    #     'seed': cycle([0]),
+    #     'w': []
+    #     # + [16],
+    #     + list(np.arange(2, 17, 2)),
+    #     # list(np.arange(2, 9, 1)),
+    #     'o': cycle([10]),
+    #     # + [10]*8,
+    #     'mpi': cycle(['mvapich2']),
+    #     'time': cycle([180]),
+    #     'partition': cycle(['be-long']),
+    #     # 'repeats': cycle([5])
+    # },
 
 }
 
@@ -336,7 +336,7 @@ for analysis, config in configs.items():
                           '-t', str(time), '-p', partition,
                           '-o', output,
                           '-e', error,
-                          '-J', job_name.split('/')[0] + '-' + str(i)]
+                          '-J', analysis + job_name.split('/')[0] + '-' + str(i)]
 
             all_args = ['sbatch'] + batch_args + [yc['batch_script']] + exe_args
             subprocess.call(all_args, stdout=stdout,

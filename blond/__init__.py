@@ -1,3 +1,4 @@
+# import numpy
 import os
 import ctypes
 import sys

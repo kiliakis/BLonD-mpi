@@ -24,7 +24,7 @@ if [ "$old_module" != "$new_module" ]; then
     module load $new_module
 fi
 
-python_path=$2; shift
+python_path=$1; shift
 if [[ $PATH =~ $python_path ]]; then
     :
 else
@@ -41,11 +41,12 @@ fi
 echo -e "PYTHONPATH=$PYTHONPATH \n"
 echo -e "PATH=$PATH \n"
 
+echo -e "which python"
 which python
-python --version
-
+# python --version
+echo -e "which mpirun"
 which mpirun
-mpirun --version
+# mpirun --version
 
 module list
 # mpicc --version

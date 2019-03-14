@@ -7,6 +7,9 @@ import time
 import os
 import sys
 from scipy.constants import c
+import matplotlib as mpl
+mpl.use('Agg')
+import matplotlib.pyplot as plt
 try:
     from pyprof import timing
     from pyprof import mpiprof
@@ -14,9 +17,6 @@ except ImportError:
     from blond.utils import profile_mock as timing
     mpiprof = timing
 # import yaml
-import matplotlib as mpl
-mpl.use('Agg')
-import matplotlib.pyplot as plt
 
 
 # BLonD imports
