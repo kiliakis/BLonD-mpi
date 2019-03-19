@@ -46,28 +46,28 @@ configs = {
     #     'partition': cycle(['be-short'])
     # },
 
-    'SPS-rand-72B-4MPPB-approx1': {
-        'exe': cycle([yc['exe_home'] + 'SPS_main_random.py']),
-        'p': cycle([4000000]),
-        'b': cycle([72]),  # 72
-        's': cycle([1408]),
-        't': cycle([43349]),  # 4000
-        'm': cycle([50]),
-        'load': cycle([0.0]),
-        'mtw': cycle([0]),
-        'approx': cycle([1]),
-        'timing': cycle(['']),  # otherwise pass -time
-        # 'seed': [0] * 3 + [1] * 3 + [2] * 3,
-        # 'seed': [3] * 3 + [4] * 3 + [5] * 3,
-        'seed': [0] * 3 + [1] * 3 + [2] * 3 + [3] * 3 + [4] * 3 + [5] * 3,
-        'reduce': []
-        + [1, 2, 3] * 6,
-        'w': [16] * 18,
-        'o': cycle([10]),
-        'time': cycle([2000]),
-        'mpi': cycle(['mpich3']),
-        'partition': cycle(['be-long'])
-    },
+    # 'SPS-rand-72B-4MPPB-approx1': {
+    #     'exe': cycle([yc['exe_home'] + 'SPS_main_random.py']),
+    #     'p': cycle([4000000]),
+    #     'b': cycle([72]),  # 72
+    #     's': cycle([1408]),
+    #     't': cycle([43349]),  # 4000
+    #     'm': cycle([50]),
+    #     'load': cycle([0.0]),
+    #     'mtw': cycle([0]),
+    #     'approx': cycle([1]),
+    #     'timing': cycle(['']),  # otherwise pass -time
+    #     # 'seed': [0] * 3 + [1] * 3 + [2] * 3,
+    #     # 'seed': [3] * 3 + [4] * 3 + [5] * 3,
+    #     'seed': [0] * 3 + [1] * 3 + [2] * 3 + [3] * 3 + [4] * 3 + [5] * 3,
+    #     'reduce': []
+    #     + [1, 2, 3] * 6,
+    #     'w': [16] * 18,
+    #     'o': cycle([10]),
+    #     'time': cycle([2000]),
+    #     'mpi': cycle(['mpich3']),
+    #     'partition': cycle(['be-long'])
+    # },
 
 
     # 'SPS-b72-4MPPB-t10k-approx-time-3': {
@@ -185,72 +185,64 @@ configs = {
     #     'approx': cycle([0]),
     #     'timing': cycle(['-time']), # otherwise pass -time
     #     'seed': cycle([0]),
-    #     'w': []
-    #     # + [16],
-    #     + list(np.arange(2, 17, 2)),
-    #     # list(np.arange(2, 9, 1)),
+    #     'w': [12],
+    #     # + list(np.arange(2, 17, 2)),
     #     'o': cycle([10]),
-    #     # + [10]*8,
     #     'mpi': cycle(['mpich3']),
     #     'time': cycle([180]),
-    #     'partition': cycle(['be-long']),
-    #     # 'repeats': cycle([5])
+    #     'partition': cycle(['be-short']),
     # },
 
-    # 'SPS-b72-4MPPB-t10k-openmpi3': {
-    #     'exe': cycle([yc['exe_home'] + 'SPS_main_random.py']),
-    #     'p': cycle([4000000]),
-    #     'b': cycle([72]), # 72
-    #     's': cycle([1408]),
-    #     't': cycle([10000]), # 4000
-    #     'm': cycle([0]),
-    #     'reduce': cycle([1]),
-    #     'load': cycle([0.0]),
-    #     'mtw': cycle([0]),
-    #     'approx': cycle([0]),
-    #     'timing': cycle(['-time']), # otherwise pass -time
-    #     'seed': cycle([0]),
-    #     'w': []
-    #     # + [16],
-    #     + list(np.arange(2, 17, 2)),
-    #     # list(np.arange(2, 9, 1)),
-    #     'o': cycle([10]),
-    #     # + [10]*8,
-    #     'mpi': cycle(['openmpi3']),
-    #     'time': cycle([180]),
-    #     'partition': cycle(['be-long']),
-    #     # 'repeats': cycle([5])
-    # },
+    'SPS-b72-4MPPB-t10k-openmpi3': {
+        'exe': cycle([yc['exe_home'] + 'SPS_main_random.py']),
+        'p': cycle([4000000]),
+        'b': cycle([72]), # 72
+        's': cycle([1408]),
+        't': cycle([10000]), # 4000
+        'm': cycle([0]),
+        'reduce': cycle([1]),
+        'load': cycle([0.0]),
+        'mtw': cycle([0]),
+        'approx': cycle([0]),
+        'timing': cycle(['-time']), # otherwise pass -time
+        'seed': cycle([0]),
+        'w': []
+        + [16, 14],
+        # + list(np.arange(2, 17, 2)),
+        'o': cycle([10]),
+        'mpi': cycle(['openmpi3']),
+        'time': cycle([180]),
+        'partition': cycle(['be-long']),
+        # 'repeats': cycle([5])
+    },
 
-    # 'SPS-b72-4MPPB-t10k-mvapich2': {
-    #     'exe': cycle([yc['exe_home'] + 'SPS_main_random.py']),
-    #     'p': cycle([4000000]),
-    #     'b': cycle([72]), # 72
-    #     's': cycle([1408]),
-    #     't': cycle([10000]), # 4000
-    #     'm': cycle([0]),
-    #     'reduce': cycle([1]),
-    #     'load': cycle([0.0]),
-    #     'mtw': cycle([0]),
-    #     'approx': cycle([0]),
-    #     'timing': cycle(['-time']), # otherwise pass -time
-    #     'seed': cycle([0]),
-    #     'w': []
-    #     # + [16],
-    #     + list(np.arange(2, 17, 2)),
-    #     # list(np.arange(2, 9, 1)),
-    #     'o': cycle([10]),
-    #     # + [10]*8,
-    #     'mpi': cycle(['mvapich2']),
-    #     'time': cycle([180]),
-    #     'partition': cycle(['be-long']),
-    #     # 'repeats': cycle([5])
-    # },
+    'SPS-b72-4MPPB-t10k-mvapich2': {
+        'exe': cycle([yc['exe_home'] + 'SPS_main_random.py']),
+        'p': cycle([4000000]),
+        'b': cycle([72]), # 72
+        's': cycle([1408]),
+        't': cycle([10000]), # 4000
+        'm': cycle([0]),
+        'reduce': cycle([1]),
+        'load': cycle([0.0]),
+        'mtw': cycle([0]),
+        'approx': cycle([0]),
+        'timing': cycle(['-time']), # otherwise pass -time
+        'seed': cycle([0]),
+        'w': []
+        + [14, 16],
+        # + list(np.arange(2, 17, 2)),
+        'o': cycle([10]),
+        'mpi': cycle(['mvapich2']),
+        'time': cycle([180]),
+        'partition': cycle(['be-long']),
+        # 'repeats': cycle([5])
+    },
 
 }
 
 
-repeats = 1
+repeats = 5
 
 
 total_sims = repeats * \
