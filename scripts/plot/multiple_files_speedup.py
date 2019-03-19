@@ -3,7 +3,7 @@ import numpy as np
 import os
 import matplotlib.lines as mlines
 import matplotlib.ticker
-
+import sys
 from plot.plotting_utilities import *
 
 this_directory = os.path.dirname(os.path.realpath(__file__)) + "/"
@@ -132,7 +132,7 @@ plots_config = {
                 }
             },
             res_dir+'raw/PS-b21-t10k-mpich3/comm-comp-report.csv': {
-                'key': 'lhc-mpich3',
+                'key': 'ps-mpich3',
                 'lines': {
                     'omp': ['10'],
                     'type': ['total']
@@ -141,22 +141,54 @@ plots_config = {
 
         },
         'labels': {
-            'r1': 'every-turn',
-            'r2': 'every-2-turns',
-            'r3': 'every-3-turns',
-            'r4': 'every-4-turns'
+            'lhc-mpich3': 'lhc-mpich3',
+            'lhc-openmpi3': 'lhc-openmpi3',
+            'lhc-mvapich2': 'lhc-mvapich2',
+            'sps-mpich3': 'sps-mpich3',
+            'sps-openmpi3': 'sps-openmpi3',
+            'sps-mvapich2': 'sps-mvapich2',
+            'ps-mpich3': 'ps-mpich3',
+            'ps-openmpi3': 'ps-openmpi3',
+            'ps-mvapic2': 'ps-mvapic2',
         },
-        # 'markers': {
-        #     '10-total': 's',
-        #     '20-total': 'o'
-        # },
+        'markers': {
+            'lhc-mpich3': 'o',
+            'lhc-openmpi3': 'o',
+            'lhc-mvapich2': 'o',
+            'sps-mpich3': 's',
+            'sps-openmpi3': 's',
+            'sps-mvapich2': 's',
+            'ps-mpich3': 'x',
+            'ps-openmpi3': 'x',
+            'ps-mvapic2': 'x',
+        },
+        'ls': {
+            'lhc-mpich3': '-',
+            'lhc-openmpi3': '-',
+            'lhc-mvapich2': '-',
+            'sps-mpich3': ':',
+            'sps-openmpi3': ':',
+            'sps-mvapich2': ':',
+            'ps-mpich3': '--',
+            'ps-openmpi3': '--',
+            'ps-mvapic2': '--',
+        },
         'colors': {
-            'r1': 'tab:blue',
-            'r2': 'tab:orange',
-            'r3': 'tab:green',
-            'r4': 'tab:red'
+            'lhc-mpich3': 'tab:blue',
+            'lhc-openmpi3': 'tab:orange',
+            'lhc-mvapich2': 'tab:green',
+            'sps-mpich3': 'tab:blue',
+            'sps-openmpi3': 'tab:orange',
+            'sps-mvapich2': 'tab:green',
+            'ps-mpich3': 'tab:blue',
+            'ps-openmpi3': 'tab:orange',
+            'ps-mvapich2': 'tab:green',
         },
-        'reference': {'time': 430., 'parts': 4000000, 'turns': 100},
+        'reference': {
+            'sps': {'time': 430., 'parts': 4000000, 'turns': 100},
+            'lhc': {'time': 2120., 'parts': 2000000, 'turns': 1000},
+            'ps': {'time': 1623.7, 'parts': 4000000, 'turns': 2000},
+        },
 
         # 'exclude': [['v1', 'notcm'], ['v2', 'notcm'], ['v4', 'notcm']],
         'x_name': 'n',
@@ -165,14 +197,14 @@ plots_config = {
         # 'y_err_name': 'std',
         'xlabel': 'Cores (x10)',
         'ylabel': 'Speedup',
-        'title': 'SPS Testcase',
-        'ylim': {
-            'speedup': [0, 210]
-        },
-        'nticks': 6,
+        'title': 'Alternative MPI Versions',
+        # 'ylim': {
+        #     'speedup': [0, 210]
+        # },
+        # 'nticks': 6,
         'legend_loc': 'upper left',
         'figsize': (4, 4),
-        'image_name': images_dir + 'SPS-72B-4MPPB-uint16-multi-reduce.pdf'
+        'image_name': images_dir + 'mpi-versions-1.pdf'
 
     },
 
@@ -288,8 +320,7 @@ if __name__ == '__main__':
         for file in config['files'].keys():
             # print(file)
             data = np.genfromtxt(file, delimiter='\t', dtype=str)
-            header = list(data[0])
-            data = data[1:]
+            header, data = list(data[0]), data[1:]
             temp = get_plots(header, data, config['files'][file]['lines'],
                              exclude=config['files'][file].get('exclude', []))
             temp[config['files'][file]['key']] = temp['10-total']
@@ -303,14 +334,12 @@ if __name__ == '__main__':
 
         plt.grid(True, which='major', alpha=1)
         plt.grid(False, which='major', axis='x')
-        # plt.grid(True, which='minor', alpha=0.6, linestyle=':')
         # plt.minorticks_on()
         plt.title(config['title'])
         # ax1.set_title(config['title'])
         plt.xlabel(config['xlabel'])
         plt.ylabel(config['ylabel'])
-        plt.ylim(config['ylim']['speedup'])
-        # , size='12', weight='semibold')
+        # plt.ylim(config['ylim']['speedup'])
 
         # plt.yscale('log', basex=2)
         # if 'ylim' in config:
@@ -319,10 +348,12 @@ if __name__ == '__main__':
         for key, values in plots_dir.items():
             # print(values)
             label = config['labels'][key]
+            case = key.split('-')[0]
+
             x = np.array(values[:, header.index(config['x_name'])], float)
             omp = np.array(
                 values[:, header.index(config['omp_name'])], float)
-            x = (x-1) * omp
+            x = (x) * omp
 
             y = np.array(values[:, header.index(config['y_name'])], float)
             parts = np.array(values[:, header.index('parts')], float)
@@ -331,9 +362,9 @@ if __name__ == '__main__':
             y = parts * turns / y
 
             # Now the reference, 1thread
-            yref = config['reference']['time']
-            partsref = config['reference']['parts']
-            turnsref = config['reference']['turns']
+            yref = config['reference'][case]['time']
+            partsref = config['reference'][case]['parts']
+            turnsref = config['reference'][case]['turns']
             yref = partsref * turnsref / yref
 
             speedup = y / yref
@@ -342,13 +373,15 @@ if __name__ == '__main__':
 
             # We want speedup, compared to 1 worker with 1 thread
             plt.errorbar(x//10, speedup, yerr=None, color=config['colors'][key],
-                         capsize=2, marker=None, markersize=4,
-                         linewidth=2., label=label)
+                         capsize=2, marker=config['markers'][key],
+                         markersize=4,
+                         linewidth=2., label=label,
+                         ls=config['ls'][key])
 
             # if '10' in key:
             #     plt.xticks(x//10)
-            annotate_max(plt.gca(), x//10, speedup, ha='center', va='bottom',
-                         size='10')
+            # annotate_max(plt.gca(), x//10, speedup, ha='center', va='bottom',
+            #              size='10')
 
             # ax2.errorbar(x//10, efficiency, yerr=None, color=config['colors']['efficiency'],
             #              capsize=2, marker=config['markers'][key], markersize=4,
@@ -378,13 +411,3 @@ if __name__ == '__main__':
         save_and_crop(fig, config['image_name'], dpi=600, bbox_inches='tight')
         plt.show()
         plt.close()
-
-    # plt.legend(loc='best', fancybox=True, fontsize='11')
-    # plt.axvline(700.0, color='k', linestyle='--', linewidth=1.5)
-    # plt.axvline(1350.0, color='k', linestyle='--', linewidth=1.5)
-    # plt.annotate('Light\nCombine\nWorkload', xy=(
-    #     200, 6.3), textcoords='data', size='16')
-    # plt.annotate('Moderate\nCombine\nWorkload', xy=(
-    #     800, 6.3), textcoords='data', size='16')
-    # plt.annotate('Heavy\nCombine\nWorkload', xy=(
-    #     1400, 8.2), textcoords='data', size='16')
