@@ -6,7 +6,10 @@ import matplotlib.ticker
 
 from plot.plotting_utilities import *
 
-project_dir = './'
+this_directory = os.path.dirname(os.path.realpath(__file__)) + "/"
+this_filename = sys.argv[0].split('/')[-1]
+
+project_dir = this_directory + '../../'
 res_dir = project_dir + 'results/'
 images_dir = res_dir + 'plots/'
 
@@ -16,36 +19,125 @@ if not os.path.exists(images_dir):
 
 plots_config = {
 
+    # 'plot1': {
+    #     'files': {
+    #         res_dir+'raw/SPS-72B-4MPPB-uint16-r1-2/comm-comp-report.csv': {
+    #             'key': 'r1',
+    #             'lines': {
+    #                 'omp': ['10'],
+    #                 'type': ['total']
+    #             }
+    #         },
+    #         res_dir+'raw/SPS-72B-4MPPB-uint16-r2-2/comm-comp-report.csv': {
+    #             'key': 'r2',
+    #             'lines': {
+    #                 'omp': ['10'],
+    #                 'type': ['total']
+    #             }
+    #         },
+    #         res_dir+'raw/SPS-72B-4MPPB-uint16-r3-2/comm-comp-report.csv': {
+    #             'key': 'r3',
+    #             'lines': {
+    #                 'omp': ['10'],
+    #                 'type': ['total']
+    #             }
+    #         },
+    #         res_dir+'raw/SPS-72B-4MPPB-uint16-r4-2/comm-comp-report.csv': {
+    #             'key': 'r4',
+    #             'lines': {
+    #                 'omp': ['10'],
+    #                 'type': ['total']
+    #             }
+    #         }
+
+    #     },
+    #     'labels': {
+    #         'r1': 'every-turn',
+    #         'r2': 'every-2-turns',
+    #         'r3': 'every-3-turns',
+    #         'r4': 'every-4-turns'
+    #     },
+    #     # 'markers': {
+    #     #     '10-total': 's',
+    #     #     '20-total': 'o'
+    #     # },
+    #     'colors': {
+    #         'r1': 'tab:blue',
+    #         'r2': 'tab:orange',
+    #         'r3': 'tab:green',
+    #         'r4': 'tab:red'
+    #     },
+    #     'reference': {'time': 430., 'parts': 4000000, 'turns': 100},
+
+    #     # 'exclude': [['v1', 'notcm'], ['v2', 'notcm'], ['v4', 'notcm']],
+    #     'x_name': 'n',
+    #     'omp_name': 'omp',
+    #     'y_name': 'avg_time(sec)',
+    #     # 'y_err_name': 'std',
+    #     'xlabel': 'Cores (x10)',
+    #     'ylabel': 'Speedup',
+    #     'title': 'SPS Testcase',
+    #     'ylim': {
+    #         'speedup': [0, 210]
+    #     },
+    #     'nticks': 6,
+    #     'legend_loc': 'upper left',
+    #     'figsize': (4, 4),
+    #     'image_name': images_dir + 'SPS-72B-4MPPB-uint16-multi-reduce.pdf'
+
+    # },
+
     'plot1': {
         'files': {
-            res_dir+'raw/SPS-72B-4MPPB-uint16-r1-2/comm-comp-report.csv': {
-                'key': 'r1',
+            res_dir+'raw/SPS-b72-4MPPB-t10k-mpich3/comm-comp-report.csv': {
+                'key': 'sps-mpich3',
                 'lines': {
                     'omp': ['10'],
                     'type': ['total']
                 }
             },
-            res_dir+'raw/SPS-72B-4MPPB-uint16-r2-2/comm-comp-report.csv': {
-                'key': 'r2',
+            res_dir+'raw/SPS-b72-4MPPB-t10k-mvapich2/comm-comp-report.csv': {
+                'key': 'sps-mvapich2',
                 'lines': {
                     'omp': ['10'],
                     'type': ['total']
                 }
             },
-            res_dir+'raw/SPS-72B-4MPPB-uint16-r3-2/comm-comp-report.csv': {
-                'key': 'r3',
+            res_dir+'raw/SPS-b72-4MPPB-t10k-openmpi3/comm-comp-report.csv': {
+                'key': 'sps-openmpi3',
                 'lines': {
                     'omp': ['10'],
                     'type': ['total']
                 }
             },
-            res_dir+'raw/SPS-72B-4MPPB-uint16-r4-2/comm-comp-report.csv': {
-                'key': 'r4',
+            res_dir+'raw/LHC-96B-2MPPB-t10k-mpich3/comm-comp-report.csv': {
+                'key': 'lhc-mpich3',
                 'lines': {
                     'omp': ['10'],
                     'type': ['total']
                 }
-            }
+            },
+            res_dir+'raw/LHC-96B-2MPPB-t10k-openmpi3/comm-comp-report.csv': {
+                'key': 'lhc-openmpi3',
+                'lines': {
+                    'omp': ['10'],
+                    'type': ['total']
+                }
+            },
+            res_dir+'raw/LHC-96B-2MPPB-t10k-mvapich2/comm-comp-report.csv': {
+                'key': 'lhc-mvapich2',
+                'lines': {
+                    'omp': ['10'],
+                    'type': ['total']
+                }
+            },
+            res_dir+'raw/PS-b21-t10k-mpich3/comm-comp-report.csv': {
+                'key': 'lhc-mpich3',
+                'lines': {
+                    'omp': ['10'],
+                    'type': ['total']
+                }
+            },
 
         },
         'labels': {
