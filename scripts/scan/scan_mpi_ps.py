@@ -72,6 +72,7 @@ configs = {
     #     'w': [16] * 2,
     #     'o': cycle([10]),
     #     'time': cycle([480]),
+    #     'mpi':cycle('mpich3'),
     #     'partition': cycle(['be-short'])
     # }
 
@@ -102,32 +103,7 @@ configs = {
     #     'partition': cycle(['be-short'])
     # },
 
-    'PS-b21-t10k-openmpi3': {
-        'exe': cycle([yc['exe_home'] + 'PS_main.py']),
-        'p': cycle([4000000]),
-        'b': cycle([21]), # 21
-        's': cycle([128]),
-        't': cycle([10000]),
-        'm': cycle([0]),
-        'seed': cycle([0]),
-        'reduce': cycle([1]),
-        'load': cycle([0.0]),
-        'mtw': cycle([50]),
-        'approx': cycle([0]),
-        'timing': cycle(['-time']), # otherwise pass -time
-        'w': []
-        # + [1, 2, 4, 8, 16],
-        + list(np.arange(2, 17, 2)),
-        # + list(np.arange(2, 9, 1)),
-        'o': cycle([10]),
-        # + [10] * 5,
-        # + [10]*8,
-        # + [20]*7,
-        'mpi': cycle(['openmpi3']),
-        'time': cycle([90]),
-        'partition': cycle(['be-short'])
-    },
-    # 'PS-b21-t10k-mvapich2': {
+    # 'PS-b21-t10k-openmpi3': {
     #     'exe': cycle([yc['exe_home'] + 'PS_main.py']),
     #     'p': cycle([4000000]),
     #     'b': cycle([21]), # 21
@@ -148,10 +124,35 @@ configs = {
     #     # + [10] * 5,
     #     # + [10]*8,
     #     # + [20]*7,
-    #     'mpi': cycle(['mvapich2']),
+    #     'mpi': cycle(['openmpi3']),
     #     'time': cycle([90]),
     #     'partition': cycle(['be-short'])
-    # }
+    # },
+    'PS-b21-t10k-mvapich2': {
+        'exe': cycle([yc['exe_home'] + 'PS_main.py']),
+        'p': cycle([4000000]),
+        'b': cycle([21]), # 21
+        's': cycle([128]),
+        't': cycle([10000]),
+        'm': cycle([0]),
+        'seed': cycle([0]),
+        'reduce': cycle([1]),
+        'load': cycle([0.0]),
+        'mtw': cycle([50]),
+        'approx': cycle([0]),
+        'timing': cycle(['-time']), # otherwise pass -time
+        'w': []
+        # + [1, 2, 4, 8, 16],
+        + list(np.arange(2, 17, 2)),
+        # + list(np.arange(2, 9, 1)),
+        'o': cycle([10]),
+        # + [10] * 5,
+        # + [10]*8,
+        # + [20]*7,
+        'mpi': cycle(['mvapich2']),
+        'time': cycle([90]),
+        'partition': cycle(['be-short'])
+    }
 
 }
 

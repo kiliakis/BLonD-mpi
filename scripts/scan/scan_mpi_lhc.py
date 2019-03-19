@@ -20,9 +20,9 @@ job_name_form = '_p{}_b{}_s{}_t{}_w{}_o{}_N{}_r{}_m{}_seed{}_approx{}_mpi{}'
 configs = {
 
     # 'LHC-12B-2MPPB-approx2': {
-    #     'exe': cycle([home + '/__EXAMPLES/main_files/_LHC_BUP_2017.py']),
+    #     'exe': cycle([yc['exe_home'] + '_LHC_BUP_2017.py']),    
     #     'p': cycle([2000000]),
-    #     'b': cycle([12]),  # 96
+    #     'b': cycle([48]),  # 96
     #     's': cycle([1000]),
     #     't': cycle([200000]),
     #     'm': cycle([250]),
@@ -39,32 +39,34 @@ configs = {
     #     # + [10] * 5,
     #     # + [10]*16,
     #     # + [20]*7,
-    #     'time': cycle([360]),
+    #     'time': cycle([1000]),
+    #     'mpi': cycle(['mpich3']),
     #     'partition': cycle(['be-short'])
     # },
 
 
-    # 'LHC-12B-2MPPB-approx1': {
-    #     'exe': cycle([home + '/__EXAMPLES/main_files/_LHC_BUP_2017.py']),
-    #     'p': cycle([2000000]),
-    #     'b': cycle([12]),  # 96
-    #     's': cycle([1000]),
-    #     't': cycle([200000]),
-    #     'm': cycle([250]),
-    #     'load': cycle([0.0]),
-    #     'mtw': cycle([50]),
-    #     'approx': cycle([1]),
-    #     'timing': cycle(['']),  # otherwise pass -time
-    #     'seed': [0] * 3 + [1] * 3 + [2] * 3 + [3] * 3 + [4] * 3 + [5] * 3,
-    #     # 'seed': [1, 2],
-    #     'reduce': []
-    #     + [1, 2, 3] * 6,
-    #     # + [1, 2],
-    #     'w': [16] * 18,
-    #     'o': cycle([10]),
-    #     'time': cycle([360]),
-    #     'partition': cycle(['be-short'])
-    # }
+    'LHC-48B-2MPPB-approx1': {
+        'exe': cycle([yc['exe_home'] + '_LHC_BUP_2017.py']),    
+        'p': cycle([2000000]),
+        'b': cycle([48]),  # 96
+        's': cycle([1000]),
+        't': cycle([200000]),
+        'm': cycle([250]),
+        'load': cycle([0.0]),
+        'mtw': cycle([50]),
+        'approx': cycle([1]),
+        'timing': cycle(['']),  # otherwise pass -time
+        'seed': [0] * 3 + [1] * 3 + [2] * 3 + [3] * 3 + [4] * 3 + [5] * 3,
+        # 'seed': [1, 2],
+        'reduce': []
+        + [1, 2, 3] * 6,
+        # + [1, 2],
+        'w': [16] * 18,
+        'o': cycle([10]),
+        'time': cycle([1000]),
+        'mpi': cycle(['mpich3']),
+        'partition': cycle(['be-short'])
+    }
 
     # 'LHC-b96-2MPPB-t100k-approx-time': {
     #     'exe': cycle([home + '/__EXAMPLES/main_files/_LHC_BUP_2017.py']),
@@ -118,35 +120,13 @@ configs = {
     #     'partition': cycle(['be-short'])
     # },
 
-    'LHC-96B-2MPPB-t10k-openmpi3': {
-        'exe': cycle([yc['exe_home'] + '_LHC_BUP_2017.py']),
-        'p': cycle([2000000]),
-        'b': cycle([96]),  # 96
-        's': cycle([1000]),
-        't': cycle([10000]),
-        # 't': cycle([100]),
-        'm': cycle([0]),
-        'seed': cycle([0]),
-        'reduce': cycle([1]),
-        'load': cycle([0.0]),
-        'mtw': cycle([50]),
-        'approx': cycle([0]),
-        'timing': cycle(['-time']),  # otherwise pass -time
-        'w': []
-        + list(np.arange(2, 17, 2)),
-        'o': cycle([10]),
-        'mpi': cycle(['openmpi3']),
-        'time': cycle([180]),
-        'partition': cycle(['be-short'])
-    },
-
-    # 'LHC-96B-2MPPB-t10k-mvapich2': {
+    # 'LHC-96B-2MPPB-t10k-openmpi3': {
     #     'exe': cycle([yc['exe_home'] + '_LHC_BUP_2017.py']),
     #     'p': cycle([2000000]),
     #     'b': cycle([96]),  # 96
     #     's': cycle([1000]),
-    #     # 't': cycle([10000]),
-    #     't': cycle([100]),
+    #     't': cycle([10000]),
+    #     # 't': cycle([100]),
     #     'm': cycle([0]),
     #     'seed': cycle([0]),
     #     'reduce': cycle([1]),
@@ -154,8 +134,30 @@ configs = {
     #     'mtw': cycle([50]),
     #     'approx': cycle([0]),
     #     'timing': cycle(['-time']),  # otherwise pass -time
-    #     'w': [16],
-    #     # + list(np.arange(2, 17, 2)),
+    #     'w': []
+    #     + list(np.arange(2, 17, 2)),
+    #     'o': cycle([10]),
+    #     'mpi': cycle(['openmpi3']),
+    #     'time': cycle([180]),
+    #     'partition': cycle(['be-short'])
+    # },
+
+    # 'LHC-96B-2MPPB-t10k-mvapich2': {
+    #     'exe': cycle([yc['exe_home'] + '_LHC_BUP_2017.py']),
+    #     'p': cycle([2000000]),
+    #     'b': cycle([96]),  # 96
+    #     's': cycle([1000]),
+    #     't': cycle([10000]),
+    #     # 't': cycle([100]),
+    #     'm': cycle([0]),
+    #     'seed': cycle([0]),
+    #     'reduce': cycle([1]),
+    #     'load': cycle([0.0]),
+    #     'mtw': cycle([50]),
+    #     'approx': cycle([0]),
+    #     'timing': cycle(['-time']),  # otherwise pass -time
+    #     'w': []
+    #     + list(np.arange(2, 17, 2)),
     #     'o': cycle([10]),
     #     'mpi': cycle(['mvapich2']),
     #     'time': cycle([180]),
@@ -193,7 +195,7 @@ configs = {
 
 }
 
-repeats = 5
+repeats = 1
 
 
 total_sims = repeats * \
