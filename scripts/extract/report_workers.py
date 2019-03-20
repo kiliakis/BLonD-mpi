@@ -5,13 +5,12 @@ import numpy as np
 import sys
 import fnmatch
 import csv
-
-# from plot.plotting_utilities import *
-
 import argparse
 
+this_directory = os.path.dirname(os.path.realpath(__file__)) + '/'
 
-parser = argparse.ArgumentParser(description='Report the avg time spend on communication and computation.',
+
+parser = argparse.ArgumentParser(description='Report the avg time spent on communication and computation.',
                                  usage='python script.py [-p file_pattern] [-i indir] [-o outfile]')
 
 parser.add_argument('-p', '--pattern', type=str, default='report-worker-*.csv',
@@ -34,128 +33,39 @@ parser.add_argument('-r', '--report', type=str, choices=['comm-comp', 'avg'],
                     ' Default: comm-comp.')
 
 
-# def plot_pie(tc, input_file):
-#     print(input_file)
-#     data = np.genfromtxt(input_file, dtype=str, delimiter='\t')
-#     header = data[0]
-#     data = data[1:]
-#     keys = data[:, 0].tolist()
-#     values = data[:, 1].tolist()
-#     CPI = values[keys.index('CPI')]
-#     del values[keys.index('CPI')]
-#     keys.remove('CPI')
-#     values = np.array(values, float)
-
-#     # plt.figure(figsize=(6.5, 4))
-#     plt.figure()
-#     # plt.grid(True, which='major', alpha=0.5)
-#     plt.xlabel(title.format(tc, CPI), fontsize=11)
-#     cmap = plt.get_cmap('jet')
-#     colors = cmap(np.linspace(0., 1., len(keys)))
-#     explode = [0] * len(keys)
-#     patches, texts, autotexts = plt.pie(values, shadow=False, colors=colors,
-#                                         counterclock=False,
-#                                         autopct='%1.1f%%',
-#                                         textprops={'fontsize': '10'},
-#                                         startangle=0,
-#                                         explode=explode)
-#     for t in autotexts:
-#         if(float(t.get_text().split('%')[0]) < 3):
-#             t.set_text('')
-#     # autotexts[0].set_color('w')
-#     plt.axis('equal')
-#     # plt.subplot(grid[0, 0])
-#     plt.legend(keys, loc='upper center', fancybox=True,
-#                framealpha=0.4, ncol=3, fontsize=9, bbox_to_anchor=(0.5, 1.05))
-#     # plt.legend(labels, loc='upper center', bbox_to_anchor=(-0.6, 2.4), ncol=5,
-#     #            fancybox=True, fontsize=8, framealpha=0.5)
-#     plt.tight_layout()
-#     if show:
-#         plt.show()
-#     else:
-#         img = image_name.format(
-#             tc, input_file.split('/')[-1].split('.csv')[0])
-#         plt.savefig(img, bbox_inches='tight')
-
-#     plt.close()
-
 def report_comm_comp(indir, files, outfile):
-    comm_l = []
-    comp_l = []
-    other_l = []
-    total_l = []
-    serial_l = []
-    overhead_l = []
+    d = {'comm': [], 'comp': [], 'other': [],
+         'total': [], 'serial': [], 'overhead': []}
     for f in files:
-        # print(f)
         data = np.genfromtxt(indir+'/'+f, dtype=str, delimiter='\t')
-        header = data[0]
-        # total_time = data[-1]
-        data = data[1:]
-        # print(data)
-        comm = np.sum([(float(r[-1]), float(r[1]))
-                       for r in data if 'comm' in r[0]], axis=0)
-        comp = np.sum([(float(r[-1]), float(r[1]))
-                       for r in data if 'comp' in r[0]], axis=0)
-        overhead = np.sum([(float(r[-1]), float(r[1]))
-                           for r in data if 'overhead' in r[0]], axis=0)
-        serial = np.sum([(float(r[-1]), float(r[1]))
-                         for r in data if 'serial' in r[0]], axis=0)
-        other = np.sum([(float(r[-1]), float(r[1]))
-                        for r in data if 'Other' in r[0]], axis=0)
-        total = np.sum([(float(r[-1]), float(r[1]))
-                        for r in data if 'total_time' in r[0]], axis=0)
-        # print(total)
-        # print('Comm:', comm)
-        # print('Comp:', comp)
-        comm_l.append(comm)
-        comp_l.append(comp)
-        other_l.append(other)
-        serial_l.append(serial)
-        overhead_l.append(overhead)
-        total_l.append(total)
-    string = 'type\tavg_time(sec)\tavg_percent\tmin\tmax\tstd\n'
-    try:
-        string += ('%s\t%.2f\t%.2f\t%.2f\t%.2f\t%.2f\n' %
-                   ('comm', np.mean(comm_l, axis=0)[1], np.mean(comm_l, axis=0)[0],
-                    np.min(comm_l, axis=0)[0], np.max(comm_l, axis=0)[0], np.std(comm_l, axis=0)[0]))
-    except:
-        pass
+        header, data = list(data[0]), data[1:]
+        percent_idx = header.index('global_percentage')
+        time_idx = header.index('total_time(sec)')
+        type_idx = header.index('function')
 
-    try:
-        string += ('%s\t%.2f\t%.2f\t%.2f\t%.2f\t%.2f\n' %
-                   ('comp', np.mean(comp_l, axis=0)[1], np.mean(comp_l, axis=0)[0],
-                    np.min(comp_l, axis=0)[0], np.max(comp_l, axis=0)[0], np.std(comp_l, axis=0)[0]))
-    except:
-        pass
-
-    try:
-        string += ('%s\t%.2f\t%.2f\t%.2f\t%.2f\t%.2f\n' %
-                   ('serial', np.mean(serial_l, axis=0)[1], np.mean(serial_l, axis=0)[0],
-                    np.min(serial_l, axis=0)[0], np.max(serial_l, axis=0)[0], np.std(serial_l, axis=0)[0]))
-    except:
-        pass
-
-    try:
-        string += ('%s\t%.2f\t%.2f\t%.2f\t%.2f\t%.2f\n' %
-                   ('overhead', np.mean(overhead_l, axis=0)[1], np.mean(overhead_l, axis=0)[0],
-                    np.min(overhead_l, axis=0)[0], np.max(overhead_l, axis=0)[0], np.std(overhead_l, axis=0)[0]))
-    except:
-        pass
-
-    try:
-        string += ('%s\t%.2f\t%.2f\t%.2f\t%.2f\t%.2f\n' %
-                   ('other', np.mean(other_l, axis=0)[1], np.mean(other_l, axis=0)[0],
-                    np.min(other_l, axis=0)[0], np.max(other_l, axis=0)[0], np.std(other_l, axis=0)[0]))
-    except:
-        pass
-    
-    try:
-        string += ('%s\t%.2f\t%.2f\t%.2f\t%.2f\t%.2f\n' %
-                   ('total', np.mean(total_l, axis=0)[1], np.mean(total_l, axis=0)[0],
-                    np.min(total_l, axis=0)[0], np.max(total_l, axis=0)[0], np.std(total_l, axis=0)[0]))
-    except:
-        pass
+        # All these are tuples in the form (percent, time)
+        d['comm'].append(np.sum([(float(r[percent_idx]), float(r[time_idx]))
+                       for r in data if 'comm' in r[type_idx]], axis=0))
+        d['comp'].append(np.sum([(float(r[percent_idx]), float(r[time_idx]))
+                       for r in data if 'comp' in r[type_idx]], axis=0))
+        d['overhead'].append(np.sum([(float(r[percent_idx]), float(r[time_idx]))
+                           for r in data if 'overhead' in r[type_idx]], axis=0))
+        d['serial'].append(np.sum([(float(r[percent_idx]), float(r[time_idx]))
+                         for r in data if 'serial' in r[type_idx]], axis=0))
+        d['other'].append(np.sum([(float(r[percent_idx]), float(r[time_idx]))
+                        for r in data if 'Other' in r[type_idx]], axis=0))
+        d['total'].append(np.sum([(float(r[percent_idx]), float(r[time_idx]))
+                        for r in data if 'total_time' in r[type_idx]], axis=0))
+        
+    string = 'type\tavg_time(sec)\tpercent\tmin%\tmax%\tstd\n'
+    for k in ['comp', 'comm', 'serial', 'overhead', 'other', 'total']:
+        v = d[k]
+        try:
+            string += ('%s\t%.2f\t%.2f\t%.2f\t%.2f\t%.2f\n' %
+                       (k, np.mean(v, axis=0)[1], np.mean(v, axis=0)[0],
+                        np.min(v, axis=0)[0], np.max(v, axis=0)[0], np.std(v, axis=0)[0]))
+        except:
+            pass
 
     outfile.write(string)
 
@@ -166,13 +76,9 @@ def report_avg(indir, files, outfile):
     acc_data = []
     num = 0
     for f in files:
-        # print(f)
         data = np.genfromtxt(indir+'/'+f, dtype=str, delimiter='\t')
-        header = data[0]
-        data = data[1:]
-        funcs = data[:, 0]
-        data = data[:, 1:]
-        data = np.array(data, float)
+        header, data = data[0], data[1:]
+        funcs, data = data[:, 0], np.array(data[:, 1:], float)
         if len(default_funcs) == 0:
             default_funcs = funcs
         elif not np.array_equal(default_funcs, funcs):
@@ -204,7 +110,6 @@ def report_avg(indir, files, outfile):
 
 if __name__ == '__main__':
     args = parser.parse_args()
-    # print(args)
     file_pattern = args.pattern
     indir = args.indir
     files = fnmatch.filter(os.listdir(indir), file_pattern)

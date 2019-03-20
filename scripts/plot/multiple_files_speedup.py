@@ -96,6 +96,13 @@ plots_config = {
                     'type': ['total']
                 }
             },
+            # res_dir+'raw/SPS-b72-4MPPB-t10k/comm-comp-report.csv': {
+            #     'key': 'sps-orig',
+            #     'lines': {
+            #         'omp': ['10'],
+            #         'type': ['total']
+            #     }
+            # },
             res_dir+'raw/SPS-b72-4MPPB-t10k-mvapich2/comm-comp-report.csv': {
                 'key': 'sps-mvapich2',
                 'lines': {
@@ -117,6 +124,13 @@ plots_config = {
                     'type': ['total']
                 }
             },
+            # res_dir+'raw/LHC-96B-2MPPB-t10k/comm-comp-report.csv': {
+            #     'key': 'lhc-orig',
+            #     'lines': {
+            #         'omp': ['10'],
+            #         'type': ['total']
+            #     }
+            # },
             res_dir+'raw/LHC-96B-2MPPB-t10k-openmpi3/comm-comp-report.csv': {
                 'key': 'lhc-openmpi3',
                 'lines': {
@@ -138,49 +152,81 @@ plots_config = {
                     'type': ['total']
                 }
             },
-
+            res_dir+'raw/PS-b21-t10k-openmpi3/comm-comp-report.csv': {
+                'key': 'ps-openmpi3',
+                'lines': {
+                    'omp': ['10'],
+                    'type': ['total']
+                }
+            },
+            res_dir+'raw/PS-b21-t10k-mvapich2/comm-comp-report.csv': {
+                'key': 'ps-mvapich2',
+                'lines': {
+                    'omp': ['10'],
+                    'type': ['total']
+                }
+            },
+            # res_dir+'raw/PS-4MPPB-comb-mtw50/comm-comp-report.csv': {
+            #     'key': 'ps-orig',
+            #     'lines': {
+            #         'omp': ['10'],
+            #         'type': ['total']
+            #     }
+            # },
         },
         'labels': {
             'lhc-mpich3': 'lhc-mpich3',
+            'lhc-orig': 'lhc-orig',
             'lhc-openmpi3': 'lhc-openmpi3',
             'lhc-mvapich2': 'lhc-mvapich2',
             'sps-mpich3': 'sps-mpich3',
+            'sps-orig': 'sps-orig',
             'sps-openmpi3': 'sps-openmpi3',
             'sps-mvapich2': 'sps-mvapich2',
             'ps-mpich3': 'ps-mpich3',
+            'ps-orig': 'ps-orig',
             'ps-openmpi3': 'ps-openmpi3',
-            'ps-mvapic2': 'ps-mvapic2',
+            'ps-mvapich2': 'ps-mvapich2',
         },
         'markers': {
             'lhc-mpich3': 'o',
+            'lhc-orig': 'o',
             'lhc-openmpi3': 'o',
             'lhc-mvapich2': 'o',
             'sps-mpich3': 's',
+            'sps-orig': 's',
             'sps-openmpi3': 's',
             'sps-mvapich2': 's',
+            'ps-orig': 'x',
             'ps-mpich3': 'x',
             'ps-openmpi3': 'x',
-            'ps-mvapic2': 'x',
+            'ps-mvapich2': 'x',
         },
         'ls': {
+            'lhc-orig': '-',
             'lhc-mpich3': '-',
             'lhc-openmpi3': '-',
             'lhc-mvapich2': '-',
+            'sps-orig': ':',
             'sps-mpich3': ':',
             'sps-openmpi3': ':',
             'sps-mvapich2': ':',
+            'ps-orig': '--',
             'ps-mpich3': '--',
             'ps-openmpi3': '--',
-            'ps-mvapic2': '--',
+            'ps-mvapich2': '--',
         },
         'colors': {
+            'lhc-orig': 'black',
             'lhc-mpich3': 'tab:blue',
             'lhc-openmpi3': 'tab:orange',
             'lhc-mvapich2': 'tab:green',
+            'sps-orig': 'black',
             'sps-mpich3': 'tab:blue',
             'sps-openmpi3': 'tab:orange',
             'sps-mvapich2': 'tab:green',
             'ps-mpich3': 'tab:blue',
+            'ps-orig': 'black',
             'ps-openmpi3': 'tab:orange',
             'ps-mvapich2': 'tab:green',
         },
@@ -207,110 +253,6 @@ plots_config = {
         'image_name': images_dir + 'mpi-versions-1.pdf'
 
     },
-
-    # 'plot4': {
-    #     'files': {
-    #         res_dir+'raw/LHC-96B-2MPPB-uint16-nobcast-r1-2/comm-comp-report.csv': {
-    #             'lines': {
-    #                 'omp': ['2', '5', '10', '20'],
-    #                 'type': ['total']}
-    #         }
-
-    #     },
-    #     'labels': {
-    #         '1-total': '1C/T',
-    #         '2-total': '2C/T',
-    #         '4-total': '4C/T',
-    #         '5-total': '5C/T',
-    #         '10-total': '10C/T',
-    #         '20-total': '20C/T'
-    #     },
-    #     'markers': {
-    #         # '5-total': 'x',
-    #         '10-total': 's',
-    #         '20-total': 'o'
-    #     },
-    #     'colors': {
-    #         'speedup': 'tab:blue',
-    #         'efficiency': 'tab:red'
-    #     },
-    #     # 'reference': {'time': 200.71, 'parts': 2000000, 'turns': 100},
-    #     'reference': {'time': 2120., 'parts': 2000000, 'turns': 1000},
-
-    #     # 'reference': { 'time': 8213. , 'parts': 1000000, 'turns':10000},
-
-    #     # 'exclude': [['v1', 'notcm'], ['v2', 'notcm'], ['v4', 'notcm']],
-    #     'ideal': '2-total',
-    #     'x_name': 'n',
-    #     'omp_name': 'omp',
-    #     'y_name': 'avg_time(sec)',
-    #     # 'y_err_name': 'std',
-    #     'xlabel': 'Cores (x10)',
-    #     'ylabel': ['Speedup', 'Efficiency'],
-    #     'title': 'Speedup-Efficiency graph',
-    #     'ylim': {
-    #         'speedup': [0, 120],
-    #         'efficiency': [60, 120]
-    #     },
-    #     'nticks': 7,
-    #     'legend_loc':'lower center',
-    #     'figsize': (5, 3),
-    #     'image_name': images_dir + 'LHC-96B-2MPPB-uint16-nobcast-r1-2-speedup.pdf'
-
-    # },
-
-
-
-    # 'plot2': {
-    #     'files': {
-    #         res_dir+'raw/SPS-72B-4MPPB-uint16-r1-2/comm-comp-report.csv': {
-    #             'lines': {
-    #                 'omp': ['2', '5', '10', '20'],
-    #                 'type': ['total']}
-    #         }
-
-    #     },
-
-    #     'reference': {'time': 430., 'parts': 4000000, 'turns': 100},
-    #     # 'exclude': [['v1', 'notcm'], ['v2', 'notcm'], ['v4', 'notcm']],
-    #     'labels': {
-    #         '1-total': '1C/T',
-    #         '2-total': '2C/T',
-    #         '4-total': '4C/T',
-    #         '5-total': '5C/T',
-    #         '10-total': '10C/T',
-    #         '20-total': '20C/T'
-    #     },
-    #     'markers': {
-    #         # '5-total': 'x',
-    #         '10-total': 's',
-    #         '20-total': 'o'
-    #     },
-    #     'colors': {
-    #         'speedup': 'tab:blue',
-    #         'efficiency': 'tab:red'
-    #     },
-
-    #     # 'exclude': [['v1', 'notcm'], ['v2', 'notcm'], ['v4', 'notcm']],
-    #     'ideal': '2-total',
-    #     'x_name': 'n',
-    #     'omp_name': 'omp',
-    #     'y_name': 'avg_time(sec)',
-    #     # 'y_err_name': 'std',
-    #     'xlabel': 'Cores (x10)',
-    #     'ylabel': ['Speedup', 'Efficiency'],
-    #     'title': 'Speedup-Efficiency graph',
-    #     'ylim': {
-    #         'speedup': [0, 120],
-    #         'efficiency': [60, 150]
-    #     },
-    #     'nticks': 7,
-    #     'legend_loc':'lower center',
-    #     'figsize': (5, 3),
-    #     'image_name': images_dir + 'SPS-72B-4MPPB-uint16-r1-2-speed-eff.pdf'
-
-    # },
-
 
 }
 

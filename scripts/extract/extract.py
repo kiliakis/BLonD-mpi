@@ -10,9 +10,12 @@ import argparse
 
 this_directory = os.path.dirname(os.path.realpath(__file__)) + '/'
 average_fname = 'avg.csv'
+average_std_fname = 'avg-std.csv'
 average_worker_fname = 'avg-workers.csv'
 comm_comp_fname = 'comm-comp.csv'
+comm_comp_std_fname = 'comm-comp-std.csv'
 comm_comp_worker_fname = 'comm-comp-workers.csv'
+worker_pattern = 'worker-*.csv'
 
 parser = argparse.ArgumentParser(description='Generate a csv report from the input raw data.',
                                  usage='python extract.py -i [indir] -o [outfile]')
@@ -32,35 +35,46 @@ parser.add_argument('-r', '--report', type=str, default='all',
 parser.add_argument('-s', '--script', type=str, default=this_directory + 'report_workers.py',
                     help='The path to the report_workers script.')
 
+parser.add_argument('-k', '--keep', type=int, default=2,
+                    help='The number of top best runs to keep for the average calculation. Use -1 for all.')
+
+parser.add_argument('-u', '--update', action='store_true',
+                    help='Force update of already calculated reports.')
+
 
 def generate_reports(input, report_script):
     records = []
     for dirs, subdirs, files in os.walk(input):
-        if 'report' in subdirs:
-            print(dirs)
-            subprocess.call(['python', report_script, '-r', 'comm-comp',
-                             '-i', os.path.join(dirs, 'report'),
-                             '-o', os.path.join(dirs, comm_comp_worker_fname),
-                             '-p', 'worker-*.csv'])
+        if 'report' not in subdirs:
+            continue
+        ps = []
+        print(dirs)
+        report_dir = os.path.join(dirs, 'report')
+        outfile1 = os.path.join(dirs, comm_comp_worker_fname)
+        outfile2 = os.path.join(dirs, average_worker_fname)
+        if (args.update or (not os.path.isfile(outfile1))):
+            ps.append(subprocess.Popen(['python', report_script, '-r', 'comm-comp',
+                                        '-i', report_dir, '-o', outfile1,
+                                        '-p', worker_pattern]))
 
-            subprocess.call(['python', report_script, '-r', 'avg',
-                             '-i', os.path.join(dirs, 'report'),
-                             '-o', os.path.join(dirs, average_worker_fname),
-                             '-p', 'worker-*.csv'])
+        if (args.update or (not os.path.isfile(outfile2))):
+            ps.append(subprocess.Popen(['python', report_script, '-r', 'avg',
+                                        '-i', report_dir, '-o', outfile2,
+                                        '-p', worker_pattern]))
+        for p in ps:
+            p.wait()
 
 
-def write_avg(files, outfile):
+def write_avg(files, outfile, outfile_std):
     acc_data = []
     num = 0
     default_funcs = []
     default_header = []
     for f in files:
         data = np.genfromtxt(f, dtype=str, delimiter='\t')
-        header = data[0]
-        data = data[1:]
-        funcs = data[:, 0]
-        data = data[:, 1:]
-        data = np.array(data, float)
+        header, data = data[0], data[1:]
+        funcs, data = data[:, 0], np.array(data[:, 1:], float)
+
         if len(default_funcs) == 0:
             default_funcs = funcs
         elif not np.array_equal(default_funcs, funcs):
@@ -73,21 +87,22 @@ def write_avg(files, outfile):
             print('Problem with file: ', indir+'/'+f)
             continue
         acc_data.append(data)
-        # if len(acc_data) == 0:
-        #     acc_data = data
-        # else:
-        #     acc_data += data
-        # num += 1
+
     acc_data.sort(key=lambda a: (a[-1][0]))
-    acc_data = acc_data[:2]
-    
-    acc_data = np.mean(acc_data, axis=0)
-    acc_data = np.around(acc_data, 2)
-        
-    writer = csv.writer(outfile, delimiter='\t')
-    writer.writerow(default_header)
-    for f, r in zip(default_funcs, acc_data):
-        writer.writerow([f]+list(r))
+    acc_data = acc_data[:args.keep]
+
+    acc_data_std = np.around(np.std(acc_data, axis=0), 2)
+    acc_data = np.around(np.mean(acc_data, axis=0), 2)
+
+    writer1 = csv.writer(outfile, delimiter='\t')
+    writer1.writerow(default_header)
+
+    writer2 = csv.writer(outfile_std, delimiter='\t')
+    writer2.writerow(default_header)
+
+    for f, r, r_std in zip(default_funcs, acc_data, acc_data_std):
+        writer1.writerow([f]+list(r))
+        writer2.writerow([f]+list(r_std))
 
 
 def aggregate_reports(input):
@@ -99,16 +114,18 @@ def aggregate_reports(input):
         files = [os.path.join(dirs, s, comm_comp_worker_fname) for s in sdirs]
         # print(files)
         try:
-            write_avg(files, open(os.path.join(dirs, comm_comp_fname), 'w'))
+            write_avg(files, open(os.path.join(dirs, comm_comp_fname), 'w'),
+                      open(os.path.join(dirs, comm_comp_std_fname), 'w'))
         except Exception as e:
             print('[Error] Dir ', dirs)
-        
 
         files = [os.path.join(dirs, s, average_worker_fname) for s in sdirs]
         try:
-            write_avg(files, open(os.path.join(dirs, average_fname), 'w'))
+            write_avg(files, open(os.path.join(dirs, average_fname), 'w'),
+                      open(os.path.join(dirs, average_std_fname), 'w'))
         except Exception as e:
             print('[Error] Dir ', dirs)
+
 
 def collect_reports(input, outfile, filename):
     # pass
@@ -133,8 +150,7 @@ def collect_reports(input, outfile, filename):
             data = np.genfromtxt(os.path.join(dirs, filename),
                                  dtype=str, delimiter='\t')
 
-            data_head = data[0]
-            data = data[1:]
+            data_head, data = data[0], data[1:]
             for r in data:
                 records.append([ps, bs, ss, ts, ws, oss, Ns, rs] + list(r))
         except:
@@ -152,33 +168,27 @@ if __name__ == '__main__':
     if args.indir == None:
         print("You have to specify the input directory.")
         exit(-1)
-    # if args.outfile == None:
-    #     args.outfile = open(os.path.join(args.indir, 'report.csv'), 'w')
-    #     args.outfile = open(os.path.join(args.indir, 'report.csv'), 'w')
-    # elif args.outfile == 'sys.stdout':
-    #     args.outfile = sys.stdout
-    # print(args.outfile)
-    if args.report == 'generate':
+
+    if args.report in ['generate', 'all']:
         generate_reports(args.indir, args.script)
-    elif args.report == 'aggregate':
+    if args.report in ['aggregate', 'all']:
         aggregate_reports(args.indir)
-    elif args.report == 'collect':
+    if args.report in ['collect', 'all']:
         if args.outfile == 'sys.stdout':
             collect_reports(args.indir, sys.stdout, average_fname)
             collect_reports(args.indir, sys.stdout, comm_comp_fname)
         elif args.outfile == 'file':
-            collect_reports(args.indir, open(os.path.join(
-                args.indir, 'avg-report.csv'), 'w'), average_fname)
-            collect_reports(args.indir, open(os.path.join(
-                args.indir, 'comm-comp-report.csv'), 'w'), comm_comp_fname)
-    elif args.report == 'all':
-        generate_reports(args.indir, args.script)
-        aggregate_reports(args.indir)
-        if args.outfile == 'sys.stdout':
-            collect_reports(args.indir, sys.stdout, average_fname)
-            collect_reports(args.indir, sys.stdout, comm_comp_fname)
-        elif args.outfile == 'file':
-            collect_reports(args.indir, open(os.path.join(
-                args.indir, 'avg-report.csv'), 'w'), average_fname)
-            collect_reports(args.indir, open(os.path.join(
-                args.indir, 'comm-comp-report.csv'), 'w'), comm_comp_fname)
+            collect_reports(args.indir,
+                            open(os.path.join(args.indir, 'avg-std-report.csv'), 'w'),
+                            average_std_fname)
+            collect_reports(args.indir,
+                            open(os.path.join(args.indir, 'avg-report.csv'), 'w'),
+                            average_fname)
+            collect_reports(args.indir,
+                            open(os.path.join(args.indir,
+                                              'comm-comp-report.csv'), 'w'),
+                            comm_comp_fname)
+            collect_reports(args.indir,
+                            open(os.path.join(args.indir,
+                                              'comm-comp-std-report.csv'), 'w'),
+                            comm_comp_std_fname)
