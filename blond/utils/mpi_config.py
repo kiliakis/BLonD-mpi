@@ -4,6 +4,8 @@ from mpi4py import MPI
 import numpy as np
 import logging
 from functools import wraps
+import socket
+
 try:
     from pyprof import timing
     from pyprof import mpiprof
@@ -65,6 +67,13 @@ class Worker:
         self.workers = self.intracomm.size
 
         self.hostname = MPI.Get_processor_name()
+        self.hostip = socket.gethostbyname(self.hostname)
+
+        # Create communicator with process on the same host
+        # TODO: very rare, but possibile hash collisions are not handled
+        color = np.dot(np.array(self.hostip.split('.'), int)[1:], [1, 256, 256**2])
+        self.hostcomm = self.intracomm.Split(color, self.rank)
+
         self.log = args['log']
         self.trace = args['trace']
 
@@ -163,6 +172,13 @@ class Worker:
     def sync(self):
         self.logger.debug('sync')
         self.intracomm.Barrier()
+
+    @timing.timeit(key='serial:hostsync')
+    @mpiprof.traceit(key='serial:hostsync')
+    def hostsync(self):
+        self.logger.debug('hostsync')
+        self.hostcomm.Barrier()
+
 
     @timing.timeit(key='serial:finalize')
     @mpiprof.traceit(key='serial:finalize')
