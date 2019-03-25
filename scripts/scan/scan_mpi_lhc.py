@@ -64,30 +64,7 @@ configs = {
     #     'partition': cycle(['be-short'])
     # }
 
-    # 'LHC-b96-2MPPB-t100k-approx-time': {
-    #     'exe': cycle([home + '/__EXAMPLES/main_files/_LHC_BUP_2017.py']),
-    #     'p': cycle([2000000]),
-    #     'b': cycle([96]),  # 96
-    #     's': cycle([1000]),
-    #     't': cycle([100000]),
-    #     'm': cycle([0]),
-    #     'seed': cycle([0]),
-    #     'reduce': cycle([1]),
-    #     'load': cycle([0.0]),
-    #     'mtw': cycle([50]),
-    #     'approx': cycle([2]),
-    #     'timing': cycle(['-time']),  # otherwise pass -time
-    #     'w': []
-    #      # + [1, 2, 4, 8, 16],
-    #     + list(np.arange(4, 17, 2)),
-    #     # + list(np.arange(2, 9, 1)),
-    #     'o': cycle([10]),
-    #      # + [10] * 5,
-    #     # + [10]*7,
-    #     # + [20]*7,
-    #     'time': cycle([120]),
-    #     'partition': cycle(['be-short'])
-    # }
+  
 
     # 'LHC-96B-2MPPB-t10k-mpich3': {
     #     'exe': cycle([yc['exe_home'] + '_LHC_BUP_2017.py']),
@@ -157,38 +134,82 @@ configs = {
     #     'partition': cycle(['be-long'])
     # },
 
+    'LHC-weak-scale-mpich3': {
+        'exe': cycle([yc['exe_home'] + '_LHC_BUP_2017.py']),
+        # 'p': cycle([2000000]),
+        'p': [1e6, 2e6, 2e6, 2e6, 2e6, 1.25e6, 1.5e6, 1.75e6, 2e6],
+        # 'b': cycle([96]),  # 96
+        'b': [12, 12, 24, 36, 48, 96, 96, 96, 96],  # 96
+        's': cycle([1000]),
+        't': cycle([10000]),
+        'm': cycle([0]),
+        'seed': cycle([0]),
+        'reduce': cycle([1]),
+        'load': cycle([0.0]),
+        'mtw': cycle([50]),
+        'approx': cycle([0]),
+        'timing': cycle(['-time']),  # otherwise pass -time
+        'w': []
+        + [1, 2, 4, 6, 8, 10, 12, 14, 16],
+        # + list(np.arange(2, 17, 2)),
+        'o': cycle([10]),
+        'mpi': cycle(['mpich3']),
+        'time': cycle([90]),
+        'partition': cycle(['be-short'])
+    },
 
-    # 'test': {
-    #     'exe': cycle([yc['exe_home'] + 'EX_01_Acceleration.py']),
-    #     'p': cycle([100000]),
-    #     'b': cycle([1]),  # 96
-    #     's': cycle([1000]),
-    #     't': cycle([2000]),
-    #     'm': cycle([0]),
-    #     'seed': cycle([0]),
-    #     'reduce': cycle([1]),
-    #     'load': cycle([0.0]),
-    #     'mtw': cycle([50]),
-    #     'approx': cycle([0]),
-    #     'timing': cycle(['-time']),  # otherwise pass -time
-    #     'w': [2] * 3,
-    #     # + [1, 2, 4, 8, 16],
-    #     # + list(np.arange(2, 8, 1)),
-    #     # + list(np.arange(2, 17, 2)),
-    #     # + list(np.arange(2, 9, 1)),
-    #     'o': cycle([10]),
-    #     # + [10] * 5,
-    #     # + [10]*8,
-    #     # + [20]*7,
-    #     'mpi': ['mpich3', 'openmpi3', 'mvapich2'],
-    #     'time': cycle([20]),
-    #     'partition': cycle(['be-short'])
-    # }
+    'LHC-weak-scale-openmpi3': {
+        'exe': cycle([yc['exe_home'] + '_LHC_BUP_2017.py']),
+        # 'p': cycle([2000000]),
+        'p': [1e6, 2e6, 2e6, 2e6, 2e6, 1.25e6, 1.5e6, 1.75e6, 2e6],
+        # 'b': cycle([96]),  # 96
+        'b': [12, 12, 24, 36, 48, 96, 96, 96, 96],  # 96
+        's': cycle([1000]),
+        't': cycle([10000]),
+        'm': cycle([0]),
+        'seed': cycle([0]),
+        'reduce': cycle([1]),
+        'load': cycle([0.0]),
+        'mtw': cycle([50]),
+        'approx': cycle([0]),
+        'timing': cycle(['-time']),  # otherwise pass -time
+        'w': []
+        + [1, 2, 4, 6, 8, 10, 12, 14, 16],
+        # + list(np.arange(2, 17, 2)),
+        'o': cycle([10]),
+        'mpi': cycle(['openmpi3']),
+        'time': cycle([90]),
+        'partition': cycle(['be-short'])
+    },
+
+    'LHC-weak-scale-mvapich2': {
+        'exe': cycle([yc['exe_home'] + '_LHC_BUP_2017.py']),
+        # 'p': cycle([2000000]),
+        'p': [1e6, 2e6, 2e6, 2e6, 2e6, 1.25e6, 1.5e6, 1.75e6, 2e6],
+        # 'b': cycle([96]),  # 96
+        'b': [12, 12, 24, 36, 48, 96, 96, 96, 96],  # 96
+        's': cycle([1000]),
+        't': cycle([10000]),
+        'm': cycle([0]),
+        'seed': cycle([0]),
+        'reduce': cycle([1]),
+        'load': cycle([0.0]),
+        'mtw': cycle([50]),
+        'approx': cycle([0]),
+        'timing': cycle(['-time']),  # otherwise pass -time
+        'w': []
+        + [1, 2, 4, 6, 8, 10, 12, 14, 16],
+        # + list(np.arange(2, 17, 2)),
+        'o': cycle([10]),
+        'mpi': cycle(['mvapich2']),
+        'time': cycle([90]),
+        'partition': cycle(['be-short'])
+    },
 
 
 }
 
-repeats = 1
+repeats = 5
 
 
 total_sims = repeats * \
@@ -257,8 +278,8 @@ for analysis, config in configs.items():
                 mpi_config['module_name'],
                 mpi_config['path'],
                 mpi_config['path']+'python', exe,
-                '-p', str(p), '-s', str(s),
-                '-b', str(b), '-addload', str(load),
+                '-p', str(int(p)), '-s', str(s),
+                '-b', str(int(b)), '-addload', str(load),
                 '-t', str(t), '-o', str(o), '-seed', str(seed),
                 str(timing), '-timedir', report_dir,
                 '-m', str(m), '-monitorfile', monitorfile,

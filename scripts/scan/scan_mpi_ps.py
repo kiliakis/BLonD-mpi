@@ -20,26 +20,26 @@ job_name_form = '_p{}_b{}_s{}_t{}_w{}_o{}_N{}_r{}_m{}_seed{}_approx{}_mpi{}'
 
 configs = {
 
-    'PS-21B-approx2': {
-        'exe': cycle([yc['exe_home'] + 'PS_main.py']),
-        'p': cycle([4000000]),
-        'b': cycle([21]),  # 21
-        's': cycle([128]),
-        't': cycle([200000]), #378708
-        'm': cycle([100]),
-        'reduce': cycle([1]),
-        'load': cycle([0.0]),
-        'mtw': cycle([50]),
-        'approx': cycle([2]),
-        'timing': cycle(['']),  # otherwise pass -time
-        'seed': [0] * 4 + [1] * 4 + [2] * 4 + [3] * 4 + [4] * 4 + [5] * 4,        
-        'w': []
-        + [2, 4, 8, 16] * 6,
-        'o': cycle([10]),
-        'time': cycle([1000]),
-        'mpi': cycle(['mpich3']),
-        'partition': cycle(['be-short'])
-    },
+    # 'PS-21B-approx2': {
+    #     'exe': cycle([yc['exe_home'] + 'PS_main.py']),
+    #     'p': cycle([4000000]),
+    #     'b': cycle([21]),  # 21
+    #     's': cycle([128]),
+    #     't': cycle([200000]), #378708
+    #     'm': cycle([100]),
+    #     'reduce': cycle([1]),
+    #     'load': cycle([0.0]),
+    #     'mtw': cycle([50]),
+    #     'approx': cycle([2]),
+    #     'timing': cycle(['']),  # otherwise pass -time
+    #     'seed': [0] * 4 + [1] * 4 + [2] * 4 + [3] * 4 + [4] * 4 + [5] * 4,        
+    #     'w': []
+    #     + [2, 4, 8, 16] * 6,
+    #     'o': cycle([10]),
+    #     'time': cycle([1000]),
+    #     'mpi': cycle(['mpich3']),
+    #     'partition': cycle(['be-short'])
+    # },
 
 
 
@@ -142,9 +142,78 @@ configs = {
     #     'partition': cycle(['be-short'])
     # }
 
+    'PS-weak-scale-mpich3': {
+        'exe': cycle([yc['exe_home'] + 'PS_main.py']),
+        # 'p': cycle([4000000]),
+        'p': [0.5e6, 1e6, 2e6, 3e6, 4e6, 5e6, 6e6, 7e6, 8e6],
+        'b': cycle([21]), # 21
+        's': cycle([128]),
+        't': cycle([10000]),
+        'm': cycle([0]),
+        'seed': cycle([0]),
+        'reduce': cycle([1]),
+        'load': cycle([0.0]),
+        'mtw': cycle([50]),
+        'approx': cycle([0]),
+        'timing': cycle(['-time']), # otherwise pass -time
+        'w': []
+        + [1, 2, 4, 6, 8, 10, 12, 14, 16],
+        # + list(np.arange(2, 17, 2)),
+        'o': cycle([10]),
+        'mpi': cycle(['mpich3']),
+        'time': cycle([90]),
+        'partition': cycle(['be-long'])
+    },
+
+    'PS-weak-scale-openmpi3': {
+        'exe': cycle([yc['exe_home'] + 'PS_main.py']),
+        # 'p': cycle([4000000]),
+        'p': [0.5e6, 1e6, 2e6, 3e6, 4e6, 5e6, 6e6, 7e6, 8e6],
+        'b': cycle([21]), # 21
+        's': cycle([128]),
+        't': cycle([10000]),
+        'm': cycle([0]),
+        'seed': cycle([0]),
+        'reduce': cycle([1]),
+        'load': cycle([0.0]),
+        'mtw': cycle([50]),
+        'approx': cycle([0]),
+        'timing': cycle(['-time']), # otherwise pass -time
+        'w': []
+        + [1, 2, 4, 6, 8, 10, 12, 14, 16],
+        # + list(np.arange(2, 17, 2)),
+        'o': cycle([10]),
+        'mpi': cycle(['openmpi3']),
+        'time': cycle([90]),
+        'partition': cycle(['be-long'])
+    },
+    'PS-weak-scale-mvapich2': {
+        'exe': cycle([yc['exe_home'] + 'PS_main.py']),
+        # 'p': cycle([4000000]),
+        'p': [0.5e6, 1e6, 2e6, 3e6, 4e6, 5e6, 6e6, 7e6, 8e6],
+        'b': cycle([21]), # 21
+        's': cycle([128]),
+        't': cycle([10000]),
+        'm': cycle([0]),
+        'seed': cycle([0]),
+        'reduce': cycle([1]),
+        'load': cycle([0.0]),
+        'mtw': cycle([50]),
+        'approx': cycle([0]),
+        'timing': cycle(['-time']), # otherwise pass -time
+        'w': []
+        + [1, 2, 4, 6, 8, 10, 12, 14, 16],
+        # + list(np.arange(2, 17, 2)),
+        'o': cycle([10]),
+        'mpi': cycle(['mvapich2']),
+        'time': cycle([90]),
+        'partition': cycle(['be-long'])
+    }
+
+
 }
 
-repeats = 1
+repeats = 5
 
 
 total_sims = repeats * \
@@ -211,8 +280,8 @@ for analysis, config in configs.items():
                 mpi_config['module_name'],
                 mpi_config['path'],
                 mpi_config['path']+'python', exe,
-                '-p', str(p), '-s', str(s),
-                '-b', str(b), '-addload', str(load),
+                '-p', str(int(p)), '-s', str(s),
+                '-b', str(int(b)), '-addload', str(load),
                 '-t', str(t), '-o', str(o), '-seed', str(seed),
                 str(timing), '-timedir', report_dir,
                 '-m', str(m), '-monitorfile', monitorfile,
