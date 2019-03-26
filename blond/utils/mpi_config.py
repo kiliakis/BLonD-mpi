@@ -60,6 +60,7 @@ class Worker:
         self.indices = {}
         self.intracomm = MPI.COMM_WORLD
         self.rank = self.intracomm.rank
+        self.fastrank = 0
 
         # self.intercomm = MPI.COMM_WORLD.Split(self.rank == 0, self.rank)
         # self.intercomm = self.intercomm.Create_intercomm(0, MPI.COMM_WORLD, 1)

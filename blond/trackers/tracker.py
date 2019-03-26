@@ -259,7 +259,6 @@ class RingAndRFTracker(object):
         self.eta_2 = RFStation.eta_2
         self.alpha_order = RFStation.alpha_order
         self.acceleration_kick = - RFStation.delta_E
-
         # Other imports
         self.beam = Beam
         self.solver = str(solver)
@@ -288,6 +287,9 @@ class RingAndRFTracker(object):
             raise RuntimeError("ERROR in RingAndRFTracker: Choice of" +
                                " interpolation not recognised!")
         self.profile = Profile
+        if self.profile is not None:
+            self.rf_voltage = np.zeros(self.profile.n_slices)
+
         self.totalInducedVoltage = TotalInducedVoltage
         if (self.interpolation is True) and (self.profile is None):
             # ProfileError
@@ -364,7 +366,7 @@ class RingAndRFTracker(object):
         else:
             self.rf_voltage = bm.rf_volt_comp(voltages, omega_rf, phi_rf, self)
 
-    def track(self):
+    def pre_track(self):
         """Tracking method for the section. Applies first the kick, then the 
         drift. Calls also RF/beam feedbacks if applicable. Updates the counter
         of the corresponding RFStation class and the energy-related variables
@@ -384,6 +386,22 @@ class RingAndRFTracker(object):
         # Determine phase loop correction on RF phase and frequency
         if self.beamFB is not None and self.counter[0] >= self.beamFB.delay:
             self.beamFB.track()
+
+        if self.periodicity:
+            pass
+        else:
+
+            if self.rf_params.empty is False:
+                if self.interpolation:
+                    self.rf_voltage_calculation()
+
+    def track_only(self):
+        """Tracking method for the section. Applies first the kick, then the 
+        drift. Calls also RF/beam feedbacks if applicable. Updates the counter
+        of the corresponding RFStation class and the energy-related variables
+        of the Beam class.
+
+        """
 
         if self.periodicity:
 
@@ -442,7 +460,6 @@ class RingAndRFTracker(object):
 
             if self.rf_params.empty is False:
                 if self.interpolation:
-                    self.rf_voltage_calculation()
                     if self.totalInducedVoltage is not None:
                         self.total_voltage = self.rf_voltage \
                             + self.totalInducedVoltage.induced_voltage
@@ -451,11 +468,6 @@ class RingAndRFTracker(object):
 
                     with timing.timed_region('comp:LIKick'):
                         with mpiprof.traced_region('comp:LIKick'):
-                            # bm.linear_interp_kick(dt=self.beam.dt, dE=self.beam.dE,
-                            #                       voltage=self.total_voltage,
-                            #                       bin_centers=self.profile.bin_centers,
-                            #                       charge=self.beam.Particle.charge,
-                            #                       acceleration_kick=self.acceleration_kick[self.counter[0]])
                             turn = self.counter[0]
                             bm.LIKick_n_drift(self.beam.dt,
                                               self.beam.dE,
@@ -484,3 +496,8 @@ class RingAndRFTracker(object):
         self.beam.gamma = self.rf_params.gamma[self.counter[0]]
         self.beam.energy = self.rf_params.energy[self.counter[0]]
         self.beam.momentum = self.rf_params.momentum[self.counter[0]]
+
+
+def track(self):
+    pre_track()
+    track_only()

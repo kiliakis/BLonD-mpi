@@ -22,7 +22,6 @@ from ctypes import c_uint, c_double, c_void_p
 from scipy.constants import e
 from ..toolbox.next_regular import next_regular
 from ..utils import bmath as bm
-
 try:
     from pyprof import timing
     from pyprof import mpiprof

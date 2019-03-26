@@ -349,16 +349,30 @@ for turn in range(N_t):
                                     shiftX=-rf.phi_rf[0, turn]/rf.omega_rf[0, turn])
             slicesMonitor.track(turn)
 
-
-    if (approx == 0) or (approx == 2):
-        totVoltage.induced_voltage_sum()
-    elif (approx == 1) and (turn % N_t_reduce == 0):
-        totVoltage.induced_voltage_sum()
+    if worker.isMaster:
+        if (approx == 0) or (approx == 2):
+            totVoltage.induced_voltage_sum()
+        elif (approx == 1) and (turn % N_t_reduce == 0):
+            totVoltage.induced_voltage_sum()
+        # exchange info, I need to send the totVoltage.induced_voltage
+        # and receive the tracker.rf_voltage
+        worker.hostcomm.Sendrecv(totVoltage.induced_voltage,
+                                 dest=1-worker.rank, sendtag=0,
+                                 recvbuf=tracker.rf_voltage,
+                                 source=1-worker.rank)
+    else:
+        tracker.pre_track()
+        # exchange info
+        # I need to receive the induced_voltage, and send the
+        worker.hostcomm.Sendrecv(tracker.rf_voltage,
+                                 dest=1-worker.rank, sendtag=0,
+                                 recvbuf=totVoltage.induced_voltage,
+                                 source=1-worker.rank)
 
     tracker.track()
 
-    worker.hostsync()
-    worker.sync()
+    # worker.hostsync()
+    # worker.sync()
     # import matplotlib.pyplot as plt
     # plt.figure()
     # plt.plot(profile.bin_centers[-200:], profile.n_macroparticles[-200:])
