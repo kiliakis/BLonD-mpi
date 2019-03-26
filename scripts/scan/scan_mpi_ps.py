@@ -20,26 +20,26 @@ job_name_form = '_p{}_b{}_s{}_t{}_w{}_o{}_N{}_r{}_m{}_seed{}_approx{}_mpi{}'
 
 configs = {
 
-    'PS-21B-approx2': {
-        'exe': cycle([yc['exe_home'] + 'PS_main.py']),
-        'p': cycle([4000000]),
-        'b': cycle([21]),  # 21
-        's': cycle([128]),
-        't': cycle([200000]), #378708
-        'm': cycle([100]),
-        'reduce': cycle([1]),
-        'load': cycle([0.0]),
-        'mtw': cycle([50]),
-        'approx': cycle([2]),
-        'timing': cycle(['']),  # otherwise pass -time
-        'seed': [0] * 4 + [1] * 4 + [2] * 4 + [3] * 4 + [4] * 4 + [5] * 4,        
-        'w': []
-        + [2, 4, 8, 16] * 6,
-        'o': cycle([10]),
-        'time': cycle([1000]),
-        'mpi': cycle(['mpich3']),
-        'partition': cycle(['be-short'])
-    },
+    # 'PS-21B-approx2': {
+    #     'exe': cycle([yc['exe_home'] + 'PS_main.py']),
+    #     'p': cycle([4000000]),
+    #     'b': cycle([21]),  # 21
+    #     's': cycle([128]),
+    #     't': cycle([200000]), #378708
+    #     'm': cycle([100]),
+    #     'reduce': cycle([1]),
+    #     'load': cycle([0.0]),
+    #     'mtw': cycle([50]),
+    #     'approx': cycle([2]),
+    #     'timing': cycle(['']),  # otherwise pass -time
+    #     'seed': [0] * 4 + [1] * 4 + [2] * 4 + [3] * 4 + [4] * 4 + [5] * 4,        
+    #     'w': []
+    #     + [2, 4, 8, 16] * 6,
+    #     'o': cycle([10]),
+    #     'time': cycle([1000]),
+    #     'mpi': cycle(['mpich3']),
+    #     'partition': cycle(['be-short'])
+    # },
 
 
 
@@ -68,6 +68,27 @@ configs = {
     #     'partition': cycle(['be-short'])
     # }
 
+
+    'PS-sync-mpich3': {
+        'exe': cycle([yc['exe_home'] + 'PS_main_test.py']),
+        'p': cycle([4000000]),
+        'b': cycle([21]), # 21
+        's': cycle([128]),
+        't': cycle([10000]),
+        'm': cycle([0]),
+        'seed': cycle([0]),
+        'reduce': cycle([1]),
+        'load': cycle([0.0]),
+        'mtw': cycle([50]),
+        'approx': cycle([0]),
+        'timing': cycle(['-time']), # otherwise pass -time
+        'w': []
+        + list(np.arange(2, 17, 2)),
+        'o': cycle([10]),
+        'mpi': cycle(['mpich3']),
+        'time': cycle([180]),
+        'partition': cycle(['be-long'])
+    },
 
     # 'PS-b21-t10k-mpich3': {
     #     'exe': cycle([yc['exe_home'] + 'PS_main.py']),
@@ -144,7 +165,7 @@ configs = {
 
 }
 
-repeats = 1
+repeats = 5
 
 
 total_sims = repeats * \
