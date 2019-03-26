@@ -134,12 +134,13 @@ configs = {
     #     'partition': cycle(['be-long'])
     # },
 
-    'LHC-weak-scale-mpich3': {
-        'exe': cycle([yc['exe_home'] + '_LHC_BUP_2017.py']),
-        # 'p': cycle([2000000]),
-        'p': [1e6, 2e6, 2e6, 2e6, 2e6, 1.25e6, 1.5e6, 1.75e6, 2e6],
-        # 'b': cycle([96]),  # 96
-        'b': [12, 12, 24, 36, 48, 96, 96, 96, 96],  # 96
+
+    'LHC-sync-mpich3': {
+        'exe': cycle([yc['exe_home'] + '_LHC_BUP_2017_test.py']),
+        'p': cycle([2000000]),
+        # 'p': [1e6, 2e6, 2e6, 2e6, 2e6, 1.25e6, 1.5e6, 1.75e6, 2e6],
+        'b': cycle([96]),  # 96
+        # 'b': [12, 12, 24, 36, 48, 96, 96, 96, 96],  # 96
         's': cycle([1000]),
         't': cycle([10000]),
         'm': cycle([0]),
@@ -147,64 +148,88 @@ configs = {
         'reduce': cycle([1]),
         'load': cycle([0.0]),
         'mtw': cycle([50]),
-        'approx': cycle([0]),
+        'approx': cycle([2]),
         'timing': cycle(['-time']),  # otherwise pass -time
         'w': []
-        + [1, 2, 4, 6, 8, 10, 12, 14, 16],
+        + [2, 4, 6, 8, 10, 12, 14, 16],
         # + list(np.arange(2, 17, 2)),
         'o': cycle([10]),
         'mpi': cycle(['mpich3']),
-        'time': cycle([90]),
+        'time': cycle([180]),
         'partition': cycle(['be-short'])
     },
 
-    'LHC-weak-scale-openmpi3': {
-        'exe': cycle([yc['exe_home'] + '_LHC_BUP_2017.py']),
-        # 'p': cycle([2000000]),
-        'p': [1e6, 2e6, 2e6, 2e6, 2e6, 1.25e6, 1.5e6, 1.75e6, 2e6],
-        # 'b': cycle([96]),  # 96
-        'b': [12, 12, 24, 36, 48, 96, 96, 96, 96],  # 96
-        's': cycle([1000]),
-        't': cycle([10000]),
-        'm': cycle([0]),
-        'seed': cycle([0]),
-        'reduce': cycle([1]),
-        'load': cycle([0.0]),
-        'mtw': cycle([50]),
-        'approx': cycle([0]),
-        'timing': cycle(['-time']),  # otherwise pass -time
-        'w': []
-        + [1, 2, 4, 6, 8, 10, 12, 14, 16],
-        # + list(np.arange(2, 17, 2)),
-        'o': cycle([10]),
-        'mpi': cycle(['openmpi3']),
-        'time': cycle([90]),
-        'partition': cycle(['be-short'])
-    },
+    # 'LHC-weak-scale-mpich3': {
+    #     'exe': cycle([yc['exe_home'] + '_LHC_BUP_2017.py']),
+    #     # 'p': cycle([2000000]),
+    #     'p': [1e6, 2e6, 2e6, 2e6, 2e6, 1.25e6, 1.5e6, 1.75e6, 2e6],
+    #     # 'b': cycle([96]),  # 96
+    #     'b': [12, 12, 24, 36, 48, 96, 96, 96, 96],  # 96
+    #     's': cycle([1000]),
+    #     't': cycle([10000]),
+    #     'm': cycle([0]),
+    #     'seed': cycle([0]),
+    #     'reduce': cycle([1]),
+    #     'load': cycle([0.0]),
+    #     'mtw': cycle([50]),
+    #     'approx': cycle([0]),
+    #     'timing': cycle(['-time']),  # otherwise pass -time
+    #     'w': []
+    #     + [1, 2, 4, 6, 8, 10, 12, 14, 16],
+    #     # + list(np.arange(2, 17, 2)),
+    #     'o': cycle([10]),
+    #     'mpi': cycle(['mpich3']),
+    #     'time': cycle([90]),
+    #     'partition': cycle(['be-short'])
+    # },
 
-    'LHC-weak-scale-mvapich2': {
-        'exe': cycle([yc['exe_home'] + '_LHC_BUP_2017.py']),
-        # 'p': cycle([2000000]),
-        'p': [1e6, 2e6, 2e6, 2e6, 2e6, 1.25e6, 1.5e6, 1.75e6, 2e6],
-        # 'b': cycle([96]),  # 96
-        'b': [12, 12, 24, 36, 48, 96, 96, 96, 96],  # 96
-        's': cycle([1000]),
-        't': cycle([10000]),
-        'm': cycle([0]),
-        'seed': cycle([0]),
-        'reduce': cycle([1]),
-        'load': cycle([0.0]),
-        'mtw': cycle([50]),
-        'approx': cycle([0]),
-        'timing': cycle(['-time']),  # otherwise pass -time
-        'w': []
-        + [1, 2, 4, 6, 8, 10, 12, 14, 16],
-        # + list(np.arange(2, 17, 2)),
-        'o': cycle([10]),
-        'mpi': cycle(['mvapich2']),
-        'time': cycle([90]),
-        'partition': cycle(['be-short'])
-    },
+    # 'LHC-weak-scale-openmpi3': {
+    #     'exe': cycle([yc['exe_home'] + '_LHC_BUP_2017.py']),
+    #     # 'p': cycle([2000000]),
+    #     'p': [1e6, 2e6, 2e6, 2e6, 2e6, 1.25e6, 1.5e6, 1.75e6, 2e6],
+    #     # 'b': cycle([96]),  # 96
+    #     'b': [12, 12, 24, 36, 48, 96, 96, 96, 96],  # 96
+    #     's': cycle([1000]),
+    #     't': cycle([10000]),
+    #     'm': cycle([0]),
+    #     'seed': cycle([0]),
+    #     'reduce': cycle([1]),
+    #     'load': cycle([0.0]),
+    #     'mtw': cycle([50]),
+    #     'approx': cycle([0]),
+    #     'timing': cycle(['-time']),  # otherwise pass -time
+    #     'w': []
+    #     + [1, 2, 4, 6, 8, 10, 12, 14, 16],
+    #     # + list(np.arange(2, 17, 2)),
+    #     'o': cycle([10]),
+    #     'mpi': cycle(['openmpi3']),
+    #     'time': cycle([90]),
+    #     'partition': cycle(['be-short'])
+    # },
+
+    # 'LHC-weak-scale-mvapich2': {
+    #     'exe': cycle([yc['exe_home'] + '_LHC_BUP_2017.py']),
+    #     # 'p': cycle([2000000]),
+    #     'p': [1e6, 2e6, 2e6, 2e6, 2e6, 1.25e6, 1.5e6, 1.75e6, 2e6],
+    #     # 'b': cycle([96]),  # 96
+    #     'b': [12, 12, 24, 36, 48, 96, 96, 96, 96],  # 96
+    #     's': cycle([1000]),
+    #     't': cycle([10000]),
+    #     'm': cycle([0]),
+    #     'seed': cycle([0]),
+    #     'reduce': cycle([1]),
+    #     'load': cycle([0.0]),
+    #     'mtw': cycle([50]),
+    #     'approx': cycle([0]),
+    #     'timing': cycle(['-time']),  # otherwise pass -time
+    #     'w': []
+    #     + [1, 2, 4, 6, 8, 10, 12, 14, 16],
+    #     # + list(np.arange(2, 17, 2)),
+    #     'o': cycle([10]),
+    #     'mpi': cycle(['mvapich2']),
+    #     'time': cycle([90]),
+    #     'partition': cycle(['be-short'])
+    # },
 
 
 }

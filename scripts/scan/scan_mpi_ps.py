@@ -142,10 +142,10 @@ configs = {
     #     'partition': cycle(['be-short'])
     # }
 
-    'PS-weak-scale-mpich3': {
-        'exe': cycle([yc['exe_home'] + 'PS_main.py']),
-        # 'p': cycle([4000000]),
-        'p': [0.5e6, 1e6, 2e6, 3e6, 4e6, 5e6, 6e6, 7e6, 8e6],
+    'PS-sync-mpich3': {
+        'exe': cycle([yc['exe_home'] + 'PS_main_test.py']),
+        'p': cycle([4000000]),
+        # 'p': [0.5e6, 1e6, 2e6, 3e6, 4e6, 5e6, 6e6, 7e6, 8e6],
         'b': cycle([21]), # 21
         's': cycle([128]),
         't': cycle([10000]),
@@ -154,10 +154,10 @@ configs = {
         'reduce': cycle([1]),
         'load': cycle([0.0]),
         'mtw': cycle([50]),
-        'approx': cycle([0]),
+        'approx': cycle([2]),
         'timing': cycle(['-time']), # otherwise pass -time
         'w': []
-        + [1, 2, 4, 6, 8, 10, 12, 14, 16],
+        + [2, 4, 6, 8, 10, 12, 14, 16],
         # + list(np.arange(2, 17, 2)),
         'o': cycle([10]),
         'mpi': cycle(['mpich3']),
@@ -165,50 +165,73 @@ configs = {
         'partition': cycle(['be-long'])
     },
 
-    'PS-weak-scale-openmpi3': {
-        'exe': cycle([yc['exe_home'] + 'PS_main.py']),
-        # 'p': cycle([4000000]),
-        'p': [0.5e6, 1e6, 2e6, 3e6, 4e6, 5e6, 6e6, 7e6, 8e6],
-        'b': cycle([21]), # 21
-        's': cycle([128]),
-        't': cycle([10000]),
-        'm': cycle([0]),
-        'seed': cycle([0]),
-        'reduce': cycle([1]),
-        'load': cycle([0.0]),
-        'mtw': cycle([50]),
-        'approx': cycle([0]),
-        'timing': cycle(['-time']), # otherwise pass -time
-        'w': []
-        + [1, 2, 4, 6, 8, 10, 12, 14, 16],
-        # + list(np.arange(2, 17, 2)),
-        'o': cycle([10]),
-        'mpi': cycle(['openmpi3']),
-        'time': cycle([90]),
-        'partition': cycle(['be-long'])
-    },
-    'PS-weak-scale-mvapich2': {
-        'exe': cycle([yc['exe_home'] + 'PS_main.py']),
-        # 'p': cycle([4000000]),
-        'p': [0.5e6, 1e6, 2e6, 3e6, 4e6, 5e6, 6e6, 7e6, 8e6],
-        'b': cycle([21]), # 21
-        's': cycle([128]),
-        't': cycle([10000]),
-        'm': cycle([0]),
-        'seed': cycle([0]),
-        'reduce': cycle([1]),
-        'load': cycle([0.0]),
-        'mtw': cycle([50]),
-        'approx': cycle([0]),
-        'timing': cycle(['-time']), # otherwise pass -time
-        'w': []
-        + [1, 2, 4, 6, 8, 10, 12, 14, 16],
-        # + list(np.arange(2, 17, 2)),
-        'o': cycle([10]),
-        'mpi': cycle(['mvapich2']),
-        'time': cycle([90]),
-        'partition': cycle(['be-long'])
-    }
+    # 'PS-weak-scale-mpich3': {
+    #     'exe': cycle([yc['exe_home'] + 'PS_main.py']),
+    #     # 'p': cycle([4000000]),
+    #     'p': [0.5e6, 1e6, 2e6, 3e6, 4e6, 5e6, 6e6, 7e6, 8e6],
+    #     'b': cycle([21]), # 21
+    #     's': cycle([128]),
+    #     't': cycle([10000]),
+    #     'm': cycle([0]),
+    #     'seed': cycle([0]),
+    #     'reduce': cycle([1]),
+    #     'load': cycle([0.0]),
+    #     'mtw': cycle([50]),
+    #     'approx': cycle([0]),
+    #     'timing': cycle(['-time']), # otherwise pass -time
+    #     'w': []
+    #     + [1, 2, 4, 6, 8, 10, 12, 14, 16],
+    #     # + list(np.arange(2, 17, 2)),
+    #     'o': cycle([10]),
+    #     'mpi': cycle(['mpich3']),
+    #     'time': cycle([90]),
+    #     'partition': cycle(['be-long'])
+    # },
+
+    # 'PS-weak-scale-openmpi3': {
+    #     'exe': cycle([yc['exe_home'] + 'PS_main.py']),
+    #     # 'p': cycle([4000000]),
+    #     'p': [0.5e6, 1e6, 2e6, 3e6, 4e6, 5e6, 6e6, 7e6, 8e6],
+    #     'b': cycle([21]), # 21
+    #     's': cycle([128]),
+    #     't': cycle([10000]),
+    #     'm': cycle([0]),
+    #     'seed': cycle([0]),
+    #     'reduce': cycle([1]),
+    #     'load': cycle([0.0]),
+    #     'mtw': cycle([50]),
+    #     'approx': cycle([0]),
+    #     'timing': cycle(['-time']), # otherwise pass -time
+    #     'w': []
+    #     + [1, 2, 4, 6, 8, 10, 12, 14, 16],
+    #     # + list(np.arange(2, 17, 2)),
+    #     'o': cycle([10]),
+    #     'mpi': cycle(['openmpi3']),
+    #     'time': cycle([90]),
+    #     'partition': cycle(['be-long'])
+    # },
+    # 'PS-weak-scale-mvapich2': {
+    #     'exe': cycle([yc['exe_home'] + 'PS_main.py']),
+    #     # 'p': cycle([4000000]),
+    #     'p': [0.5e6, 1e6, 2e6, 3e6, 4e6, 5e6, 6e6, 7e6, 8e6],
+    #     'b': cycle([21]), # 21
+    #     's': cycle([128]),
+    #     't': cycle([10000]),
+    #     'm': cycle([0]),
+    #     'seed': cycle([0]),
+    #     'reduce': cycle([1]),
+    #     'load': cycle([0.0]),
+    #     'mtw': cycle([50]),
+    #     'approx': cycle([0]),
+    #     'timing': cycle(['-time']), # otherwise pass -time
+    #     'w': []
+    #     + [1, 2, 4, 6, 8, 10, 12, 14, 16],
+    #     # + list(np.arange(2, 17, 2)),
+    #     'o': cycle([10]),
+    #     'mpi': cycle(['mvapich2']),
+    #     'time': cycle([90]),
+    #     'partition': cycle(['be-long'])
+    # }
 
 
 }
