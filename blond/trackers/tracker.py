@@ -498,6 +498,6 @@ class RingAndRFTracker(object):
         self.beam.momentum = self.rf_params.momentum[self.counter[0]]
 
 
-def track(self):
-    pre_track()
-    track_only()
+    def track(self):
+        self.pre_track()
+        self.track_only()

@@ -6,21 +6,6 @@
 # Run first:
 # Preprocess_ramp.py
 # Preprocess_LHC_noise.py
-#
-from blond.monitors.monitors import SlicesMonitor
-from blond.toolbox.next_regular import next_regular
-from blond.impedances.impedance import InducedVoltageFreq, TotalInducedVoltage
-from blond.impedances.impedance_sources import InputTable
-from blond.beam.profile import Profile, CutOptions
-from blond.beam.distributions import bigaussian
-from blond.beam.beam import Beam, Proton
-from blond.llrf.rf_noise import FlatSpectrum, LHCNoiseFB
-from blond.llrf.beam_feedback import BeamFeedback
-from blond.trackers.tracker import RingAndRFTracker, FullRingAndRF
-from blond.input_parameters.rf_parameters import RFStation
-from blond.input_parameters.ring import Ring
-from blond.utils.mpi_config import worker, mpiprint
-from blond.utils.input_parser import parse
 import os
 import datetime
 import sys
@@ -36,6 +21,20 @@ except ImportError:
     mpiprof = timing
 
 # H. Timko
+from blond.utils.input_parser import parse
+from blond.utils.mpi_config import worker, mpiprint
+from blond.input_parameters.ring import Ring
+from blond.input_parameters.rf_parameters import RFStation
+from blond.trackers.tracker import RingAndRFTracker, FullRingAndRF
+from blond.llrf.beam_feedback import BeamFeedback
+from blond.llrf.rf_noise import FlatSpectrum, LHCNoiseFB
+from blond.beam.beam import Beam, Proton
+from blond.beam.distributions import bigaussian
+from blond.beam.profile import Profile, CutOptions
+from blond.impedances.impedance_sources import InputTable
+from blond.impedances.impedance import InducedVoltageFreq, TotalInducedVoltage
+from blond.toolbox.next_regular import next_regular
+from blond.monitors.monitors import SlicesMonitor
 
 REAL_RAMP = True    # track full ramp
 MONITORING = False   # turn off plots and monitors
@@ -45,6 +44,7 @@ if MONITORING:
     from blond.plots.plot import Plot
     from blond.plots.plot_beams import plot_long_phase_space
     from blond.plots.plot_slices import plot_beam_profile
+
 
 # from blond.plots.plot_beams import plot_long_phase_space
 
