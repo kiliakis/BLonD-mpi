@@ -60,7 +60,6 @@ class Worker:
         self.indices = {}
         self.intracomm = MPI.COMM_WORLD
         self.rank = self.intracomm.rank
-        self.fastrank = 0
 
         # self.intercomm = MPI.COMM_WORLD.Split(self.rank == 0, self.rank)
         # self.intercomm = self.intercomm.Create_intercomm(0, MPI.COMM_WORLD, 1)
@@ -74,6 +73,8 @@ class Worker:
         # TODO: very rare, but possibile hash collisions are not handled
         color = np.dot(np.array(self.hostip.split('.'), int)[1:], [1, 256, 256**2])
         self.hostcomm = self.intracomm.Split(color, self.rank)
+        self.hostrank = self.hostcomm.rank
+        self.hostworkers = self.hostcomm.size
 
         self.log = args['log']
         self.trace = args['trace']
@@ -95,6 +96,15 @@ class Worker:
     @property
     def isMaster(self):
         return self.rank == 0
+
+    @property
+    def isHostFirst(self):
+        return self.hostrank == 0
+
+    @property
+    def isHostLast(self):
+        return self.hostrank == self.hostworkers-1
+
 
     # Define the begin and size numbers in order to split a variable of length size
     @timing.timeit(key='serial:split')

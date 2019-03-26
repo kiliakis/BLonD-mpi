@@ -7,20 +7,7 @@
 # Preprocess_ramp.py
 # Preprocess_LHC_noise.py
 #
-from blond.monitors.monitors import SlicesMonitor
-from blond.toolbox.next_regular import next_regular
-from blond.impedances.impedance import InducedVoltageFreq, TotalInducedVoltage
-from blond.impedances.impedance_sources import InputTable
-from blond.beam.profile import Profile, CutOptions
-from blond.beam.distributions import bigaussian
-from blond.beam.beam import Beam, Proton
-from blond.llrf.rf_noise import FlatSpectrum, LHCNoiseFB
-from blond.llrf.beam_feedback import BeamFeedback
-from blond.trackers.tracker import RingAndRFTracker, FullRingAndRF
-from blond.input_parameters.rf_parameters import RFStation
-from blond.input_parameters.ring import Ring
-from blond.utils.mpi_config import worker, mpiprint
-from blond.utils.input_parser import parse
+# H. Timko
 import os
 import datetime
 import sys
@@ -36,6 +23,20 @@ except ImportError:
     mpiprof = timing
 
 # H. Timko
+from blond.utils.input_parser import parse
+from blond.utils.mpi_config import worker, mpiprint
+from blond.input_parameters.ring import Ring
+from blond.input_parameters.rf_parameters import RFStation
+from blond.trackers.tracker import RingAndRFTracker, FullRingAndRF
+from blond.llrf.beam_feedback import BeamFeedback
+from blond.llrf.rf_noise import FlatSpectrum, LHCNoiseFB
+from blond.beam.beam import Beam, Proton
+from blond.beam.distributions import bigaussian
+from blond.beam.profile import Profile, CutOptions
+from blond.impedances.impedance_sources import InputTable
+from blond.impedances.impedance import InducedVoltageFreq, TotalInducedVoltage
+from blond.toolbox.next_regular import next_regular
+from blond.monitors.monitors import SlicesMonitor
 
 REAL_RAMP = True    # track full ramp
 MONITORING = False   # turn off plots and monitors
@@ -46,7 +47,6 @@ if MONITORING:
     from blond.plots.plot_beams import plot_long_phase_space
     from blond.plots.plot_slices import plot_beam_profile
 
-# from blond.plots.plot_beams import plot_long_phase_space
 
 # matched_from_distribution_function
 
@@ -349,27 +349,42 @@ for turn in range(N_t):
                                     shiftX=-rf.phi_rf[0, turn]/rf.omega_rf[0, turn])
             slicesMonitor.track(turn)
 
-    if worker.isMaster:
+    # req1 = None
+    # req2 = None
+    if worker.isHostFirst:
         if (approx == 0) or (approx == 2):
             totVoltage.induced_voltage_sum()
         elif (approx == 1) and (turn % N_t_reduce == 0):
             totVoltage.induced_voltage_sum()
+    if worker.isHostLast:
+        tracker.pre_track()
+
+    if worker.isHostFirst and not worker.isHostLast:
         # exchange info, I need to send the totVoltage.induced_voltage
         # and receive the tracker.rf_voltage
+        # req1 = worker.hostcomm.Ibcast(totVoltage.induced_voltage, root=worker.hostcomm.rank)
+        # req2 = worker.hostcomm.Ibcast(tracker.rf_voltage, root=1-worker.hostcomm.rank)
         worker.hostcomm.Sendrecv(totVoltage.induced_voltage,
-                                 dest=1-worker.rank, sendtag=0,
+                                 dest=worker.hostworkers-1,
+                                 sendtag=0,
                                  recvbuf=tracker.rf_voltage,
-                                 source=1-worker.rank)
-    else:
-        tracker.pre_track()
+                                 source=worker.hostworkers-1,
+                                 recvtag=1)
+    elif worker.isHostLast and not worker.isHostFirst:
         # exchange info
         # I need to receive the induced_voltage, and send the
+        # req1 = worker.hostcomm.Ibcast(totVoltage.induced_voltage, root=1-worker.hostcomm.rank)
+        # req2 = worker.hostcomm.Ibcast(tracker.rf_voltage, root=worker.hostcomm.rank)
         worker.hostcomm.Sendrecv(tracker.rf_voltage,
-                                 dest=1-worker.rank, sendtag=0,
+                                 dest=0,
+                                 sendtag=1,
                                  recvbuf=totVoltage.induced_voltage,
-                                 source=1-worker.rank)
+                                 source=0,
+                                 recvtag=0)
+    # req1.Wait()
+    # req2.Wait()
 
-    tracker.track()
+    tracker.track_only()
 
     # worker.hostsync()
     # worker.sync()
