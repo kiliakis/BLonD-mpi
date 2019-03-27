@@ -70,20 +70,51 @@ def report_comm_comp(indir, files, outfile):
     outfile.write(string)
 
 
+# def report_avg(indir, files, outfile):
+#     default_funcs = []
+#     default_header = []
+#     acc_data = []
+#     num = 0
+#     for f in files:
+#         data = np.genfromtxt(indir+'/'+f, dtype=str, delimiter='\t')
+#         header, data = data[0], data[1:]
+#         funcs, data = data[:, 0], np.array(data[:, 1:], float)
+#         if len(default_funcs) == 0:
+#             default_funcs = funcs
+#         elif not np.array_equal(default_funcs, funcs):
+#             print('Problem with file: ', indir+'/'+f)
+#             continue
+
+#         if len(default_header) == 0:
+#             default_header = header
+#         elif not np.array_equal(default_header, header):
+#             print('Problem with file: ', indir+'/'+f)
+#             continue
+
+#         if len(acc_data) == 0:
+#             acc_data = data
+#         else:
+#             acc_data += data
+#         num += 1
+#     try:
+#         acc_data = np.around(acc_data/num, 2)
+#     except TypeError as e:
+#         print('[Error] with dir ', indir)
+#         return
+
+#     writer = csv.writer(outfile, delimiter='\t')
+#     writer.writerow(default_header)
+#     for f, r in zip(default_funcs, acc_data):
+#         writer.writerow([f]+list(r))
+
 def report_avg(indir, files, outfile):
-    default_funcs = []
-    default_header = []
     acc_data = []
-    num = 0
+    default_header = []
+    data_dic = {}
     for f in files:
-        data = np.genfromtxt(indir+'/'+f, dtype=str, delimiter='\t')
+        data = np.genfromtxt(indir + '/' + f, dtype=str, delimiter='\t')
         header, data = data[0], data[1:]
         funcs, data = data[:, 0], np.array(data[:, 1:], float)
-        if len(default_funcs) == 0:
-            default_funcs = funcs
-        elif not np.array_equal(default_funcs, funcs):
-            print('Problem with file: ', indir+'/'+f)
-            continue
 
         if len(default_header) == 0:
             default_header = header
@@ -91,21 +122,22 @@ def report_avg(indir, files, outfile):
             print('Problem with file: ', indir+'/'+f)
             continue
 
-        if len(acc_data) == 0:
-            acc_data = data
-        else:
-            acc_data += data
-        num += 1
-    try:
-        acc_data = np.around(acc_data/num, 2)
-    except TypeError as e:
-        print('[Error] with dir ', indir)
-        return
+        for i, f in enumerate(funcs):
+            if f not in data_dic:
+                data_dic[f] = []
+            data_dic[f].append(data[i])
 
-    writer = csv.writer(outfile, delimiter='\t')
-    writer.writerow(default_header)
-    for f, r in zip(default_funcs, acc_data):
-        writer.writerow([f]+list(r))
+    acc_data = [default_header]
+    acc_data_std = [default_header]
+    for f, v in data_dic.items():
+        acc_data.append([f] + list(np.around(np.mean(data_dic[f], axis=0), 2)))
+        acc_data_std.append(
+            [f] + list(np.around(np.std(data_dic[f], axis=0), 2)))
+
+    writer1 = csv.writer(outfile, delimiter='\t')
+    writer1.writerows(acc_data)
+    # writer2 = csv.writer(outfile.replace('.csv', '-std.csv'), delimiter='\t')
+    # writer2.writerows(acc_data_std)
 
 
 if __name__ == '__main__':
