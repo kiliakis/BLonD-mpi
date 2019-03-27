@@ -67,42 +67,78 @@ def generate_reports(input, report_script):
 
 def write_avg(files, outfile, outfile_std):
     acc_data = []
-    num = 0
-    default_funcs = []
     default_header = []
+    data_dic = {}
     for f in files:
         data = np.genfromtxt(f, dtype=str, delimiter='\t')
         header, data = data[0], data[1:]
         funcs, data = data[:, 0], np.array(data[:, 1:], float)
-
-        if len(default_funcs) == 0:
-            default_funcs = funcs
-        elif not np.array_equal(default_funcs, funcs):
-            print('Problem with file: ', indir+'/'+f)
-            continue
 
         if len(default_header) == 0:
             default_header = header
         elif not np.array_equal(default_header, header):
             print('Problem with file: ', indir+'/'+f)
             continue
-        acc_data.append(data)
 
-    acc_data.sort(key=lambda a: (a[-1][0]))
-    acc_data = acc_data[:args.keep]
+        for i, f in enumerate(funcs):
+            if f not in data_dic:
+                data_dic[f] = []
+            data_dic[f].append(data[i])
 
-    acc_data_std = np.around(np.std(acc_data, axis=0), 2)
-    acc_data = np.around(np.mean(acc_data, axis=0), 2)
+    acc_data = [default_header]
+    acc_data_std = [default_header]
+    sortid = [i[0]for i in sorted(enumerate(data_dic[funcs[-1]]),
+                                  key=lambda a:a[1][0])]
+    for f, v in data_dic.items():
+        data_dic[f] = np.array(v)[sortid][:args.keep]
+        acc_data.append([f] + list(np.around(np.mean(data_dic[f], axis=0), 2)))
+        acc_data_std.append(
+            [f] + list(np.around(np.std(data_dic[f], axis=0), 2)))
 
     writer1 = csv.writer(outfile, delimiter='\t')
-    writer1.writerow(default_header)
-
+    writer1.writerows(acc_data)
     writer2 = csv.writer(outfile_std, delimiter='\t')
-    writer2.writerow(default_header)
+    writer2.writerows(acc_data_std)
 
-    for f, r, r_std in zip(default_funcs, acc_data, acc_data_std):
-        writer1.writerow([f]+list(r))
-        writer2.writerow([f]+list(r_std))
+
+# def write_avg(files, outfile, outfile_std):
+#     acc_data = []
+#     num = 0
+#     default_funcs = []
+#     default_header = []
+#     for f in files:
+#         data = np.genfromtxt(f, dtype=str, delimiter='\t')
+#         header, data = data[0], data[1:]
+#         funcs, data = data[:, 0], np.array(data[:, 1:], float)
+
+#         if len(default_funcs) == 0:
+#             default_funcs = funcs
+#         elif not np.array_equal(default_funcs, funcs):
+#             print('Problem with file: ', indir+'/'+f)
+#             continue
+
+#         if len(default_header) == 0:
+#             default_header = header
+#         elif not np.array_equal(default_header, header):
+#             print('Problem with file: ', indir+'/'+f)
+#             continue
+#         acc_data.append(data)
+
+#     acc_data.sort(key=lambda a: (a[-1][0]))
+#     acc_data = acc_data[:args.keep]
+
+#     acc_data_std = np.around(np.std(acc_data, axis=0), 2)
+#     acc_data = np.around(np.mean(acc_data, axis=0), 2)
+
+#     writer1 = csv.writer(outfile, delimiter='\t')
+#     writer1.writerow(default_header)
+
+#     writer2 = csv.writer(outfile_std, delimiter='\t')
+#     writer2.writerow(default_header)
+
+#     for f, r, r_std in zip(default_funcs, acc_data, acc_data_std):
+#         writer1.writerow([f]+list(r))
+#         writer2.writerow([f]+list(r_std))
 
 
 def aggregate_reports(input):
@@ -156,7 +192,7 @@ def collect_reports(input, outfile, filename):
         except:
             print('[Error] dir ', dirs)
             continue
-    records.sort(key=lambda a: (int(a[0]), int(a[1]), int(a[2]),
+    records.sort(key=lambda a: (float(a[0]), int(a[1]), int(a[2]),
                                 int(a[3]), int(a[4]), int(a[5]), int(a[6])))
     writer = csv.writer(outfile, delimiter='\t')
     writer.writerow(header + list(data_head))
