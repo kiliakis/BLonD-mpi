@@ -203,20 +203,20 @@ plots_config = {
                 }
             },
 
-            # res_dir+'raw/LHC-96B-2MPPB-t10k-openmpi3/comm-comp-report.csv': {
-            #     'key': 'lhc-openmpi3',
-            #     'lines': {
-            #         'omp': ['10'],
-            #         'type': ['total']
-            #     }
-            # },
-            # res_dir+'raw/LHC-96B-2MPPB-t10k-mvapich2/comm-comp-report.csv': {
-            #     'key': 'lhc-mvapich2',
-            #     'lines': {
-            #         'omp': ['10'],
-            #         'type': ['total']
-            #     }
-            # },
+            res_dir+'raw/LHC-96B-2MPPB-t10k-openmpi3/comm-comp-report.csv': {
+                'key': 'lhc-openmpi3',
+                'lines': {
+                    'omp': ['10'],
+                    'type': ['total']
+                }
+            },
+            res_dir+'raw/LHC-96B-2MPPB-t10k-mvapich2/comm-comp-report.csv': {
+                'key': 'lhc-mvapich2',
+                'lines': {
+                    'omp': ['10'],
+                    'type': ['total']
+                }
+            },
             res_dir+'raw/LHC-lb-mpich3/comm-comp-report.csv': {
                 'key': 'lhc-lbmpich3',
                 'lines': {
@@ -224,7 +224,20 @@ plots_config = {
                     'type': ['total']
                 }
             },
-
+            res_dir+'raw/LHC-lb-openmpi3/comm-comp-report.csv': {
+                'key': 'lhc-lbopenmpi3',
+                'lines': {
+                    'omp': ['10'],
+                    'type': ['total']
+                }
+            },
+            res_dir+'raw/LHC-lb-mvapich2/comm-comp-report.csv': {
+                'key': 'lhc-lbmvapich2',
+                'lines': {
+                    'omp': ['10'],
+                    'type': ['total']
+                }
+            },
             # res_dir+'raw/PS-b21-t10k-mpich3/comm-comp-report.csv': {
             #     'key': 'ps-mpich3',
             #     'lines': {
@@ -251,6 +264,8 @@ plots_config = {
         'labels': {
             'lhc-mpich3': 'lhc-mpich3',
             'lhc-lbmpich3': 'lhc-lb-mpich3',
+            'lhc-lbopenmpi3': 'lhc-lb-openmpi3',
+            'lhc-lbmvapich2': 'lhc-lb-mvapich2',
             'lhc-orig': 'lhc-orig',
             'lhc-openmpi3': 'lhc-openmpi3',
             'lhc-mvapich2': 'lhc-mvapich2',
@@ -265,6 +280,8 @@ plots_config = {
         },
         'markers': {
             'lhc-lbmpich3': 'o',
+            'lhc-lbmvapich2': 'o',
+            'lhc-lbopenmpi3': 'o',
             'lhc-mpich3': 'o',
             'lhc-orig': 'o',
             'lhc-openmpi3': 'o',
@@ -281,6 +298,8 @@ plots_config = {
         'ls': {
             'lhc-orig': '-',
             'lhc-lbmpich3': '-',
+            'lhc-lbopenmpi3': '-',
+            'lhc-lbmvapich2': '-',
             'lhc-mpich3': '-',
             'lhc-openmpi3': '-',
             'lhc-mvapich2': '-',
@@ -305,6 +324,8 @@ plots_config = {
         'hatches': {
             'mpich3': 'x',
             'lbmpich3': 'o',
+            'lbopenmpi3': '/',
+            'lbmvapich2': '\\',
             'openmpi3': '-',
             'mvapich2': '',
             # 'lhc': '/',
@@ -373,7 +394,7 @@ if __name__ == '__main__':
         step = 0.25
         width = 2. / (len(plots_dir.keys())+1)
         for case in ['lhc', 'sps', 'ps']:
-            for mpiv in ['mpich3', 'openmpi3', 'mvapich2', 'lbmpich3']:
+            for mpiv in ['mpich3', 'openmpi3', 'mvapich2', 'lbmpich3', 'lbopenmpi3', 'lbmvapich2']:
                 key = '{}-{}'.format(case, mpiv)
                 if key not in plots_dir:
                     continue

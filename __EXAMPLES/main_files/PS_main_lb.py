@@ -586,7 +586,7 @@ for turn in range(N_t):
 
     if worker.isHostFirst and not worker.isHostLast:
         worker.hostcomm.Sendrecv(PS_longitudinal_intensity.induced_voltage,
-                                 dest=wokrer.hostworkers-1,
+                                 dest=worker.hostworkers-1,
                                  sendtag=0,
                                  recvbuf=tracker.rf_voltage,
                                  source=worker.hostworkers-1,
