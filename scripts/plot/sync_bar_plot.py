@@ -28,54 +28,54 @@ plots_config = {
                         # 'omp': ['10'],'
                         'function': None}
             },
-            # res_dir+'raw/LHC-sync-mvapich2/avg-report.csv': {
-            #         'key': 'lhc-mvapich2',
-            #         'lines': {
-            #             # 'omp': ['10'],'
-            #             'function': None}
-            # },
-            # res_dir+'raw/LHC-sync-openmpi3/avg-report.csv': {
-            #         'key': 'lhc-openmpi3',
-            #         'lines': {
-            #             # 'omp': ['10'],'
-            #             'function': None}
-            # },
+            res_dir+'raw/LHC-sync-mvapich2/avg-report.csv': {
+                    'key': 'lhc-mvapich2',
+                    'lines': {
+                        # 'omp': ['10'],'
+                        'function': None}
+            },
+            res_dir+'raw/LHC-sync-openmpi3/avg-report.csv': {
+                    'key': 'lhc-openmpi3',
+                    'lines': {
+                        # 'omp': ['10'],'
+                        'function': None}
+            },
             res_dir+'raw/SPS-sync-mpich3/avg-report.csv': {
                     'key': 'sps-mpich3',
                     'lines': {
                         # 'omp': ['10'],'
                         'function': None}
             },
-            # res_dir+'raw/SPS-sync-mvapich2/avg-report.csv': {
-            #         'key': 'sps-mvapich2',
-            #         'lines': {
-            #             # 'omp': ['10'],'
-            #             'function': None}
-            # },
-            # res_dir+'raw/SPS-sync-openmpi3/avg-report.csv': {
-            #         'key': 'sps-openmpi3',
-            #         'lines': {
-            #             # 'omp': ['10'],'
-            #             'function': None}
-            # },
+            res_dir+'raw/SPS-sync-mvapich2/avg-report.csv': {
+                    'key': 'sps-mvapich2',
+                    'lines': {
+                        # 'omp': ['10'],'
+                        'function': None}
+            },
+            res_dir+'raw/SPS-sync-openmpi3/avg-report.csv': {
+                    'key': 'sps-openmpi3',
+                    'lines': {
+                        # 'omp': ['10'],'
+                        'function': None}
+            },
             res_dir+'raw/PS-sync-mpich3/avg-report.csv': {
                     'key': 'ps-mpich3',
                     'lines': {
                         # 'omp': ['10'],'
                         'function': None}
             },
-            # res_dir+'raw/PS-sync-mvapich2/avg-report.csv': {
-            #         'key': 'ps-mvapich2',
-            #         'lines': {
-            #             # 'omp': ['10'],'
-            #             'function': None}
-            # },
-            # res_dir+'raw/PS-sync-openmpi3/avg-report.csv': {
-            #         'key': 'ps-openmpi3',
-            #         'lines': {
-            #             # 'omp': ['10'],'
-            #             'function': None}
-            # },
+            res_dir+'raw/PS-sync-mvapich2/avg-report.csv': {
+                    'key': 'ps-mvapich2',
+                    'lines': {
+                        # 'omp': ['10'],'
+                        'function': None}
+            },
+            res_dir+'raw/PS-sync-openmpi3/avg-report.csv': {
+                    'key': 'ps-openmpi3',
+                    'lines': {
+                        # 'omp': ['10'],'
+                        'function': None}
+            },
 
         },
         # 'labels': {
@@ -97,14 +97,22 @@ plots_config = {
             'sync': '0.25',
         },
         'hatches': {
-            'mpich3': '/',
-            'openmpi3': 'o',
-            'mvapich2': 'x',
+            'lhc': '/',
+            'sps': 'o',
+            'ps': 'x',
+
+            # 'mpich3': '/',
+            # 'openmpi3': 'o',
+            # 'mvapich2': 'x',
         },
         'edgecolor': {
-            'lhc': 'tab:blue',
-            'sps': 'tab:orange',
-            'ps': 'tab:green',
+            'mpich3': 'tab:blue',
+            'openmpi3': 'tab:orange',
+            'mvapich2': 'tab:green',
+            # 'lhc': 'tab:blue',
+            # 'sps': 'tab:orange',
+            # 'ps': 'tab:green',
+
         },
 
         # 'order': ['comm', 'serial', 'comp'],
@@ -153,10 +161,10 @@ if __name__ == '__main__':
                 final_dir[tc] = {}
             if mpi not in final_dir[tc]:
                 final_dir[tc][mpi] = {}
-            if 'hostsync' in func:
-                func = 'sync'
             # if 'hostsync' in func:
-            #     func = 'hostsync'
+            #     func = 'sync'
+            if 'sync' in func:
+                func = 'sync'
             # elif 'sync' in func:
             #     func = 'sync'
             else:
@@ -184,9 +192,9 @@ if __name__ == '__main__':
             plt.ylim(config['ylim'])
 
         pos = 0.
-        width=0.25
-        intra_step = 0.05
-        inter_step = 0.25
+        width=0.09
+        intra_step = width
+        inter_step = width/2.5
 
         for tc in final_dir.keys():
             for mpiv in final_dir[tc].keys():
@@ -202,14 +210,14 @@ if __name__ == '__main__':
                             width=width,
                             bottom=bottom,
                             capsize=1, linewidth=1.,
-                            edgecolor=config['edgecolor'][tc],
+                            edgecolor=config['edgecolor'][mpiv],
                             color=config['colors'][f],
-                            hatch=config['hatches'][mpiv])
+                            hatch=config['hatches'][tc])
                     # label='')
                     bottom += y
                 pos += intra_step
             pos += inter_step
-        plt.xticks(np.arange(len(x))+width, x.astype(int))
+        plt.xticks(np.arange(len(x))+4*width, x.astype(int))
 
 
         handles = []
@@ -225,7 +233,7 @@ if __name__ == '__main__':
 
         for k, v in config['hatches'].items():
             patch = mpatches.Patch(label=k, edgecolor='black',
-                                   facecolor='1', hatch=v, linewidth=.5,)
+                                   facecolor='0.9', hatch=v, linewidth=.5,)
             handles.append(patch)
 
         # plt.legend(loc='best', fancybox=True, fontsize=9.5,

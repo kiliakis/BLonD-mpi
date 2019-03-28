@@ -349,8 +349,6 @@ for turn in range(N_t):
                                     shiftX=-rf.phi_rf[0, turn]/rf.omega_rf[0, turn])
             slicesMonitor.track(turn)
 
-    # req1 = None
-    # req2 = None
     if worker.isHostFirst:
         if (approx == 0) or (approx == 2):
             totVoltage.induced_voltage_sum()
@@ -359,30 +357,7 @@ for turn in range(N_t):
     if worker.isHostLast:
         tracker.pre_track()
 
-    if worker.isHostFirst and not worker.isHostLast:
-        # exchange info, I need to send the totVoltage.induced_voltage
-        # and receive the tracker.rf_voltage
-        # req1 = worker.hostcomm.Ibcast(totVoltage.induced_voltage, root=worker.hostcomm.rank)
-        # req2 = worker.hostcomm.Ibcast(tracker.rf_voltage, root=1-worker.hostcomm.rank)
-        worker.hostcomm.Sendrecv(totVoltage.induced_voltage,
-                                 dest=worker.hostworkers-1,
-                                 sendtag=0,
-                                 recvbuf=tracker.rf_voltage,
-                                 source=worker.hostworkers-1,
-                                 recvtag=1)
-    elif worker.isHostLast and not worker.isHostFirst:
-        # exchange info
-        # I need to receive the induced_voltage, and send the
-        # req1 = worker.hostcomm.Ibcast(totVoltage.induced_voltage, root=1-worker.hostcomm.rank)
-        # req2 = worker.hostcomm.Ibcast(tracker.rf_voltage, root=worker.hostcomm.rank)
-        worker.hostcomm.Sendrecv(tracker.rf_voltage,
-                                 dest=0,
-                                 sendtag=1,
-                                 recvbuf=totVoltage.induced_voltage,
-                                 source=0,
-                                 recvtag=0)
-    # req1.Wait()
-    # req2.Wait()
+    worker.sendrecv(totVoltage.induced_voltage, tracker.rf_voltage)
 
     tracker.track_only()
 

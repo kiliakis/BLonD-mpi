@@ -100,46 +100,52 @@ plots_config = {
             'ps-mvapich2': 'ps-mvapich2',
         },
         'markers': {
-            'lhc-mpich3': 'o',
-            'lhc-orig': 'o',
-            'lhc-openmpi3': 'o',
-            'lhc-mvapich2': 'o',
-            'sps-mpich3': 's',
-            'sps-orig': 's',
-            'sps-openmpi3': 's',
-            'sps-mvapich2': 's',
-            'ps-orig': 'x',
-            'ps-mpich3': 'x',
-            'ps-openmpi3': 'x',
-            'ps-mvapich2': 'x',
+            'lhc': 'o',
+            'sps': 's',
+            'ps': 'x'
+            # 'lhc-mpich3': 'o',
+            # 'lhc-orig': 'o',
+            # 'lhc-openmpi3': 'o',
+            # 'lhc-mvapich2': 'o',
+            # 'sps-mpich3': 's',
+            # 'sps-orig': 's',
+            # 'sps-openmpi3': 's',
+            # 'sps-mvapich2': 's',
+            # 'ps-orig': 'x',
+            # 'ps-mpich3': 'x',
+            # 'ps-openmpi3': 'x',
+            # 'ps-mvapich2': 'x',
         },
         'ls': {
-            'lhc-orig': '-',
-            'lhc-mpich3': '-',
-            'lhc-openmpi3': '-',
-            'lhc-mvapich2': '-',
-            'sps-orig': ':',
-            'sps-mpich3': ':',
-            'sps-openmpi3': ':',
-            'sps-mvapich2': ':',
-            'ps-orig': '--',
-            'ps-mpich3': '--',
-            'ps-openmpi3': '--',
-            'ps-mvapich2': '--',
+            'lhc': '-',
+            'sps': ':',
+            'ps': '--'
+            # 'lhc-orig': '-',
+            # 'lhc-mpich3': '-',
+            # 'lhc-openmpi3': '-',
+            # 'lhc-mvapich2': '-',
+            # 'sps-orig': ':',
+            # 'sps-mpich3': ':',
+            # 'sps-openmpi3': ':',
+            # 'sps-mvapich2': ':',
+            # 'ps-orig': '--',
+            # 'ps-mpich3': '--',
+            # 'ps-openmpi3': '--',
+            # 'ps-mvapich2': '--',
         },
         'colors': {
-            'lhc-orig': 'black',
-            'lhc-mpich3': 'tab:blue',
-            'lhc-openmpi3': 'tab:orange',
-            'lhc-mvapich2': 'tab:green',
-            'sps-orig': 'black',
-            'sps-mpich3': 'tab:blue',
-            'sps-openmpi3': 'tab:orange',
-            'sps-mvapich2': 'tab:green',
-            'ps-mpich3': 'tab:blue',
-            'ps-orig': 'black',
-            'ps-openmpi3': 'tab:orange',
-            'ps-mvapich2': 'tab:green',
+            # 'orig': 'black',
+            'mpich3': 'tab:blue',
+            'openmpi3': 'tab:orange',
+            'mvapich2': 'tab:green',
+            # 'sps-orig': 'black',
+            # 'sps-mpich3': 'tab:blue',
+            # 'sps-openmpi3': 'tab:orange',
+            # 'sps-mvapich2': 'tab:green',
+            # 'ps-mpich3': 'tab:blue',
+            # 'ps-orig': 'black',
+            # 'ps-openmpi3': 'tab:orange',
+            # 'ps-mvapich2': 'tab:green',
         },
         'reference': {
             'sps': {'time': 430., 'parts': 4000000, 'turns': 100},
@@ -154,7 +160,7 @@ plots_config = {
         # 'y_err_name': 'std',
         'xlabel': 'Cores (x10)',
         'ylabel': 'Speedup',
-        'title': 'Alternative MPI Versions',
+        'title': 'Weak scale, alternative MPI Versions',
         # 'ylim': {
         #     'speedup': [0, 210]
         # },
@@ -194,7 +200,7 @@ if __name__ == '__main__':
             plt.title(config['title'])
             # ax1.set_title(config['title'])
             plt.xlabel(config['xlabel'])
-            plt.ylabel(config['ylabel'])
+            plt.ylabel(metric)
             # plt.ylim(config['ylim']['speedup'])
 
             # plt.yscale('log', basex=2)
@@ -205,6 +211,7 @@ if __name__ == '__main__':
                 # print(values)
                 label = config['labels'][key]
                 case = key.split('-')[0]
+                mpiv = key.split('-')[1]
 
                 x = get_values(values, header, config['x_name'])
                 omp = get_values(values, header, config['omp_name'])
@@ -233,11 +240,12 @@ if __name__ == '__main__':
                 # efficiency = 100 * speedup / x
 
                 # We want speedup, compared to 1 worker with 1 thread
-                plt.errorbar(x//10, y, yerr=None, color=config['colors'][key],
-                             capsize=2, marker=config['markers'][key],
-                             markersize=4,
-                             linewidth=2., label=label,
-                             ls=config['ls'][key])
+                plt.errorbar(x//10, y, yerr=None,
+                             color=config['colors'][mpiv],
+                             marker=config['markers'][case],
+                             capsize=2, markersize=4, linewidth=1.,
+                             # label=label,
+                             ls=config['ls'][case])
 
                 # if '10' in key:
                 #     plt.xticks(x//10)
@@ -248,13 +256,23 @@ if __name__ == '__main__':
                 #              capsize=2, marker=config['markers'][key], markersize=4,
                 #              linewidth=1.)
 
-
             plt.xticks(x//10)
+            handles = []
+            for k, v in config['markers'].items():
+                line = plt.plot([], [], color='black',
+                                     ls=config['ls'][k],
+                                     marker=v, label=k)
+                handles.append(line)
+            for k, v in config['colors'].items():
+                plt.plot([], [], color=v, ls='-', label=k,
+                    lw=4)
+
 
             plt.legend(loc=config['legend_loc'], fancybox=True, fontsize=10.5,
                        labelspacing=0, borderpad=0.5, framealpha=0.8,
                        handletextpad=0.5, handlelength=2, borderaxespad=0)
             plt.tight_layout()
-            save_and_crop(fig, config['image_name'][metric], dpi=600, bbox_inches='tight')
+            save_and_crop(fig, config['image_name']
+                          [metric], dpi=600, bbox_inches='tight')
             plt.show()
             plt.close()

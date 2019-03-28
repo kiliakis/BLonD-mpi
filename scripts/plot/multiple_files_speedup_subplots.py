@@ -2,6 +2,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 import os
 import matplotlib.lines as mlines
+import matplotlib.patches as mpatches
+
 import matplotlib.ticker
 import sys
 from plot.plotting_utilities import *
@@ -238,27 +240,48 @@ plots_config = {
                     'type': ['total']
                 }
             },
-            # res_dir+'raw/PS-b21-t10k-mpich3/comm-comp-report.csv': {
-            #     'key': 'ps-mpich3',
-            #     'lines': {
-            #         'omp': ['10'],
-            #         'type': ['total']
-            #     }
-            # },
-            # res_dir+'raw/PS-b21-t10k-openmpi3/comm-comp-report.csv': {
-            #     'key': 'ps-openmpi3',
-            #     'lines': {
-            #         'omp': ['10'],
-            #         'type': ['total']
-            #     }
-            # },
-            # res_dir+'raw/PS-b21-t10k-mvapich2/comm-comp-report.csv': {
-            #     'key': 'ps-mvapich2',
-            #     'lines': {
-            #         'omp': ['10'],
-            #         'type': ['total']
-            #     }
-            # },
+            res_dir+'raw/PS-b21-t10k-mpich3/comm-comp-report.csv': {
+                'key': 'ps-mpich3',
+                'lines': {
+                    'omp': ['10'],
+                    'type': ['total']
+                }
+            },
+            res_dir+'raw/PS-b21-t10k-openmpi3/comm-comp-report.csv': {
+                'key': 'ps-openmpi3',
+                'lines': {
+                    'omp': ['10'],
+                    'type': ['total']
+                }
+            },
+            res_dir+'raw/PS-b21-t10k-mvapich2/comm-comp-report.csv': {
+                'key': 'ps-mvapich2',
+                'lines': {
+                    'omp': ['10'],
+                    'type': ['total']
+                }
+            },
+            res_dir+'raw/PS-lb-mpich3/comm-comp-report.csv': {
+                'key': 'ps-lbmpich3',
+                'lines': {
+                    'omp': ['10'],
+                    'type': ['total']
+                }
+            },
+            res_dir+'raw/PS-lb-openmpi3/comm-comp-report.csv': {
+                'key': 'ps-lbopenmpi3',
+                'lines': {
+                    'omp': ['10'],
+                    'type': ['total']
+                }
+            },
+            res_dir+'raw/PS-lb-mvapich2/comm-comp-report.csv': {
+                'key': 'ps-lbmvapich2',
+                'lines': {
+                    'omp': ['10'],
+                    'type': ['total']
+                }
+            },
 
         },
         'labels': {
@@ -277,60 +300,74 @@ plots_config = {
             'ps-orig': 'ps-orig',
             'ps-openmpi3': 'ps-openmpi3',
             'ps-mvapich2': 'ps-mvapich2',
+            'ps-lbmpich3': 'ps-lb-mpich3',
+            'ps-lbopenmpi3': 'ps-lb-openmpi3',
+            'ps-lbmvapich2': 'ps-lb-mvapich2',
+
         },
         'markers': {
-            'lhc-lbmpich3': 'o',
-            'lhc-lbmvapich2': 'o',
-            'lhc-lbopenmpi3': 'o',
-            'lhc-mpich3': 'o',
-            'lhc-orig': 'o',
-            'lhc-openmpi3': 'o',
-            'lhc-mvapich2': 'o',
-            'sps-mpich3': 's',
-            'sps-orig': 's',
-            'sps-openmpi3': 's',
-            'sps-mvapich2': 's',
-            'ps-orig': 'x',
-            'ps-mpich3': 'x',
-            'ps-openmpi3': 'x',
-            'ps-mvapich2': 'x',
+            'lhc': 'o',
+            'sps': 's',
+            'ps': 'x'
+            # 'lhc-lbmpich3': 'o',
+            # 'lhc-lbmvapich2': 'o',
+            # 'lhc-lbopenmpi3': 'o',
+            # 'lhc-mpich3': 'o',
+            # 'lhc-orig': 'o',
+            # 'lhc-openmpi3': 'o',
+            # 'lhc-mvapich2': 'o',
+            # 'sps-mpich3': 's',
+            # 'sps-orig': 's',
+            # 'sps-openmpi3': 's',
+            # 'sps-mvapich2': 's',
+            # 'ps-orig': 'x',
+            # 'ps-mpich3': 'x',
+            # 'ps-openmpi3': 'x',
+            # 'ps-mvapich2': 'x',
         },
         'ls': {
-            'lhc-orig': '-',
-            'lhc-lbmpich3': '-',
-            'lhc-lbopenmpi3': '-',
-            'lhc-lbmvapich2': '-',
-            'lhc-mpich3': '-',
-            'lhc-openmpi3': '-',
-            'lhc-mvapich2': '-',
-            'sps-orig': ':',
-            'sps-mpich3': ':',
-            'sps-openmpi3': ':',
-            'sps-mvapich2': ':',
-            'ps-orig': '--',
-            'ps-mpich3': '--',
-            'ps-openmpi3': '--',
-            'ps-mvapich2': '--',
+            'lhc': '-',
+            'sps': ':',
+            'ps': '--'
+            # 'lhc-orig': '-',
+            # 'lhc-lbmpich3': '-',
+            # 'lhc-lbopenmpi3': '-',
+            # 'lhc-lbmvapich2': '-',
+            # 'lhc-mpich3': '-',
+            # 'lhc-openmpi3': '-',
+            # 'lhc-mvapich2': '-',
+            # 'sps-orig': ':',
+            # 'sps-mpich3': ':',
+            # 'sps-openmpi3': ':',
+            # 'sps-mvapich2': ':',
+            # 'ps-orig': '--',
+            # 'ps-mpich3': '--',
+            # 'ps-openmpi3': '--',
+            # 'ps-mvapich2': '--',
         },
         'colors': {
-            'lhc': 'tab:blue',
-            'sps': 'tab:orange',
-            'ps': 'tab:green',
+            # 'lhc': 'tab:blue',
+            # 'sps': 'tab:orange',
+            # 'ps': 'tab:green',
 
-            # 'mpich3': 'tab:blue',
-            # 'openmpi3': 'tab:orange',
-            # 'mvapich2': 'tab:green',
+            'mpich3': 'xkcd:light blue',
+            'lbmpich3': 'xkcd:blue',
+            'openmpi3': 'xkcd:light orange',
+            'lbopenmpi3': 'xkcd:orange',
+            'mvapich2': 'xkcd:light green',
+            'lbmvapich2': 'xkcd:green',
+
         },
         'hatches': {
-            'mpich3': 'x',
-            'lbmpich3': 'o',
-            'lbopenmpi3': '/',
-            'lbmvapich2': '\\',
-            'openmpi3': '-',
-            'mvapich2': '',
-            # 'lhc': '/',
-            # 'sps': '',
-            # 'ps': 'x',
+            # 'mpich3': 'x',
+            # 'lbmpich3': 'o',
+            # 'lbopenmpi3': '/',
+            # 'lbmvapich2': '\\',
+            # 'openmpi3': '-',
+            # 'mvapich2': '',
+            'lhc': '/',
+            'sps': 'o',
+            'ps': 'x',
         },
         'reference': {
             'sps': {'time': 430., 'parts': 4000000, 'turns': 100},
@@ -394,7 +431,9 @@ if __name__ == '__main__':
         step = 0.25
         width = 2. / (len(plots_dir.keys())+1)
         for case in ['lhc', 'sps', 'ps']:
-            for mpiv in ['mpich3', 'openmpi3', 'mvapich2', 'lbmpich3', 'lbopenmpi3', 'lbmvapich2']:
+            for mpiv in ['mpich3', 'lbmpich3',
+                         'openmpi3', 'lbopenmpi3',
+                         'mvapich2', 'lbmvapich2']:
                 key = '{}-{}'.format(case, mpiv)
                 if key not in plots_dir:
                     continue
@@ -422,29 +461,14 @@ if __name__ == '__main__':
                 speedup = y / yref
 
                 # efficiency = 100 * speedup / x
-                plt.bar(x//10 + pos, speedup, width=width, 
-                    # color=[config['colors'][case]],
-                    color='0.6',
-                    label=label,
-                    edgecolor=config['colors'][case],
-                    alpha=0.8,  
-                    hatch=config['hatches'][mpiv])
+                plt.bar(x//10 + pos, speedup, width=width,
+                        color=config['colors'][mpiv],
+                        # label=label,
+                        edgecolor='0.4',
+                        alpha=0.9,
+                        hatch=config['hatches'][case])
                 pos += width
-                # We want speedup, compared to 1 worker with 1 thread
-                # plt.errorbar(x//10, speedup, yerr=None, color=config['colors'][key],
-                #              capsize=2, marker=config['markers'][key],
-                #              markersize=4,
-                #              linewidth=2., label=label,
-                #              ls=config['ls'][key])
-            pos+=width * step
-            # if '10' in key:
-            #     plt.xticks(x//10)
-            # annotate_max(plt.gca(), x//10, speedup, ha='center', va='bottom',
-            #              size='10')
-
-            # ax2.errorbar(x//10, efficiency, yerr=None, color=config['colors']['efficiency'],
-            #              capsize=2, marker=config['markers'][key], markersize=4,
-            #              linewidth=1.)
+            pos += width * step
 
         if 'extra' in config:
             for c in config['extra']:
@@ -456,14 +480,20 @@ if __name__ == '__main__':
         # for tl in ax1.get_yticklabels():
         #     tl.set_color(config['colors']['speedup'])
 
-        # handles = []
-        # for k, v in config['markers'].items():
-        #     line = mlines.Line2D([], [], color='black',
-        #                          marker=v, label=config['labels'][k])
-        #     handles.append(line)
         plt.xticks(x//10 + pos/2, np.array(x//10, int))
 
-        plt.legend(loc=config['legend_loc'], fancybox=True, fontsize=10.5,
+        handles = []
+        for k, v in config['colors'].items():
+            patch = mpatches.Patch(label=k, edgecolor='black', facecolor=v,
+                                   linewidth=.5,alpha=0.9)
+            handles.append(patch)
+
+        for k, v in config['hatches'].items():
+            patch = mpatches.Patch(label=k, edgecolor='black',
+                                   facecolor='0.8', hatch=v, linewidth=.5,)
+            handles.append(patch)
+
+        plt.legend(handles=handles, loc=config['legend_loc'], fancybox=True, fontsize=10.5,
                    labelspacing=0, borderpad=0.5, framealpha=0.8,
                    handletextpad=0.5, handlelength=2, borderaxespad=0)
         plt.tight_layout()

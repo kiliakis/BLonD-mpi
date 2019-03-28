@@ -71,7 +71,8 @@ class Worker:
 
         # Create communicator with process on the same host
         # TODO: very rare, but possibile hash collisions are not handled
-        color = np.dot(np.array(self.hostip.split('.'), int)[1:], [1, 256, 256**2])
+        color = np.dot(np.array(self.hostip.split('.'), int)
+                       [1:], [1, 256, 256**2])
         self.hostcomm = self.intracomm.Split(color, self.rank)
         self.hostrank = self.hostcomm.rank
         self.hostworkers = self.hostcomm.size
@@ -105,8 +106,8 @@ class Worker:
     def isHostLast(self):
         return self.hostrank == self.hostworkers-1
 
-
     # Define the begin and size numbers in order to split a variable of length size
+
     @timing.timeit(key='serial:split')
     @mpiprof.traceit(key='serial:split')
     def split(self, size):
@@ -190,13 +191,23 @@ class Worker:
         self.logger.debug('hostsync')
         self.hostcomm.Barrier()
 
-
     @timing.timeit(key='serial:finalize')
     @mpiprof.traceit(key='serial:finalize')
     def finalize(self):
         self.logger.debug('finalize')
         if not self.isMaster:
             sys.exit(0)
+
+    @timing.timeit(key='comm:sendrecv')
+    @mpiprof.traceit(key='comm:sendrecv')
+    def sendrecv(sendbuf, recvbuf):
+        if self.isHostFirst and not self.isHostLast:
+            self.hostcomm.Sendrecv(sendbuf, dest=self.hostworkers-1, sendtag=0,
+                                   recvbuf=recvbuf, source=self.hostworkers-1,
+                                   recvtag=1)
+        elif self.isHostLast and not self.isHostFirst:
+            self.hostcomm.Sendrecv(recvbuf, dest=0, sendtag=1,
+                                   recvbuf=sendbuf, source=0, recvtag=0)
 
     def greet(self):
         self.logger.debug('greet')

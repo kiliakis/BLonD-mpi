@@ -191,8 +191,8 @@ emittance_y_norm = 1.5e-6  # for space charge
 # Simulation setup ------------------------------------------------------------
 # General parameters
 
-momentum = momentum[(momentumTime >= c_time_injection) *
-                    (momentumTime <= c_time_extraction)]
+momentum = momentum[(momentumTime >= c_time_injection)
+                    * (momentumTime <= c_time_extraction)]
 momentumTime = momentumTime[(
     momentumTime >= c_time_injection)*(momentumTime <= c_time_extraction)]
 
@@ -384,8 +384,8 @@ gap_prog_group_2 = generate_gap_prog(close_group_2)
 gap_prog_group_1 = generate_gap_prog(close_group_1)
 
 R_S_10MHz_save = np.array(imp10MHzToBLonD.wakeList[0].R_S)
-R_S_program_10MHz = (gap_prog_group_3+gap_prog_group_4 +
-                     gap_prog_group_2+gap_prog_group_1)/10.
+R_S_program_10MHz = (gap_prog_group_3+gap_prog_group_4
+                     + gap_prog_group_2+gap_prog_group_1)/10.
 
 # plt.figure('10 MHz prog')
 # plt.clf()
@@ -420,8 +420,8 @@ front_wake_length = filter_front_wake * ring.t_rev[0]*n_turns_memory
 
 PS_intensity_freq_Rest = InducedVoltageFreq(beam,
                                             profile,
-                                            ResonatorsList10MHz+ImpedanceTableList10MHz +
-                                            ResonatorsListRest+ImpedanceTableListRest,
+                                            ResonatorsList10MHz+ImpedanceTableList10MHz
+                                            + ResonatorsListRest+ImpedanceTableListRest,
                                             frequency_step,
                                             RFParams=rf_params,
                                             multi_turn_wake=True,
@@ -432,8 +432,8 @@ PS_inductive = InductiveImpedance(
 
 PS_intensity_plot = InducedVoltageFreq(beam,
                                        profile,
-                                       ResonatorsList10MHz+ImpedanceTableList10MHz +
-                                       ResonatorsListRest+ImpedanceTableListRest,
+                                       ResonatorsList10MHz+ImpedanceTableList10MHz
+                                       + ResonatorsListRest+ImpedanceTableListRest,
                                        frequency_step,
                                        RFParams=rf_params,
                                        multi_turn_wake=True,
@@ -584,19 +584,7 @@ for turn in range(N_t):
     if worker.isHostLast:
         tracker.pre_track()
 
-    if worker.isHostFirst and not worker.isHostLast:
-        worker.hostcomm.Sendrecv(PS_longitudinal_intensity.induced_voltage,
-                                 dest=worker.hostworkers-1,
-                                 sendtag=0,
-                                 recvbuf=tracker.rf_voltage,
-                                 source=worker.hostworkers-1,
-                                 recvtag=1)
-    elif worker.isHostLast and not worker.isHostFirst:
-        worker.hostcomm.Sendrecv(tracker.rf_voltage,
-                                 dest=0, sendtag=1,
-                                 recvbuf=PS_longitudinal_intensity.induced_voltage,
-                                 source=0,
-                                 recvtag=0)
+    worker.sendrecv(PS_longitudinal_intensity.induced_voltage, tracker.rf_voltage)
 
     # Track
     tracker.track_only()

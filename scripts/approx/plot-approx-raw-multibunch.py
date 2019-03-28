@@ -218,7 +218,7 @@ if __name__ == '__main__':
                               ' were detected.'.format(approx_knob, num_bunches, args.minparts, len(bunches)))
                     else:
                         print('Knob {}, detected {} bunches with {}%'.format(approx_knob, len(bunches), percent))
-
+                    label += '_{}%'.format(percent)
                     bunch_idx=[0, -1]
                     for idx in bunch_idx:
                         plt.sca(ax_arr[idx])
