@@ -197,7 +197,7 @@ plots_config = {
             #         'type': ['total']
             #     }
             # },
-            res_dir+'raw/LHC-96B-2MPPB-t10k-mpich3/comm-comp-report.csv': {
+            res_dir+'raw/LHC-approx2-mpich3/comm-comp-report.csv': {
                 'key': 'lhc-mpich3',
                 'lines': {
                     'omp': ['10'],
@@ -205,14 +205,14 @@ plots_config = {
                 }
             },
 
-            res_dir+'raw/LHC-96B-2MPPB-t10k-openmpi3/comm-comp-report.csv': {
+            res_dir+'raw/LHC-approx2-openmpi3/comm-comp-report.csv': {
                 'key': 'lhc-openmpi3',
                 'lines': {
                     'omp': ['10'],
                     'type': ['total']
                 }
             },
-            res_dir+'raw/LHC-96B-2MPPB-t10k-mvapich2/comm-comp-report.csv': {
+            res_dir+'raw/LHC-approx2-mvapich2/comm-comp-report.csv': {
                 'key': 'lhc-mvapich2',
                 'lines': {
                     'omp': ['10'],
@@ -240,21 +240,21 @@ plots_config = {
                     'type': ['total']
                 }
             },
-            res_dir+'raw/PS-b21-t10k-mpich3/comm-comp-report.csv': {
+            res_dir+'raw/PS-approx2-mpich3/comm-comp-report.csv': {
                 'key': 'ps-mpich3',
                 'lines': {
                     'omp': ['10'],
                     'type': ['total']
                 }
             },
-            res_dir+'raw/PS-b21-t10k-openmpi3/comm-comp-report.csv': {
+            res_dir+'raw/PS-approx2-openmpi3/comm-comp-report.csv': {
                 'key': 'ps-openmpi3',
                 'lines': {
                     'omp': ['10'],
                     'type': ['total']
                 }
             },
-            res_dir+'raw/PS-b21-t10k-mvapich2/comm-comp-report.csv': {
+            res_dir+'raw/PS-approx2-mvapich2/comm-comp-report.csv': {
                 'key': 'ps-mvapich2',
                 'lines': {
                     'omp': ['10'],

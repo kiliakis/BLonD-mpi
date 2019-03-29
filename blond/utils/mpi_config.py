@@ -209,6 +209,37 @@ class Worker:
             self.hostcomm.Sendrecv(recvbuf, dest=0, sendtag=1,
                                    recvbuf=sendbuf, source=0, recvtag=0)
 
+    # @timing.timeit(key='comm:redistribute')
+    # @mpiprof.traceit(key='comm:redistribute')
+    def redistribute(self, beam, time):
+        latency = time / beam.n_macroparticles
+        recvbuf = np.empty(2 * self.workers, dtype=float)
+        self.intracomm.Allgather(np.array([latency, beam.n_macroparticles]), recvbuf)
+        latencies = recvbuf[::2]
+        Pi_old = recvbuf[1::2]
+        P = np.sum(Pi_old)
+        Pi = P /(latencies * np.sum(1./latencies))
+        dPi = Pi_old - Pi
+        transactions = calc_transactions(dPi, 0.01 * P)
+        if dPi[self.rank] > 0:
+            req = []
+            for trans in transactions[self.rank]:
+                # I need to send trans[1] particles to trans[0]
+                req.append(self.intracomm.Isend(buf, trans[0]))
+            req[0].Waitall(req)
+            # Then I need to resize local beam.dt and beam.dE, also 
+            # beam.n_macroparticles
+        elif dPi[self.rank] < 0:
+            req = []
+            for trans in transactions[self.rank]:
+                # I need to receive trans[1] particles from trans[0]
+                req.append(self.intracomm.Irecv(buf, trans[0]))
+            req[0].Waitall(req)
+            # Then I need to resize local beam.dt and beam.dE, also 
+            # beam.n_macroparticles
+
+        return
+
     def greet(self):
         self.logger.debug('greet')
         print('[{}]@{}: Hello World!'.format(self.rank, self.hostname))
@@ -218,6 +249,34 @@ class Worker:
         # print('[{}] Library version: {}'.format(self.rank, MPI.Get_library_version()))
         # print('[{}] Version: {}'.format(self.rank,MPI.Get_version()))
         print('[{}] Library: {}'.format(self.rank, MPI.get_vendor()))
+
+    def time(self):
+        return MPI.Wtime()
+
+
+def calc_transactions(temp, cutoff):
+    trans = {}
+    for i in range(len(temp)):
+        trans[i] = []
+    arr = sorted([{'val':i[1], 'id':i[0]} for i in enumerate(temp)], key=lambda x: x['val'], reverse=True)
+    s = 0
+    e = len(arr)-1
+    while s < e:
+        if arr[s]['val'] <= cutoff:
+            s+=1
+            continue
+        if abs(arr[e]['val']) <= cutoff:
+            e-=1
+            continue
+        diff = min(abs(arr[s]['val']), abs(arr[e]['val']))
+        trans[arr[s]['id']].append((arr[e]['id'], diff))
+        trans[arr[e]['id']].append((arr[s]['id'], diff))
+        arr[s]['val'] -= diff
+        arr[e]['val'] += diff
+    return trans
+
+
+
 
 
 class MPILog(object):
