@@ -200,7 +200,7 @@ class Worker:
 
     @timing.timeit(key='comm:sendrecv')
     @mpiprof.traceit(key='comm:sendrecv')
-    def sendrecv(sendbuf, recvbuf):
+    def sendrecv(self, sendbuf, recvbuf):
         if self.isHostFirst and not self.isHostLast:
             self.hostcomm.Sendrecv(sendbuf, dest=self.hostworkers-1, sendtag=0,
                                    recvbuf=recvbuf, source=self.hostworkers-1,

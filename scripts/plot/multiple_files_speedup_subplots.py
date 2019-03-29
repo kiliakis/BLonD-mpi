@@ -428,7 +428,7 @@ if __name__ == '__main__':
 
         pos = 0
         # width = 0.1
-        step = 0.25
+        step = 0.1
         width = 2. / (len(plots_dir.keys())+1)
         for case in ['lhc', 'sps', 'ps']:
             for mpiv in ['mpich3', 'lbmpich3',
@@ -480,7 +480,7 @@ if __name__ == '__main__':
         # for tl in ax1.get_yticklabels():
         #     tl.set_color(config['colors']['speedup'])
 
-        plt.xticks(x//10 + pos/2, np.array(x//10, int))
+        plt.xticks(x//10 + pos/2.2, np.array(x//10, int))
 
         handles = []
         for k, v in config['colors'].items():
