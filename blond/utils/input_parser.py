@@ -81,6 +81,13 @@ parser.add_argument('-tracefile', '--tracefile', type=str, default='mpe-trace',
                     help='The file name to save the MPE trace (without the file extension).'
                     '\nDefault: mpe-trace')
 
+parser.add_argument('-lb', '--loadbalance', type=str, choices=['off', 'times', 'interval', 'dynamic'],
+                    default=0,
+                    help='Load balance policy: off, times, interval, dynamic.'
+                    '\nDefault: off ')
+parser.add_argument('-lba', '--loadbalancearg', type=int, default=0
+                    help='Additional Load balance argument, used only if lb is times or interval.'
+                    '\nDefault: 0 --> 10 times per run or every 1k turns.')
 
 # parser.add_argument('-d', '--debug', action='store_true',
 #                     help='Run workers in debug mode.'
