@@ -530,6 +530,7 @@ for turn in range(N_t):
 
     if (N_t_monitor > 0) and (turn % N_t_monitor == 0):
         beam.statistics()
+        beam.losses_separatrix()
         beam.gather_statistics()
         if worker.isMaster:
             profile.fwhm_multibunch(n_bunches, bunch_spacing,

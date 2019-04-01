@@ -213,8 +213,8 @@ class Worker:
             self.hostcomm.Sendrecv(recvbuf, dest=0, sendtag=1,
                                    recvbuf=sendbuf, source=0, recvtag=0)
 
-    # @timing.timeit(key='comm:redistribute')
-    # @mpiprof.traceit(key='comm:redistribute')
+    @timing.timeit(key='comm:redistribute')
+    @mpiprof.traceit(key='comm:redistribute')
     def redistribute(self, beam, time):
         latency = time / beam.n_macroparticles
         self.logger.critical('[{}]: Time {} sec.'.format(self.rank, time))
