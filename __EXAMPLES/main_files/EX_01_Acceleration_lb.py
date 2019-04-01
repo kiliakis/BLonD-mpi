@@ -122,6 +122,7 @@ if args.get('approx', None) is not None:
     approx = int(args['approx'])
 
 
+
 mpiprint({'N_t': N_t, 'n_macroparticles': N_p,
        'N_slices': N_slices,
        'timing.mode': timing.mode,
@@ -184,6 +185,23 @@ timing.reset()
 start_t = time.time()
 # mpiprint(datetime.datetime.now().time())
 
+
+lbturns = []
+if args['loadbalance'] == 'times':
+    if args['loadbalancearg'] != 0:
+        intv = N_t // (args['loadbalancearg']+1)
+    else:
+        intv = N_t // (10 +1)
+    lbturns = np.arange(0, N_t, intv)[1:]
+
+elif args['loadbalance'] == 'interval':
+    if args['loadbalancearg'] != 0:
+        lbturns = np.arange(0, N_t, args['loadbalancearg'])
+    else:
+        lbturns = np.arange(0, N_t, 1000)
+
+elif args['loadbalance'] == 'dynamic':
+    print('Warning: Dynamic load balance policy not supported.')
 ts = worker.time()
 
 for turn in range(1, N_t+1):
@@ -221,7 +239,7 @@ for turn in range(1, N_t+1):
             profile.fwhm()
             slicesMonitor.track(turn)
 
-    if turn % 1000 == 0:
+    if turn in lbturns:
         worker.redistribute(beam, worker.time() - ts)
         ts = worker.time()
 
