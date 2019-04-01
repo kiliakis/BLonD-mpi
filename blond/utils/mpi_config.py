@@ -126,8 +126,9 @@ class Worker:
     def gather(self, var, size):
         self.logger.debug('gather')
         if self.isMaster:
-            counts = [size // self.workers + 1 if i < size % self.workers
-                      else size // self.workers for i in range(self.workers)]
+            counts = np.empty(self.workers, int)
+            sendbuf = np.array(len(var), int)
+            self.intracomm.Gather(sendbuf, counts, root=0)
             displs = np.append([0], np.cumsum(counts[:-1]))
             sendbuf = np.copy(var)
             recvbuf = np.resize(var, np.sum(counts))
@@ -137,6 +138,8 @@ class Worker:
             return recvbuf
         else:
             recvbuf = None
+            sendbuf = np.array(len(var), int)
+            self.intracomm.Gather(sendbuf, recvbuf, root=0)
             self.intracomm.Gatherv(var, recvbuf, root=0)
             return var
 
@@ -214,6 +217,8 @@ class Worker:
     # @mpiprof.traceit(key='comm:redistribute')
     def redistribute(self, beam, time):
         latency = time / beam.n_macroparticles
+        self.logger.critical('[{}]: Time {} sec.'.format(self.rank, time))
+        self.logger.critical('[{}]: Latency {} sec/particle.'.format(self.rank, latency))
         recvbuf = np.empty(2 * self.workers, dtype=float)
         self.intracomm.Allgather(
             np.array([latency, beam.n_macroparticles]), recvbuf)
@@ -271,6 +276,7 @@ class Worker:
                 beam.id[i:i+t[1]] = buf[2*t[1]:3*t[1]]
                 i += t[1]
             beam.n_macroparticles += tot_to_recv
+        self.logger.critical('[{}]: Tracking {} particles.'.format(self.rank, beam.n_macroparticles))
         return
 
     def greet(self):
@@ -332,14 +338,11 @@ class MPILog(object):
         # Root logger on DEBUG level
         self.disabled = False
         self.root_logger = logging.getLogger()
-        self.root_logger.setLevel(logging.DEBUG)
+        self.root_logger.setLevel(logging.WARNING)
         if not os.path.exists(log_dir):
             os.makedirs(log_dir)
 
-        if rank < 0:
-            log_name = log_dir+'/master.log'
-        else:
-            log_name = log_dir+'/worker-%.3d.log' % rank
+        log_name = log_dir+'/worker-%.3d.log' % rank
         # Console handler on INFO level
         # console_handler = logging.StreamHandler()
         # console_handler.setLevel(logging.INFO)
@@ -349,10 +352,10 @@ class MPILog(object):
         # self.root_logger.addHandler(console_handler)
 
         self.file_handler = logging.FileHandler(log_name, mode='w')
-        self.file_handler.setLevel(logging.DEBUG)
+        self.file_handler.setLevel(logging.WARNING)
         self.file_handler.setFormatter(log_format)
         self.root_logger.addHandler(self.file_handler)
-        logging.debug("Initialized")
+        logging.info("Initialized")
         # if debug == True:
         #     logging.debug("Logger in debug mode")
 
@@ -373,6 +376,11 @@ class MPILog(object):
     def info(self, string):
         if self.disabled == False:
             logging.info(string)
+
+    def critical(self, string):
+        if self.disabled == False:
+            logging.critical(string)
+
 
 
 if worker is None:
