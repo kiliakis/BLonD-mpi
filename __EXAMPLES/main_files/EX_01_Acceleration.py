@@ -63,7 +63,7 @@ alpha = 1./gamma_t/gamma_t        # First order mom. comp. factor
 
 # Tracking details
 N_t = 2000           # Number of turns to track
-dt_plt = 200         # Time steps between plots
+dt_plt = 1000         # Time steps between plots
 N_slices = 100
 n_bunches = 1
 workers = 3
