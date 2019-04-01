@@ -85,7 +85,7 @@ parser.add_argument('-lb', '--loadbalance', type=str, choices=['off', 'times', '
                     default=0,
                     help='Load balance policy: off, times, interval, dynamic.'
                     '\nDefault: off ')
-parser.add_argument('-lba', '--loadbalancearg', type=int, default=0
+parser.add_argument('-lba', '--loadbalancearg', type=int, default=0,
                     help='Additional Load balance argument, used only if lb is times or interval.'
                     '\nDefault: 0 --> 10 times per run or every 1k turns.')
 
