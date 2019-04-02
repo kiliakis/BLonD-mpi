@@ -240,6 +240,8 @@ for turn in range(1, N_t+1):
             slicesMonitor.track(turn)
 
     if turn in lbturns:
+        import random
+        time.sleep(random.random())
         worker.redistribute(beam, worker.time() - ts)
         ts = worker.time()
 
