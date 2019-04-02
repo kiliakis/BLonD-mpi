@@ -296,6 +296,24 @@ mpiprint("Map set")
 timing.reset()
 start_t = time.time()
 
+lbturns = []
+if args['loadbalance'] == 'times':
+    if args['loadbalancearg'] != 0:
+        intv = N_t // (args['loadbalancearg']+1)
+    else:
+        intv = N_t // (10 +1)
+    lbturns = np.arange(0, N_t, intv)[1:]
+
+elif args['loadbalance'] == 'interval':
+    if args['loadbalancearg'] != 0:
+        lbturns = np.arange(0, N_t, args['loadbalancearg'])
+    else:
+        lbturns = np.arange(0, N_t, 1000)
+
+elif args['loadbalance'] == 'dynamic':
+    print('Warning: Dynamic load balance policy not supported.')
+ts = worker.time()
+
 for turn in range(N_t):
     # Plots and outputting
     # if MONITORING and (i % dt_plt) == 0:
@@ -361,6 +379,10 @@ for turn in range(N_t):
 
     tracker.track_only()
 
+    if turn in lbturns:
+        worker.redistribute(beam, worker.time() - ts)
+        ts = worker.time()
+        
     # worker.hostsync()
     # worker.sync()
     # import matplotlib.pyplot as plt
