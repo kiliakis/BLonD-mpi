@@ -300,8 +300,30 @@ def calc_transactions(temp, cutoff):
     trans = {}
     for i in range(len(temp)):
         trans[i] = []
-    arr = sorted([{'val': i[1], 'id':i[0]}
-                  for i in enumerate(temp)], key=lambda x: x['val'], reverse=True)
+    arr = [{'val': i[1], 'id':i[0]} for i in enumerate(temp)]
+
+    # First pass is to prioritize transactions within the same node
+    i = 0
+    # e = len(arr)-1
+    while i < len(arr)-1:
+        if (arr[i]['val'] < 0) and (arr[i+1]['val'] > 0):
+            s = i+1
+            r = i
+        elif (arr[i]['val'] > 0) and (arr[i+1]['val'] < 0):
+            s = i
+            r = i+1
+        else:
+            i+=2
+            continue
+        if (arr[s]['val'] > cutoff) and (abs(arr[r]['val']) > cutoff):
+            diff = int(min(abs(arr[s]['val']), abs(arr[r]['val'])))
+            trans[arr[s]['id']].append((arr[r]['id'], diff))
+            trans[arr[r]['id']].append((arr[s]['id'], diff))
+            arr[s]['val'] -= diff
+            arr[r]['val'] += diff
+        i+=2
+    # Then the internode transactions
+    arr = sorted(arr, key=lambda x: x['val'], reverse=True)
     s = 0
     e = len(arr)-1
     while s < e:
