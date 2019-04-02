@@ -266,9 +266,12 @@ class Worker:
             # Then I need to resize local beam.dt and beam.dE, also
             # beam.n_macroparticles
             tot_to_recv = np.sum(t[1] for t in transactions)
-            beam.dE.resize(beam.n_macroparticles + tot_to_recv)
-            beam.dt.resize(beam.n_macroparticles + tot_to_recv)
-            beam.id.resize(beam.n_macroparticles + tot_to_recv)
+            beam.dE = np.resize(beam.dE, beam.n_macroparticles + tot_to_recv)
+            beam.dt = np.resize(beam.dt, beam.n_macroparticles + tot_to_recv)
+            beam.id = np.resize(beam.id, beam.n_macroparticles + tot_to_recv)
+            # beam.dE.resize(beam.n_macroparticles + tot_to_recv)
+            # beam.dt.resize(beam.n_macroparticles + tot_to_recv)
+            # beam.id.resize(beam.n_macroparticles + tot_to_recv)
             i = beam.n_macroparticles
             for buf, t in zip(recvbuf, transactions):
                 beam.dE[i:i+t[1]] = buf[0:t[1]]
