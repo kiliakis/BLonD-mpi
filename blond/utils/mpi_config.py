@@ -227,51 +227,47 @@ class Worker:
         P = np.sum(Pi_old)
         Pi = P / (latencies * np.sum(1./latencies))
         dPi = np.rint(Pi_old - Pi)
-        # assert np.sum(dPi) == 0, 'Particles lost while rounding'
         transactions = calc_transactions(dPi, 0.01 * P)[self.rank]
-        # transactions = transactions[self.rank]
         if dPi[self.rank] > 0 and len(transactions) > 0:
-            req = []
+            reqs = []
             tot_to_send = np.sum(t[1] for t in transactions)
             i = beam.n_macroparticles - tot_to_send
             for t in transactions:
                 # I need to send t[1] particles to t[0]
                 # buf[:t[1]] de, then dt, then id
-                # print('[{}]: Sending {} p to {}.'.format(self.rank, t[1], t[0]))
                 buf = np.empty(3*t[1], float)
                 buf[0:t[1]] = beam.dE[i:i+t[1]]
                 buf[t[1]:2*t[1]] = beam.dt[i:i+t[1]]
                 buf[2*t[1]:3*t[1]] = beam.id[i:i+t[1]]
                 i += t[1]
-                req.append(self.intracomm.Isend(buf, t[0]))
+                reqs.append(self.intracomm.Isend(buf, t[0]))
             # Then I need to resize local beam.dt and beam.dE, also
             # beam.n_macroparticles
             beam.dE = beam.dE[:beam.n_macroparticles-tot_to_send]
             beam.dt = beam.dt[:beam.n_macroparticles-tot_to_send]
             beam.id = beam.id[:beam.n_macroparticles-tot_to_send]
             beam.n_macroparticles -= tot_to_send
-            req[0].Waitall(req)
+            for req in reqs:
+                req.Wait()
+            # req[0].Waitall(req)
         elif dPi[self.rank] < 0 and len(transactions) > 0:
-            req = []
+            reqs = []
             recvbuf = []
             for t in transactions:
                 # I need to receive t[1] particles from t[0]
                 # The buffer contains: de, dt, id
-                # print('[{}]: Receiving {} p from {}.'.format(self.rank, t[1], t[0]))
-
                 buf = np.empty(3*t[1], float)
                 recvbuf.append(buf)
-                req.append(self.intracomm.Irecv(buf, t[0]))
-            req[0].Waitall(req)
+                reqs.append(self.intracomm.Irecv(buf, t[0]))
+            for req in reqs:
+                req.Wait()
+            # req[0].Waitall(req)
             # Then I need to resize local beam.dt and beam.dE, also
             # beam.n_macroparticles
             tot_to_recv = np.sum(t[1] for t in transactions)
             beam.dE = np.resize(beam.dE, beam.n_macroparticles + tot_to_recv)
             beam.dt = np.resize(beam.dt, beam.n_macroparticles + tot_to_recv)
             beam.id = np.resize(beam.id, beam.n_macroparticles + tot_to_recv)
-            # beam.dE.resize(beam.n_macroparticles + tot_to_recv)
-            # beam.dt.resize(beam.n_macroparticles + tot_to_recv)
-            # beam.id.resize(beam.n_macroparticles + tot_to_recv)
             i = beam.n_macroparticles
             for buf, t in zip(recvbuf, transactions):
                 beam.dE[i:i+t[1]] = buf[0:t[1]]
@@ -338,10 +334,6 @@ def calc_transactions(temp, cutoff):
         trans[arr[e]['id']].append((arr[s]['id'], diff))
         arr[s]['val'] -= diff
         arr[e]['val'] += diff
-    # all_sum = 0
-    # for k, v in trans.items():
-    #     all_sum += np.sign(temp[k]) * np.sum(i[1] for i in v)
-    # assert all_sum == 0, 'Particles lost while rounding'
 
     return trans
 
