@@ -240,6 +240,7 @@ class Worker:
                 buf[t[1]:2*t[1]] = beam.dt[i:i+t[1]]
                 buf[2*t[1]:3*t[1]] = beam.id[i:i+t[1]]
                 i += t[1]
+                self.logger.critical('[{}]: Sending {} parts to {}.'.format(self.rank, t[1], t[0]))
                 reqs.append(self.intracomm.Isend(buf, t[0]))
             # Then I need to resize local beam.dt and beam.dE, also
             # beam.n_macroparticles
@@ -258,6 +259,7 @@ class Worker:
                 # The buffer contains: de, dt, id
                 buf = np.empty(3*t[1], float)
                 recvbuf.append(buf)
+                self.logger.critical('[{}]: Receiving {} parts from {}.'.format(self.rank, t[1], t[0]))
                 reqs.append(self.intracomm.Irecv(buf, t[0]))
             for req in reqs:
                 req.Wait()
