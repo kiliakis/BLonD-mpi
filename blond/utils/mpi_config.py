@@ -227,7 +227,7 @@ class Worker:
         P = np.sum(Pi_old)
         Pi = P / (latencies * np.sum(1./latencies))
         dPi = np.rint(Pi_old - Pi)
-        transactions = calc_transactions(dPi, 0.01 * P)[self.rank]
+        transactions = calc_transactions(dPi, 0.001 * P)[self.rank]
         if dPi[self.rank] > 0 and len(transactions) > 0:
             reqs = []
             tot_to_send = np.sum(t[1] for t in transactions)
@@ -311,20 +311,20 @@ def calc_transactions(temp, cutoff):
             s = i
             r = i+1
         else:
-            i+=2
+            i += 2
             continue
-        if (arr[s]['val'] > cutoff) and (abs(arr[r]['val']) > cutoff):
-            diff = int(min(abs(arr[s]['val']), abs(arr[r]['val'])))
+        diff = int(min(abs(arr[s]['val']), abs(arr[r]['val'])))
+        if diff > cutoff:
             trans[arr[s]['id']].append((arr[r]['id'], diff))
             trans[arr[r]['id']].append((arr[s]['id'], diff))
             arr[s]['val'] -= diff
             arr[r]['val'] += diff
-        i+=2
+        i += 2
     # Then the internode transactions
     arr = sorted(arr, key=lambda x: x['val'], reverse=True)
     s = 0
     e = len(arr)-1
-    while s < e:
+    while (s < e) and (arr[s]['val'] >= 0) and (arr[e]['val'] <= 0):
         if arr[s]['val'] <= cutoff:
             s += 1
             continue
