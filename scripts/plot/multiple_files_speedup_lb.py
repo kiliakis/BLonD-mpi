@@ -45,49 +45,138 @@ plots_config = {
             #         'type': ['total']
             #     }
             # },
-            res_dir+'raw/EX01-mpich3-approx2/comm-comp-report.csv': {
-                'key': 'ex01-mpich3apprx',
+            # res_dir+'raw/EX01-mpich3-approx2/comm-comp-report.csv': {
+            #     'key': 'ex01-mpich3apprx',
+            #     'lines': {
+            #         'omp': ['10'],
+            #         'type': ['total']
+            #     }
+            # },
+
+            # res_dir+'raw/EX01-lb-mpich3-approx2/comm-comp-report.csv': {
+            #     'key': 'ex01-lbmpich3apprx',
+            #     'lines': {
+            #         'omp': ['10'],
+            #         'type': ['total']
+            #     }
+            # },
+
+            # res_dir+'raw/EX01-mpich3/comm-comp-report.csv': {
+            #     'key': 'ex01-mpich3',
+            #     'lines': {
+            #         'omp': ['10'],
+            #         'type': ['total']
+            #     }
+            # },
+            # res_dir+'raw/EX01-lb-mpich3/comm-comp-report.csv': {
+            #     'key': 'ex01-lbmpich3',
+            #     'lines': {
+            #         'omp': ['10'],
+            #         'type': ['total']
+            #     }
+            # },
+
+            # res_dir+'raw/EX01-mpich3-approx2/comm-comp-report.csv': {
+            #     'key': 'ex01-mpich3apprx',
+            #     'lines': {
+            #         'omp': ['10'],
+            #         'type': ['total']
+            #     }
+            # },
+
+            res_dir+'raw/LHC-lb-mpich3-approx2/comm-comp-report.csv': {
+                'key': 'lhc-lbmpich3apprx',
                 'lines': {
                     'omp': ['10'],
                     'type': ['total']
                 }
             },
 
-            res_dir+'raw/EX01-lb-mpich3-approx2/comm-comp-report.csv': {
-                'key': 'ex01-lbmpich3apprx',
+            res_dir+'raw/LHC-96B-2MPPB-t10k-mpich3/comm-comp-report.csv': {
+                'key': 'lhc-mpich3',
                 'lines': {
                     'omp': ['10'],
                     'type': ['total']
                 }
             },
-            res_dir+'raw/EX01-lb-mpich3-approx2-2/comm-comp-report.csv': {
-                'key': 'ex01-lbmpich3apprx2',
+            res_dir+'raw/LHC-lb-mpich3/comm-comp-report.csv': {
+                'key': 'lhc-lbmpich3',
                 'lines': {
                     'omp': ['10'],
                     'type': ['total']
                 }
             },
-            res_dir+'raw/EX01-mpich3/comm-comp-report.csv': {
-                'key': 'ex01-mpich3',
+
+            res_dir+'raw/LHC-approx2-mpich3/comm-comp-report.csv': {
+                'key': 'lhc-mpich3apprx',
                 'lines': {
                     'omp': ['10'],
                     'type': ['total']
                 }
             },
-            res_dir+'raw/EX01-lb-mpich3/comm-comp-report.csv': {
-                'key': 'ex01-lbmpich3',
+            res_dir+'raw/LHC-lb-mvapich2-approx2/comm-comp-report.csv': {
+                'key': 'lhc-lbmvapich2apprx',
                 'lines': {
                     'omp': ['10'],
                     'type': ['total']
                 }
             },
-            res_dir+'raw/EX01-lb-mpich3-2/comm-comp-report.csv': {
-                'key': 'ex01-lbmpich32',
+
+            res_dir+'raw/LHC-96B-2MPPB-t10k-mvapich2/comm-comp-report.csv': {
+                'key': 'lhc-mvapich2',
                 'lines': {
                     'omp': ['10'],
                     'type': ['total']
                 }
             },
+            res_dir+'raw/LHC-lb-mvapich2/comm-comp-report.csv': {
+                'key': 'lhc-lbmvapich2',
+                'lines': {
+                    'omp': ['10'],
+                    'type': ['total']
+                }
+            },
+
+            res_dir+'raw/LHC-approx2-mvapich2/comm-comp-report.csv': {
+                'key': 'lhc-mvapich2apprx',
+                'lines': {
+                    'omp': ['10'],
+                    'type': ['total']
+                }
+            },
+
+            res_dir+'raw/LHC-lb-openmpi3-approx2/comm-comp-report.csv': {
+                'key': 'lhc-lbopenmpi3apprx',
+                'lines': {
+                    'omp': ['10'],
+                    'type': ['total']
+                }
+            },
+
+            res_dir+'raw/LHC-96B-2MPPB-t10k-openmpi3/comm-comp-report.csv': {
+                'key': 'lhc-openmpi3',
+                'lines': {
+                    'omp': ['10'],
+                    'type': ['total']
+                }
+            },
+            res_dir+'raw/LHC-lb-openmpi3/comm-comp-report.csv': {
+                'key': 'lhc-lbopenmpi3',
+                'lines': {
+                    'omp': ['10'],
+                    'type': ['total']
+                }
+            },
+
+            res_dir+'raw/LHC-approx2-openmpi3/comm-comp-report.csv': {
+                'key': 'lhc-openmpi3apprx',
+                'lines': {
+                    'omp': ['10'],
+                    'type': ['total']
+                }
+            },
+
+
             # res_dir+'raw/EX01-lb-openmpi3/comm-comp-report.csv': {
             #     'key': 'lhc-lbopenmpi3',
             #     'lines': {
@@ -151,11 +240,22 @@ plots_config = {
             'ex01-lbmpich3': 'ex01-lb-mpich3',
             'ex01-lbmpich3apprx': 'ex01-lb-mpich3-approx2',
             'ex01-mpich3apprx': 'ex01-mpich3-approx2',
-            'ex01-lbmpich32': 'ex01-lb-mpich3-2',
-            'ex01-lbmpich3apprx2': 'ex01-lb-mpich3-approx2-2',
+            
+            'lhc-mpich3': 'lhc-mpich3',
+            'lhc-lbmpich3': 'lhc-lb-mpich3',
+            'lhc-lbmpich3apprx': 'lhc-lb-mpich3-approx2',
+            'lhc-mpich3apprx': 'lhc-mpich3-approx2',
+            
+            'lhc-mvapich2': 'lhc-mvapich2',
+            'lhc-lbmvapich2': 'lhc-lb-mvapich2',
+            'lhc-lbmvapich2apprx': 'lhc-lb-mvapich2-approx2',
+            'lhc-mvapich2apprx': 'lhc-mvapich2-approx2',
 
-            # 'ex01-lbopenmpi3': 'ex01-lb-openmpi3',
-            # 'ex01-lbmvapich2': 'lhc-lb-mvapich2',
+            'lhc-openmpi3': 'lhc-openmpi3',
+            'lhc-lbopenmpi3': 'lhc-lb-openmpi3',
+            'lhc-lbopenmpi3apprx': 'lhc-lb-openmpi3-approx2',
+            'lhc-openmpi3apprx': 'lhc-openmpi3-approx2',
+
             # 'lhc-orig': 'lhc-orig',
             # 'lhc-openmpi3': 'lhc-openmpi3',
             # 'lhc-mvapich2': 'lhc-mvapich2',
@@ -173,9 +273,10 @@ plots_config = {
 
         },
         'markers': {
-            'ex01': 'o',
-            # 'sps': 's',
-            # 'ps': 'x'
+            'ex01': 'd',
+            'lhc': 'o',
+            'sps': 's',
+            'ps': 'x'
             # 'lhc-lbmpich3': 'o',
             # 'lhc-lbmvapich2': 'o',
             # 'lhc-lbopenmpi3': 'o',
@@ -193,9 +294,10 @@ plots_config = {
             # 'ps-mvapich2': 'x',
         },
         'ls': {
-            'ex01': '-',
-            # 'sps': ':',
-            # 'ps': '--'
+            'ex01': '-:',
+            'lhc': '-',
+            'sps': ':',
+            'ps': '--'
             # 'lhc-orig': '-',
             # 'lhc-lbmpich3': '-',
             # 'lhc-lbopenmpi3': '-',
@@ -219,10 +321,19 @@ plots_config = {
 
             'mpich3': 'xkcd:light blue',
             'lbmpich3': 'xkcd:blue',
-            'lbmpich32': 'xkcd:light orange',
-            'lbmpich3apprx2': 'xkcd:orange',
             'mpich3apprx': 'xkcd:light green',
             'lbmpich3apprx': 'xkcd:green',
+
+            'mvapich2': 'xkcd:light red',
+            'lbmvapich2': 'xkcd:red',
+            'mvapich2apprx': 'xkcd:light orange',
+            'lbmvapich2apprx': 'xkcd:orange',
+
+            'openmpi3': 'xkcd:light purple',
+            'lbopenmpi3': 'xkcd:purple',
+            'openmpi3apprx': 'xkcd:light pink',
+            'lbopenmpi3apprx': 'xkcd:pink',
+
 
         },
         'hatches': {
@@ -232,9 +343,10 @@ plots_config = {
             # 'lbmvapich2': '\\',
             # 'openmpi3': '-',
             # 'mvapich2': '',
-            'ex01': '/',
-            # 'sps': 'o',
-            # 'ps': 'x',
+            'ex01': '\\',
+            'lhc': '/',
+            'sps': 'o',
+            'ps': 'x',
         },
         'reference': {
             'ex01': {'time': 21.4, 'parts': 1000000, 'turns': 2000},
@@ -299,8 +411,13 @@ if __name__ == '__main__':
         step = 0.1
         width = 2. / (len(plots_dir.keys())+1)
         for case in ['lhc', 'sps', 'ps', 'ex01']:
-            for mpiv in ['mpich3', 'lbmpich3', 'lbmpich32',
-                         'mpich3apprx', 'lbmpich3apprx', 'lbmpich3apprx2']:
+            for mpiv in ['mpich3', 'lbmpich3',
+                         'mpich3apprx', 'lbmpich3apprx',
+                         'mvapich2', 'lbmvapich2',
+                         'mvapich2apprx', 'lbmvapich2apprx',
+                         'openmpi3', 'lbopenmpi3',
+                         'openmpi3apprx', 'lbopenmpi3apprx']:
+
                          # 'openmpi3', 'lbopenmpi3',
                          # 'mvapich2', 'lbmvapich2']:
                 key = '{}-{}'.format(case, mpiv)

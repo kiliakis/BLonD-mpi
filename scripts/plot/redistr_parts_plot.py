@@ -22,56 +22,32 @@ plots_config = {
 
     'plot4': {
         'files': {
-            # res_dir+'raw/EX01-mpich3/avg-report.csv': {
-            #         'key': 'ex01-mpich3',
-            #         'lines': {
-            #             # 'omp': ['10'],'
-            #             'function': None}
-            # },
-            # res_dir+'raw/EX01-lb-mpich3/avg-report.csv': {
-            #         'key': 'ex01-lbmpich3',
-            #         'lines': {
-            #             # 'omp': ['10'],'
-            #             'function': None}
-            # },
-
-            # res_dir+'raw/EX01-mpich3-approx2/avg-report.csv': {
-            #         'key': 'ex01-mpich3apprx',
-            #         'lines': {
-            #             # 'omp': ['10'],'
-            #             'function': None}
-            # },
-            # res_dir+'raw/EX01-lb-mpich3-approx2/avg-report.csv': {
-            #         'key': 'ex01-lbmpich3apprx',
-            #         'lines': {
-            #             # 'omp': ['10'],'
-            #             'function': None}
-            # },
-            res_dir+'raw/LHC-96B-2MPPB-t10k-mpich3/avg-report.csv': {
-                    'key': 'lhc-mpich3',
+            res_dir+'raw/EX01-mpich3/avg-report.csv': {
+                    'key': 'ex01-mpich3',
                     'lines': {
                         # 'omp': ['10'],'
                         'function': None}
             },
-            res_dir+'raw/LHC-lb-mpich3/avg-report.csv': {
-                    'key': 'lhc-lbmpich3',
+            res_dir+'raw/EX01-lb-mpich3/avg-report.csv': {
+                    'key': 'ex01-lbmpich3',
                     'lines': {
                         # 'omp': ['10'],'
                         'function': None}
             },
 
-            res_dir+'raw/LHC-approx2-mpich3/avg-report.csv': {
-                    'key': 'lhc-mpich3apprx',
+            res_dir+'raw/EX01-mpich3-approx2/avg-report.csv': {
+                    'key': 'ex01-mpich3apprx',
                     'lines': {
                         # 'omp': ['10'],'
                         'function': None}
             },
-            res_dir+'raw/LHC-lb-mpich3-approx2/avg-report.csv': {
-                    'key': 'lhc-lbmpich3apprx',
+            res_dir+'raw/EX01-lb-mpich3-approx2/avg-report.csv': {
+                    'key': 'ex01-lbmpich3apprx',
                     'lines': {
                         # 'omp': ['10'],'
                         'function': None}
             },
+
         },
         'colors': {
             # 'comm': 'tab:green',
@@ -84,10 +60,10 @@ plots_config = {
             'redistr': '0.25',
         },
         'hatches': {
-            'ex01': '\\',
-            'lhc': '/',
-            'sps': 'o',
-            'ps': 'x',
+            'ex01': '/',
+            # 'lhc': '/',
+            # 'sps': 'o',
+            # 'ps': 'x',
 
             # 'mpich3': '/',
             # 'openmpi3': 'o',
@@ -116,7 +92,7 @@ plots_config = {
         'title': 'Run-Time breakdown',
         'ylim': [0, 100],
         'figsize': (5, 3),
-        'image_name': images_dir + 'redistr-bar-2.pdf'
+        'image_name': images_dir + 'redistr-bar-1.pdf'
 
     },
 
