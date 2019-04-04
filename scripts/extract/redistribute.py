@@ -15,6 +15,7 @@ this_directory = os.path.dirname(os.path.realpath(__file__)) + '/'
 # comm_comp_fname = 'comm-comp.csv'
 # comm_comp_std_fname = 'comm-comp-std.csv'
 log_fname = 'particles.csv'
+log_fname_std = 'particles-std.csv'
 log_worker_fname = 'particles-workers.csv'
 worker_pattern = 'worker-*.log'
 
@@ -60,35 +61,47 @@ def generate_reports(input, report_script):
             p.wait()
 
 
-def calc_histo(files, outfile):
+def calc_histo(files, outfile, outfile_std):
     acc_data = []
     default_header = []
     data_dic = {}
     for f in files:
         data = np.genfromtxt(f, dtype=str, delimiter='\t')
         header, data = data[0], data[1:]
-        wids, data = data[:, 0], np.array(data[:, 1:], float)
+        wids, data = data[:, 0], data[:, 1:]
 
         if len(default_header) == 0:
             default_header = header
         elif not np.array_equal(default_header, header):
             print('Problem with file: ', indir+'/'+f)
             continue
+        dic = {}
+        for i, h in enumerate(header[1:]):
+            dic[h] = []
+            for d in data:
+                dic[h].append(d[i].split('|'))
+            dic[h] = np.array(dic[h], 'float')
+        for k, v in dic.items():
+            # dic[k] = 100 * np.std(v, axis=0) / np.mean(v, axis=0)
+            if k not in data_dic:
+                data_dic[k] = []
+            data_dic[k].append(100 * np.std(v, axis=0) / np.mean(v, axis=0))
 
-        for i, f in enumerate(funcs):
-            if f not in data_dic:
-                data_dic[f] = []
-            data_dic[f].append(data[i])
+
+    #     for i, f in enumerate(funcs):
+    #         if f not in data_dic:
+    #             data_dic[f] = []
+    #         data_dic[f].append(data[i])
 
     acc_data = [default_header]
     acc_data_std = [default_header]
-    sortid = [i[0]for i in sorted(enumerate(data_dic[funcs[-1]]),
-                                  key=lambda a:a[1][0])]
-    for f, v in data_dic.items():
-        data_dic[f] = np.array(v)[sortid][:args.keep]
-        acc_data.append([f] + list(np.around(np.mean(data_dic[f], axis=0), 2)))
+    # sortid = [i[0]for i in sorted(enumerate(data_dic[funcs[-1]]),
+    #                               key=lambda a:a[1][0])]
+    for k, v in data_dic.items():
+        # data_dic[k] = np.array(v)[sortid][:args.keep]
+        acc_data.append([k] + list(np.around(np.mean(data_dic[k], axis=0), 2)))
         acc_data_std.append(
-            [f] + list(np.around(np.std(data_dic[f], axis=0), 2)))
+            [k] + list(np.around(np.std(data_dic[k], axis=0), 2)))
 
     writer1 = csv.writer(outfile, delimiter='\t')
     writer1.writerows(acc_data)
@@ -102,12 +115,13 @@ def aggregate_reports(input):
         sdirs = fnmatch.filter(subdirs, date_pattern)
         if len(sdirs) == 0:
             continue
-        files = [os.path.join(dirs, s, comm_comp_worker_fname) for s in sdirs]
+        files = [os.path.join(dirs, s, log_worker_fname) for s in sdirs]
         # print(files)
         try:
-            calc_histo(files, open(os.path.join(dirs, log_fname), 'w'))
+            calc_histo(files, open(os.path.join(dirs, log_fname), 'w'),
+                open(os.path.join(dirs, log_fname_std), 'w'))
         except Exception as e:
-            print('[Error] Dir ', dirs)
+            print('[Error] Dir: {}, Exception: {}'.format(dirs, e))
 
 
 def collect_reports(input, outfile, filename):
@@ -156,22 +170,22 @@ if __name__ == '__main__':
         generate_reports(args.indir, args.script)
     if args.report in ['aggregate', 'all']:
         aggregate_reports(args.indir)
-    if args.report in ['collect', 'all']:
-        if args.outfile == 'sys.stdout':
-            collect_reports(args.indir, sys.stdout, average_fname)
-            collect_reports(args.indir, sys.stdout, comm_comp_fname)
-        elif args.outfile == 'file':
-            collect_reports(args.indir,
-                            open(os.path.join(args.indir, 'avg-std-report.csv'), 'w'),
-                            average_std_fname)
-            collect_reports(args.indir,
-                            open(os.path.join(args.indir, 'avg-report.csv'), 'w'),
-                            average_fname)
-            collect_reports(args.indir,
-                            open(os.path.join(args.indir,
-                                              'comm-comp-report.csv'), 'w'),
-                            comm_comp_fname)
-            collect_reports(args.indir,
-                            open(os.path.join(args.indir,
-                                              'comm-comp-std-report.csv'), 'w'),
-                            comm_comp_std_fname)
+    # if args.report in ['collect', 'all']:
+    #     if args.outfile == 'sys.stdout':
+    #         collect_reports(args.indir, sys.stdout, average_fname)
+    #         collect_reports(args.indir, sys.stdout, comm_comp_fname)
+    #     elif args.outfile == 'file':
+    #         collect_reports(args.indir,
+    #                         open(os.path.join(args.indir, 'avg-std-report.csv'), 'w'),
+    #                         average_std_fname)
+    #         collect_reports(args.indir,
+    #                         open(os.path.join(args.indir, 'avg-report.csv'), 'w'),
+    #                         average_fname)
+    #         collect_reports(args.indir,
+    #                         open(os.path.join(args.indir,
+    #                                           'comm-comp-report.csv'), 'w'),
+    #                         comm_comp_fname)
+    #         collect_reports(args.indir,
+    #                         open(os.path.join(args.indir,
+    #                                           'comm-comp-std-report.csv'), 'w'),
+    #                         comm_comp_std_fname)
