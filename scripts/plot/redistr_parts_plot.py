@@ -22,26 +22,26 @@ plots_config = {
 
     'plot4': {
         'files': {
-            res_dir+'raw/EX01-mpich3/avg-report.csv': {
+            res_dir+'raw/EX01-mpich3/particles-report.csv': {
                     'key': 'ex01-mpich3',
                     'lines': {
                         # 'omp': ['10'],'
                         'function': None}
             },
-            res_dir+'raw/EX01-lb-mpich3/avg-report.csv': {
+            res_dir+'raw/EX01-lb-mpich3/particles-report.csv': {
                     'key': 'ex01-lbmpich3',
                     'lines': {
                         # 'omp': ['10'],'
                         'function': None}
             },
 
-            res_dir+'raw/EX01-mpich3-approx2/avg-report.csv': {
+            res_dir+'raw/EX01-mpich3-approx2/particles-report.csv': {
                     'key': 'ex01-mpich3apprx',
                     'lines': {
                         # 'omp': ['10'],'
                         'function': None}
             },
-            res_dir+'raw/EX01-lb-mpich3-approx2/avg-report.csv': {
+            res_dir+'raw/EX01-lb-mpich3-approx2/particles-report.csv': {
                     'key': 'ex01-lbmpich3apprx',
                     'lines': {
                         # 'omp': ['10'],'

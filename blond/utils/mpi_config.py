@@ -233,7 +233,7 @@ class Worker:
         P = np.sum(Pi_old)
         sum1 = np.sum(ctimes/latencies)
         sum2 = np.sum(1./latencies)
-        Pi = (P + sum1 - ctime * sum2)/(latency * sum2)
+        Pi = (P + sum1 - ctimes * sum2)/(latencies * sum2)
 
         # Pi = P / (latencies * np.sum(1./latencies))
         dPi = np.rint(Pi_old - Pi)
