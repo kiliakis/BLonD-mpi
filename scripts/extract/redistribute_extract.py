@@ -70,7 +70,7 @@ def calc_histo(files, outfile, outfile_std):
         data = np.genfromtxt(f, dtype=str, delimiter='\t')
         header, data = data[0], data[1:]
         wids, data = data[:, 0], data[:, 1:]
-        header = header[1:] # remove the wid
+        header = header[1:]  # remove the wid
 
         if len(default_header) == 0:
             default_header = header
@@ -90,29 +90,34 @@ def calc_histo(files, outfile, outfile_std):
                 else:
                     lst.append(d[i].split('|'))
             min_num = np.min([len(l) for l in lst])
-            for j,l in enumerate(lst):
+            for j, l in enumerate(lst):
                 lst[j] = l[:min_num]
-            dic[h] = np.array(lst, float)
             if h == 'parts':
-                dic[h] = np.abs(np.diff(dic[h]))/parts_t0
+                dic[h] = np.abs(np.diff(np.array(lst, float)))/parts_t0
+            elif h == 'turn_num':
+                dic[h] = np.array(lst, int)
+            else:
+                dic[h] = np.array(lst, float)
         for k, v in dic.items():
             # dic[k] = 100 * np.std(v, axis=0) / np.mean(v, axis=0)
             if k not in data_dic:
                 data_dic[k] = []
-            mean = np.mean(v, axis=0)
-            std = np.std(v, axis=0)
-            lst = []
-            for m,s in zip(mean, std):
-                if m == 0:
-                    lst.append(0)
-                else:
-                    lst.append(100 * s/m)
-            data_dic[k].append(lst)
+            if k == 'turn_num':
+                data_dic[k].append(np.array(v[0]))
+            else:
+                mean = np.mean(v, axis=0)
+                std = np.std(v, axis=0)
+                lst = []
+                for m, s in zip(mean, std):
+                    if m == 0:
+                        lst.append(0)
+                    else:
+                        lst.append(100 * s/m)
+                data_dic[k].append(lst)
             # if mean == 0 or std ==0:
             #     data_dic[k].append(0)
             # else:
-                # data_dic[k].append(100 * np.std(v, axis=0) / np.mean(v, axis=0))
-
+            # data_dic[k].append(100 * np.std(v, axis=0) / np.mean(v, axis=0))
 
     #     for i, f in enumerate(funcs):
     #         if f not in data_dic:
@@ -146,12 +151,13 @@ def aggregate_reports(input):
         if len(sdirs) == 0:
             continue
         files = [os.path.join(dirs, s, log_worker_fname) for s in sdirs]
-        # print(files)
-        try:
-            calc_histo(files, open(os.path.join(dirs, log_fname), 'w'),
-                open(os.path.join(dirs, log_fname_std), 'w'))
-        except Exception as e:
-            print('[Error] Dir: {}, Exception: {}'.format(dirs, e))
+        print(dirs)
+        # try:
+        calc_histo(files, open(os.path.join(dirs, log_fname), 'w'),
+                   open(os.path.join(dirs, log_fname_std), 'w'))
+        # except Exception as e:
+            # print('[Error] Dir: {}, Exception: {}, line: {}'.format(dirs, e,
+                                                                    # sys.exc_info()[2].tb_lineno))
 
 
 def collect_reports(input, outfile, filename):
@@ -186,7 +192,7 @@ def collect_reports(input, outfile, filename):
     records.sort(key=lambda a: (float(a[0]), int(a[1]), int(a[2]),
                                 int(a[3]), int(a[4]), int(a[5]), int(a[6])))
     writer = csv.writer(outfile, delimiter='\t')
-    writer.writerow(header + ['turn#', 'dp_std', 't_std', 'lat_std'])
+    writer.writerow(header + ['turn_num', 'dp_std', 't_std', 'lat_std'])
     writer.writerows(records)
 
 
@@ -200,22 +206,22 @@ if __name__ == '__main__':
         generate_reports(args.indir, args.script)
     if args.report in ['aggregate', 'all']:
         aggregate_reports(args.indir)
-    # if args.report in ['collect', 'all']:
-    #     if args.outfile == 'sys.stdout':
-    #         collect_reports(args.indir, sys.stdout, average_fname)
-    #         collect_reports(args.indir, sys.stdout, comm_comp_fname)
-    #     elif args.outfile == 'file':
-    #         collect_reports(args.indir,
-    #                         open(os.path.join(args.indir, 'avg-std-report.csv'), 'w'),
-    #                         average_std_fname)
-    #         collect_reports(args.indir,
-    #                         open(os.path.join(args.indir, 'avg-report.csv'), 'w'),
-    #                         average_fname)
-    #         collect_reports(args.indir,
-    #                         open(os.path.join(args.indir,
-    #                                           'comm-comp-report.csv'), 'w'),
-    #                         comm_comp_fname)
-    #         collect_reports(args.indir,
-    #                         open(os.path.join(args.indir,
-    #                                           'comm-comp-std-report.csv'), 'w'),
-    #                         comm_comp_std_fname)
+    if args.report in ['collect', 'all']:
+        if args.outfile == 'sys.stdout':
+            collect_reports(args.indir, sys.stdout, log_fname)
+            # collect_reports(args.indir, sys.stdout, comm_comp_fname)
+        elif args.outfile == 'file':
+            collect_reports(args.indir,
+                            open(os.path.join(args.indir, 'particles-std-report.csv'), 'w'),
+                            log_fname_std)
+            collect_reports(args.indir,
+                            open(os.path.join(args.indir, 'particles-report.csv'), 'w'),
+                            log_fname)
+            # collect_reports(args.indir,
+            #                 open(os.path.join(args.indir,
+            #                                   'comm-comp-report.csv'), 'w'),
+            #                 comm_comp_fname)
+            # collect_reports(args.indir,
+            #                 open(os.path.join(args.indir,
+            #                                   'comm-comp-std-report.csv'), 'w'),
+            #                 comm_comp_std_fname)

@@ -58,6 +58,7 @@ class Worker:
     def __init__(self):
         args = parse()
         self.indices = {}
+        self.times = {}
         self.intracomm = MPI.COMM_WORLD
         self.rank = self.intracomm.rank
 
@@ -215,17 +216,25 @@ class Worker:
 
     @timing.timeit(key='comm:redistribute')
     @mpiprof.traceit(key='comm:redistribute')
-    def redistribute(self, turn, beam, time):
-        latency = time / beam.n_macroparticles
+    def redistribute(self, turn, beam):
+        latency = (self.times['global'] - self.times['const']) / beam.n_macroparticles
+        ctime = self.times['global']
         # self.logger.critical('[{}]: Time {} sec.'.format(self.rank, time))
         # self.logger.critical('[{}]: Latency {} sec/particle.'.format(self.rank, latency))
-        recvbuf = np.empty(2 * self.workers, dtype=float)
+        recvbuf = np.empty(3 * self.workers, dtype=float)
         self.intracomm.Allgather(
-            np.array([latency, beam.n_macroparticles]), recvbuf)
-        latencies = recvbuf[::2]
-        Pi_old = recvbuf[1::2]
+            np.array([latency, ctime, beam.n_macroparticles]), recvbuf)
+        
+        latencies = recvbuf[::3]
+        ctimes = recvbuf[1::3]
+        Pi_old = recvbuf[2::3]
+
         P = np.sum(Pi_old)
-        Pi = P / (latencies * np.sum(1./latencies))
+        sum1 = np.sum(ctimes/latencies)
+        sum2 = np.sum(1./latencies)
+        Pi = (P + sum1 - ctime * sum2)/(latency * sum2)
+
+        # Pi = P / (latencies * np.sum(1./latencies))
         dPi = np.rint(Pi_old - Pi)
         transactions = calc_transactions(dPi, 0.001 * P)[self.rank]
         if dPi[self.rank] > 0 and len(transactions) > 0:
@@ -281,7 +290,6 @@ class Worker:
             beam.n_macroparticles += tot_to_recv
         self.logger.critical('[{}]: Turn {}, Time {}, Latency {}, Particles {}'.format(
             self.rank, turn, time, latency, beam.n_macroparticles))
-        return
 
     def greet(self):
         self.logger.debug('greet')
@@ -293,8 +301,19 @@ class Worker:
         # print('[{}] Version: {}'.format(self.rank,MPI.Get_version()))
         print('[{}] Library: {}'.format(self.rank, MPI.get_vendor()))
 
-    def time(self):
-        return MPI.Wtime()
+    def timer_start(self, phase):
+        if phase not in self.times:
+            self.times[phase] = {'start': MPI.Wtime(), 'total': 0.}
+        else:
+            self.times[phase]['start'] = MPI.Wtime()
+
+    def timer_stop(self, phase):
+        self.times[phase]['total'] += MPI.Wtime() - self.times[phase]['start']
+
+
+    def timer_reset(self, phase):
+        self.times[phase] = {'start': MPI.Wtime(), 'total': 0.}
+
 
 
 def calc_transactions(temp, cutoff):

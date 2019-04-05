@@ -311,10 +311,15 @@ elif args['loadbalance'] == 'interval':
         lbturns = np.arange(0, N_t, 1000)
 
 elif args['loadbalance'] == 'dynamic':
-    print('Warning: Dynamic load balance policy not supported.')
-ts = worker.time()
+    lbturns = [100, 200] + list(np.arange(1000, N_t, 1000))
+    # print('Warning: Dynamic load balance policy not supported.')
 
-for turn in range(N_t):
+worker.sync()
+
+
+worker.timer_start('global')
+
+for turn in range(1, N_t+1):
     # Plots and outputting
     # if MONITORING and (i % dt_plt) == 0:
     # if (i % dt_plt) == 0:
@@ -350,13 +355,20 @@ for turn in range(N_t):
     # Update profile
     if (approx == 0):
         profile.track()
+        worker.timer_start('const')
         profile.reduce_histo()
+        worker.timer_stop('const')
     elif (approx == 1) and (turn % N_t_reduce == 0):
         profile.track()
+        worker.timer_start('const')
         profile.reduce_histo()
+        worker.timer_stop('const')
+
     elif (approx == 2):
         profile.track()
+        worker.timer_start('const')
         profile.scale_histo()
+        worker.timer_stop('const')
 
     if (N_t_monitor > 0) and (turn % N_t_monitor == 0):
         beam.statistics()
@@ -367,6 +379,7 @@ for turn in range(N_t):
                                     shiftX=-rf.phi_rf[0, turn]/rf.omega_rf[0, turn])
             slicesMonitor.track(turn)
 
+    worker.timer_start('const')
     if worker.isHostFirst:
         if (approx == 0) or (approx == 2):
             totVoltage.induced_voltage_sum()
@@ -376,13 +389,15 @@ for turn in range(N_t):
         tracker.pre_track()
 
     worker.sendrecv(totVoltage.induced_voltage, tracker.rf_voltage)
+    worker.timer_stop('const')
 
     tracker.track_only()
 
     if turn in lbturns:
-        worker.redistribute(beam, turn, worker.time() - ts)
-        ts = worker.time()
-        
+        worker.timer_stop('global')
+        worker.redistribute(turn, beam)
+        worker.reset_timer('const')
+        worker.reset_timer('global')
     # worker.hostsync()
     # worker.sync()
     # import matplotlib.pyplot as plt

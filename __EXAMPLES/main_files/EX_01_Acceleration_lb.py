@@ -201,21 +201,25 @@ elif args['loadbalance'] == 'interval':
         lbturns = np.arange(0, N_t, 1000)
 
 elif args['loadbalance'] == 'dynamic':
-    print('Warning: Dynamic load balance policy not supported.')
-ts = worker.time()
+    lbturns = [100, 200] + list(np.arange(1000, N_t, 1000))
+
+    # print('Warning: Dynamic load balance policy not supported.')
+
+worker.sync()
+worker.timer_start('global')
 
 for turn in range(1, N_t+1):
 
     # Plot has to be done before tracking (at least for cases with separatrix)
-    if (turn % dt_plt) == 0:
-        mpiprint("Outputting at time step %d..." % turn)
-        mpiprint("   Beam momentum %.6e eV" % beam.momentum)
-        mpiprint("   Beam gamma %3.3f" % beam.gamma)
-        mpiprint("   Beam beta %3.3f" % beam.beta)
-        mpiprint("   Beam energy %.6e eV" % beam.energy)
-        mpiprint("   Four-times r.m.s. bunch length %.4e s" % (4.*beam.sigma_dt))
-        mpiprint("   Gaussian bunch length %.4e s" % profile.bunchLength)
-        mpiprint("")
+    # if (turn % dt_plt) == 0:
+    #     mpiprint("Outputting at time step %d..." % turn)
+    #     mpiprint("   Beam momentum %.6e eV" % beam.momentum)
+    #     mpiprint("   Beam gamma %3.3f" % beam.gamma)
+    #     mpiprint("   Beam beta %3.3f" % beam.beta)
+    #     mpiprint("   Beam energy %.6e eV" % beam.energy)
+    #     mpiprint("   Four-times r.m.s. bunch length %.4e s" % (4.*beam.sigma_dt))
+    #     mpiprint("   Gaussian bunch length %.4e s" % profile.bunchLength)
+    #     mpiprint("")
 
     # Track
     long_tracker.track()
@@ -223,13 +227,19 @@ for turn in range(1, N_t+1):
     # Update profile
     if (approx == 0):
         profile.track()
+        worker.timer_start('const')
         profile.reduce_histo()
+        worker.timer_stop('const')
     elif (approx == 1) and (turn % N_t_reduce == 0):
         profile.track()
+        worker.timer_start('const')
         profile.reduce_histo()
+        worker.timer_stop('const')
     elif (approx == 2):
         profile.track()
+        worker.timer_start('const')
         profile.scale_histo()
+        worker.timer_stop('const')
 
     if (N_t_monitor > 0) and (turn % N_t_monitor == 0):
         beam.losses_separatrix(ring, rf)
@@ -240,10 +250,10 @@ for turn in range(1, N_t+1):
             slicesMonitor.track(turn)
 
     if turn in lbturns:
-        # import random
-        # time.sleep(random.random())
-        worker.redistribute(beam, turn, worker.time() - ts)
-        ts = worker.time()
+        worker.timer_stop('global')
+        worker.redistribute(turn, beam)
+        worker.reset_timer('const')
+        worker.reset_timer('global')
 
 
 beam.gather()
