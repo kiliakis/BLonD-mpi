@@ -45,6 +45,7 @@ parser.add_argument('-u', '--update', action='store_true',
 
 
 def generate_reports(input, report_script):
+    print('\n--------Generating reports-------\n')
     records = []
     for dirs, subdirs, files in os.walk(input):
         if 'log' not in subdirs:
@@ -69,6 +70,7 @@ def calc_histo(files, outfile, outfile_std):
         data = np.genfromtxt(f, dtype=str, delimiter='\t')
         header, data = data[0], data[1:]
         wids, data = data[:, 0], data[:, 1:]
+        header = header[1:] # remove the wid
 
         if len(default_header) == 0:
             default_header = header
@@ -76,16 +78,40 @@ def calc_histo(files, outfile, outfile_std):
             print('Problem with file: ', indir+'/'+f)
             continue
         dic = {}
-        for i, h in enumerate(header[1:]):
-            dic[h] = []
+        ppb = int(f.split('_p')[1].split('_')[0])
+        bunches = int(f.split('_b')[1].split('_')[0])
+        workers = int(f.split('_w')[1].split('_')[0])
+        parts_t0 = ppb * bunches // workers
+        for i, h in enumerate(header):
+            lst = []
             for d in data:
-                dic[h].append(d[i].split('|'))
-            dic[h] = np.array(dic[h], 'float')
+                if h == 'parts':
+                    lst.append([parts_t0] + d[i].split('|'))
+                else:
+                    lst.append(d[i].split('|'))
+            min_num = np.min([len(l) for l in lst])
+            for j,l in enumerate(lst):
+                lst[j] = l[:min_num]
+            dic[h] = np.array(lst, float)
+            if h == 'parts':
+                dic[h] = np.abs(np.diff(dic[h]))/parts_t0
         for k, v in dic.items():
             # dic[k] = 100 * np.std(v, axis=0) / np.mean(v, axis=0)
             if k not in data_dic:
                 data_dic[k] = []
-            data_dic[k].append(100 * np.std(v, axis=0) / np.mean(v, axis=0))
+            mean = np.mean(v, axis=0)
+            std = np.std(v, axis=0)
+            lst = []
+            for m,s in zip(mean, std):
+                if m == 0:
+                    lst.append(0)
+                else:
+                    lst.append(100 * s/m)
+            data_dic[k].append(lst)
+            # if mean == 0 or std ==0:
+            #     data_dic[k].append(0)
+            # else:
+                # data_dic[k].append(100 * np.std(v, axis=0) / np.mean(v, axis=0))
 
 
     #     for i, f in enumerate(funcs):
@@ -93,8 +119,8 @@ def calc_histo(files, outfile, outfile_std):
     #             data_dic[f] = []
     #         data_dic[f].append(data[i])
 
-    acc_data = [default_header]
-    acc_data_std = [default_header]
+    acc_data = []
+    acc_data_std = []
     # sortid = [i[0]for i in sorted(enumerate(data_dic[funcs[-1]]),
     #                               key=lambda a:a[1][0])]
     for k, v in data_dic.items():
@@ -103,6 +129,8 @@ def calc_histo(files, outfile, outfile_std):
         acc_data_std.append(
             [k] + list(np.around(np.std(data_dic[k], axis=0), 2)))
 
+    # Transpose list of lists magic
+    acc_data = list(map(list, zip(*acc_data)))
     writer1 = csv.writer(outfile, delimiter='\t')
     writer1.writerows(acc_data)
     writer2 = csv.writer(outfile_std, delimiter='\t')
@@ -110,6 +138,8 @@ def calc_histo(files, outfile, outfile_std):
 
 
 def aggregate_reports(input):
+    print('\n--------Aggregating reports-------\n')
+
     date_pattern = '*.*-*-*'
     for dirs, subdirs, _ in os.walk(input):
         sdirs = fnmatch.filter(subdirs, date_pattern)
@@ -125,7 +155,7 @@ def aggregate_reports(input):
 
 
 def collect_reports(input, outfile, filename):
-    # pass
+    print('\n--------Collecting reports-------\n')
     header = ['parts', 'bunches', 'slices', 'turns', 'n', 'omp', 'N', 'red']
     records = []
     for dirs, subdirs, files in os.walk(input):
@@ -156,7 +186,7 @@ def collect_reports(input, outfile, filename):
     records.sort(key=lambda a: (float(a[0]), int(a[1]), int(a[2]),
                                 int(a[3]), int(a[4]), int(a[5]), int(a[6])))
     writer = csv.writer(outfile, delimiter='\t')
-    writer.writerow(header + list(data_head))
+    writer.writerow(header + ['turn#', 'dp_std', 't_std', 'lat_std'])
     writer.writerows(records)
 
 
