@@ -1,20 +1,3 @@
-from PS_impedance.impedance_scenario import scenario
-import LoCa.Base.Bare_RF as brf
-import LoCa.Base.RFProgram as rfp
-import LoCa.Base.Machine as mach
-from colormap import colormap
-from blond.monitors.monitors import SlicesMonitor
-from blond.impedances.impedance_sources import Resonators
-from blond.impedances.impedance import InducedVoltageTime, InducedVoltageFreq, TotalInducedVoltage, InductiveImpedance
-from blond.trackers.tracker import RingAndRFTracker, FullRingAndRF
-from blond.beam.distributions_multibunch import match_beam_from_distribution
-from blond.beam.profile import Profile, CutOptions
-from blond.input_parameters.rf_parameters import RFStation
-from blond.input_parameters.ring import Ring, RingOptions
-from blond.beam.beam import Proton, Beam
-from blond.utils.mpi_config import worker, mpiprint
-from blond.utils.input_parser import parse
-import matplotlib.pyplot as plt
 '''
 PS longitudinal instability simulation along the ramp
 '''
@@ -26,6 +9,7 @@ import sys
 from scipy.constants import c
 import matplotlib as mpl
 mpl.use('Agg')
+import matplotlib.pyplot as plt
 try:
     from pyprof import timing
     from pyprof import mpiprof
@@ -37,9 +21,25 @@ except ImportError:
 
 # BLonD imports
 #from blond.beams.distributions import matched_from_line_density
+from blond.utils.input_parser import parse
+from blond.utils.mpi_config import worker, mpiprint
+from blond.beam.beam import Proton, Beam
+from blond.input_parameters.ring import Ring, RingOptions
+from blond.input_parameters.rf_parameters import RFStation
+from blond.beam.profile import Profile, CutOptions
+from blond.beam.distributions_multibunch import match_beam_from_distribution
+from blond.trackers.tracker import RingAndRFTracker, FullRingAndRF
+from blond.impedances.impedance import InducedVoltageTime, InducedVoltageFreq, TotalInducedVoltage, InductiveImpedance
+from blond.impedances.impedance_sources import Resonators
+from blond.monitors.monitors import SlicesMonitor
 # Other imports
+from colormap import colormap
 # LoCa imports
+import LoCa.Base.Machine as mach
+import LoCa.Base.RFProgram as rfp
+import LoCa.Base.Bare_RF as brf
 # Impedance scenario import
+from PS_impedance.impedance_scenario import scenario
 cmap = colormap.cmap_white_blue_red
 
 
@@ -540,25 +540,52 @@ if N_t_monitor > 0 and worker.isMaster:
 
 
 mpiprint("Ready for tracking!\n")
+
+lbturns = []
+if args['loadbalance'] == 'times':
+    if args['loadbalancearg'] != 0:
+        intv = N_t // (args['loadbalancearg']+1)
+    else:
+        intv = N_t // (10 +1)
+    lbturns = np.arange(0, N_t, intv)[1:]
+
+elif args['loadbalance'] == 'interval':
+    if args['loadbalancearg'] != 0:
+        lbturns = np.arange(0, N_t, args['loadbalancearg'])
+    else:
+        lbturns = np.arange(0, N_t, 1000)
+
+elif args['loadbalance'] == 'dynamic':
+    lbturns = [100, 200] + list(np.arange(1000, N_t, 1000))
+    # print('Warning: Dynamic load balance policy not supported.')
+
+worker.sync()
 timing.reset()
 start_t = time.time()
+worker.timer_start('global')
 
 
 # for i in range(n_turns):
-for turn in range(N_t):
+for turn in range(1, N_t+1):
 
     # if (i > 0) and (i % datamatrix_output_step) == 0:
     #     t0 = time.time()
 
     if (approx == 0):
         profile.track()
+        worker.timer_start('const')
         profile.reduce_histo()
+        worker.timer_stop('const')
     elif (approx == 1) and (turn % N_t_reduce == 0):
         profile.track()
+        worker.timer_start('const')
         profile.reduce_histo()
+        worker.timer_stop('const')
     elif (approx == 2):
         profile.track()
+        worker.timer_start('const')
         profile.scale_histo()
+        worker.timer_stop('const')
 
     if (N_t_monitor > 0) and (turn % N_t_monitor == 0):
         beam.statistics()
@@ -575,7 +602,7 @@ for turn in range(N_t):
     #     PS_intensity_freq_10MHz.impedance_source_list[0].R_S[:] = \
     #         R_S_10MHz_save * R_S_program_10MHz[i]
     #     PS_intensity_freq_10MHz.sum_impedances(PS_intensity_freq_10MHz.freq)
-
+    worker.timer_start('const')
     if worker.isHostFirst:
         if (approx == 0) or (approx == 2):
             PS_longitudinal_intensity.induced_voltage_sum()
@@ -585,9 +612,17 @@ for turn in range(N_t):
         tracker.pre_track()
 
     worker.sendrecv(PS_longitudinal_intensity.induced_voltage, tracker.rf_voltage)
+    worker.timer_stop('const')
 
     # Track
     tracker.track_only()
+
+    if turn in lbturns:
+        worker.timer_stop('global')
+        worker.redistribute(turn, beam)
+        worker.timer_reset('const')
+        worker.timer_reset('global')
+
 
 beam.gather()
 end_t = time.time()
