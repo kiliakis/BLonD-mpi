@@ -34,7 +34,7 @@ parser.add_argument('-r', '--report', type=str, choices=['particles'],
 
 
 def report_particles(indir, files, outfile):
-    regexp = re.compile('.*\[(\d+)\].*Turn\s(\d+),.*Time\s(.*),Latency\s(.*),\sParticles\s(\d+)')
+    regexp = re.compile('.*\[(\d+)\].*Turn\s(\d+),.*Time\s(.*),\sLatency\s(.*),\sParticles\s(\d+)')
     # re_tracking = re.compile('.*\[(\d+)\].*Tracking\s+(\d+)\s+particles.') 
     # re_time = re.compile('.*\[(\d+)\].*Time\s(.*)\ssec.')
     # re_latency = re.compile('.*\[(\d+)\].*Latency\s(.*)\ssec/particle.')
@@ -89,7 +89,7 @@ def report_particles(indir, files, outfile):
             #         data[wid]['latency']=[]
             #     data[wid]['latency'].append((latency))
 
-    outfile.write('wid\tturn\tparts\ttimes\tlatencies\n')
+    outfile.write('wid\tturn_num\tparts\ttimes\tlatencies\n')
     for wid in sorted(data.keys()):
         turn = '|'.join(data[wid]['turn'])
         parts = '|'.join(data[wid]['parts'])
