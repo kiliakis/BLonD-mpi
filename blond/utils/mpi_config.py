@@ -215,10 +215,10 @@ class Worker:
 
     @timing.timeit(key='comm:redistribute')
     @mpiprof.traceit(key='comm:redistribute')
-    def redistribute(self, beam, time):
+    def redistribute(self, turn, beam, time):
         latency = time / beam.n_macroparticles
-        self.logger.critical('[{}]: Time {} sec.'.format(self.rank, time))
-        self.logger.critical('[{}]: Latency {} sec/particle.'.format(self.rank, latency))
+        # self.logger.critical('[{}]: Time {} sec.'.format(self.rank, time))
+        # self.logger.critical('[{}]: Latency {} sec/particle.'.format(self.rank, latency))
         recvbuf = np.empty(2 * self.workers, dtype=float)
         self.intracomm.Allgather(
             np.array([latency, beam.n_macroparticles]), recvbuf)
@@ -240,7 +240,8 @@ class Worker:
                 buf[t[1]:2*t[1]] = beam.dt[i:i+t[1]]
                 buf[2*t[1]:3*t[1]] = beam.id[i:i+t[1]]
                 i += t[1]
-                self.logger.critical('[{}]: Sending {} parts to {}.'.format(self.rank, t[1], t[0]))
+                # self.logger.critical(
+                #     '[{}]: Sending {} parts to {}.'.format(self.rank, t[1], t[0]))
                 reqs.append(self.intracomm.Isend(buf, t[0]))
             # Then I need to resize local beam.dt and beam.dE, also
             # beam.n_macroparticles
@@ -259,7 +260,8 @@ class Worker:
                 # The buffer contains: de, dt, id
                 buf = np.empty(3*t[1], float)
                 recvbuf.append(buf)
-                self.logger.critical('[{}]: Receiving {} parts from {}.'.format(self.rank, t[1], t[0]))
+                # self.logger.critical(
+                #     '[{}]: Receiving {} parts from {}.'.format(self.rank, t[1], t[0]))
                 reqs.append(self.intracomm.Irecv(buf, t[0]))
             for req in reqs:
                 req.Wait()
@@ -277,7 +279,8 @@ class Worker:
                 beam.id[i:i+t[1]] = buf[2*t[1]:3*t[1]]
                 i += t[1]
             beam.n_macroparticles += tot_to_recv
-        self.logger.critical('[{}]: Tracking {} particles.'.format(self.rank, beam.n_macroparticles))
+        self.logger.critical('[{}]: Turn {}, Time {}, Latency {}, Particles {}'.format(
+            self.rank, turn, time, latency, beam.n_macroparticles))
         return
 
     def greet(self):
@@ -399,7 +402,6 @@ class MPILog(object):
     def critical(self, string):
         if self.disabled == False:
             logging.critical(string)
-
 
 
 if worker is None:

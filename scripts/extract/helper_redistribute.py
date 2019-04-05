@@ -34,47 +34,68 @@ parser.add_argument('-r', '--report', type=str, choices=['particles'],
 
 
 def report_particles(indir, files, outfile):
-    re_tracking = re.compile('.*\[(\d+)\].*Tracking\s+(\d+)\s+particles.') 
-    re_time = re.compile('.*\[(\d+)\].*Time\s(.*)\ssec.')
-    re_latency = re.compile('.*\[(\d+)\].*Latency\s(.*)\ssec/particle.')
+    regexp = re.compile('.*\[(\d+)\].*Turn\s(\d+),.*Time\s(.*),Latency\s(.*),\sParticles\s(\d+)')
+    # re_tracking = re.compile('.*\[(\d+)\].*Tracking\s+(\d+)\s+particles.') 
+    # re_time = re.compile('.*\[(\d+)\].*Time\s(.*)\ssec.')
+    # re_latency = re.compile('.*\[(\d+)\].*Latency\s(.*)\ssec/particle.')
     data = {}
     for f in files:
         for line in open(indir + '/' + f, 'r'):
-            if (re_tracking.search(line)):
-                match = re_tracking.search(line)
-                wid, parts = match.groups()
+            if (regexp.search(line)):
+                match = regexp.search(line)
+                wid, turn, time, latency, parts = match.groups()
                 wid = int(wid)
                 if wid not in data:
                     data[wid] = {}
                 if 'parts' not in data[wid]:
                     data[wid]['parts']=[]
-                data[wid]['parts'].append((parts))
-            elif (re_time.search(line)):
-                match = re_time.search(line)
-                wid, time = match.groups()
-                wid = int(wid)
-                if wid not in data:
-                    data[wid] = {}
                 if 'time' not in data[wid]:
                     data[wid]['time']=[]
-                data[wid]['time'].append((time))
-
-            elif (re_latency.search(line)):
-                match = re_latency.search(line)
-                wid, latency = match.groups()
-                wid = int(wid)
-                if wid not in data:
-                    data[wid] = {}
+                if 'turn' not in data[wid]:
+                    data[wid]['turn']=[]
                 if 'latency' not in data[wid]:
                     data[wid]['latency']=[]
-                data[wid]['latency'].append((latency))
+                data[wid]['parts'].append(parts)
+                data[wid]['turn'].append(turn)
+                data[wid]['latency'].append(latency)
+                data[wid]['time'].append(time)
+            
+            # if (re_tracking.search(line)):
+            #     match = re_tracking.search(line)
+            #     wid, parts = match.groups()
+            #     wid = int(wid)
+            #     if wid not in data:
+            #         data[wid] = {}
+            #     if 'parts' not in data[wid]:
+            #         data[wid]['parts']=[]
+            #     data[wid]['parts'].append((parts))
+            # elif (re_time.search(line)):
+            #     match = re_time.search(line)
+            #     wid, time = match.groups()
+            #     wid = int(wid)
+            #     if wid not in data:
+            #         data[wid] = {}
+            #     if 'time' not in data[wid]:
+            #         data[wid]['time']=[]
+            #     data[wid]['time'].append((time))
 
-    outfile.write('wid\tparts\ttimes\tlatencies\n')
+            # elif (re_latency.search(line)):
+            #     match = re_latency.search(line)
+            #     wid, latency = match.groups()
+            #     wid = int(wid)
+            #     if wid not in data:
+            #         data[wid] = {}
+            #     if 'latency' not in data[wid]:
+            #         data[wid]['latency']=[]
+            #     data[wid]['latency'].append((latency))
+
+    outfile.write('wid\tturn\tparts\ttimes\tlatencies\n')
     for wid in sorted(data.keys()):
+        turn = '|'.join(data[wid]['turn'])
         parts = '|'.join(data[wid]['parts'])
         times = '|'.join(data[wid]['time'])
         latencies = '|'.join(data[wid]['latency'])
-        outfile.write('{}\t{}\t{}\t{}\n'.format(wid, parts, times, latencies))
+        outfile.write('{}\t{}\t{}\t{}\t{}\n'.format(wid, turn, parts, times, latencies))
     outfile.close()
 
 if __name__ == '__main__':

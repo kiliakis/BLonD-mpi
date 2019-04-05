@@ -380,7 +380,7 @@ for turn in range(N_t):
     tracker.track_only()
 
     if turn in lbturns:
-        worker.redistribute(beam, worker.time() - ts)
+        worker.redistribute(beam, turn, worker.time() - ts)
         ts = worker.time()
         
     # worker.hostsync()
