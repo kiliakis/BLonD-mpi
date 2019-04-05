@@ -104,6 +104,9 @@ def calc_histo(files, outfile, outfile_std):
                 data_dic[k] = []
             if k == 'turn_num':
                 data_dic[k].append(np.array(v[0]))
+            elif k =='parts':
+                data_dic[k].append(np.sum(v, axis=0)/2)
+                # exchanged_particles = np.sum(v, axis=0)
             else:
                 mean = np.mean(v, axis=0)
                 std = np.std(v, axis=0)
@@ -192,7 +195,7 @@ def collect_reports(input, outfile, filename):
     records.sort(key=lambda a: (float(a[0]), int(a[1]), int(a[2]),
                                 int(a[3]), int(a[4]), int(a[5]), int(a[6])))
     writer = csv.writer(outfile, delimiter='\t')
-    writer.writerow(header + ['turn_num', 'dp_std', 't_std', 'lat_std'])
+    writer.writerow(header + ['turn_num', 'sum_dp', 'time_std', 'timepp_std'])
     writer.writerows(records)
 
 
