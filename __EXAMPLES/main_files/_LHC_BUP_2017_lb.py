@@ -293,8 +293,6 @@ if N_t_monitor > 0 and worker.isMaster:
 mpiprint("Map set")
 
 
-timing.reset()
-start_t = time.time()
 
 lbturns = []
 if args['loadbalance'] == 'times':
@@ -314,9 +312,11 @@ elif args['loadbalance'] == 'dynamic':
     lbturns = [100, 200] + list(np.arange(1000, N_t, 1000))
     # print('Warning: Dynamic load balance policy not supported.')
 
+
+
 worker.sync()
-
-
+timing.reset()
+start_t = time.time()
 worker.timer_start('global')
 
 for turn in range(1, N_t+1):

@@ -510,13 +510,34 @@ if N_t_monitor > 0 and worker.isMaster:
                                   Nbunches=n_bunches)
 mpiprint("Ready for tracking!\n")
 
+lbturns = []
+if args['loadbalance'] == 'times':
+    if args['loadbalancearg'] != 0:
+        intv = N_t // (args['loadbalancearg']+1)
+    else:
+        intv = N_t // (10 +1)
+    lbturns = np.arange(0, N_t, intv)[1:]
+
+elif args['loadbalance'] == 'interval':
+    if args['loadbalancearg'] != 0:
+        lbturns = np.arange(0, N_t, args['loadbalancearg'])
+    else:
+        lbturns = np.arange(0, N_t, 1000)
+
+elif args['loadbalance'] == 'dynamic':
+    lbturns = [100, 200] + list(np.arange(1000, N_t, 1000))
+    # print('Warning: Dynamic load balance policy not supported.')
+
+
+
 delta = 0
+worker.sync()
 timing.reset()
 start_t = time.time()
-
+worker.timer_start('global')
 
 # for turn in range(ring.n_turns):
-for turn in range(N_t):
+for turn in range(1, N_t+1):
 
     if ring.n_turns <= 450 and turn % 10 == 0:
         mpiprint('turn: '+str(turn))
@@ -526,13 +547,19 @@ for turn in range(N_t):
     # Update profile
     if (approx == 0):
         profile.track()
+        worker.timer_start('const')
         profile.reduce_histo()
+        worker.timer_stop('const')
     elif (approx == 1) and (turn % N_t_reduce == 0):
         profile.track()
+        worker.timer_start('const')
         profile.reduce_histo()
+        worker.timer_stop('const')
     elif (approx == 2):
         profile.track()
+        worker.timer_start('const')
         profile.scale_histo()
+        worker.timer_stop('const')
 
     if (N_t_monitor > 0) and (turn % N_t_monitor == 0):
         beam.statistics()
@@ -546,7 +573,7 @@ for turn in range(N_t):
             slicesMonitor.track(turn)
 
 
-
+    worker.timer_start('const')
     # applying this voltage is done by tracker if interpolation=True
     if worker.isHostFirst:
         # reduce impedance, poor man's feedback
@@ -566,9 +593,11 @@ for turn in range(N_t):
 
 
     worker.sendrecv(inducedVoltage.induced_voltage, tracker.rf_voltage)
-    
+    worker.timer_stop('const')
+
     tracker.track_only()
 
+    worker.timer_start('const')
     if SPS_PHASELOOP is True:
         if turn % PL_save_turns == 0 and turn > 0:
             # present beam position
@@ -587,7 +616,14 @@ for turn in range(N_t):
             # bin_center corresponding to time_offset
             if phaseLoop.alpha != 0:
                 phaseLoop.time_offset -= delta
+    worker.timer_stop('const')
 
+
+    if turn in lbturns:
+        worker.timer_stop('global')
+        worker.redistribute(turn, beam)
+        worker.timer_reset('const')
+        worker.timer_reset('global')
 
 beam.gather()
 end_t = time.time()
