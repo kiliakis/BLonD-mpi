@@ -311,14 +311,15 @@ elif args['loadbalance'] == 'interval':
         lbturns = np.arange(0, N_t, 1000)
 
 elif args['loadbalance'] == 'dynamic':
-    print('Warning: Dynamic load balance policy not supported.')
+    lbturns = [100, 200] + list(np.arange(1000, N_t, 1000))
+    # print('Warning: Dynamic load balance policy not supported.')
 
 worker.sync()
 
 
 worker.timer_start('global')
 
-for turn in range(N_t):
+for turn in range(1, N_t+1):
     # Plots and outputting
     # if MONITORING and (i % dt_plt) == 0:
     # if (i % dt_plt) == 0:
