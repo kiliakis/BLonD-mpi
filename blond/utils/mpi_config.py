@@ -217,14 +217,15 @@ class Worker:
     @timing.timeit(key='comm:redistribute')
     @mpiprof.traceit(key='comm:redistribute')
     def redistribute(self, turn, beam):
-        latency = (self.times['global'] - self.times['const']) / beam.n_macroparticles
-        ctime = self.times['global']
+        latency = (self.times['global']['total'] -
+                   self.times['const']['total']) / beam.n_macroparticles
+        ctime = self.times['const']['total']
         # self.logger.critical('[{}]: Time {} sec.'.format(self.rank, time))
         # self.logger.critical('[{}]: Latency {} sec/particle.'.format(self.rank, latency))
         recvbuf = np.empty(3 * self.workers, dtype=float)
         self.intracomm.Allgather(
             np.array([latency, ctime, beam.n_macroparticles]), recvbuf)
-        
+
         latencies = recvbuf[::3]
         ctimes = recvbuf[1::3]
         Pi_old = recvbuf[2::3]
@@ -289,7 +290,7 @@ class Worker:
                 i += t[1]
             beam.n_macroparticles += tot_to_recv
         self.logger.critical('[{}]: Turn {}, Time {}, Latency {}, Particles {}'.format(
-            self.rank, turn, time, latency, beam.n_macroparticles))
+            self.rank, turn, self.times['global']['total'], latency, beam.n_macroparticles))
 
     def greet(self):
         self.logger.debug('greet')
@@ -310,10 +311,8 @@ class Worker:
     def timer_stop(self, phase):
         self.times[phase]['total'] += MPI.Wtime() - self.times[phase]['start']
 
-
     def timer_reset(self, phase):
         self.times[phase] = {'start': MPI.Wtime(), 'total': 0.}
-
 
 
 def calc_transactions(temp, cutoff):

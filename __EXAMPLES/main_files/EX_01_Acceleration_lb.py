@@ -252,8 +252,8 @@ for turn in range(1, N_t+1):
     if turn in lbturns:
         worker.timer_stop('global')
         worker.redistribute(turn, beam)
-        worker.reset_timer('const')
-        worker.reset_timer('global')
+        worker.timer_reset('const')
+        worker.timer_reset('global')
 
 
 beam.gather()
