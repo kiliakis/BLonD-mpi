@@ -100,23 +100,33 @@ def calc_histo(files, outfile, outfile_std):
                 dic[h] = np.array(lst, float)
         for k, v in dic.items():
             # dic[k] = 100 * np.std(v, axis=0) / np.mean(v, axis=0)
-            if k not in data_dic:
-                data_dic[k] = []
             if k == 'turn_num':
+                if k not in data_dic:
+                    data_dic[k] = []
                 data_dic[k].append(np.array(v[0]))
-            elif k =='parts':
-                data_dic[k].append(np.sum(v, axis=0)/2)
-                # exchanged_particles = np.sum(v, axis=0)
+            # elif k =='parts':
+            #     data_dic[k].append(np.sum(v, axis=0)/2)
+            #     # exchanged_particles = np.sum(v, axis=0)
+            # elif k == ''
             else:
+                if k+'_avg' not in data_dic:
+                    data_dic[k+'_avg'] = []
+                    data_dic[k+'_min'] = []
+                    data_dic[k+'_max'] = []
                 mean = np.mean(v, axis=0)
-                std = np.std(v, axis=0)
-                lst = []
-                for m, s in zip(mean, std):
-                    if m == 0:
-                        lst.append(0)
-                    else:
-                        lst.append(100 * s/m)
-                data_dic[k].append(lst)
+                maximum = np.max(v, axis=0)
+                minimum = np.min(v, axis=0)
+                data_dic[k+'_avg'].append(mean)
+                data_dic[k+'_min'].append(minimum)
+                data_dic[k+'_max'].append(maximum)
+                # std = np.std(v, axis=0)
+                # lst = []
+                # for m, s in zip(mean, std):
+                #     if m == 0:
+                #         lst.append(0)
+                #     else:
+                #         lst.append(100 * s/m)
+                # data_dic[k].append(lst)
             # if mean == 0 or std ==0:
             #     data_dic[k].append(0)
             # else:
@@ -195,7 +205,7 @@ def collect_reports(input, outfile, filename):
     records.sort(key=lambda a: (float(a[0]), int(a[1]), int(a[2]),
                                 int(a[3]), int(a[4]), int(a[5]), int(a[6])))
     writer = csv.writer(outfile, delimiter='\t')
-    writer.writerow(header + ['turn_num', 'sum_dp', 'time_std', 'timepp_std'])
+    writer.writerow(header + list(data_head))
     writer.writerows(records)
 
 
