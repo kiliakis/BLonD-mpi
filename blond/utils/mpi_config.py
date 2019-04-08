@@ -235,9 +235,17 @@ class Worker:
         sum1 = np.sum(ctimes/latencies)
         sum2 = np.sum(1./latencies)
         Pi = (P + sum1 - ctimes * sum2)/(latencies * sum2)
-
         # Pi = P / (latencies * np.sum(1./latencies))
         dPi = np.rint(Pi_old - Pi)
+        def f(a, b):
+            if a < 0 and -a > b:
+                return -b
+            elif a > b:
+                return b
+            else:
+                return a
+
+        dPi = list(map(f, dPi, Pi))
         transactions = calc_transactions(dPi, 0.001 * P)[self.rank]
         if dPi[self.rank] > 0 and len(transactions) > 0:
             reqs = []
@@ -316,11 +324,11 @@ class Worker:
         self.times[phase] = {'start': MPI.Wtime(), 'total': 0.}
 
 
-def calc_transactions(temp, cutoff):
+def calc_transactions(dpi, cutoff):
     trans = {}
-    for i in range(len(temp)):
+    for i in range(len(dpi)):
         trans[i] = []
-    arr = [{'val': i[1], 'id':i[0]} for i in enumerate(temp)]
+    arr = [{'val': i[1], 'id':i[0]} for i in enumerate(dpi)]
 
     # First pass is to prioritize transactions within the same node
     i = 0

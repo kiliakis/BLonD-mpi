@@ -573,6 +573,7 @@ for turn in range(1, N_t+1):
         worker.timer_start('comp')
         profile.track()
         worker.timer_stop('comp')
+
         worker.timer_start('comm')
         profile.reduce_histo()
         worker.timer_stop('comm')
@@ -580,6 +581,7 @@ for turn in range(1, N_t+1):
         worker.timer_start('comp')
         profile.track()
         worker.timer_stop('comp')
+
         worker.timer_start('comm')
         profile.reduce_histo()
         worker.timer_stop('comm')
@@ -616,13 +618,13 @@ for turn in range(1, N_t+1):
 
     worker.timer_start('comm')
     worker.sendrecv(PS_longitudinal_intensity.induced_voltage, tracker.rf_voltage)
-    worker.timer_start('comm')
+    worker.timer_stop('comm')
 
 
     # Track
     worker.timer_start('comp')
     tracker.track_only()
-    worker.timer_start('comp')
+    worker.timer_stop('comp')
 
     if turn in lbturns:
         worker.redistribute(turn, beam)
