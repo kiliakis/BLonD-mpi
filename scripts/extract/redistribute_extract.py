@@ -6,14 +6,10 @@ import fnmatch
 import numpy as np
 import subprocess
 import argparse
+import glob
 
 
 this_directory = os.path.dirname(os.path.realpath(__file__)) + '/'
-# average_fname = 'avg.csv'
-# average_std_fname = 'avg-std.csv'
-# average_worker_fname = 'avg-workers.csv'
-# comm_comp_fname = 'comm-comp.csv'
-# comm_comp_std_fname = 'comm-comp-std.csv'
 log_fname = 'particles.csv'
 log_fname_std = 'particles-std.csv'
 log_worker_fname = 'particles-workers.csv'
@@ -83,59 +79,34 @@ def calc_histo(files, outfile, outfile_std):
         workers = int(f.split('_w')[1].split('_')[0])
         parts_t0 = ppb * bunches // workers
         for i, h in enumerate(header):
-            lst = []
-            for d in data:
-                if h == 'parts':
-                    lst.append([parts_t0] + d[i].split('|'))
-                else:
-                    lst.append(d[i].split('|'))
+            lst = [d[i].split('|') for d in data]
+            # for d in data:
+            #     if h == 'parts':
+            #         lst.append([parts_t0] + d[i].split('|'))
+            #     else:
+            #         lst.append(d[i].split('|'))
             min_num = np.min([len(l) for l in lst])
-            for j, l in enumerate(lst):
-                lst[j] = l[:min_num]
+            lst = [l[:min_num] for l in lst]
+            dic[h] = np.array(lst, float)
             if h == 'parts':
-                dic[h] = np.abs(np.diff(np.array(lst, float)))/parts_t0
-            elif h == 'turn_num':
-                dic[h] = np.array(lst, int)
-            else:
-                dic[h] = np.array(lst, float)
+                dic[h] = np.abs(np.diff(dic[h], prepend=parts_t0))/parts_t0
+            # elif h == 'turn_num':
+            #     dic[h] = np.array(lst, int)
+            # else:
+            #     dic[h] = np.array(lst, float)
         for k, v in dic.items():
-            # dic[k] = 100 * np.std(v, axis=0) / np.mean(v, axis=0)
             if k == 'turn_num':
                 if k not in data_dic:
                     data_dic[k] = []
                 data_dic[k].append(np.array(v[0]))
-            # elif k =='parts':
-            #     data_dic[k].append(np.sum(v, axis=0)/2)
-            #     # exchanged_particles = np.sum(v, axis=0)
-            # elif k == ''
             else:
                 if k+'_avg' not in data_dic:
                     data_dic[k+'_avg'] = []
                     data_dic[k+'_min'] = []
                     data_dic[k+'_max'] = []
-                mean = np.mean(v, axis=0)
-                maximum = np.max(v, axis=0)
-                minimum = np.min(v, axis=0)
-                data_dic[k+'_avg'].append(mean)
-                data_dic[k+'_min'].append(minimum)
-                data_dic[k+'_max'].append(maximum)
-                # std = np.std(v, axis=0)
-                # lst = []
-                # for m, s in zip(mean, std):
-                #     if m == 0:
-                #         lst.append(0)
-                #     else:
-                #         lst.append(100 * s/m)
-                # data_dic[k].append(lst)
-            # if mean == 0 or std ==0:
-            #     data_dic[k].append(0)
-            # else:
-            # data_dic[k].append(100 * np.std(v, axis=0) / np.mean(v, axis=0))
-
-    #     for i, f in enumerate(funcs):
-    #         if f not in data_dic:
-    #             data_dic[f] = []
-    #         data_dic[f].append(data[i])
+                data_dic[k+'_avg'].append(np.mean(v, axis=0))
+                data_dic[k+'_min'].append(np.min(v, axis=0))
+                data_dic[k+'_max'].append(np.max(v, axis=0))
 
     acc_data = []
     acc_data_std = []
@@ -211,30 +182,22 @@ def collect_reports(input, outfile, filename):
 
 if __name__ == '__main__':
     args = parser.parse_args()
-    if args.indir == None:
-        print("You have to specify the input directory.")
-        exit(-1)
 
-    if args.report in ['generate', 'all']:
-        generate_reports(args.indir, args.script)
-    if args.report in ['aggregate', 'all']:
-        aggregate_reports(args.indir)
-    if args.report in ['collect', 'all']:
-        if args.outfile == 'sys.stdout':
-            collect_reports(args.indir, sys.stdout, log_fname)
-            # collect_reports(args.indir, sys.stdout, comm_comp_fname)
-        elif args.outfile == 'file':
-            collect_reports(args.indir,
-                            open(os.path.join(args.indir, 'particles-std-report.csv'), 'w'),
-                            log_fname_std)
-            collect_reports(args.indir,
-                            open(os.path.join(args.indir, 'particles-report.csv'), 'w'),
-                            log_fname)
-            # collect_reports(args.indir,
-            #                 open(os.path.join(args.indir,
-            #                                   'comm-comp-report.csv'), 'w'),
-            #                 comm_comp_fname)
-            # collect_reports(args.indir,
-            #                 open(os.path.join(args.indir,
-            #                                   'comm-comp-std-report.csv'), 'w'),
-            #                 comm_comp_std_fname)
+    indirs = glob.glob(args.indir)
+    for indir in indirs:
+        print('\n------Extracting {} -------'.format(indir))
+        if args.report in ['generate', 'all']:
+            generate_reports(indir, args.script)
+        if args.report in ['aggregate', 'all']:
+            aggregate_reports(indir)
+        if args.report in ['collect', 'all']:
+            if args.outfile == 'sys.stdout':
+                collect_reports(indir, sys.stdout, log_fname)
+            elif args.outfile == 'file':
+                collect_reports(indir,
+                                open(os.path.join(indir, 'particles-std-report.csv'), 'w'),
+                                log_fname_std)
+                collect_reports(indir,
+                                open(os.path.join(indir, 'particles-report.csv'), 'w'),
+                                log_fname)
+            

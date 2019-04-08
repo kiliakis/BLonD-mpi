@@ -181,8 +181,7 @@ if N_t_monitor > 0 and worker.isMaster:
 # map_ = [long_tracker, profile]
 mpiprint("Map set")
 
-timing.reset()
-start_t = time.time()
+
 # mpiprint(datetime.datetime.now().time())
 
 
@@ -206,7 +205,11 @@ elif args['loadbalance'] == 'dynamic':
     # print('Warning: Dynamic load balance policy not supported.')
 
 worker.sync()
-worker.timer_start('global')
+timing.reset()
+worker.timer_reset('const')
+worker.timer_reset('comp')
+worker.timer_reset('comm')
+start_t = time.time()
 
 for turn in range(1, N_t+1):
 
@@ -222,24 +225,30 @@ for turn in range(1, N_t+1):
     #     mpiprint("")
 
     # Track
+    worker.timer_start('comp')
     long_tracker.track()
+    worker.timer_stop('comp')
 
     # Update profile
     if (approx == 0):
+        worker.timer_start('comp')
         profile.track()
-        worker.timer_start('const')
+        worker.timer_stop('comp')
+        worker.timer_start('comm')
         profile.reduce_histo()
-        worker.timer_stop('const')
+        worker.timer_stop('comm')
     elif (approx == 1) and (turn % N_t_reduce == 0):
+        worker.timer_start('comp')
         profile.track()
-        worker.timer_start('const')
+        worker.timer_stop('comp')
+        worker.timer_start('comm')
         profile.reduce_histo()
-        worker.timer_stop('const')
+        worker.timer_stop('comm')
     elif (approx == 2):
+        worker.timer_start('comp')
         profile.track()
-        worker.timer_start('const')
         profile.scale_histo()
-        worker.timer_stop('const')
+        worker.timer_stop('comp')
 
     if (N_t_monitor > 0) and (turn % N_t_monitor == 0):
         beam.losses_separatrix(ring, rf)
@@ -250,10 +259,9 @@ for turn in range(1, N_t+1):
             slicesMonitor.track(turn)
 
     if turn in lbturns:
-        worker.timer_stop('global')
         worker.redistribute(turn, beam)
-        worker.timer_reset('const')
-        worker.timer_reset('global')
+        worker.timer_reset('comp')
+        worker.timer_reset('comm')
 
 
 beam.gather()
