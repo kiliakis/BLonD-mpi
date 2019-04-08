@@ -74,26 +74,22 @@ def calc_histo(files, outfile, outfile_std):
             print('Problem with file: ', indir+'/'+f)
             continue
         dic = {}
+        # Get some general info
         ppb = int(f.split('_p')[1].split('_')[0])
         bunches = int(f.split('_b')[1].split('_')[0])
         workers = int(f.split('_w')[1].split('_')[0])
         parts_t0 = ppb * bunches // workers
+
+        # go through the data column by column
         for i, h in enumerate(header):
             lst = [d[i].split('|') for d in data]
-            # for d in data:
-            #     if h == 'parts':
-            #         lst.append([parts_t0] + d[i].split('|'))
-            #     else:
-            #         lst.append(d[i].split('|'))
             min_num = np.min([len(l) for l in lst])
             lst = [l[:min_num] for l in lst]
             dic[h] = np.array(lst, float)
             if h == 'parts':
-                dic[h] = np.abs(np.diff(dic[h], prepend=parts_t0))/parts_t0
-            # elif h == 'turn_num':
-            #     dic[h] = np.array(lst, int)
-            # else:
-            #     dic[h] = np.array(lst, float)
+                dic[h] = np.insert(dic[h], 0, parts_t0, axis=1)
+                dic[h] = np.abs(np.diff(dic[h]))/parts_t0
+
         for k, v in dic.items():
             if k == 'turn_num':
                 if k not in data_dic:
@@ -114,12 +110,14 @@ def calc_histo(files, outfile, outfile_std):
     #                               key=lambda a:a[1][0])]
     for k, v in data_dic.items():
         # data_dic[k] = np.array(v)[sortid][:args.keep]
-        acc_data.append([k] + list(np.around(np.mean(data_dic[k], axis=0), 2)))
+        # acc_data.append([k] + list(np.around(np.mean(data_dic[k], axis=0), 4)))
+        acc_data.append([k] + list(np.mean(data_dic[k], axis=0)))
         acc_data_std.append(
-            [k] + list(np.around(np.std(data_dic[k], axis=0), 2)))
+            [k] + list(np.around(np.std(data_dic[k], axis=0), 4)))
 
     # Transpose list of lists magic
     acc_data = list(map(list, zip(*acc_data)))
+    acc_data_std = list(map(list, zip(*acc_data_std)))
     writer1 = csv.writer(outfile, delimiter='\t')
     writer1.writerows(acc_data)
     writer2 = csv.writer(outfile_std, delimiter='\t')
@@ -140,8 +138,8 @@ def aggregate_reports(input):
         calc_histo(files, open(os.path.join(dirs, log_fname), 'w'),
                    open(os.path.join(dirs, log_fname_std), 'w'))
         # except Exception as e:
-            # print('[Error] Dir: {}, Exception: {}, line: {}'.format(dirs, e,
-                                                                    # sys.exc_info()[2].tb_lineno))
+        # print('[Error] Dir: {}, Exception: {}, line: {}'.format(dirs, e,
+        # sys.exc_info()[2].tb_lineno))
 
 
 def collect_reports(input, outfile, filename):
@@ -195,9 +193,10 @@ if __name__ == '__main__':
                 collect_reports(indir, sys.stdout, log_fname)
             elif args.outfile == 'file':
                 collect_reports(indir,
-                                open(os.path.join(indir, 'particles-std-report.csv'), 'w'),
+                                open(os.path.join(
+                                    indir, 'particles-std-report.csv'), 'w'),
                                 log_fname_std)
                 collect_reports(indir,
-                                open(os.path.join(indir, 'particles-report.csv'), 'w'),
+                                open(os.path.join(
+                                    indir, 'particles-report.csv'), 'w'),
                                 log_fname)
-            

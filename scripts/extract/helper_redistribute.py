@@ -34,7 +34,7 @@ parser.add_argument('-r', '--report', type=str, choices=['particles'],
 
 
 def report_particles(indir, files, outfile):
-    regexp = re.compile('.*\[(\d+)\].*Turn\s(\d+),.*Tconst\s(.*),.*Tcomp\s(.*),.*Tcomm\s(.*),\sLatency\s(.*),\sParticles\s(\d+)')
+    regexp = re.compile('.*\[(\d+)\].*Turn\s(\d+),\sTconst\s(.*),\sTcomp\s(.*),\sTcomm\s(.*),\sLatency\s(.*),\sParticles\s(\d+)')
     # re_tracking = re.compile('.*\[(\d+)\].*Tracking\s+(\d+)\s+particles.') 
     # re_time = re.compile('.*\[(\d+)\].*Time\s(.*)\ssec.')
     # re_latency = re.compile('.*\[(\d+)\].*Latency\s(.*)\ssec/particle.')
@@ -70,7 +70,7 @@ def report_particles(indir, files, outfile):
         tconsts = '|'.join(data[wid]['tconst'])
         tcomms = '|'.join(data[wid]['tcomm'])
         tpps = '|'.join(data[wid]['tpp'])
-        outfile.write('{}\t{}\t{}\t{}\t{}\t{}\t{}\n'.format(wid, turn, parts, tcomp, tconst, tcomm, tpps))
+        outfile.write('{}\t{}\t{}\t{}\t{}\t{}\t{}\n'.format(wid, turn, parts, tcomps, tconsts, tcomms, tpps))
     outfile.close()
 
 if __name__ == '__main__':
