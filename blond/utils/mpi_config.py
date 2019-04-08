@@ -217,14 +217,15 @@ class Worker:
     @timing.timeit(key='comm:redistribute')
     @mpiprof.traceit(key='comm:redistribute')
     def redistribute(self, turn, beam):
-        latency = (self.times['global']['total'] -
-                   self.times['const']['total']) / beam.n_macroparticles
-        ctime = self.times['const']['total']
+        tcomp = self.times['comp']['total']
+        tcomm = self.times['comm']['total']
+        tconst = self.times['const']['total']
+        latency = tcomp / beam.n_macroparticles
         # self.logger.critical('[{}]: Time {} sec.'.format(self.rank, time))
         # self.logger.critical('[{}]: Latency {} sec/particle.'.format(self.rank, latency))
         recvbuf = np.empty(3 * self.workers, dtype=float)
         self.intracomm.Allgather(
-            np.array([latency, ctime, beam.n_macroparticles]), recvbuf)
+            np.array([latency, tconst, beam.n_macroparticles]), recvbuf)
 
         latencies = recvbuf[::3]
         ctimes = recvbuf[1::3]
@@ -289,8 +290,8 @@ class Worker:
                 beam.id[i:i+t[1]] = buf[2*t[1]:3*t[1]]
                 i += t[1]
             beam.n_macroparticles += tot_to_recv
-        self.logger.critical('[{}]: Turn {}, Time {}, Latency {}, Particles {}'.format(
-            self.rank, turn, self.times['global']['total'], latency, beam.n_macroparticles))
+        self.logger.critical('[{}]: Turn {}, Tconst {}, Tcomp {}, Tcomm {}, Latency {}, Particles {}'.format(
+            self.rank, turn, tconst, tcomp, tcomm, latency, beam.n_macroparticles))
 
     def greet(self):
         self.logger.debug('greet')
