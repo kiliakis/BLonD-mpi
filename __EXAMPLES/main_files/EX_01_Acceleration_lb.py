@@ -122,14 +122,12 @@ if args.get('approx', None) is not None:
     approx = int(args['approx'])
 
 
-
 mpiprint({'N_t': N_t, 'n_macroparticles': N_p,
-       'N_slices': N_slices,
-       'timing.mode': timing.mode,
-       'n_bunches': n_bunches,
-       'N_t_reduce': N_t_reduce,
-       'N_t_monitor': N_t_monitor, 'seed': seed, 'log': log,  'approx': approx})
-
+          'N_slices': N_slices,
+          'timing.mode': timing.mode,
+          'n_bunches': n_bunches,
+          'N_t_reduce': N_t_reduce,
+          'N_t_monitor': N_t_monitor, 'seed': seed, 'log': log,  'approx': approx})
 
 
 # Simulation setup ------------------------------------------------------------
@@ -164,12 +162,12 @@ if N_t_monitor > 0 and worker.isMaster:
         filename = args['monitorfile']
     else:
         filename = 'profiles/{}-t{}-p{}-b{}-sl{}-r{}-m{}-se{}-w{}'.format('EX_01_Acceleration',
-                                                                      N_t, N_p,
-                                                                      n_bunches, N_slices,
-                                                                      N_t_reduce,
-                                                                      N_t_monitor,
-                                                                      seed,
-                                                                      worker.workers)
+                                                                          N_t, N_p,
+                                                                          n_bunches, N_slices,
+                                                                          N_t_reduce,
+                                                                          N_t_monitor,
+                                                                          seed,
+                                                                          worker.workers)
     slicesMonitor = SlicesMonitor(filename=filename,
                                   n_turns=np.ceil(1.0 * N_t / N_t_monitor),
                                   profile=profile,
@@ -190,7 +188,7 @@ if args['loadbalance'] == 'times':
     if args['loadbalancearg'] != 0:
         intv = N_t // (args['loadbalancearg']+1)
     else:
-        intv = N_t // (10 +1)
+        intv = N_t // (10 + 1)
     lbturns = np.arange(0, N_t, intv)[1:]
 
 elif args['loadbalance'] == 'interval':
@@ -206,11 +204,8 @@ elif args['loadbalance'] == 'dynamic':
 
 worker.sync()
 timing.reset()
-worker.timer_reset('const')
-worker.timer_reset('comp')
-worker.timer_reset('comm')
 start_t = time.time()
-
+tcomp_old = tcomm_old = tconst_old = 0
 for turn in range(1, N_t+1):
 
     # Plot has to be done before tracking (at least for cases with separatrix)
@@ -225,30 +220,18 @@ for turn in range(1, N_t+1):
     #     mpiprint("")
 
     # Track
-    worker.timer_start('comp')
     long_tracker.track()
-    worker.timer_stop('comp')
 
     # Update profile
     if (approx == 0):
-        worker.timer_start('comp')
         profile.track()
-        worker.timer_stop('comp')
-        worker.timer_start('comm')
         profile.reduce_histo()
-        worker.timer_stop('comm')
     elif (approx == 1) and (turn % N_t_reduce == 0):
-        worker.timer_start('comp')
         profile.track()
-        worker.timer_stop('comp')
-        worker.timer_start('comm')
         profile.reduce_histo()
-        worker.timer_stop('comm')
     elif (approx == 2):
-        worker.timer_start('comp')
         profile.track()
         profile.scale_histo()
-        worker.timer_stop('comp')
 
     if (N_t_monitor > 0) and (turn % N_t_monitor == 0):
         beam.losses_separatrix(ring, rf)
@@ -259,9 +242,17 @@ for turn in range(1, N_t+1):
             slicesMonitor.track(turn)
 
     if turn in lbturns:
-        worker.redistribute(turn, beam, report_only=args.lbreportonly)
-        worker.timer_reset('comp')
-        worker.timer_reset('comm')
+        tcomp_new = timing.get(['comp:'])
+        tcomm_new = timing.get(['comm:'])
+        tconst_new = timing.get(['serial:'])
+        worker.redistribute(turn, beam,
+                            tcomp=tcomp_new-tcomp_old,
+                            tcomm=tcomm_new-tcomm_old,
+                            tconst=tconst_new-tconst_old,
+                            report_only=args['lbreportonly'])
+        tcomp_old = tcomp_new
+        tcomm_old = tcomm_new
+        tconst_old = tconst_new
 
 
 beam.gather()

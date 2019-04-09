@@ -317,6 +317,7 @@ elif args['loadbalance'] == 'dynamic':
 worker.sync()
 timing.reset()
 start_t = time.time()
+tcomp_old = tcomm_old = tconst_old = 0
 
 for turn in range(1, N_t+1):
     # Plots and outputting
@@ -353,26 +354,14 @@ for turn in range(1, N_t+1):
 
     # Update profile
     if (approx == 0):
-        worker.timer_start('comp')
         profile.track()
-        worker.timer_stop('comp')
-        
-        worker.timer_start('comm')
         profile.reduce_histo()
-        worker.timer_stop('comm')
     elif (approx == 1) and (turn % N_t_reduce == 0):
-        worker.timer_start('comp')
         profile.track()
-        worker.timer_stop('comp')
-        worker.timer_start('comm')
         profile.reduce_histo()
-        worker.timer_stop('comm')
-
     elif (approx == 2):
-        worker.timer_start('comp')
         profile.track()
         profile.scale_histo()
-        worker.timer_stop('comp')
 
     if (N_t_monitor > 0) and (turn % N_t_monitor == 0):
         beam.statistics()
@@ -383,7 +372,6 @@ for turn in range(1, N_t+1):
                                     shiftX=-rf.phi_rf[0, turn]/rf.omega_rf[0, turn])
             slicesMonitor.track(turn)
 
-    worker.timer_start('const')
     if worker.isHostFirst:
         if (approx == 0) or (approx == 2):
             totVoltage.induced_voltage_sum()
@@ -391,21 +379,23 @@ for turn in range(1, N_t+1):
             totVoltage.induced_voltage_sum()
     if worker.isHostLast:
         tracker.pre_track()
-    worker.timer_stop('const')
 
-    worker.timer_start('comm')
     worker.sendrecv(totVoltage.induced_voltage, tracker.rf_voltage)
-    worker.timer_stop('comm')
 
-    worker.timer_start('comp')
     tracker.track_only()
-    worker.timer_stop('comp')
 
     if turn in lbturns:
-        worker.redistribute(turn, beam, report_only=args.lbreportonly)
-        worker.timer_reset('const')
-        worker.timer_reset('comm')
-        worker.timer_reset('comp')
+        tcomp_new = timing.get(['comp:'])
+        tcomm_new = timing.get(['comm:'])
+        tconst_new = timing.get(['serial:'])
+        worker.redistribute(turn, beam,
+                            tcomp=tcomp_new-tcomp_old,
+                            tcomm=tcomm_new-tcomm_old,
+                            tconst=tconst_new-tconst_old,
+                            report_only=args['lbreportonly'])
+        tcomp_old = tcomp_new
+        tcomm_old = tcomm_new
+        tconst_old = tconst_new
     # worker.hostsync()
     # worker.sync()
     # import matplotlib.pyplot as plt

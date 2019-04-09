@@ -216,10 +216,11 @@ class Worker:
 
     @timing.timeit(key='comm:redistribute')
     @mpiprof.traceit(key='comm:redistribute')
-    def redistribute(self, turn, beam, report_only=False):
-        tcomp = self.times['comp']['total']
-        tcomm = self.times['comm']['total']
-        tconst = self.times['const']['total']
+    def redistribute(self, turn, beam, tcomp, tcomm, tconst, report_only=False):
+        # tcomp = self.times['comp']['total']c
+
+        # tcomm = self.times['comm']['total']
+        # tconst = self.times['const']['total']
         latency = tcomp / beam.n_macroparticles
         # self.logger.critical('[{}]: Time {} sec.'.format(self.rank, time))
         # self.logger.critical('[{}]: Latency {} sec/particle.'.format(self.rank, latency))

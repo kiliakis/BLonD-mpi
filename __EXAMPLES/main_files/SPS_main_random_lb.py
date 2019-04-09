@@ -534,6 +534,7 @@ delta = 0
 worker.sync()
 timing.reset()
 start_t = time.time()
+tcomp_old = tcomm_old = tconst_old = 0
 
 # for turn in range(ring.n_turns):
 for turn in range(1, N_t+1):
@@ -545,26 +546,14 @@ for turn in range(1, N_t+1):
 
     # Update profile
     if (approx == 0):
-        worker.timer_start('comp')
         profile.track()
-        worker.timer_stop('comp')
-
-        worker.timer_start('comm')
         profile.reduce_histo()
-        worker.timer_stop('comm')
     elif (approx == 1) and (turn % N_t_reduce == 0):
-        worker.timer_start('comp')
         profile.track()
-        worker.timer_stop('comp')
-        
-        worker.timer_start('comm')
         profile.reduce_histo()
-        worker.timer_stop('comm')
     elif (approx == 2):
-        worker.timer_start('comp')
         profile.track()
         profile.scale_histo()
-        worker.timer_stop('comp')
 
     if (N_t_monitor > 0) and (turn % N_t_monitor == 0):
         beam.statistics()
@@ -578,7 +567,6 @@ for turn in range(1, N_t+1):
             slicesMonitor.track(turn)
 
 
-    worker.timer_start('const')
     # applying this voltage is done by tracker if interpolation=True
     if worker.isHostFirst:
         # reduce impedance, poor man's feedback
@@ -595,43 +583,45 @@ for turn in range(1, N_t+1):
         if SPS_PHASELOOP is True:
             phaseLoop.track()
         tracker.pre_track()
-    worker.timer_stop('const')
 
-    worker.timer_start('comm')
     worker.sendrecv(inducedVoltage.induced_voltage, tracker.rf_voltage)
-    worker.timer_stop('comm')
 
-    worker.timer_start('comp')
     tracker.track_only()
-    worker.timer_stop('comp')
 
-    worker.timer_start('const')
     if SPS_PHASELOOP is True:
         if turn % PL_save_turns == 0 and turn > 0:
-            # present beam position
-            beamPosFromPhase = (phaseLoop.phi_beam - rf_station.phi_rf[0, turn])\
-                / rf_station.omega_rf[0, turn] + t_batch_begin
-            # how much to shift the bin_centers
-            delta = beamPosPrev - beamPosFromPhase
-            beamPosPrev = beamPosFromPhase
+            with timing.timed_region('serial:binShift') as tr:
+                # present beam position
+                beamPosFromPhase = (phaseLoop.phi_beam - rf_station.phi_rf[0, turn])\
+                    / rf_station.omega_rf[0, turn] + t_batch_begin
+                # how much to shift the bin_centers
+                delta = beamPosPrev - beamPosFromPhase
+                beamPosPrev = beamPosFromPhase
 
-            profile.bin_centers -= delta
-            profile.cut_left -= delta
-            profile.cut_right -= delta
-            profile.edges -= delta
+                profile.bin_centers -= delta
+                profile.cut_left -= delta
+                profile.cut_right -= delta
+                profile.edges -= delta
 
-            # shift time_offset of phase loop as well, so that it starts at correct
-            # bin_center corresponding to time_offset
-            if phaseLoop.alpha != 0:
-                phaseLoop.time_offset -= delta
-    worker.timer_stop('const')
+                # shift time_offset of phase loop as well, so that it starts at correct
+                # bin_center corresponding to time_offset
+                if phaseLoop.alpha != 0:
+                    phaseLoop.time_offset -= delta
 
 
     if turn in lbturns:
-        worker.redistribute(turn, beam, report_only=args.lbreportonly)
-        worker.timer_reset('const')
-        worker.timer_reset('comp')
-        worker.timer_reset('comm')
+        tcomp_new = timing.get(['comp:'])
+        tcomm_new = timing.get(['comm:'])
+        tconst_new = timing.get(['serial:'])
+        worker.redistribute(turn, beam,
+                            tcomp=tcomp_new-tcomp_old,
+                            tcomm=tcomm_new-tcomm_old,
+                            tconst=tconst_new-tconst_old,
+                            report_only=args['lbreportonly'])
+        tcomp_old = tcomp_new
+        tcomm_old = tcomm_new
+        tconst_old = tconst_new
+
 
 beam.gather()
 end_t = time.time()
