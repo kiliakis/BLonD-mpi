@@ -180,12 +180,16 @@ if N_t_monitor > 0 and worker.isMaster:
 # map_ = [long_tracker, profile]
 mpiprint("Map set")
 
+lbturns = [100, 200] + list(np.arange(1000, N_t, 1000))
+
+worker.sync()
 timing.reset()
 start_t = time.time()
 # mpiprint(datetime.datetime.now().time())
+tcomp_old = tcomm_old = tconst_old = 0
 
 
-for turn in range(1, N_t+1):
+for turn in range(N_t):
 
     # Plot has to be done before tracking (at least for cases with separatrix)
     if (turn % dt_plt) == 0:
@@ -219,6 +223,17 @@ for turn in range(1, N_t+1):
         if worker.isMaster:
             profile.fwhm()
             slicesMonitor.track(turn)
+
+    if turn in lbturns:
+        tcomp_new = timing.get(['comp:'])
+        tcomm_new = timing.get(['comm:'])
+        tconst_new = timing.get(['serial:'])
+        worker.report(turn, beam, tcomp=tcomp_new-tcomp_old,
+                      tcomm=tcomm_new-tcomm_old, 
+                      tconst=tconst_new-tconst_old)
+        tcomp_old = tcomp_new
+        tcomm_old = tcomm_new
+        tconst_old = tconst_new   
 
 
 beam.gather()

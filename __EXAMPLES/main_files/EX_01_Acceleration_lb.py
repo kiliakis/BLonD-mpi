@@ -206,7 +206,7 @@ worker.sync()
 timing.reset()
 start_t = time.time()
 tcomp_old = tcomm_old = tconst_old = 0
-for turn in range(1, N_t+1):
+for turn in range(N_t):
 
     # Plot has to be done before tracking (at least for cases with separatrix)
     # if (turn % dt_plt) == 0:

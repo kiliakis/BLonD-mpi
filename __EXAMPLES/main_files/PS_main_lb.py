@@ -565,7 +565,7 @@ start_t = time.time()
 tcomp_old = tcomm_old = tconst_old = 0
 
 # for i in range(n_turns):
-for turn in range(1, N_t+1):
+for turn in range(N_t):
 
     # if (i > 0) and (i % datamatrix_output_step) == 0:
     #     t0 = time.time()

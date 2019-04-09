@@ -537,7 +537,7 @@ start_t = time.time()
 tcomp_old = tcomm_old = tconst_old = 0
 
 # for turn in range(ring.n_turns):
-for turn in range(1, N_t+1):
+for turn in range(N_t):
 
     if ring.n_turns <= 450 and turn % 10 == 0:
         mpiprint('turn: '+str(turn))

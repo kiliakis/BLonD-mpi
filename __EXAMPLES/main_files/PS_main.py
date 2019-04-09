@@ -541,8 +541,12 @@ if N_t_monitor > 0 and worker.isMaster:
 
 
 mpiprint("Ready for tracking!\n")
+lbturns = [100, 200] + list(np.arange(1000, N_t, 1000))
+
+worker.sync()
 timing.reset()
 start_t = time.time()
+tcomp_old = tcomm_old = tconst_old = 0
 
 
 # for i in range(n_turns):
@@ -583,6 +587,17 @@ for turn in range(N_t):
 
     # Track
     tracker.track()
+
+    if turn in lbturns:
+        tcomp_new = timing.get(['comp:'])
+        tcomm_new = timing.get(['comm:'])
+        tconst_new = timing.get(['serial:'])
+        worker.report(turn, beam, tcomp=tcomp_new-tcomp_old,
+                      tcomm=tcomm_new-tcomm_old, 
+                      tconst=tconst_new-tconst_old)
+        tcomp_old = tcomp_new
+        tcomm_old = tcomm_new
+        tconst_old = tconst_new   
 
 beam.gather()
 end_t = time.time()

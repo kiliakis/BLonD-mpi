@@ -319,7 +319,7 @@ timing.reset()
 start_t = time.time()
 tcomp_old = tcomm_old = tconst_old = 0
 
-for turn in range(1, N_t+1):
+for turn in range(N_t):
     # Plots and outputting
     # if MONITORING and (i % dt_plt) == 0:
     # if (i % dt_plt) == 0:
