@@ -19,7 +19,7 @@ if not os.path.exists(images_dir):
     os.makedirs(images_dir)
 
 cases = [
-    # 'LHC-lb-mpich3',
+    'LHC-lb-mpich3',
     # 'LHC-lb-mpich3-approx2',
     # 'LHC-lb-openmpi3',
     # 'LHC-lb-openmpi3-approx2',
@@ -31,12 +31,12 @@ cases = [
     # 'SPS-lb-openmpi3-approx2',
     # 'SPS-lb-mvapich2',
     # 'SPS-lb-mvapich2-approx2',
-    'PS-lb-mpich3',
-    'PS-lb-mpich3-approx2',
-    'PS-lb-openmpi3',
-    'PS-lb-openmpi3-approx2',
-    'PS-lb-mvapich2',
-    'PS-lb-mvapich2-approx2',
+    # 'PS-lb-mpich3',
+    # 'PS-lb-mpich3-approx2',
+    # 'PS-lb-openmpi3',
+    # 'PS-lb-openmpi3-approx2',
+    # 'PS-lb-mvapich2',
+    # 'PS-lb-mvapich2-approx2',
 ]
 conf = {
     'files': {
@@ -112,6 +112,7 @@ conf = {
         'direction': 'inout', 'length': 3, 'width': 0.5,
     },
     'outfiles': ['{}/{}-subplots.pdf'],
+    'points': 10, 
 }
 
 if __name__ == '__main__':
@@ -139,11 +140,13 @@ if __name__ == '__main__':
             width = step / (len(plots_dir.keys()) + 1)
             for nw, data in plots_dir.items():
                 x = np.array(data[pltconf['x_name']], float)
-                y = np.sum([np.array(data[y_name], float)
+                idx = np.linspace(0, len(x)-1, conf['points'], dtype=int)
+                x = x[idx]
+                y = np.sum([np.array(data[y_name], float)[idx]
                             for y_name in pltconf['y_name']], axis=0)
-                ymin = np.sum([np.array(data[y_name], float)
+                ymin = np.sum([np.array(data[y_name], float)[idx]
                                for y_name in pltconf['y_min_name']], axis=0)
-                ymax = np.sum([np.array(data[y_name], float)
+                ymax = np.sum([np.array(data[y_name], float)[idx]
                                for y_name in pltconf['y_max_name']], axis=0)
                 if pltconf['title'] in ['tconst', 'tcomm', 'tcomp', 'ttotal', 'tpp']:
                     ymin = np.cumsum(ymin) / x / (y[0]/x[0])

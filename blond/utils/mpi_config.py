@@ -58,7 +58,8 @@ class Worker:
     def __init__(self):
         args = parse()
         self.indices = {}
-        self.times = {}
+        # self.times = {}
+        self.interval = 100
         self.intracomm = MPI.COMM_WORLD
         self.rank = self.intracomm.rank
 
@@ -217,10 +218,6 @@ class Worker:
     @timing.timeit(key='comm:redistribute')
     @mpiprof.traceit(key='comm:redistribute')
     def redistribute(self, turn, beam, tcomp, tcomm, tconst):
-        # tcomp = self.times['comp']['total']c
-
-        # tcomm = self.times['comm']['total']
-        # tconst = self.times['const']['total']
         latency = tcomp / beam.n_macroparticles
         # self.logger.critical('[{}]: Time {} sec.'.format(self.rank, time))
         # self.logger.critical('[{}]: Latency {} sec/particle.'.format(self.rank, latency))
@@ -239,15 +236,17 @@ class Worker:
         # Pi = P / (latencies * np.sum(1./latencies))
         dPi = np.rint(Pi_old - Pi)
 
-        def f(a, b):
-            if a < 0 and -a > b:
-                return -b
-            elif a > b:
-                return b
-            else:
-                return a
+        for i in range(len(dPi)):
+            if dPi[i] < 0 and -dPi[i] > Pi[i]:
+                dPi[i] = -Pi[i]
+            elif dPi[i] > Pi[i]:
+                dPi[i] = Pi[i]
 
-        dPi = list(map(f, dPi, Pi))
+        if np.sum(np.abs(dPi)) < 0.001 * P:
+            self.interval = max(2* self.interval, 6400)
+        else:
+            self.interval = 100
+
         transactions = calc_transactions(dPi, 0.001 * P)[self.rank]
         if dPi[self.rank] > 0 and len(transactions) > 0:
             reqs = []
@@ -300,6 +299,8 @@ class Worker:
                 beam.id[i:i+t[1]] = buf[2*t[1]:3*t[1]]
                 i += t[1]
             beam.n_macroparticles += tot_to_recv
+
+        return self.interval
 
     def report(self, turn, beam, tcomp, tcomm, tconst):
         latency = tcomp / beam.n_macroparticles

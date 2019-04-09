@@ -8,6 +8,20 @@
 # Preprocess_LHC_noise.py
 #
 # H. Timko
+from blond.monitors.monitors import SlicesMonitor
+from blond.toolbox.next_regular import next_regular
+from blond.impedances.impedance import InducedVoltageFreq, TotalInducedVoltage
+from blond.impedances.impedance_sources import InputTable
+from blond.beam.profile import Profile, CutOptions
+from blond.beam.distributions import bigaussian
+from blond.beam.beam import Beam, Proton
+from blond.llrf.rf_noise import FlatSpectrum, LHCNoiseFB
+from blond.llrf.beam_feedback import BeamFeedback
+from blond.trackers.tracker import RingAndRFTracker, FullRingAndRF
+from blond.input_parameters.rf_parameters import RFStation
+from blond.input_parameters.ring import Ring
+from blond.utils.mpi_config import worker, mpiprint
+from blond.utils.input_parser import parse
 import os
 import datetime
 import sys
@@ -23,20 +37,6 @@ except ImportError:
     mpiprof = timing
 
 # H. Timko
-from blond.utils.input_parser import parse
-from blond.utils.mpi_config import worker, mpiprint
-from blond.input_parameters.ring import Ring
-from blond.input_parameters.rf_parameters import RFStation
-from blond.trackers.tracker import RingAndRFTracker, FullRingAndRF
-from blond.llrf.beam_feedback import BeamFeedback
-from blond.llrf.rf_noise import FlatSpectrum, LHCNoiseFB
-from blond.beam.beam import Beam, Proton
-from blond.beam.distributions import bigaussian
-from blond.beam.profile import Profile, CutOptions
-from blond.impedances.impedance_sources import InputTable
-from blond.impedances.impedance import InducedVoltageFreq, TotalInducedVoltage
-from blond.toolbox.next_regular import next_regular
-from blond.monitors.monitors import SlicesMonitor
 
 REAL_RAMP = True    # track full ramp
 MONITORING = False   # turn off plots and monitors
@@ -293,25 +293,23 @@ if N_t_monitor > 0 and worker.isMaster:
 mpiprint("Map set")
 
 
-
 lbturns = []
 if args['loadbalance'] == 'times':
     if args['loadbalancearg'] != 0:
         intv = N_t // (args['loadbalancearg']+1)
     else:
-        intv = N_t // (10 +1)
+        intv = N_t // (100 + 1)
     lbturns = np.arange(0, N_t, intv)[1:]
 
 elif args['loadbalance'] == 'interval':
     if args['loadbalancearg'] != 0:
         lbturns = np.arange(0, N_t, args['loadbalancearg'])
     else:
-        lbturns = np.arange(0, N_t, 1000)
+        lbturns = np.arange(0, N_t, 100)
 
 elif args['loadbalance'] == 'dynamic':
-    lbturns = [100, 200] + list(np.arange(1000, N_t, 1000))
+    lbturns = [100]
     # print('Warning: Dynamic load balance policy not supported.')
-
 
 
 worker.sync()
@@ -388,12 +386,14 @@ for turn in range(N_t):
         tcomp_new = timing.get(['comp:'])
         tcomm_new = timing.get(['comm:'])
         tconst_new = timing.get(['serial:'])
-        worker.redistribute(turn, beam,
-                            tcomp=tcomp_new-tcomp_old,
-                            tcomm=tcomm_new-tcomm_old,
-                            tconst=tconst_new-tconst_old)
+        intv = worker.redistribute(turn, beam,
+                                   tcomp=tcomp_new-tcomp_old,
+                                   tcomm=tcomm_new-tcomm_old,
+                                   tconst=tconst_new-tconst_old)
+        if args['loadbalance'] == 'dynamic':
+            lbturns[0] += intv
         worker.report(turn, beam, tcomp=tcomp_new-tcomp_old,
-                      tcomm=tcomm_new-tcomm_old, 
+                      tcomm=tcomm_new-tcomm_old,
                       tconst=tconst_new-tconst_old)
         tcomp_old = tcomp_new
         tcomm_old = tcomm_new

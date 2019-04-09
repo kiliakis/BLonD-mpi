@@ -188,17 +188,17 @@ if args['loadbalance'] == 'times':
     if args['loadbalancearg'] != 0:
         intv = N_t // (args['loadbalancearg']+1)
     else:
-        intv = N_t // (10 + 1)
+        intv = N_t // (100 + 1)
     lbturns = np.arange(0, N_t, intv)[1:]
 
 elif args['loadbalance'] == 'interval':
     if args['loadbalancearg'] != 0:
         lbturns = np.arange(0, N_t, args['loadbalancearg'])
     else:
-        lbturns = np.arange(0, N_t, 1000)
+        lbturns = np.arange(0, N_t, 100)
 
 elif args['loadbalance'] == 'dynamic':
-    lbturns = [100, 200] + list(np.arange(1000, N_t, 1000))
+    lbturns = [worker.interval]
 
     # print('Warning: Dynamic load balance policy not supported.')
 
@@ -245,11 +245,13 @@ for turn in range(N_t):
         tcomp_new = timing.get(['comp:'])
         tcomm_new = timing.get(['comm:'])
         tconst_new = timing.get(['serial:'])
-        worker.redistribute(turn, beam, tcomp=tcomp_new-tcomp_old,
-                            tcomm=tcomm_new-tcomm_old, 
-                            tconst=tconst_new-tconst_old)
+        intv = worker.redistribute(turn, beam, tcomp=tcomp_new-tcomp_old,
+                                   tcomm=tcomm_new-tcomm_old,
+                                   tconst=tconst_new-tconst_old)
+        if args['loadbalance'] == 'dynamic':
+            lbturns[0] += intv
         worker.report(turn, beam, tcomp=tcomp_new-tcomp_old,
-                      tcomm=tcomm_new-tcomm_old, 
+                      tcomm=tcomm_new-tcomm_old,
                       tconst=tconst_new-tconst_old)
         tcomp_old = tcomp_new
         tcomm_old = tcomm_new

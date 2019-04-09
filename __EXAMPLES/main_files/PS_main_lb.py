@@ -1,3 +1,20 @@
+from PS_impedance.impedance_scenario import scenario
+import LoCa.Base.Bare_RF as brf
+import LoCa.Base.RFProgram as rfp
+import LoCa.Base.Machine as mach
+from colormap import colormap
+from blond.monitors.monitors import SlicesMonitor
+from blond.impedances.impedance_sources import Resonators
+from blond.impedances.impedance import InducedVoltageTime, InducedVoltageFreq, TotalInducedVoltage, InductiveImpedance
+from blond.trackers.tracker import RingAndRFTracker, FullRingAndRF
+from blond.beam.distributions_multibunch import match_beam_from_distribution
+from blond.beam.profile import Profile, CutOptions
+from blond.input_parameters.rf_parameters import RFStation
+from blond.input_parameters.ring import Ring, RingOptions
+from blond.beam.beam import Proton, Beam
+from blond.utils.mpi_config import worker, mpiprint
+from blond.utils.input_parser import parse
+import matplotlib.pyplot as plt
 '''
 PS longitudinal instability simulation along the ramp
 '''
@@ -9,7 +26,6 @@ import sys
 from scipy.constants import c
 import matplotlib as mpl
 mpl.use('Agg')
-import matplotlib.pyplot as plt
 try:
     from pyprof import timing
     from pyprof import mpiprof
@@ -21,25 +37,9 @@ except ImportError:
 
 # BLonD imports
 #from blond.beams.distributions import matched_from_line_density
-from blond.utils.input_parser import parse
-from blond.utils.mpi_config import worker, mpiprint
-from blond.beam.beam import Proton, Beam
-from blond.input_parameters.ring import Ring, RingOptions
-from blond.input_parameters.rf_parameters import RFStation
-from blond.beam.profile import Profile, CutOptions
-from blond.beam.distributions_multibunch import match_beam_from_distribution
-from blond.trackers.tracker import RingAndRFTracker, FullRingAndRF
-from blond.impedances.impedance import InducedVoltageTime, InducedVoltageFreq, TotalInducedVoltage, InductiveImpedance
-from blond.impedances.impedance_sources import Resonators
-from blond.monitors.monitors import SlicesMonitor
 # Other imports
-from colormap import colormap
 # LoCa imports
-import LoCa.Base.Machine as mach
-import LoCa.Base.RFProgram as rfp
-import LoCa.Base.Bare_RF as brf
 # Impedance scenario import
-from PS_impedance.impedance_scenario import scenario
 cmap = colormap.cmap_white_blue_red
 
 
@@ -191,8 +191,8 @@ emittance_y_norm = 1.5e-6  # for space charge
 # Simulation setup ------------------------------------------------------------
 # General parameters
 
-momentum = momentum[(momentumTime >= c_time_injection)
-                    * (momentumTime <= c_time_extraction)]
+momentum = momentum[(momentumTime >= c_time_injection) *
+                    (momentumTime <= c_time_extraction)]
 momentumTime = momentumTime[(
     momentumTime >= c_time_injection)*(momentumTime <= c_time_extraction)]
 
@@ -384,8 +384,8 @@ gap_prog_group_2 = generate_gap_prog(close_group_2)
 gap_prog_group_1 = generate_gap_prog(close_group_1)
 
 R_S_10MHz_save = np.array(imp10MHzToBLonD.wakeList[0].R_S)
-R_S_program_10MHz = (gap_prog_group_3+gap_prog_group_4
-                     + gap_prog_group_2+gap_prog_group_1)/10.
+R_S_program_10MHz = (gap_prog_group_3+gap_prog_group_4 +
+                     gap_prog_group_2+gap_prog_group_1)/10.
 
 # plt.figure('10 MHz prog')
 # plt.clf()
@@ -420,8 +420,8 @@ front_wake_length = filter_front_wake * ring.t_rev[0]*n_turns_memory
 
 PS_intensity_freq_Rest = InducedVoltageFreq(beam,
                                             profile,
-                                            ResonatorsList10MHz+ImpedanceTableList10MHz
-                                            + ResonatorsListRest+ImpedanceTableListRest,
+                                            ResonatorsList10MHz+ImpedanceTableList10MHz +
+                                            ResonatorsListRest+ImpedanceTableListRest,
                                             frequency_step,
                                             RFParams=rf_params,
                                             multi_turn_wake=True,
@@ -432,8 +432,8 @@ PS_inductive = InductiveImpedance(
 
 PS_intensity_plot = InducedVoltageFreq(beam,
                                        profile,
-                                       ResonatorsList10MHz+ImpedanceTableList10MHz
-                                       + ResonatorsListRest+ImpedanceTableListRest,
+                                       ResonatorsList10MHz+ImpedanceTableList10MHz +
+                                       ResonatorsListRest+ImpedanceTableListRest,
                                        frequency_step,
                                        RFParams=rf_params,
                                        multi_turn_wake=True,
@@ -546,17 +546,17 @@ if args['loadbalance'] == 'times':
     if args['loadbalancearg'] != 0:
         intv = N_t // (args['loadbalancearg']+1)
     else:
-        intv = N_t // (10 +1)
+        intv = N_t // (100 + 1)
     lbturns = np.arange(0, N_t, intv)[1:]
 
 elif args['loadbalance'] == 'interval':
     if args['loadbalancearg'] != 0:
         lbturns = np.arange(0, N_t, args['loadbalancearg'])
     else:
-        lbturns = np.arange(0, N_t, 1000)
+        lbturns = np.arange(0, N_t, 100)
 
 elif args['loadbalance'] == 'dynamic':
-    lbturns = [100, 200] + list(np.arange(1000, N_t, 1000))
+    lbturns = [worker.interval]
     # print('Warning: Dynamic load balance policy not supported.')
 
 worker.sync()
@@ -603,7 +603,8 @@ for turn in range(N_t):
     if worker.isHostLast:
         tracker.pre_track()
 
-    worker.sendrecv(PS_longitudinal_intensity.induced_voltage, tracker.rf_voltage)
+    worker.sendrecv(PS_longitudinal_intensity.induced_voltage,
+                    tracker.rf_voltage)
 
     # Track
     tracker.track_only()
@@ -612,12 +613,14 @@ for turn in range(N_t):
         tcomp_new = timing.get(['comp:'])
         tcomm_new = timing.get(['comm:'])
         tconst_new = timing.get(['serial:'])
-        worker.redistribute(turn, beam,
-                            tcomp=tcomp_new-tcomp_old,
-                            tcomm=tcomm_new-tcomm_old,
-                            tconst=tconst_new-tconst_old)
+        intv = worker.redistribute(turn, beam,
+                                   tcomp=tcomp_new-tcomp_old,
+                                   tcomm=tcomm_new-tcomm_old,
+                                   tconst=tconst_new-tconst_old)
+        if args['loadbalance'] == 'dynamic':
+            lbturns[0] += intv
         worker.report(turn, beam, tcomp=tcomp_new-tcomp_old,
-                      tcomm=tcomm_new-tcomm_old, 
+                      tcomm=tcomm_new-tcomm_old,
                       tconst=tconst_new-tconst_old)
         tcomp_old = tcomp_new
         tcomm_old = tcomm_new

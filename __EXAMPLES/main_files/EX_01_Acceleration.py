@@ -121,7 +121,6 @@ if args.get('log', None) is not None:
 if args.get('approx', None) is not None:
     approx = int(args['approx'])
 
-
 mpiprint({'N_t': N_t, 'n_macroparticles': N_p,
        'N_slices': N_slices,
        'timing.mode': timing.mode,
@@ -145,6 +144,7 @@ beam = Beam(ring, N_p, N_b)
 # Define RF station parameters and corresponding tracker
 rf = RFStation(ring, [h], [V], [dphi])
 
+
 bigaussian(ring, rf, beam, tau_0/4, reinsertion=True, seed=seed)
 
 
@@ -156,7 +156,6 @@ profile = Profile(beam, CutOptions(n_slices=N_slices))
 long_tracker = RingAndRFTracker(rf, beam)
 
 beam.split_random()
-
 
 if N_t_monitor > 0 and worker.isMaster:
     if args.get('monitorfile', None):

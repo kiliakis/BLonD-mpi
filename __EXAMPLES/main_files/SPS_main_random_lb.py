@@ -120,10 +120,10 @@ if args.get('approx', None) is not None:
     approx = int(args['approx'])
 
 mpiprint({'N_t': N_t, 'n_macroparticles_pb': n_macroparticles_pb,
-       'timing.mode': timing.mode, 'n_bunches': n_bunches,
-       'N_t_reduce': N_t_reduce,
-       'N_t_monitor': N_t_monitor, 'seed': seed, 'log': log,
-       'approx': approx})
+          'timing.mode': timing.mode, 'n_bunches': n_bunches,
+          'N_t_reduce': N_t_reduce,
+          'N_t_monitor': N_t_monitor, 'seed': seed, 'log': log,
+          'approx': approx})
 
 # initialize simulation
 
@@ -252,9 +252,9 @@ cut_right = t_batch_end + profile_margin
 
 # number of rf-buckets of the beam
 # + rf-buckets before the beam + rf-buckets after the beam
-n_slices = n_bins_rf * (bunch_spacing * (n_bunches-1) + 1
-                        + int(np.round((t_batch_begin - cut_left)/t_rf))
-                        + int(np.round((cut_right - t_batch_end)/t_rf)))
+n_slices = n_bins_rf * (bunch_spacing * (n_bunches-1) + 1 +
+                        int(np.round((t_batch_begin - cut_left)/t_rf)) +
+                        int(np.round((cut_right - t_batch_end)/t_rf)))
 
 profile = Profile(beam, CutOptions=CutOptions(cut_left=cut_left,
                                               cut_right=cut_right, n_slices=n_slices))
@@ -515,19 +515,18 @@ if args['loadbalance'] == 'times':
     if args['loadbalancearg'] != 0:
         intv = N_t // (args['loadbalancearg']+1)
     else:
-        intv = N_t // (10 +1)
+        intv = N_t // (100 + 1)
     lbturns = np.arange(0, N_t, intv)[1:]
 
 elif args['loadbalance'] == 'interval':
     if args['loadbalancearg'] != 0:
         lbturns = np.arange(0, N_t, args['loadbalancearg'])
     else:
-        lbturns = np.arange(0, N_t, 1000)
+        lbturns = np.arange(0, N_t, 100)
 
 elif args['loadbalance'] == 'dynamic':
-    lbturns = [100, 200] + list(np.arange(1000, N_t, 1000))
+    lbturns = [100]
     # print('Warning: Dynamic load balance policy not supported.')
-
 
 
 delta = 0
@@ -566,14 +565,13 @@ for turn in range(N_t):
                                     shiftX=-rf_station.phi_rf[0, turn] / rf_station.omega_rf[0, turn] + delta)
             slicesMonitor.track(turn)
 
-
     # applying this voltage is done by tracker if interpolation=True
     if worker.isHostFirst:
         # reduce impedance, poor man's feedback
         if (turn < 8*int(FBtime)):
             longCavityImpedanceReduction.track()
             shortCavityImpedanceReduction.track()
-    
+
         if (approx == 0) or (approx == 2):
             inducedVoltage.induced_voltage_sum()
         elif (approx == 1) and (turn % N_t_reduce == 0):
@@ -608,17 +606,18 @@ for turn in range(N_t):
                 if phaseLoop.alpha != 0:
                     phaseLoop.time_offset -= delta
 
-
     if turn in lbturns:
         tcomp_new = timing.get(['comp:'])
         tcomm_new = timing.get(['comm:'])
         tconst_new = timing.get(['serial:'])
-        worker.redistribute(turn, beam,
-                            tcomp=tcomp_new-tcomp_old,
-                            tcomm=tcomm_new-tcomm_old,
-                            tconst=tconst_new-tconst_old)
+        intv = worker.redistribute(turn, beam,
+                                   tcomp=tcomp_new-tcomp_old,
+                                   tcomm=tcomm_new-tcomm_old,
+                                   tconst=tconst_new-tconst_old)
+        if args['loadbalance'] == 'dynamic':
+            lbturns[0] += intv
         worker.report(turn, beam, tcomp=tcomp_new-tcomp_old,
-                      tcomm=tcomm_new-tcomm_old, 
+                      tcomm=tcomm_new-tcomm_old,
                       tconst=tconst_new-tconst_old)
         tcomp_old = tcomp_new
         tcomm_old = tcomm_new
