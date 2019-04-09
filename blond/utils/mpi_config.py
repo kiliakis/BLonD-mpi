@@ -216,7 +216,7 @@ class Worker:
 
     @timing.timeit(key='comm:redistribute')
     @mpiprof.traceit(key='comm:redistribute')
-    def redistribute(self, turn, beam):
+    def redistribute(self, turn, beam, report_only=False):
         tcomp = self.times['comp']['total']
         tcomm = self.times['comm']['total']
         tconst = self.times['const']['total']
@@ -246,7 +246,10 @@ class Worker:
                 return a
 
         dPi = list(map(f, dPi, Pi))
-        transactions = calc_transactions(dPi, 0.001 * P)[self.rank]
+        if report_only:
+            transactions = []
+        else:
+            transactions = calc_transactions(dPi, 0.001 * P)[self.rank]
         if dPi[self.rank] > 0 and len(transactions) > 0:
             reqs = []
             tot_to_send = np.sum(t[1] for t in transactions)

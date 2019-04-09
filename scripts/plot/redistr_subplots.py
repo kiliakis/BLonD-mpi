@@ -18,10 +18,10 @@ images_dir = res_dir + 'plots/'
 if not os.path.exists(images_dir):
     os.makedirs(images_dir)
 
+case = 'LHC-lb-mvapich2'
 conf = {
     'files': {
-        res_dir+'raw/LHC-lb-mpich3-approx2/particles-report.csv': {
-            'key': 'lhc-mpich3-approx2',
+        '{}/raw/{}/particles-report.csv'.format(res_dir, case) : {
             'dic_rows': ['n'],
             'dic_cols': ['turn_num', 'parts_avg', 'parts_min',
                          'parts_max', 'tcomp_avg', 'tcomp_min',
@@ -33,7 +33,8 @@ conf = {
     },
     'subplots_args': {
         'nrows': 3,
-        'ncols': 2
+        'ncols': 2,
+        'figsize': (14, 7)
     },
     'subplots': [
         {'title': 'tconst',
@@ -73,26 +74,25 @@ conf = {
             'y_max_name': ['tpp_max']
          }
     ],
-    'colors': {'2': 'xkcd:blue',
-               '4': 'xkcd:orange',
-               '8': 'xkcd:green',
-               '12': 'xkcd:red',
-               '16': 'xkcd:purple'
+    'colors': {'2': 'xkcd:light blue',
+               '4': 'xkcd:light orange',
+               '8': 'xkcd:light green',
+               '12': 'xkcd:light red',
+               '16': 'xkcd:light purple'
                },
     'legend': {
-        'loc': 'upper left', 'ncol': 2, 'handlelength': 0.5, 'fancybox': True,
-        'framealpha': 0.3, 'fontsize': 8, 'labelspacing': 0, 'borderpad': 0.5,
-        'handletextpad': 0.5, 'borderaxespad': 0
+        'loc': 'upper left', 'ncol': 5, 'handlelength': 1, 'fancybox': True,
+        'framealpha': 0., 'fontsize': 9, 'labelspacing': 0, 'borderpad': 0.5,
+        'handletextpad': 0.5, 'borderaxespad': 0, 'columnspacing': 0.5, 
     },
     'subplots_adjust': {
-        'wspace': 0.16, 'hspace': 0.16, 'top': 0.91
+        'wspace': 0.05, 'hspace': 0.16, 'top': 0.93
     },
     'tick_params': {
         'pad': 1, 'top': 1, 'bottom': 1, 'left': 1,
         'direction': 'inout', 'length': 3, 'width': 0.5,
     },
-    'figsize': (5, 3),
-    'outfiles': [images_dir + 'lhc-lb-mpich-subplots.pdf'],
+    'outfiles': ['{}/{}-subplots.pdf'.format(images_dir , case)],
 }
 
 if __name__ == '__main__':
@@ -106,13 +106,16 @@ if __name__ == '__main__':
         plots_dir.update(temp)
 
     fig, ax_arr = plt.subplots(**conf['subplots_args'], sharex=True)
-    fig.suptitle('')
+    fig.suptitle(case.upper())
     i = 0
     for pltconf in conf['subplots']:
         ax = ax_arr[i//conf['subplots_args']['ncols'],
                     i % conf['subplots_args']['ncols']]
         plt.sca(ax)
-        plt.title(pltconf['title'], fontsize=7)
+        plt.title(pltconf['title'], fontsize=8)
+        step = 1
+        pos = 0
+        width = step / (len(plots_dir.keys()) + 1)
         for nw, data in plots_dir.items():
             x = np.array(data[pltconf['x_name']], float)
             y = np.sum([np.array(data[y_name], float)
@@ -122,16 +125,26 @@ if __name__ == '__main__':
             ymax = np.sum([np.array(data[y_name], float)
                            for y_name in pltconf['y_max_name']], axis=0)
             if pltconf['title'] in ['tconst', 'tcomm', 'tcomp', 'ttotal', 'tpp']:
+                ymin = np.cumsum(ymin) / x / (y[0]/x[0])
+                ymax = np.cumsum(ymax) / x / (y[0]/x[0])
                 y = np.cumsum(y) / x / (y[0]/x[0])
-                ymin = np.cumsum(ymin) / x / (ymin[0]/x[0])
-                ymax = np.cumsum(ymax) / x / (ymax[0]/x[0])
-                plt.axhline(1, color='k', ls='dotted', lw=1)
-            plt.errorbar(x, y, yerr=[ymin, ymax], label='{}'.format(nw),
-                         lw=1, capsize=1, color=conf['colors'][nw])
+                plt.axhline(1, color='k', ls='dotted', lw=1, alpha=0.5)
+                if np.max(ymax) > 2.:
+                    plt.ylim(top=2.)
+
+
+            plt.bar(np.arange(len(x)) + pos, y, width=width,
+                    label='{}'.format(nw), lw=1, edgecolor='0', 
+                    color=conf['colors'][nw],
+                    yerr=[y-ymin, ymax-y], error_kw={'capsize':2, 'elinewidth':1})
+            pos += 1.05*width
+            # plt.errorbar(x + displ, y, yerr=[ymin, ymax], label='{}'.format(nw),
+            #              lw=1, capsize=1, color=conf['colors'][nw])
+        plt.xticks(np.arange(len(x))+pos/2, np.array(x, int))
         ax.tick_params(**conf['tick_params'])
         plt.legend(**conf['legend'])
-        plt.xticks(fontsize=7)
-        plt.yticks(fontsize=7)
+        plt.xticks(fontsize=8)
+        plt.yticks(fontsize=8)
         plt.tight_layout()
         i += 1
 

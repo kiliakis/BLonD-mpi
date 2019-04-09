@@ -548,6 +548,7 @@ for turn in range(1, N_t+1):
         worker.timer_start('comp')
         profile.track()
         worker.timer_stop('comp')
+
         worker.timer_start('comm')
         profile.reduce_histo()
         worker.timer_stop('comm')
@@ -555,6 +556,7 @@ for turn in range(1, N_t+1):
         worker.timer_start('comp')
         profile.track()
         worker.timer_stop('comp')
+        
         worker.timer_start('comm')
         profile.reduce_histo()
         worker.timer_stop('comm')
@@ -626,7 +628,7 @@ for turn in range(1, N_t+1):
 
 
     if turn in lbturns:
-        worker.redistribute(turn, beam)
+        worker.redistribute(turn, beam, report_only=args.lbreportonly)
         worker.timer_reset('const')
         worker.timer_reset('comp')
         worker.timer_reset('comm')

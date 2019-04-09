@@ -627,7 +627,7 @@ for turn in range(1, N_t+1):
     worker.timer_stop('comp')
 
     if turn in lbturns:
-        worker.redistribute(turn, beam)
+        worker.redistribute(turn, beam, report_only=args.lbreportonly)
         worker.timer_reset('const')
         worker.timer_reset('comm')
         worker.timer_reset('comp')

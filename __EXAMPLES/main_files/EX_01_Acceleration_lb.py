@@ -259,7 +259,7 @@ for turn in range(1, N_t+1):
             slicesMonitor.track(turn)
 
     if turn in lbturns:
-        worker.redistribute(turn, beam)
+        worker.redistribute(turn, beam, report_only=args.lbreportonly)
         worker.timer_reset('comp')
         worker.timer_reset('comm')
 
