@@ -254,7 +254,7 @@ class Worker:
             transactions = calc_transactions(dPi, 0.001 * P)[self.rank]
         if dPi[self.rank] > 0 and len(transactions) > 0:
             reqs = []
-            tot_to_send = np.sum(t[1] for t in transactions)
+            tot_to_send = np.sum([t[1] for t in transactions])
             i = beam.n_macroparticles - tot_to_send
             for t in transactions:
                 # I need to send t[1] particles to t[0]
@@ -292,7 +292,7 @@ class Worker:
             # req[0].Waitall(req)
             # Then I need to resize local beam.dt and beam.dE, also
             # beam.n_macroparticles
-            tot_to_recv = np.sum(t[1] for t in transactions)
+            tot_to_recv = np.sum([t[1] for t in transactions])
             beam.dE = np.resize(beam.dE, beam.n_macroparticles + tot_to_recv)
             beam.dt = np.resize(beam.dt, beam.n_macroparticles + tot_to_recv)
             beam.id = np.resize(beam.id, beam.n_macroparticles + tot_to_recv)

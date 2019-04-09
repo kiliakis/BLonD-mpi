@@ -13,15 +13,34 @@ this_filename = sys.argv[0].split('/')[-1]
 
 project_dir = this_directory + '../../'
 res_dir = project_dir + 'results/'
-images_dir = res_dir + 'plots/'
+images_dir = res_dir + 'plots/redistribute/'
 
 if not os.path.exists(images_dir):
     os.makedirs(images_dir)
 
-case = 'LHC-lb-mvapich2'
+cases = [
+    # 'LHC-lb-mpich3',
+    # 'LHC-lb-mpich3-approx2',
+    # 'LHC-lb-openmpi3',
+    # 'LHC-lb-openmpi3-approx2',
+    # 'LHC-lb-mvapich2',
+    # 'LHC-lb-mvapich2-approx2',
+    # 'SPS-lb-mpich3',
+    # 'SPS-lb-mpich3-approx2',
+    # 'SPS-lb-openmpi3',
+    # 'SPS-lb-openmpi3-approx2',
+    # 'SPS-lb-mvapich2',
+    # 'SPS-lb-mvapich2-approx2',
+    'PS-lb-mpich3',
+    'PS-lb-mpich3-approx2',
+    'PS-lb-openmpi3',
+    'PS-lb-openmpi3-approx2',
+    'PS-lb-mvapich2',
+    'PS-lb-mvapich2-approx2',
+]
 conf = {
     'files': {
-        '{}/raw/{}/particles-report.csv'.format(res_dir, case) : {
+        '{}/raw/{}/particles-report.csv' : {
             'dic_rows': ['n'],
             'dic_cols': ['turn_num', 'parts_avg', 'parts_min',
                          'parts_max', 'tcomp_avg', 'tcomp_min',
@@ -92,64 +111,67 @@ conf = {
         'pad': 1, 'top': 1, 'bottom': 1, 'left': 1,
         'direction': 'inout', 'length': 3, 'width': 0.5,
     },
-    'outfiles': ['{}/{}-subplots.pdf'.format(images_dir , case)],
+    'outfiles': ['{}/{}-subplots.pdf'],
 }
 
 if __name__ == '__main__':
-    plots_dir = {}
-    for file, fconfig in conf['files'].items():
-        print(file)
-        data = np.genfromtxt(file, delimiter='\t', dtype=str)
-        header, data = list(data[0]), data[1:]
-        temp = dictify(
-            header, data, fconfig['dic_rows'], fconfig['dic_cols'])
-        plots_dir.update(temp)
+    for case in cases:
+        plots_dir = {}
+        for file, fconfig in conf['files'].items():
+            file = file.format(res_dir, case)
+            print(file)
+            data = np.genfromtxt(file, delimiter='\t', dtype=str)
+            header, data = list(data[0]), data[1:]
+            temp = dictify(
+                header, data, fconfig['dic_rows'], fconfig['dic_cols'])
+            plots_dir.update(temp)
 
-    fig, ax_arr = plt.subplots(**conf['subplots_args'], sharex=True)
-    fig.suptitle(case.upper())
-    i = 0
-    for pltconf in conf['subplots']:
-        ax = ax_arr[i//conf['subplots_args']['ncols'],
-                    i % conf['subplots_args']['ncols']]
-        plt.sca(ax)
-        plt.title(pltconf['title'], fontsize=8)
-        step = 1
-        pos = 0
-        width = step / (len(plots_dir.keys()) + 1)
-        for nw, data in plots_dir.items():
-            x = np.array(data[pltconf['x_name']], float)
-            y = np.sum([np.array(data[y_name], float)
-                        for y_name in pltconf['y_name']], axis=0)
-            ymin = np.sum([np.array(data[y_name], float)
-                           for y_name in pltconf['y_min_name']], axis=0)
-            ymax = np.sum([np.array(data[y_name], float)
-                           for y_name in pltconf['y_max_name']], axis=0)
-            if pltconf['title'] in ['tconst', 'tcomm', 'tcomp', 'ttotal', 'tpp']:
-                ymin = np.cumsum(ymin) / x / (y[0]/x[0])
-                ymax = np.cumsum(ymax) / x / (y[0]/x[0])
-                y = np.cumsum(y) / x / (y[0]/x[0])
-                plt.axhline(1, color='k', ls='dotted', lw=1, alpha=0.5)
-                if np.max(ymax) > 2.:
-                    plt.ylim(top=2.)
+        fig, ax_arr = plt.subplots(**conf['subplots_args'], sharex=True)
+        fig.suptitle(case.upper())
+        i = 0
+        for pltconf in conf['subplots']:
+            ax = ax_arr[i//conf['subplots_args']['ncols'],
+                        i % conf['subplots_args']['ncols']]
+            plt.sca(ax)
+            plt.title(pltconf['title'], fontsize=8)
+            step = 1
+            pos = 0
+            width = step / (len(plots_dir.keys()) + 1)
+            for nw, data in plots_dir.items():
+                x = np.array(data[pltconf['x_name']], float)
+                y = np.sum([np.array(data[y_name], float)
+                            for y_name in pltconf['y_name']], axis=0)
+                ymin = np.sum([np.array(data[y_name], float)
+                               for y_name in pltconf['y_min_name']], axis=0)
+                ymax = np.sum([np.array(data[y_name], float)
+                               for y_name in pltconf['y_max_name']], axis=0)
+                if pltconf['title'] in ['tconst', 'tcomm', 'tcomp', 'ttotal', 'tpp']:
+                    ymin = np.cumsum(ymin) / x / (y[0]/x[0])
+                    ymax = np.cumsum(ymax) / x / (y[0]/x[0])
+                    y = np.cumsum(y) / x / (y[0]/x[0])
+                    plt.axhline(1, color='k', ls='dotted', lw=1, alpha=0.5)
+                    if np.max(ymax) > 2.:
+                        plt.ylim(top=2.)
 
 
-            plt.bar(np.arange(len(x)) + pos, y, width=width,
-                    label='{}'.format(nw), lw=1, edgecolor='0', 
-                    color=conf['colors'][nw],
-                    yerr=[y-ymin, ymax-y], error_kw={'capsize':2, 'elinewidth':1})
-            pos += 1.05*width
-            # plt.errorbar(x + displ, y, yerr=[ymin, ymax], label='{}'.format(nw),
-            #              lw=1, capsize=1, color=conf['colors'][nw])
-        plt.xticks(np.arange(len(x))+pos/2, np.array(x, int))
-        ax.tick_params(**conf['tick_params'])
-        plt.legend(**conf['legend'])
-        plt.xticks(fontsize=8)
-        plt.yticks(fontsize=8)
-        plt.tight_layout()
-        i += 1
+                plt.bar(np.arange(len(x)) + pos, y, width=width,
+                        label='{}'.format(nw), lw=1, edgecolor='0', 
+                        color=conf['colors'][nw],
+                        yerr=[y-ymin, ymax-y], error_kw={'capsize':2, 'elinewidth':1})
+                pos += 1.05*width
+                # plt.errorbar(x + displ, y, yerr=[ymin, ymax], label='{}'.format(nw),
+                #              lw=1, capsize=1, color=conf['colors'][nw])
+            plt.xticks(np.arange(len(x))+pos/2, np.array(x, int))
+            ax.tick_params(**conf['tick_params'])
+            plt.legend(**conf['legend'])
+            plt.xticks(fontsize=8)
+            plt.yticks(fontsize=8)
+            plt.tight_layout()
+            i += 1
 
-    plt.subplots_adjust(**conf['subplots_adjust'])
-    for outfile in conf['outfiles']:
-        save_and_crop(fig, outfile, dpi=600, bbox_inches='tight')
-    plt.show()
-    plt.close()
+        plt.subplots_adjust(**conf['subplots_adjust'])
+        for outfile in conf['outfiles']:
+            outfile = outfile.format(images_dir, case)
+            save_and_crop(fig, outfile, dpi=600, bbox_inches='tight')
+        plt.show()
+        plt.close()
