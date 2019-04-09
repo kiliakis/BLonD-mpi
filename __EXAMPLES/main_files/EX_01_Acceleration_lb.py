@@ -245,11 +245,12 @@ for turn in range(1, N_t+1):
         tcomp_new = timing.get(['comp:'])
         tcomm_new = timing.get(['comm:'])
         tconst_new = timing.get(['serial:'])
-        worker.redistribute(turn, beam,
-                            tcomp=tcomp_new-tcomp_old,
-                            tcomm=tcomm_new-tcomm_old,
-                            tconst=tconst_new-tconst_old,
-                            report_only=args['lbreportonly'])
+        worker.redistribute(turn, beam, tcomp=tcomp_new-tcomp_old,
+                            tcomm=tcomm_new-tcomm_old, 
+                            tconst=tconst_new-tconst_old)
+        worker.report(turn, beam, tcomp=tcomp_new-tcomp_old,
+                      tcomm=tcomm_new-tcomm_old, 
+                      tconst=tconst_new-tconst_old)
         tcomp_old = tcomp_new
         tcomm_old = tcomm_new
         tconst_old = tconst_new

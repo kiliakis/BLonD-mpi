@@ -88,9 +88,6 @@ parser.add_argument('-lb', '--loadbalance', type=str, choices=['off', 'times', '
 parser.add_argument('-lba', '--loadbalancearg', type=int, default=0,
                     help='Additional Load balance argument, used only if lb is times or interval.'
                     '\nDefault: 0 --> 10 times per run or every 1k turns.')
-parser.add_argument('-lbr', '--lbreportonly', action='store_true',
-                    help='Do not redistribute the particles, only report the times and latencies.'
-                    '\nDefault: False (Do the load balancing).')
 
 # parser.add_argument('-d', '--debug', action='store_true',
 #                     help='Run workers in debug mode.'

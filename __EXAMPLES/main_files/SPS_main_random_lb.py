@@ -616,8 +616,10 @@ for turn in range(1, N_t+1):
         worker.redistribute(turn, beam,
                             tcomp=tcomp_new-tcomp_old,
                             tcomm=tcomm_new-tcomm_old,
-                            tconst=tconst_new-tconst_old,
-                            report_only=args['lbreportonly'])
+                            tconst=tconst_new-tconst_old)
+        worker.report(turn, beam, tcomp=tcomp_new-tcomp_old,
+                      tcomm=tcomm_new-tcomm_old, 
+                      tconst=tconst_new-tconst_old)
         tcomp_old = tcomp_new
         tcomm_old = tcomm_new
         tconst_old = tconst_new
