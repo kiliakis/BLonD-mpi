@@ -49,7 +49,7 @@ cases = [
 ]
 conf = {
     'files': {
-        '{}/raw/{}/particles-report.csv' : {
+        '{}/raw/{}/particles-report.csv': {
             'dic_rows': ['n'],
             'dic_cols': ['turn_num', 'parts_avg', 'parts_min',
                          'parts_max', 'tcomp_avg', 'tcomp_min',
@@ -111,7 +111,7 @@ conf = {
     'legend': {
         'loc': 'upper left', 'ncol': 5, 'handlelength': 1, 'fancybox': True,
         'framealpha': 0., 'fontsize': 9, 'labelspacing': 0, 'borderpad': 0.5,
-        'handletextpad': 0.5, 'borderaxespad': 0, 'columnspacing': 0.5, 
+        'handletextpad': 0.5, 'borderaxespad': 0, 'columnspacing': 0.5,
     },
     'subplots_adjust': {
         'wspace': 0.05, 'hspace': 0.16, 'top': 0.93
@@ -121,7 +121,7 @@ conf = {
         'direction': 'inout', 'length': 3, 'width': 0.5,
     },
     'outfiles': ['{}/{}-subplots.pdf'],
-    'points': 10, 
+    'points': 10,
 }
 
 if __name__ == '__main__':
@@ -165,11 +165,10 @@ if __name__ == '__main__':
                     if np.max(ymax) > 2.:
                         plt.ylim(top=2.)
 
-
                 plt.bar(np.arange(len(x)) + pos, y, width=width,
-                        label='{}'.format(nw), lw=1, edgecolor='0', 
+                        label='{}'.format(nw), lw=1, edgecolor='0',
                         color=conf['colors'][nw],
-                        yerr=[y-ymin, ymax-y], error_kw={'capsize':2, 'elinewidth':1})
+                        yerr=[y-ymin, ymax-y], error_kw={'capsize': 2, 'elinewidth': 1})
                 pos += 1.05*width
                 # plt.errorbar(x + displ, y, yerr=[ymin, ymax], label='{}'.format(nw),
                 #              lw=1, capsize=1, color=conf['colors'][nw])

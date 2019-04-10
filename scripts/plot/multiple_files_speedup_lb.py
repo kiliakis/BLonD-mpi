@@ -18,477 +18,449 @@ images_dir = res_dir + 'plots/redistribute/'
 if not os.path.exists(images_dir):
     os.makedirs(images_dir)
 
+case = 'ps'
 
-plots_config = {
+config = {
 
-    'plot1': {
-        'files': {
-            # res_dir+'raw/SPS-b72-4MPPB-t10k-mpich3/comm-comp-report.csv': {
-            #     'key': 'sps-mpich3',
-            #     'lines': {
-            #         'omp': ['10'],
-            #         'type': ['total']
-            #     }
-            # },
+    'files': {
+        # res_dir+'raw/SPS-b72-4MPPB-t10k-mpich3/comm-comp-report.csv': {
+        #     'key': 'sps-mpich3',
+        #     'lines': {
+        #         'omp': ['10'],
+        #         'type': ['total']
+        #     }
+        # },
 
-            # res_dir+'raw/SPS-b72-4MPPB-t10k-mvapich2/comm-comp-report.csv': {
-            #     'key': 'sps-mvapich2',
-            #     'lines': {
-            #         'omp': ['10'],
-            #         'type': ['total']
-            #     }
-            # },
-            # res_dir+'raw/SPS-b72-4MPPB-t10k-openmpi3/comm-comp-report.csv': {
-            #     'key': 'sps-openmpi3',
-            #     'lines': {
-            #         'omp': ['10'],
-            #         'type': ['total']
-            #     }
-            # },
-            # res_dir+'raw/EX01-mpich3-approx2/comm-comp-report.csv': {
-            #     'key': 'ex01-mpich3apprx',
-            #     'lines': {
-            #         'omp': ['10'],
-            #         'type': ['total']
-            #     }
-            # },
+        # res_dir+'raw/SPS-b72-4MPPB-t10k-mvapich2/comm-comp-report.csv': {
+        #     'key': 'sps-mvapich2',
+        #     'lines': {
+        #         'omp': ['10'],
+        #         'type': ['total']
+        #     }
+        # },
+        # res_dir+'raw/SPS-b72-4MPPB-t10k-openmpi3/comm-comp-report.csv': {
+        #     'key': 'sps-openmpi3',
+        #     'lines': {
+        #         'omp': ['10'],
+        #         'type': ['total']
+        #     }
+        # },
+        # res_dir+'raw/EX01-mpich3-approx2/comm-comp-report.csv': {
+        #     'key': 'ex01-mpich3apprx',
+        #     'lines': {
+        #         'omp': ['10'],
+        #         'type': ['total']
+        #     }
+        # },
 
-            # res_dir+'raw/EX01-lb-mpich3-approx2/comm-comp-report.csv': {
-            #     'key': 'ex01-lbmpich3apprx',
-            #     'lines': {
-            #         'omp': ['10'],
-            #         'type': ['total']
-            #     }
-            # },
+        # res_dir+'raw/EX01-lb-mpich3-approx2/comm-comp-report.csv': {
+        #     'key': 'ex01-lbmpich3apprx',
+        #     'lines': {
+        #         'omp': ['10'],
+        #         'type': ['total']
+        #     }
+        # },
 
-            # res_dir+'raw/EX01-mpich3/comm-comp-report.csv': {
-            #     'key': 'ex01-mpich3',
-            #     'lines': {
-            #         'omp': ['10'],
-            #         'type': ['total']
-            #     }
-            # },
-            # res_dir+'raw/EX01-lb-mpich3/comm-comp-report.csv': {
-            #     'key': 'ex01-lbmpich3',
-            #     'lines': {
-            #         'omp': ['10'],
-            #         'type': ['total']
-            #     }
-            # },
+        # res_dir+'raw/EX01-mpich3/comm-comp-report.csv': {
+        #     'key': 'ex01-mpich3',
+        #     'lines': {
+        #         'omp': ['10'],
+        #         'type': ['total']
+        #     }
+        # },
+        # res_dir+'raw/EX01-lb-mpich3/comm-comp-report.csv': {
+        #     'key': 'ex01-lbmpich3',
+        #     'lines': {
+        #         'omp': ['10'],
+        #         'type': ['total']
+        #     }
+        # },
 
-            # res_dir+'raw/EX01-mpich3-approx2/comm-comp-report.csv': {
-            #     'key': 'ex01-mpich3apprx',
-            #     'lines': {
-            #         'omp': ['10'],
-            #         'type': ['total']
-            #     }
-            # },
+        # res_dir+'raw/EX01-mpich3-approx2/comm-comp-report.csv': {
+        #     'key': 'ex01-mpich3apprx',
+        #     'lines': {
+        #         'omp': ['10'],
+        #         'type': ['total']
+        #     }
+        # },
 
-            res_dir+'raw/LHC-lb-mpich3-approx2/comm-comp-report.csv': {
-                'key': 'lhc-lbmpich3apprx',
-                'lines': {
-                    'omp': ['10'],
-                    'type': ['total']
-                }
-            },
-
-            res_dir+'raw/LHC-96B-2MPPB-t10k-mpich3/comm-comp-report.csv': {
-                'key': 'lhc-mpich3',
-                'lines': {
-                    'omp': ['10'],
-                    'type': ['total']
-                }
-            },
-            res_dir+'raw/LHC-lb-mpich3/comm-comp-report.csv': {
-                'key': 'lhc-lbmpich3',
-                'lines': {
-                    'omp': ['10'],
-                    'type': ['total']
-                }
-            },
-
-            res_dir+'raw/LHC-approx2-mpich3/comm-comp-report.csv': {
-                'key': 'lhc-mpich3apprx',
-                'lines': {
-                    'omp': ['10'],
-                    'type': ['total']
-                }
-            },
-            res_dir+'raw/LHC-lb-mvapich2-approx2/comm-comp-report.csv': {
-                'key': 'lhc-lbmvapich2apprx',
-                'lines': {
-                    'omp': ['10'],
-                    'type': ['total']
-                }
-            },
-
-            res_dir+'raw/LHC-96B-2MPPB-t10k-mvapich2/comm-comp-report.csv': {
-                'key': 'lhc-mvapich2',
-                'lines': {
-                    'omp': ['10'],
-                    'type': ['total']
-                }
-            },
-            res_dir+'raw/LHC-lb-mvapich2/comm-comp-report.csv': {
-                'key': 'lhc-lbmvapich2',
-                'lines': {
-                    'omp': ['10'],
-                    'type': ['total']
-                }
-            },
-
-            res_dir+'raw/LHC-approx2-mvapich2/comm-comp-report.csv': {
-                'key': 'lhc-mvapich2apprx',
-                'lines': {
-                    'omp': ['10'],
-                    'type': ['total']
-                }
-            },
-
-            res_dir+'raw/LHC-lb-openmpi3-approx2/comm-comp-report.csv': {
-                'key': 'lhc-lbopenmpi3apprx',
-                'lines': {
-                    'omp': ['10'],
-                    'type': ['total']
-                }
-            },
-
-            res_dir+'raw/LHC-96B-2MPPB-t10k-openmpi3/comm-comp-report.csv': {
-                'key': 'lhc-openmpi3',
-                'lines': {
-                    'omp': ['10'],
-                    'type': ['total']
-                }
-            },
-            res_dir+'raw/LHC-lb-openmpi3/comm-comp-report.csv': {
-                'key': 'lhc-lbopenmpi3',
-                'lines': {
-                    'omp': ['10'],
-                    'type': ['total']
-                }
-            },
-
-            res_dir+'raw/LHC-approx2-openmpi3/comm-comp-report.csv': {
-                'key': 'lhc-openmpi3apprx',
-                'lines': {
-                    'omp': ['10'],
-                    'type': ['total']
-                }
-            },
-
-
-            # res_dir+'raw/EX01-lb-openmpi3/comm-comp-report.csv': {
-            #     'key': 'lhc-lbopenmpi3',
-            #     'lines': {
-            #         'omp': ['10'],
-            #         'type': ['total']
-            #     }
-            # },
-            # res_dir+'raw/EX01-lb-mvapich2/comm-comp-report.csv': {
-            #     'key': 'lhc-lbmvapich2',
-            #     'lines': {
-            #         'omp': ['10'],
-            #         'type': ['total']
-            #     }
-            # },
-            # res_dir+'raw/PS-approx2-mpich3/comm-comp-report.csv': {
-            #     'key': 'ps-mpich3',
-            #     'lines': {
-            #         'omp': ['10'],
-            #         'type': ['total']
-            #     }
-            # },
-            # res_dir+'raw/PS-approx2-openmpi3/comm-comp-report.csv': {
-            #     'key': 'ps-openmpi3',
-            #     'lines': {
-            #         'omp': ['10'],
-            #         'type': ['total']
-            #     }
-            # },
-            # res_dir+'raw/PS-approx2-mvapich2/comm-comp-report.csv': {
-            #     'key': 'ps-mvapich2',
-            #     'lines': {
-            #         'omp': ['10'],
-            #         'type': ['total']
-            #     }
-            # },
-            # res_dir+'raw/PS-lb-mpich3/comm-comp-report.csv': {
-            #     'key': 'ps-lbmpich3',
-            #     'lines': {
-            #         'omp': ['10'],
-            #         'type': ['total']
-            #     }
-            # },
-            # res_dir+'raw/PS-lb-openmpi3/comm-comp-report.csv': {
-            #     'key': 'ps-lbopenmpi3',
-            #     'lines': {
-            #         'omp': ['10'],
-            #         'type': ['total']
-            #     }
-            # },
-            # res_dir+'raw/PS-lb-mvapich2/comm-comp-report.csv': {
-            #     'key': 'ps-lbmvapich2',
-            #     'lines': {
-            #         'omp': ['10'],
-            #         'type': ['total']
-            #     }
-            # },
-
-        },
-        'labels': {
-            'ex01-mpich3': 'ex01-mpich3',
-            'ex01-lbmpich3': 'ex01-lb-mpich3',
-            'ex01-lbmpich3apprx': 'ex01-lb-mpich3-approx2',
-            'ex01-mpich3apprx': 'ex01-mpich3-approx2',
-
-            'lhc-mpich3': 'lhc-mpich3',
-            'lhc-lbmpich3': 'lhc-lb-mpich3',
-            'lhc-lbmpich3apprx': 'lhc-lb-mpich3-approx2',
-            'lhc-mpich3apprx': 'lhc-mpich3-approx2',
-
-            'lhc-mvapich2': 'lhc-mvapich2',
-            'lhc-lbmvapich2': 'lhc-lb-mvapich2',
-            'lhc-lbmvapich2apprx': 'lhc-lb-mvapich2-approx2',
-            'lhc-mvapich2apprx': 'lhc-mvapich2-approx2',
-
-            'lhc-openmpi3': 'lhc-openmpi3',
-            'lhc-lbopenmpi3': 'lhc-lb-openmpi3',
-            'lhc-lbopenmpi3apprx': 'lhc-lb-openmpi3-approx2',
-            'lhc-openmpi3apprx': 'lhc-openmpi3-approx2',
-
-            # 'lhc-orig': 'lhc-orig',
-            # 'lhc-openmpi3': 'lhc-openmpi3',
-            # 'lhc-mvapich2': 'lhc-mvapich2',
-            # 'sps-mpich3': 'sps-mpich3',
-            # 'sps-orig': 'sps-orig',
-            # 'sps-openmpi3': 'sps-openmpi3',
-            # 'sps-mvapich2': 'sps-mvapich2',
-            # 'ps-mpich3': 'ps-mpich3',
-            # 'ps-orig': 'ps-orig',
-            # 'ps-openmpi3': 'ps-openmpi3',
-            # 'ps-mvapich2': 'ps-mvapich2',
-            # 'ps-lbmpich3': 'ps-lb-mpich3',
-            # 'ps-lbopenmpi3': 'ps-lb-openmpi3',
-            # 'ps-lbmvapich2': 'ps-lb-mvapich2',
-
-        },
-        'markers': {
-            'ex01': 'd',
-            'lhc': 'o',
-            'sps': 's',
-            'ps': 'x'
-            # 'lhc-lbmpich3': 'o',
-            # 'lhc-lbmvapich2': 'o',
-            # 'lhc-lbopenmpi3': 'o',
-            # 'lhc-mpich3': 'o',
-            # 'lhc-orig': 'o',
-            # 'lhc-openmpi3': 'o',
-            # 'lhc-mvapich2': 'o',
-            # 'sps-mpich3': 's',
-            # 'sps-orig': 's',
-            # 'sps-openmpi3': 's',
-            # 'sps-mvapich2': 's',
-            # 'ps-orig': 'x',
-            # 'ps-mpich3': 'x',
-            # 'ps-openmpi3': 'x',
-            # 'ps-mvapich2': 'x',
-        },
-        'ls': {
-            'ex01': '-:',
-            'lhc': '-',
-            'sps': ':',
-            'ps': '--'
-            # 'lhc-orig': '-',
-            # 'lhc-lbmpich3': '-',
-            # 'lhc-lbopenmpi3': '-',
-            # 'lhc-lbmvapich2': '-',
-            # 'lhc-mpich3': '-',
-            # 'lhc-openmpi3': '-',
-            # 'lhc-mvapich2': '-',
-            # 'sps-orig': ':',
-            # 'sps-mpich3': ':',
-            # 'sps-openmpi3': ':',
-            # 'sps-mvapich2': ':',
-            # 'ps-orig': '--',
-            # 'ps-mpich3': '--',
-            # 'ps-openmpi3': '--',
-            # 'ps-mvapich2': '--',
-        },
-        'colors': {
-            # 'lhc': 'tab:blue',
-            # 'sps': 'tab:orange',
-            # 'ps': 'tab:green',
-
-            'mpich3': 'xkcd:light yellow',
-            'lbmpich3': 'xkcd:yellow',
-            'mpich3apprx': 'xkcd:light green',
-            'lbmpich3apprx': 'xkcd:green',
-
-            'mvapich2': 'xkcd:light orange',
-            'lbmvapich2': 'xkcd:orange',
-            'mvapich2apprx': 'xkcd:light red',
-            'lbmvapich2apprx': 'xkcd:red',
-
-            'openmpi3': 'xkcd:light pink',
-            'lbopenmpi3': 'xkcd:pink',
-            'openmpi3apprx': 'xkcd:light purple',
-            'lbopenmpi3apprx': 'xkcd:purple',
-
-
-        },
-        'hatches': {
-            'mpich3': 'x',
-            'openmpi3': '-',
-            'mvapich2': 'o',
-            # 'ex01': '\\',
-            # 'lhc': '/',
-            # 'sps': 'o',
-            # 'ps': 'x',
-        },
-        'reference': {
-            'ex01': {'time': 21.4, 'parts': 1000000, 'turns': 2000},
-            'sps': {'time': 430., 'parts': 4000000, 'turns': 100},
-            'lhc': {'time': 2120., 'parts': 2000000, 'turns': 1000},
-            'ps': {'time': 1623.7, 'parts': 4000000, 'turns': 2000},
+        '{}/raw/{}-lb-mpich3/comm-comp-report.csv'.format(res_dir, case.upper()): {
+            'key': '{}-lbmpich3'.format(case),
+            'lines': {
+                'omp': ['10'],
+                'type': ['total']
+            }
         },
 
-        # 'exclude': [['v1', 'notcm'], ['v2', 'notcm'], ['v4', 'notcm']],
-        'x_name': 'n',
-        'x_to_keep': [2, 4, 8, 12, 16],
-        'omp_name': 'omp',
-        'y_name': 'avg_time(sec)',
-        # 'y_err_name': 'std',
-        'xlabel': 'Cores (x10)',
-        'ylabel': 'Speedup',
-        'title': 'LHC Load-balance',
-        'figsize': (8, 6),
-        'fontsize': 8,
-        'legend': {
-            'loc': 'upper left', 'ncol': 3, 'handlelength': 1, 'fancybox': True,
-            'framealpha': 0., 'fontsize': 9, 'labelspacing': 0, 'borderpad': 0.5,
-            'handletextpad': 0.5, 'borderaxespad': 0, 'columnspacing': 0.5,
+        '{}/raw/{}-lb-mpich3-approx2/comm-comp-report.csv'.format(res_dir, case.upper()): {
+            'key': '{}-lbmpich3apprx'.format(case),
+            'lines': {
+                'omp': ['10'],
+                'type': ['total']
+            }
         },
-        'subplots_adjust': {
-            'wspace': 0.05, 'hspace': 0.16, 'top': 0.93
+
+        '{}/raw/{}-lb-mvapich2/comm-comp-report.csv'.format(res_dir, case.upper()): {
+            'key': '{}-lbmvapich2'.format(case),
+            'lines': {
+                'omp': ['10'],
+                'type': ['total']
+            }
         },
-        'tick_params': {
-            'pad': 1, 'top': 1, 'bottom': 1, 'left': 1,
-            'direction': 'inout', 'length': 3, 'width': 0.5,
+
+        '{}/raw/{}-lb-mvapich2-approx2/comm-comp-report.csv'.format(res_dir, case.upper()): {
+            'key': '{}-lbmvapich2apprx'.format(case),
+            'lines': {
+                'omp': ['10'],
+                'type': ['total']
+            }
         },
-        'image_name': images_dir + 'lhc-lb-redistribute.pdf'
+        '{}/raw/{}-lb-openmpi3/comm-comp-report.csv'.format(res_dir, case.upper()): {
+            'key': '{}-lbopenmpi3'.format(case),
+            'lines': {
+                'omp': ['10'],
+                'type': ['total']
+            }
+        },
+
+        '{}/raw/{}-lb-openmpi3-approx2/comm-comp-report.csv'.format(res_dir, case.upper()): {
+            'key': '{}-lbopenmpi3apprx'.format(case),
+            'lines': {
+                'omp': ['10'],
+                'type': ['total']
+            }
+        },
+
+        '{}/raw/{}-approx2-openmpi3/comm-comp-report.csv'.format(res_dir, case.upper()): {
+            'key': '{}-openmpi3apprx'.format(case),
+            'lines': {
+                'omp': ['10'],
+                'type': ['total']
+            }
+        },
+        '{}/raw/{}-approx2-mvapich2/comm-comp-report.csv'.format(res_dir, case.upper()): {
+            'key': '{}-mvapich2apprx'.format(case),
+            'lines': {
+                'omp': ['10'],
+                'type': ['total']
+            }
+        },
+        '{}/raw/{}-approx2-mpich3/comm-comp-report.csv'.format(res_dir, case.upper()): {
+            'key': '{}-mpich3apprx'.format(case),
+            'lines': {
+                'omp': ['10'],
+                'type': ['total']
+            }
+        },
+
+        res_dir+'raw/PS-b21-t10k-mpich3/comm-comp-report.csv': {
+                'key': '{}-mpich3'.format(case),
+                'lines': {
+                    'omp': ['10'],
+                    'type': ['total']
+                }
+        },
+
+        res_dir+'raw/PS-b21-t10k-mvapich2/comm-comp-report.csv': {
+                'key': '{}-mvapich2'.format(case),
+                'lines': {
+                    'omp': ['10'],
+                    'type': ['total']
+                }
+        },
+
+        res_dir+'raw/PS-b21-t10k-openmpi3/comm-comp-report.csv': {
+                'key': '{}-openmpi3'.format(case),
+                'lines': {
+                    'omp': ['10'],
+                    'type': ['total']
+                }
+        },
+
+        # res_dir+'raw/LHC-96B-2MPPB-t10k-mpich3/comm-comp-report.csv': {
+        #     'key': 'lhc-mpich3',
+        #     'lines': {
+        #         'omp': ['10'],
+        #         'type': ['total']
+        #     }
+        # },
+
+        # res_dir+'raw/LHC-96B-2MPPB-t10k-mvapich2/comm-comp-report.csv': {
+        #     'key': 'lhc-mvapich2',
+        #     'lines': {
+        #         'omp': ['10'],
+        #         'type': ['total']
+        #     }
+        # },
+
+        # res_dir+'raw/LHC-96B-2MPPB-t10k-openmpi3/comm-comp-report.csv': {
+        #     'key': 'lhc-openmpi3',
+        #     'lines': {
+        #         'omp': ['10'],
+        #         'type': ['total']
+        #     }
+        # },
+
+
+        # res_dir+'raw/EX01-lb-openmpi3/comm-comp-report.csv': {
+        #     'key': 'lhc-lbopenmpi3',
+        #     'lines': {
+        #         'omp': ['10'],
+        #         'type': ['total']
+        #     }
+        # },
+        # res_dir+'raw/EX01-lb-mvapich2/comm-comp-report.csv': {
+        #     'key': 'lhc-lbmvapich2',
+        #     'lines': {
+        #         'omp': ['10'],
+        #         'type': ['total']
+        #     }
+        # },
+        # res_dir+'raw/PS-approx2-mpich3/comm-comp-report.csv': {
+        #     'key': 'ps-mpich3',
+        #     'lines': {
+        #         'omp': ['10'],
+        #         'type': ['total']
+        #     }
+        # },
+        # res_dir+'raw/PS-approx2-openmpi3/comm-comp-report.csv': {
+        #     'key': 'ps-openmpi3',
+        #     'lines': {
+        #         'omp': ['10'],
+        #         'type': ['total']
+        #     }
+        # },
+        # res_dir+'raw/PS-approx2-mvapich2/comm-comp-report.csv': {
+        #     'key': 'ps-mvapich2',
+        #     'lines': {
+        #         'omp': ['10'],
+        #         'type': ['total']
+        #     }
+        # },
+        # res_dir+'raw/PS-lb-mpich3/comm-comp-report.csv': {
+        #     'key': 'ps-lbmpich3',
+        #     'lines': {
+        #         'omp': ['10'],
+        #         'type': ['total']
+        #     }
+        # },
+        # res_dir+'raw/PS-lb-openmpi3/comm-comp-report.csv': {
+        #     'key': 'ps-lbopenmpi3',
+        #     'lines': {
+        #         'omp': ['10'],
+        #         'type': ['total']
+        #     }
+        # },
+        # res_dir+'raw/PS-lb-mvapich2/comm-comp-report.csv': {
+        #     'key': 'ps-lbmvapich2',
+        #     'lines': {
+        #         'omp': ['10'],
+        #         'type': ['total']
+        #     }
+        # },
 
     },
+    'labels': {
+
+        '{}-mpich3'.format(case): '{}-mpich3'.format(case),
+        '{}-lbmpich3'.format(case): '{}-lb-mpich3'.format(case),
+        '{}-lbmpich3apprx'.format(case): '{}-lb-mpich3-approx2'.format(case),
+        '{}-mpich3apprx'.format(case): '{}-mpich3-approx2'.format(case),
+
+        '{}-mvapich2'.format(case): '{}-mvapich2'.format(case),
+        '{}-lbmvapich2'.format(case): '{}-lb-mvapich2'.format(case),
+        '{}-lbmvapich2apprx'.format(case): '{}-lb-mvapich2-approx2'.format(case),
+        '{}-mvapich2apprx'.format(case): '{}-mvapich2-approx2'.format(case),
+
+        '{}-openmpi3'.format(case): '{}-openmpi3'.format(case),
+        '{}-lbopenmpi3'.format(case): '{}-lb-openmpi3'.format(case),
+        '{}-lbopenmpi3apprx'.format(case): '{}-lb-openmpi3-approx2'.format(case),
+        '{}-openmpi3apprx'.format(case): '{}-openmpi3-approx2'.format(case),
+    },
+    'markers': {
+        'ex01': 'd',
+        'lhc': 'o',
+        'sps': 's',
+        'ps': 'x'
+    },
+    'ls': {
+        'ex01': '-:',
+        'lhc': '-',
+        'sps': ':',
+        'ps': '--'
+    },
+    'colors': {
+        # 'lhc': 'tab:blue',
+        # 'sps': 'tab:orange',
+        # 'ps': 'tab:green',
+
+        'mpich3': 'xkcd:light yellow',
+        'lbmpich3': 'xkcd:yellow',
+        'mpich3apprx': 'xkcd:light green',
+        'lbmpich3apprx': 'xkcd:green',
+
+        'mvapich2': 'xkcd:light orange',
+        'lbmvapich2': 'xkcd:orange',
+        'mvapich2apprx': 'xkcd:light red',
+        'lbmvapich2apprx': 'xkcd:red',
+
+        'openmpi3': 'xkcd:light pink',
+        'lbopenmpi3': 'xkcd:pink',
+        'openmpi3apprx': 'xkcd:light purple',
+        'lbopenmpi3apprx': 'xkcd:purple',
+
+
+    },
+    'hatches': {
+        'mpich3': 'x',
+        'openmpi3': '-',
+        'mvapich2': 'o',
+        # 'ex01': '\\',
+        # 'lhc': '/',
+        # 'sps': 'o',
+        # 'ps': 'x',
+    },
+    'reference': {
+        'ex01': {'time': 21.4, 'parts': 1000000, 'turns': 2000},
+        'sps': {'time': 430., 'parts': 4000000, 'turns': 100},
+        'lhc': {'time': 2120., 'parts': 2000000, 'turns': 1000},
+        'ps': {'time': 1623.7, 'parts': 4000000, 'turns': 2000},
+    },
+
+    # 'exclude': [['v1', 'notcm'], ['v2', 'notcm'], ['v4', 'notcm']],
+    'x_name': 'n',
+    'x_to_keep': [2, 4, 8, 12, 16],
+    'omp_name': 'omp',
+    'y_name': 'avg_time(sec)',
+    # 'y_err_name': 'std',
+    'xlabel': 'Cores (x10)',
+    'ylabel': 'Speedup',
+    'title': '{} Load-balance'.format(case.upper()),
+    'figsize': (8, 6),
+    'fontsize': 8,
+    'legend': {
+        'loc': 'upper left', 'ncol': 3, 'handlelength': 1, 'fancybox': True,
+        'framealpha': 0., 'fontsize': 9, 'labelspacing': 0, 'borderpad': 0.5,
+        'handletextpad': 0.5, 'borderaxespad': 0, 'columnspacing': 0.5,
+    },
+    'subplots_adjust': {
+        'wspace': 0.05, 'hspace': 0.16, 'top': 0.93
+    },
+    'tick_params': {
+        'pad': 1, 'top': 1, 'bottom': 1, 'left': 1,
+        'direction': 'inout', 'length': 3, 'width': 0.5,
+    },
+    'image_name': '{}/{}-lb-redistribute.pdf'.format(images_dir, case),
 
 }
 
 if __name__ == '__main__':
-    for plot_key, config in plots_config.items():
-        plots_dir = {}
-        for file in config['files'].keys():
-            # print(file)
-            data = np.genfromtxt(file, delimiter='\t', dtype=str)
-            header, data = list(data[0]), data[1:]
-            temp = get_plots(header, data, config['files'][file]['lines'],
-                             exclude=config['files'][file].get('exclude', []))
-            temp[config['files'][file]['key']] = temp['10-total']
-            del temp['10-total']
-            plots_dir.update(temp)
+    plots_dir = {}
+    for file in config['files'].keys():
+        # print(file)
+        data = np.genfromtxt(file, delimiter='\t', dtype=str)
+        header, data = list(data[0]), data[1:]
+        temp = get_plots(header, data, config['files'][file]['lines'],
+                         exclude=config['files'][file].get('exclude', []))
+        temp[config['files'][file]['key']] = temp['10-total']
+        del temp['10-total']
+        plots_dir.update(temp)
 
-        fig = plt.figure(figsize=config['figsize'])
+    fig = plt.figure(figsize=config['figsize'])
 
-        plt.grid(True, which='major', alpha=0.5)
-        plt.grid(False, which='major', axis='x')
-        plt.title(config['title'])
-        plt.xlabel(config['xlabel'], fontsize=config['fontsize'])
-        plt.ylabel(config['ylabel'], fontsize=config['fontsize'])
+    plt.grid(True, which='major', alpha=0.5)
+    plt.grid(False, which='major', axis='x')
+    plt.title(config['title'])
+    plt.xlabel(config['xlabel'], fontsize=config['fontsize'])
+    plt.ylabel(config['ylabel'], fontsize=config['fontsize'])
 
-        pos = 0
-        step = 0.1
-        width = 1. / (len(plots_dir.keys())+1)
-        for case in ['lhc', 'sps', 'ps', 'ex01']:
-            for mpiv in ['mpich3', 'lbmpich3',
-                         'mpich3apprx', 'lbmpich3apprx',
-                         'mvapich2', 'lbmvapich2',
-                         'mvapich2apprx', 'lbmvapich2apprx',
-                         'openmpi3', 'lbopenmpi3',
-                         'openmpi3apprx', 'lbopenmpi3apprx']:
+    pos = 0
+    step = 0.1
+    width = 1. / (len(plots_dir.keys())+1)
+    for case in ['lhc', 'sps', 'ps', 'ex01']:
+        for mpiv in ['mpich3', 'lbmpich3',
+                     'mpich3apprx', 'lbmpich3apprx',
+                     'mvapich2', 'lbmvapich2',
+                     'mvapich2apprx', 'lbmvapich2apprx',
+                     'openmpi3', 'lbopenmpi3',
+                     'openmpi3apprx', 'lbopenmpi3apprx']:
 
-                if 'mpich3' in mpiv:
-                    version = 'mpich3'
-                elif 'mvapich2' in mpiv:
-                    version = 'mvapich2'
-                elif 'openmpi3' in mpiv:
-                    version = 'openmpi3'
-                key = '{}-{}'.format(case, mpiv)
-                if key not in plots_dir:
-                    continue
-                values = plots_dir[key]
+            if 'mpich3' in mpiv:
+                version = 'mpich3'
+            elif 'mvapich2' in mpiv:
+                version = 'mvapich2'
+            elif 'openmpi3' in mpiv:
+                version = 'openmpi3'
+            key = '{}-{}'.format(case, mpiv)
+            if key not in plots_dir:
+                continue
+            values = plots_dir[key]
 
-                label = config['labels'][key]
+            label = config['labels'][key]
 
-                x = np.array(values[:, header.index(config['x_name'])], float)
-                omp = np.array(
-                    values[:, header.index(config['omp_name'])], float)
+            x = np.array(values[:, header.index(config['x_name'])], float)
+            omp = np.array(
+                values[:, header.index(config['omp_name'])], float)
 
-                y = np.array(values[:, header.index(config['y_name'])], float)
-                parts = np.array(values[:, header.index('parts')], float)
-                turns = np.array(values[:, header.index('turns')], float)
-                # This is the throughput
-                y = parts * turns / y
+            y = np.array(values[:, header.index(config['y_name'])], float)
+            parts = np.array(values[:, header.index('parts')], float)
+            turns = np.array(values[:, header.index('turns')], float)
+            # This is the throughput
+            y = parts * turns / y
 
-                # Now the reference, 1thread
-                yref = config['reference'][case]['time']
-                partsref = config['reference'][case]['parts']
-                turnsref = config['reference'][case]['turns']
-                yref = partsref * turnsref / yref
+            # Now the reference, 1thread
+            yref = config['reference'][case]['time']
+            partsref = config['reference'][case]['parts']
+            turnsref = config['reference'][case]['turns']
+            yref = partsref * turnsref / yref
 
-                speedup = y / yref
+            speedup = y / yref
 
-                if len(config['x_to_keep']) < len(x):
-                    x_new = []
-                    speedup_new = []
-                    omp_new = []
-                    for i in range(len(x)):
-                        if x[i] in config['x_to_keep']:
-                            x_new.append(x[i])
-                            speedup_new.append(speedup[i])
-                            omp_new.append(omp[i])
-                    x = np.array(x_new)
-                    speedup = np.array(speedup_new)
-                    omp = np.array(omp_new)
+            if len(config['x_to_keep']) < len(x):
+                x_new = []
+                speedup_new = []
+                omp_new = []
+                for i in range(len(x)):
+                    if x[i] in config['x_to_keep']:
+                        x_new.append(x[i])
+                        speedup_new.append(speedup[i])
+                        omp_new.append(omp[i])
+                x = np.array(x_new)
+                speedup = np.array(speedup_new)
+                omp = np.array(omp_new)
 
-                x = x * omp
+            x = x * omp
 
-                # efficiency = 100 * speedup / x
-                plt.bar(np.arange(len(x)) + pos, speedup, width=width,
-                        color=config['colors'][mpiv],
-                        # label=label,
-                        edgecolor='0.3',
-                        alpha=0.8,
-                        hatch=config['hatches'][version])
-                pos += width
-            pos += width * step
+            # efficiency = 100 * speedup / x
+            plt.bar(np.arange(len(x)) + pos, speedup, width=width,
+                    color=config['colors'][mpiv],
+                    # label=label,
+                    edgecolor='0.3',
+                    alpha=0.8,
+                    hatch=config['hatches'][version])
+            pos += width
+        pos += width * step
 
-        plt.xticks(np.arange(len(x)) + pos/2.2, np.array(x//10, int))
+    plt.xticks(np.arange(len(x)) + pos/2.2, np.array(x//10, int))
 
-        handles = []
-        for k, v in config['colors'].items():
-            patch = mpatches.Patch(label=k, edgecolor='black', facecolor=v,
-                                   linewidth=.5, alpha=0.9)
-            handles.append(patch)
+    handles = []
+    for k, v in config['colors'].items():
+        patch = mpatches.Patch(label=k, edgecolor='black', facecolor=v,
+                               linewidth=.5, alpha=0.9)
+        handles.append(patch)
 
-        for k, v in config['hatches'].items():
-            patch = mpatches.Patch(label=k, edgecolor='black',
-                                   facecolor='0.8', hatch=v, linewidth=.5,)
-            handles.append(patch)
+    for k, v in config['hatches'].items():
+        patch = mpatches.Patch(label=k, edgecolor='black',
+                               facecolor='0.8', hatch=v, linewidth=.5,)
+        handles.append(patch)
 
-        plt.legend(handles=handles, **config['legend'])
-        plt.gca().tick_params(**config['tick_params'])
+    plt.legend(handles=handles, **config['legend'])
+    plt.gca().tick_params(**config['tick_params'])
 
-        plt.subplots_adjust(**config['subplots_adjust'])
-        plt.xticks(fontsize=config['fontsize'])
-        plt.yticks(fontsize=config['fontsize'])
-        plt.tight_layout()
-        save_and_crop(fig, config['image_name'], dpi=600, bbox_inches='tight')
-        plt.show()
-        plt.close()
+    plt.subplots_adjust(**config['subplots_adjust'])
+    plt.xticks(fontsize=config['fontsize'])
+    plt.yticks(fontsize=config['fontsize'])
+    plt.tight_layout()
+    save_and_crop(fig, config['image_name'], dpi=600, bbox_inches='tight')
+    plt.show()
+    plt.close()

@@ -22,12 +22,13 @@ parser.add_argument('-i', '--input', type=str, default=None,
 if __name__ == '__main__':
     args = parser.parse_args()
     yc = yaml.load(open(this_directory + 'config.yml', 'r'))
-    # from args.input import configs
-    # configs = importlib.load_source('Conf', args.input).configs
-    configs = importlib.import_module(args.input.split('/')[-1].replace('.py', ''),
-                                      package=os.path.dirname(args.input).replace('/', '.')).configs
 
-    result_dir = yc['result_dir'] + '{}/{}/{}/{}'
+    module = importlib.import_module(args.input.split('/')[-1].replace('.py', ''),
+                                     package=os.path.dirname(args.input).replace('/', '.'))
+    configs = module.configs
+    case = module.case
+
+    result_dir = yc['result_dir'] + '{}/{}/{}/{}/{}'
     os.environ['PYTHONPATH'] = '{}:{}'.format(
         yc['blond_repos'], os.environ['PYTHONPATH'])
     job_name_form = '_p{}_b{}_s{}_t{}_w{}_o{}_N{}_r{}_m{}_seed{}_approx{}_mpi{}'
@@ -38,7 +39,6 @@ if __name__ == '__main__':
 
     print("Total runs: ", total_sims)
     current_sim = 0
-    # os.chdir(yc['blond_home'])
     # compile first
     # subprocess.call(['srun', '-t1', '-N1', '-n1', '-p',
     #                  'be-short', 'bash', setup_script])
@@ -51,7 +51,6 @@ if __name__ == '__main__':
         oss = config['o']
         rs = config['reduce']
         exes = config['exe']
-        # Ns = config['N']
         times = config['time']
         partitions = config['partition']
         loads = config['load']
@@ -86,14 +85,15 @@ if __name__ == '__main__':
                 timestr = datetime.now().strftime('%d%b%y.%H-%M-%S')
                 timestr = timestr + '-' + str(random.randint(0, 100))
                 output = result_dir.format(
-                    analysis, job_name, timestr, 'output.txt')
+                    case, analysis, job_name, timestr, 'output.txt')
                 error = result_dir.format(
-                    analysis, job_name, timestr, 'error.txt')
+                    case, analysis, job_name, timestr, 'error.txt')
                 monitorfile = result_dir.format(
-                    analysis, job_name, timestr, 'monitor')
-                log_dir = result_dir.format(analysis, job_name, timestr, 'log')
+                    case, analysis, job_name, timestr, 'monitor')
+                log_dir = result_dir.format(
+                    case, analysis, job_name, timestr, 'log')
                 report_dir = result_dir.format(
-                    analysis, job_name, timestr, 'report')
+                    case, analysis, job_name, timestr, 'report')
                 for d in [log_dir, report_dir]:
                     if not os.path.exists(d):
                         os.makedirs(d)
@@ -121,7 +121,7 @@ if __name__ == '__main__':
                               '-t', str(time), '-p', partition,
                               '-o', output,
                               '-e', error,
-                              '-J', analysis + job_name.split('/')[0] + '-' + str(i)]
+                              '-J', case + '-' + analysis + job_name.split('/')[0] + '-' + str(i)]
 
                 all_args = ['sbatch'] + batch_args + \
                     [yc['batch_script']] + exe_args
@@ -129,5 +129,5 @@ if __name__ == '__main__':
                                 stderr=stdout, env=os.environ.copy())
                 # sleep(5)
                 current_sim += 1
-                print("%lf %% is completed" % (100.0 * current_sim /
-                                               total_sims))
+                print("%lf %% is completed" % (100.0 * current_sim
+                                               / total_sims))
