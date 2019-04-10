@@ -13,14 +13,14 @@ this_filename = sys.argv[0].split('/')[-1]
 
 project_dir = this_directory + '../../'
 res_dir = project_dir + 'results/'
-images_dir = res_dir + 'plots/'
+images_dir = res_dir + 'plots/redistribute/'
 
 if not os.path.exists(images_dir):
     os.makedirs(images_dir)
 
 
 plots_config = {
-   
+
     'plot1': {
         'files': {
             # res_dir+'raw/SPS-b72-4MPPB-t10k-mpich3/comm-comp-report.csv': {
@@ -240,12 +240,12 @@ plots_config = {
             'ex01-lbmpich3': 'ex01-lb-mpich3',
             'ex01-lbmpich3apprx': 'ex01-lb-mpich3-approx2',
             'ex01-mpich3apprx': 'ex01-mpich3-approx2',
-            
+
             'lhc-mpich3': 'lhc-mpich3',
             'lhc-lbmpich3': 'lhc-lb-mpich3',
             'lhc-lbmpich3apprx': 'lhc-lb-mpich3-approx2',
             'lhc-mpich3apprx': 'lhc-mpich3-approx2',
-            
+
             'lhc-mvapich2': 'lhc-mvapich2',
             'lhc-lbmvapich2': 'lhc-lb-mvapich2',
             'lhc-lbmvapich2apprx': 'lhc-lb-mvapich2-approx2',
@@ -319,34 +319,31 @@ plots_config = {
             # 'sps': 'tab:orange',
             # 'ps': 'tab:green',
 
-            'mpich3': 'xkcd:light blue',
-            'lbmpich3': 'xkcd:blue',
+            'mpich3': 'xkcd:light yellow',
+            'lbmpich3': 'xkcd:yellow',
             'mpich3apprx': 'xkcd:light green',
             'lbmpich3apprx': 'xkcd:green',
 
-            'mvapich2': 'xkcd:light red',
-            'lbmvapich2': 'xkcd:red',
-            'mvapich2apprx': 'xkcd:light orange',
-            'lbmvapich2apprx': 'xkcd:orange',
+            'mvapich2': 'xkcd:light orange',
+            'lbmvapich2': 'xkcd:orange',
+            'mvapich2apprx': 'xkcd:light red',
+            'lbmvapich2apprx': 'xkcd:red',
 
-            'openmpi3': 'xkcd:light purple',
-            'lbopenmpi3': 'xkcd:purple',
-            'openmpi3apprx': 'xkcd:light pink',
-            'lbopenmpi3apprx': 'xkcd:pink',
+            'openmpi3': 'xkcd:light pink',
+            'lbopenmpi3': 'xkcd:pink',
+            'openmpi3apprx': 'xkcd:light purple',
+            'lbopenmpi3apprx': 'xkcd:purple',
 
 
         },
         'hatches': {
-            # 'mpich3': 'x',
-            # 'lbmpich3': 'o',
-            # 'lbopenmpi3': '/',
-            # 'lbmvapich2': '\\',
-            # 'openmpi3': '-',
-            # 'mvapich2': '',
-            'ex01': '\\',
-            'lhc': '/',
-            'sps': 'o',
-            'ps': 'x',
+            'mpich3': 'x',
+            'openmpi3': '-',
+            'mvapich2': 'o',
+            # 'ex01': '\\',
+            # 'lhc': '/',
+            # 'sps': 'o',
+            # 'ps': 'x',
         },
         'reference': {
             'ex01': {'time': 21.4, 'parts': 1000000, 'turns': 2000},
@@ -357,19 +354,28 @@ plots_config = {
 
         # 'exclude': [['v1', 'notcm'], ['v2', 'notcm'], ['v4', 'notcm']],
         'x_name': 'n',
+        'x_to_keep': [2, 4, 8, 12, 16],
         'omp_name': 'omp',
         'y_name': 'avg_time(sec)',
         # 'y_err_name': 'std',
         'xlabel': 'Cores (x10)',
         'ylabel': 'Speedup',
-        'title': 'Alternative MPI Versions',
-        # 'ylim': {
-        #     'speedup': [0, 210]
-        # },
-        # 'nticks': 6,
-        'legend_loc': 'upper left',
-        'figsize': (6, 4),
-        'image_name': images_dir + 'mpi-lb-ex01-1.pdf'
+        'title': 'LHC Load-balance',
+        'figsize': (8, 6),
+        'fontsize': 8,
+        'legend': {
+            'loc': 'upper left', 'ncol': 3, 'handlelength': 1, 'fancybox': True,
+            'framealpha': 0., 'fontsize': 9, 'labelspacing': 0, 'borderpad': 0.5,
+            'handletextpad': 0.5, 'borderaxespad': 0, 'columnspacing': 0.5,
+        },
+        'subplots_adjust': {
+            'wspace': 0.05, 'hspace': 0.16, 'top': 0.93
+        },
+        'tick_params': {
+            'pad': 1, 'top': 1, 'bottom': 1, 'left': 1,
+            'direction': 'inout', 'length': 3, 'width': 0.5,
+        },
+        'image_name': images_dir + 'lhc-lb-redistribute.pdf'
 
     },
 
@@ -388,28 +394,17 @@ if __name__ == '__main__':
             del temp['10-total']
             plots_dir.update(temp)
 
-        # print(plots_dir)
         fig = plt.figure(figsize=config['figsize'])
-        # ax1 = fig.add_subplot(111)
-        # ax2 = ax1.twinx()
 
         plt.grid(True, which='major', alpha=0.5)
         plt.grid(False, which='major', axis='x')
-        # plt.minorticks_on()
         plt.title(config['title'])
-        # ax1.set_title(config['title'])
-        plt.xlabel(config['xlabel'])
-        plt.ylabel(config['ylabel'])
-        # plt.ylim(config['ylim']['speedup'])
-
-        # plt.yscale('log', basex=2)
-        # if 'ylim' in config:
-        #     plt.ylim(config['ylim'])
+        plt.xlabel(config['xlabel'], fontsize=config['fontsize'])
+        plt.ylabel(config['ylabel'], fontsize=config['fontsize'])
 
         pos = 0
-        # width = 0.1
         step = 0.1
-        width = 2. / (len(plots_dir.keys())+1)
+        width = 1. / (len(plots_dir.keys())+1)
         for case in ['lhc', 'sps', 'ps', 'ex01']:
             for mpiv in ['mpich3', 'lbmpich3',
                          'mpich3apprx', 'lbmpich3apprx',
@@ -418,8 +413,12 @@ if __name__ == '__main__':
                          'openmpi3', 'lbopenmpi3',
                          'openmpi3apprx', 'lbopenmpi3apprx']:
 
-                         # 'openmpi3', 'lbopenmpi3',
-                         # 'mvapich2', 'lbmvapich2']:
+                if 'mpich3' in mpiv:
+                    version = 'mpich3'
+                elif 'mvapich2' in mpiv:
+                    version = 'mvapich2'
+                elif 'openmpi3' in mpiv:
+                    version = 'openmpi3'
                 key = '{}-{}'.format(case, mpiv)
                 if key not in plots_dir:
                     continue
@@ -430,7 +429,6 @@ if __name__ == '__main__':
                 x = np.array(values[:, header.index(config['x_name'])], float)
                 omp = np.array(
                     values[:, header.index(config['omp_name'])], float)
-                x = (x) * omp
 
                 y = np.array(values[:, header.index(config['y_name'])], float)
                 parts = np.array(values[:, header.index('parts')], float)
@@ -446,32 +444,37 @@ if __name__ == '__main__':
 
                 speedup = y / yref
 
+                if len(config['x_to_keep']) < len(x):
+                    x_new = []
+                    speedup_new = []
+                    omp_new = []
+                    for i in range(len(x)):
+                        if x[i] in config['x_to_keep']:
+                            x_new.append(x[i])
+                            speedup_new.append(speedup[i])
+                            omp_new.append(omp[i])
+                    x = np.array(x_new)
+                    speedup = np.array(speedup_new)
+                    omp = np.array(omp_new)
+
+                x = x * omp
+
                 # efficiency = 100 * speedup / x
-                plt.bar(x//10 + pos, speedup, width=width,
+                plt.bar(np.arange(len(x)) + pos, speedup, width=width,
                         color=config['colors'][mpiv],
                         # label=label,
-                        edgecolor='0.4',
-                        alpha=0.9,
-                        hatch=config['hatches'][case])
+                        edgecolor='0.3',
+                        alpha=0.8,
+                        hatch=config['hatches'][version])
                 pos += width
             pos += width * step
 
-        if 'extra' in config:
-            for c in config['extra']:
-                exec(c)
-
-        # nticks = config['nticks']
-        # plt.gca().yaxis.set_major_locator(matplotlib.ticker.LinearLocator(nticks))
-        # ax2.yaxis.set_major_locator(matplotlib.ticker.LinearLocator(nticks))
-        # for tl in ax1.get_yticklabels():
-        #     tl.set_color(config['colors']['speedup'])
-
-        plt.xticks(x//10 + pos/2.2, np.array(x//10, int))
+        plt.xticks(np.arange(len(x)) + pos/2.2, np.array(x//10, int))
 
         handles = []
         for k, v in config['colors'].items():
             patch = mpatches.Patch(label=k, edgecolor='black', facecolor=v,
-                                   linewidth=.5,alpha=0.9)
+                                   linewidth=.5, alpha=0.9)
             handles.append(patch)
 
         for k, v in config['hatches'].items():
@@ -479,9 +482,12 @@ if __name__ == '__main__':
                                    facecolor='0.8', hatch=v, linewidth=.5,)
             handles.append(patch)
 
-        plt.legend(handles=handles, loc=config['legend_loc'], fancybox=True, fontsize=10.5,
-                   labelspacing=0, borderpad=0.5, framealpha=0.8,
-                   handletextpad=0.5, handlelength=2, borderaxespad=0)
+        plt.legend(handles=handles, **config['legend'])
+        plt.gca().tick_params(**config['tick_params'])
+
+        plt.subplots_adjust(**config['subplots_adjust'])
+        plt.xticks(fontsize=config['fontsize'])
+        plt.yticks(fontsize=config['fontsize'])
         plt.tight_layout()
         save_and_crop(fig, config['image_name'], dpi=600, bbox_inches='tight')
         plt.show()

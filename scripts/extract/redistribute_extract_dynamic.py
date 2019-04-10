@@ -8,35 +8,49 @@ import subprocess
 import argparse
 import glob
 
-
 this_directory = os.path.dirname(os.path.realpath(__file__)) + '/'
 log_fname = 'particles.csv'
 log_fname_std = 'particles-std.csv'
 log_worker_fname = 'particles-workers.csv'
 worker_pattern = 'worker-*.log'
 
-parser = argparse.ArgumentParser(description='Generate a csv report from the input raw data.',
-                                 usage='python redistribute.py -i [indir] -o [outfile]')
+parser = argparse.ArgumentParser(
+    description='Generate a csv report from the input raw data.',
+    usage='python redistribute.py -i [indir] -o [outfile]')
 
-parser.add_argument('-o', '--outfile', type=str, default='file',
+parser.add_argument('-o',
+                    '--outfile',
+                    type=str,
+                    default='file',
                     choices=['sys.stdout', 'file'],
                     help='The file to save the report.'
                     ' Default: (indir)-report.csv')
 
-parser.add_argument('-i', '--indir', type=str, default=None,
+parser.add_argument('-i',
+                    '--indir',
+                    type=str,
+                    default=None,
                     help='The directory containing the collected data.')
 
-parser.add_argument('-r', '--report', type=str, default='all',
+parser.add_argument('-r',
+                    '--report',
+                    type=str,
+                    default='all',
                     choices=['generate', 'collect', 'aggregate', 'all'],
                     help='The report type.')
 
-parser.add_argument('-s', '--script', type=str, default=this_directory + 'helper_redistribute.py',
+parser.add_argument('-s',
+                    '--script',
+                    type=str,
+                    default=this_directory + 'helper_redistribute.py',
                     help='The path to the helper_redistribute script.')
 
 parser.add_argument('-k', '--keep', type=int, default=2,
                     help='The number of top best runs to keep for the average calculation. Use -1 for all.')
 
-parser.add_argument('-u', '--update', action='store_true',
+parser.add_argument('-u',
+                    '--update',
+                    action='store_true',
                     help='Force update of already calculated reports.')
 
 
@@ -51,9 +65,11 @@ def generate_reports(input, report_script):
         log_dir = os.path.join(dirs, 'log')
         outfile = os.path.join(dirs, log_worker_fname)
         if (args.update or (not os.path.isfile(outfile))):
-            ps.append(subprocess.Popen(['python', report_script, '-r', 'particles',
-                                        '-i', log_dir, '-o', outfile,
-                                        '-p', worker_pattern]))
+            ps.append(
+                subprocess.Popen([
+                    'python', report_script, '-r', 'particles', '-i', log_dir,
+                    '-o', outfile, '-p', worker_pattern
+                ]))
         for p in ps:
             p.wait()
 
@@ -63,28 +79,26 @@ def calc_histo(files, outfile, outfile_std):
     default_header = []
     data_dic = {}
     for f in files:
-        data = np.genfromtxt(f, dtype=str, delimiter='\t')
-        header, data = data[0], data[1:]
-        wids, data = data[:, 0], data[:, 1:]
-        header = header[1:]  # remove the wid
+        dic = {}
+        try:
+            data = np.genfromtxt(f, dtype=str, delimiter='\t')
+            header, data = data[0], data[1:]
+            wids, data = data[:, 0], data[:, 1:]
+            header = header[1:]  # remove the wid
+        except IndexError as ie:
+            print('Problem with file: ', indir + '/' + f)
+            continue
 
         if len(default_header) == 0:
             default_header = header
         elif not np.array_equal(default_header, header):
-            print('Problem with file: ', indir+'/'+f)
+            print('Problem with file: ', indir + '/' + f)
             continue
-        dic = {}
         # Get some general info
         ppb = int(f.split('_p')[1].split('_')[0])
         bunches = int(f.split('_b')[1].split('_')[0])
         workers = int(f.split('_w')[1].split('_')[0])
         parts_t0 = ppb * bunches // workers
-
-        # First do the turns, then all the rest
-        # h = 'turn_num'
-        # i = header.index(h)
-        # lst = data[i][0].split('|')
-        # dic[h] = np.array(lst, float)
 
         # go through the data column by column
         for i, h in enumerate(header):
@@ -94,7 +108,7 @@ def calc_histo(files, outfile, outfile_std):
             dic[h] = np.array(lst, float)
             if h == 'parts':
                 dic[h] = np.insert(dic[h], 0, parts_t0, axis=1)
-                dic[h] = np.abs(np.diff(dic[h]))/parts_t0
+                dic[h] = np.abs(np.diff(dic[h])) / parts_t0
 
         for k, v in dic.items():
             if k == 'turn_num':
@@ -102,50 +116,50 @@ def calc_histo(files, outfile, outfile_std):
                     data_dic[k] = []
                 data_dic[k].append(np.array(v[0]))
             else:
-                if k+'_avg' not in data_dic:
-                    data_dic[k+'_avg'] = []
-                    data_dic[k+'_min'] = []
-                    data_dic[k+'_max'] = []
-                data_dic[k+'_avg'].append(np.mean(v, axis=0))
-                data_dic[k+'_min'].append(np.min(v, axis=0))
-                data_dic[k+'_max'].append(np.max(v, axis=0))
+                if k + '_avg' not in data_dic:
+                    data_dic[k + '_avg'] = []
+                    data_dic[k + '_min'] = []
+                    data_dic[k + '_max'] = []
+                data_dic[k + '_avg'].append(np.mean(v, axis=0))
+                data_dic[k + '_min'].append(np.min(v, axis=0))
+                data_dic[k + '_max'].append(np.max(v, axis=0))
 
     max_turn = np.max(dic['turn_num'])
     min_turn = np.min(dic['turn_num'])
-    turns = np.arange(min_turn, max_turn+1, 100)
+    turns = np.arange(min_turn, max_turn + 1, 100)
 
+    acc_data = [['turn_num'] + list(turns)]
+    acc_data_std = [['turn_num'] + list(turns)]
+
+    data_dic['turn_num'] = np.mean(data_dic['turn_num'], axis=0)
     for key, v in data_dic.items():
         if key == 'turn_num':
             continue
-        for i, row in enumerate(v):
-            # if key in ['turn_num', 'tcomp', 'tcomm']:
-            data_dic[key][i] = np.interp(
-                turns, data_dic['turn_num'][i], row)
-            # else:
+        mean = np.interp(turns, data_dic['turn_num'], np.mean(v, axis=0))
+        std = np.interp(turns, data_dic['turn_num'], np.std(v, axis=0))
+        acc_data.append([key] + list(mean))
+        acc_data_std.append([key] + list(std))
+        # else:
+        # a = np.zeros(len(turns), float)
+        # k = 0
+        # for j in range(len(a)):
+        #     if k < len(data_dic['turn_num'][i]) and \
+        #             turns[j] <= data_dic['turn_num'][i][k]:
+        #         a[j] = row[k]
+        #     else:
+        #         k += 1
+        #         if k >= len(data_dic['turn_num'][i]):
+        #             a[j] = row[-1]
+        #         else:
+        #             a[j] = row[k]
+        # data_dic[key][i] = a
 
-            # a = np.zeros(len(turns), float)
-            # k = 0
-            # for j in range(len(a)):
-            #     if k < len(data_dic['turn_num'][i]) and \
-            #             turns[j] <= data_dic['turn_num'][i][k]:
-            #         a[j] = row[k]
-            #     else:
-            #         k += 1
-            #         if k >= len(data_dic['turn_num'][i]):
-            #             a[j] = row[-1]
-            #         else:
-            #             a[j] = row[k]
-            # data_dic[key][i] = a
-    data_dic['turn_num'] = [turns for _ in data_dic['turn_num']]
-
-    acc_data = []
-    acc_data_std = []
     # sortid = [i[0]for i in sorted(enumerate(data_dic[funcs[-1]]),
     #                               key=lambda a:a[1][0])]
-    for k, v in data_dic.items():
-        acc_data.append([k] + list(np.mean(data_dic[k], axis=0)))
-        acc_data_std.append(
-            [k] + list(np.around(np.std(data_dic[k], axis=0), 4)))
+    # for k, v in data_dic.items():
+    #     acc_data.append([k] + list(np.mean(data_dic[k], axis=0)))
+    #     acc_data_std.append(
+    #         [k] + list(np.around(np.std(data_dic[k], axis=0), 4)))
 
     # Transpose list of lists magic
     acc_data = list(map(list, zip(*acc_data)))
@@ -195,7 +209,8 @@ def collect_reports(input, outfile, filename):
             rs = config.split('_r')[1].split('_')[0]
 
             data = np.genfromtxt(os.path.join(dirs, filename),
-                                 dtype=str, delimiter='\t')
+                                 dtype=str,
+                                 delimiter='\t')
 
             data_head, data = data[0], data[1:]
             for r in data:
@@ -203,8 +218,8 @@ def collect_reports(input, outfile, filename):
         except:
             print('[Error] dir ', dirs)
             continue
-    records.sort(key=lambda a: (float(a[0]), int(a[1]), int(a[2]),
-                                int(a[3]), int(a[4]), int(a[5]), int(a[6])))
+    records.sort(key=lambda a: (float(a[0]), int(a[1]), int(a[2]), int(a[3]),
+                                int(a[4]), int(a[5]), int(a[6])))
     writer = csv.writer(outfile, delimiter='\t')
     writer.writerow(header + list(data_head))
     writer.writerows(records)
@@ -224,11 +239,11 @@ if __name__ == '__main__':
             if args.outfile == 'sys.stdout':
                 collect_reports(indir, sys.stdout, log_fname)
             elif args.outfile == 'file':
-                collect_reports(indir,
-                                open(os.path.join(
-                                    indir, 'particles-std-report.csv'), 'w'),
-                                log_fname_std)
-                collect_reports(indir,
-                                open(os.path.join(
-                                    indir, 'particles-report.csv'), 'w'),
-                                log_fname)
+                collect_reports(
+                    indir,
+                    open(os.path.join(indir, 'particles-std-report.csv'), 'w'),
+                    log_fname_std)
+                collect_reports(
+                    indir,
+                    open(os.path.join(indir, 'particles-report.csv'), 'w'),
+                    log_fname)

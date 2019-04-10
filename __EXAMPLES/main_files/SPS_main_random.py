@@ -510,6 +510,8 @@ if N_t_monitor > 0 and worker.isMaster:
                                   Nbunches=n_bunches)
 mpiprint("Ready for tracking!\n")
 
+lbturns = [100, 200] + list(np.arange(1000, N_t, 1000))
+
 delta = 0
 worker.sync()
 timing.reset()
