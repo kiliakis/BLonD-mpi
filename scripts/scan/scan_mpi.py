@@ -36,7 +36,7 @@ if __name__ == '__main__':
 
         total_sims = 0
         for rc in run_configs:
-            total_sims += configs[rc]['repeats'] * len(v['w'])
+            total_sims += configs[rc]['repeats'] * len(configs[rc]['w'])
 
         print("Total runs: ", total_sims)
         current_sim = 0
