@@ -242,12 +242,12 @@ class Worker:
             elif dPi[i] > Pi[i]:
                 dPi[i] = Pi[i]
 
-        if np.sum(np.abs(dPi)) < 0.001 * P:
-            self.interval = max(2* self.interval, 6400)
+        if np.sum(np.abs(dPi))/2 < 1e-4 * P:
+            self.interval = min(2*self.interval, 6400)
         else:
             self.interval = 100
 
-        transactions = calc_transactions(dPi, 0.001 * P)[self.rank]
+        transactions = calc_transactions(dPi, 1e-5 * P)[self.rank]
         if dPi[self.rank] > 0 and len(transactions) > 0:
             reqs = []
             tot_to_send = np.sum([t[1] for t in transactions])

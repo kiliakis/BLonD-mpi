@@ -131,35 +131,14 @@ def calc_histo(files, outfile, outfile_std):
     acc_data = [['turn_num'] + list(turns)]
     acc_data_std = [['turn_num'] + list(turns)]
 
-    data_dic['turn_num'] = np.mean(data_dic['turn_num'], axis=0)
+    # data_dic['turn_num'] = np.mean(data_dic['turn_num'], axis=0)
     for key, v in data_dic.items():
         if key == 'turn_num':
             continue
-        mean = np.interp(turns, data_dic['turn_num'], np.mean(v, axis=0))
-        std = np.interp(turns, data_dic['turn_num'], np.std(v, axis=0))
-        acc_data.append([key] + list(mean))
-        acc_data_std.append([key] + list(std))
-        # else:
-        # a = np.zeros(len(turns), float)
-        # k = 0
-        # for j in range(len(a)):
-        #     if k < len(data_dic['turn_num'][i]) and \
-        #             turns[j] <= data_dic['turn_num'][i][k]:
-        #         a[j] = row[k]
-        #     else:
-        #         k += 1
-        #         if k >= len(data_dic['turn_num'][i]):
-        #             a[j] = row[-1]
-        #         else:
-        #             a[j] = row[k]
-        # data_dic[key][i] = a
-
-    # sortid = [i[0]for i in sorted(enumerate(data_dic[funcs[-1]]),
-    #                               key=lambda a:a[1][0])]
-    # for k, v in data_dic.items():
-    #     acc_data.append([k] + list(np.mean(data_dic[k], axis=0)))
-    #     acc_data_std.append(
-    #         [k] + list(np.around(np.std(data_dic[k], axis=0), 4)))
+        for j, row in enumerate(v):
+            data_dic[key][j] = np.interp(turns, data_dic['turn_num'][j], row)
+        acc_data.append([key] + list(np.mean(data_dic[key], axis=0)))
+        acc_data_std.append([key] + list(np.std(data_dic[key], axis=0)))
 
     # Transpose list of lists magic
     acc_data = list(map(list, zip(*acc_data)))
