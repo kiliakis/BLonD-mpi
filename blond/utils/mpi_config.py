@@ -219,8 +219,6 @@ class Worker:
     @mpiprof.traceit(key='comm:redistribute')
     def redistribute(self, turn, beam, tcomp, tcomm, tconst):
         latency = tcomp / beam.n_macroparticles
-        # self.logger.critical('[{}]: Time {} sec.'.format(self.rank, time))
-        # self.logger.critical('[{}]: Latency {} sec/particle.'.format(self.rank, latency))
         recvbuf = np.empty(3 * self.workers, dtype=float)
         self.intracomm.Allgather(
             np.array([latency, tconst, beam.n_macroparticles]), recvbuf)
@@ -233,7 +231,6 @@ class Worker:
         sum1 = np.sum(ctimes/latencies)
         sum2 = np.sum(1./latencies)
         Pi = (P + sum1 - ctimes * sum2)/(latencies * sum2)
-        # Pi = P / (latencies * np.sum(1./latencies))
         dPi = np.rint(Pi_old - Pi)
 
         for i in range(len(dPi)):

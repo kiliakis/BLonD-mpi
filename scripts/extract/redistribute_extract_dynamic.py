@@ -10,6 +10,7 @@ import glob
 
 this_directory = os.path.dirname(os.path.realpath(__file__)) + '/'
 log_fname = 'particles.csv'
+log_fname = 'particles-distribution.csv'
 log_fname_std = 'particles-std.csv'
 log_worker_fname = 'particles-workers.csv'
 worker_pattern = 'worker-*.log'
@@ -73,8 +74,68 @@ def generate_reports(input, report_script):
         for p in ps:
             p.wait()
 
+def write_distribution(files, outfile):
+    acc_data = []
+    default_header = []
+    data_dic = {}
+    for run_num, f in enumerate(files):
+        try:
+            data = np.genfromtxt(f, dtype=str, delimiter='\t')
+            header, data = data[0], data[1:]
+            wids, data = data[:, 0], data[:, 1:]
+            header = header[1:]  # remove the wid
+        except IndexError as ie:
+            print('Problem with file: ', indir + '/' + f)
+            continue
 
-def calc_histo(files, outfile, outfile_std):
+        if len(default_header) == 0:
+            default_header = header
+        elif not np.array_equal(default_header, header):
+            print('Problem with file: ', indir + '/' + f)
+            continue
+        # Get some general info
+        ppb = int(f.split('_p')[1].split('_')[0])
+        bunches = int(f.split('_b')[1].split('_')[0])
+        workers = int(f.split('_w')[1].split('_')[0])
+        parts_t0 = ppb * bunches // workers
+        dic = {}
+        # go through the data column by column
+        for i, h in enumerate(header):
+            lst = [d[i].split('|') for d in data]
+            # min_num = np.min([len(l) for l in lst])
+            # lst = [l[:min_num] for l in lst]
+            if h not in data_dic:
+                dic[h] = []
+            lst = np.array(lst, float)
+            if h == 'parts':
+                lst = np.insert(lst, 0, parts_t0, axis=1)
+                lst = np.abs(np.diff(lst)) / parts_t0
+            dic[h] = lst
+        data_dic[run_num] = dic.copy()
+
+    max_turn = np.max([np.max(r['turn_num']) for r in data_dic.values()])
+    min_turn = np.min([np.min(r['turn_num']) for r in data_dic.values()])
+    turns = np.arange(min_turn, max_turn + 1, 200)
+    
+    writer1 = csv.writer(outfile, delimiter='\t')
+    header = ['run_num'] + list(data_dic[0].keys())
+    writer1.writerow(header)
+    for run_num, dic in data_dic.items():
+        acc_data = [([run_num] * len(turns)) * workers]
+        acc_data.append(list(turns) * workers)
+        for key, v in dic.items():
+            if key == 'turn_num':
+                continue
+            for j, row in enumerate(v):
+                acc_data.append(list(np.interp(turns, dic['turn_num'][j], row)))
+                # dic[key][j] = np.interp(turns, dic['turn_num'][j], row)
+        # Transpose list of lists magic
+        acc_data = list(map(list, zip(*acc_data)))
+        writer1.writerows(acc_data)
+
+
+
+def write_avg(files, outfile, outfile_std):
     acc_data = []
     default_header = []
     data_dic = {}
@@ -160,8 +221,9 @@ def aggregate_reports(input):
         files = [os.path.join(dirs, s, log_worker_fname) for s in sdirs]
         print(dirs)
         # try:
-        calc_histo(files, open(os.path.join(dirs, log_fname), 'w'),
+        write_avg(files, open(os.path.join(dirs, log_fname), 'w'),
                    open(os.path.join(dirs, log_fname_std), 'w'))
+        write_distribution(files, open(os.path.join(dirs, log_fname), 'w'))
         # except Exception as e:
         # print('[Error] Dir: {}, Exception: {}, line: {}'.format(dirs, e,
         # sys.exc_info()[2].tb_lineno))
