@@ -37,7 +37,7 @@ plots_config = {
         'x_name': 'n',
         'omp_name': 'omp',
         'y_name': 'avg_time(sec)',
-        'reference': { 'time': 8213. , 'parts': 1000000, 'turns':10000},
+        'reference': { 'time': 8213. , 'ppb': 1000000, 'turns':10000},
         # 'y_err_name': 'std',
         'xlabel': 'MPI Tasks/OMP Threads',
         'ylabel': 'Efficiency Percent',
@@ -116,14 +116,14 @@ if __name__ == '__main__':
             x = (x-1) * omp
 
             y = np.array(values[:, header.index(config['y_name'])], float)
-            parts = np.array(values[:, header.index('parts')], float)
+            parts = np.array(values[:, header.index('ppb')], float)
             turns = np.array(values[:, header.index('turns')], float)
             # This is the throughput
             y = parts * turns / y
 
             # Now the reference, 1thread
             yref = config['reference']['time']
-            pref = config['reference']['parts']
+            pref = config['reference']['ppb']
             turnsref = config['reference']['turns']
             yref = pref * turnsref / yref
 

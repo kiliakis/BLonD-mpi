@@ -128,7 +128,7 @@ def aggregate_reports(input):
 
 def collect_reports(input, outfile, filename):
     print('\n--------Collecting reports-------\n')
-    header = ['parts', 'bunches', 'slices', 'turns', 'n', 'omp', 'N', 'red']
+    header = ['ppb', 'bunches', 'slices', 'turns', 'n', 'omp', 'N', 'red']
     records = []
     for dirs, subdirs, files in os.walk(input):
         if filename not in files:

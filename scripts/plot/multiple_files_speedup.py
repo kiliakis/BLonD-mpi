@@ -231,9 +231,9 @@ plots_config = {
             'ps-mvapich2': 'tab:green',
         },
         'reference': {
-            'sps': {'time': 430., 'parts': 4000000, 'turns': 100},
-            'lhc': {'time': 2120., 'parts': 2000000, 'turns': 1000},
-            'ps': {'time': 1623.7, 'parts': 4000000, 'turns': 2000},
+            'sps': {'time': 430., 'ppb': 4000000, 'turns': 100},
+            'lhc': {'time': 2120., 'ppb': 2000000, 'turns': 1000},
+            'ps': {'time': 1623.7, 'ppb': 4000000, 'turns': 2000},
         },
 
         # 'exclude': [['v1', 'notcm'], ['v2', 'notcm'], ['v4', 'notcm']],
@@ -298,14 +298,14 @@ if __name__ == '__main__':
             x = (x) * omp
 
             y = np.array(values[:, header.index(config['y_name'])], float)
-            parts = np.array(values[:, header.index('parts')], float)
+            parts = np.array(values[:, header.index('ppb')], float)
             turns = np.array(values[:, header.index('turns')], float)
             # This is the throughput
             y = parts * turns / y
 
             # Now the reference, 1thread
             yref = config['reference'][case]['time']
-            partsref = config['reference'][case]['parts']
+            partsref = config['reference'][case]['ppb']
             turnsref = config['reference'][case]['turns']
             yref = partsref * turnsref / yref
 

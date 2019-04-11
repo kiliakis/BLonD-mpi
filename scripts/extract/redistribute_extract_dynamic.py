@@ -10,7 +10,7 @@ import glob
 
 this_directory = os.path.dirname(os.path.realpath(__file__)) + '/'
 log_fname = 'particles.csv'
-log_fname = 'particles-distribution.csv'
+log_fname_distribution = 'particles-distribution.csv'
 log_fname_std = 'particles-std.csv'
 log_worker_fname = 'particles-workers.csv'
 worker_pattern = 'worker-*.log'
@@ -227,7 +227,7 @@ def aggregate_reports(input):
         # try:
         write_avg(files, open(os.path.join(dirs, log_fname), 'w'),
                    open(os.path.join(dirs, log_fname_std), 'w'))
-        write_distribution(files, open(os.path.join(dirs, log_fname), 'w'))
+        write_distribution(files, open(os.path.join(dirs, log_fname_distribution), 'w'))
         # except Exception as e:
         # print('[Error] Dir: {}, Exception: {}, line: {}'.format(dirs, e,
         # sys.exc_info()[2].tb_lineno))
@@ -235,7 +235,7 @@ def aggregate_reports(input):
 
 def collect_reports(input, outfile, filename):
     print('\n--------Collecting reports-------\n')
-    header = ['parts', 'bunches', 'slices', 'turns', 'n', 'omp', 'N', 'red']
+    header = ['ppb', 'bunches', 'slices', 'turns', 'n', 'omp', 'N', 'red']
     records = []
     for dirs, subdirs, files in os.walk(input):
         if filename not in files:
@@ -292,3 +292,7 @@ if __name__ == '__main__':
                     indir,
                     open(os.path.join(indir, 'particles-report.csv'), 'w'),
                     log_fname)
+                collect_reports(
+                    indir,
+                    open(os.path.join(indir, 'particles-distribution-report.csv'), 'w'),
+                    log_fname_distribution)

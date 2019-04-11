@@ -155,7 +155,7 @@ plots_config = {
             # '10': 'tab:red'
             # '20000000-20-comp': 'tab:purple'
         },
-        'reference': {'time': 430., 'parts': 4000000, 'turns': 100},
+        'reference': {'time': 430., 'ppb': 4000000, 'turns': 100},
 
         'hatches': {
             # '5': '/',
@@ -293,14 +293,14 @@ if __name__ == '__main__':
             x = (x) * omp
 
             y = np.array(values[:, header.index(config['y_name_ax2'])], float)
-            parts = np.array(values[:, header.index('parts')], float)
+            parts = np.array(values[:, header.index('ppb')], float)
             turns = np.array(values[:, header.index('turns')], float)
             # This is the throughput
             y = parts * turns / y
 
             # Now the reference, 1thread
             yref = config['reference']['time']
-            partsref = config['reference']['parts']
+            partsref = config['reference']['ppb']
             turnsref = config['reference']['turns']
             yref = partsref * turnsref / yref
 
