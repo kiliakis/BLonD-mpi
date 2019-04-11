@@ -118,17 +118,21 @@ def write_distribution(files, outfile):
     turns = np.arange(min_turn, max_turn + 1, 200)
     
     writer1 = csv.writer(outfile, delimiter='\t')
-    header = ['run_num'] + list(data_dic[0].keys())
+    header = ['run_num', 'wid'] + list(data_dic[0].keys())
     writer1.writerow(header)
     for run_num, dic in data_dic.items():
         acc_data = [([run_num] * len(turns)) * workers]
+        acc_data.append([])
+        for w in range(workers):
+            acc_data[-1] += len(turns) * [w]
         acc_data.append(list(turns) * workers)
         for key, v in dic.items():
+            lst = []
             if key == 'turn_num':
                 continue
             for j, row in enumerate(v):
-                acc_data.append(list(np.interp(turns, dic['turn_num'][j], row)))
-                # dic[key][j] = np.interp(turns, dic['turn_num'][j], row)
+                lst += list(np.interp(turns, dic['turn_num'][j], row))
+            acc_data.append(lst)
         # Transpose list of lists magic
         acc_data = list(map(list, zip(*acc_data)))
         writer1.writerows(acc_data)
