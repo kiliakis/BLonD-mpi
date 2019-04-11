@@ -247,7 +247,7 @@ class Worker:
         else:
             self.interval = 100
 
-        transactions = calc_transactions(dPi, 1e-5 * P)[self.rank]
+        transactions = calc_transactions(dPi, 128)[self.rank]
         if dPi[self.rank] > 0 and len(transactions) > 0:
             reqs = []
             tot_to_send = np.sum([t[1] for t in transactions])
