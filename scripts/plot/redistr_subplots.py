@@ -19,37 +19,55 @@ if not os.path.exists(images_dir):
     os.makedirs(images_dir)
 
 cases = [
-    'LHC-lb-mpich3',
-    'LHC-lb-mpich3-approx2',
-    'LHC-lb-openmpi3',
-    'LHC-lb-openmpi3-approx2',
-    'LHC-lb-mvapich2',
-    'LHC-lb-mvapich2-approx2',
-    'SPS-lb-mpich3',
-    'SPS-lb-mpich3-approx2',
-    'SPS-lb-openmpi3',
-    'SPS-lb-openmpi3-approx2',
-    'SPS-lb-mvapich2',
-    'SPS-lb-mvapich2-approx2',
-    'PS-lb-mpich3',
-    'PS-lb-mpich3-approx2',
-    'PS-lb-openmpi3',
-    'PS-lb-openmpi3-approx2',
-    'PS-lb-mvapich2',
-    'PS-lb-mvapich2-approx2',
-    'LHC-mpich3',
-    'LHC-mvapich2',
-    'LHC-openmpi3',
-    'PS-mpich3',
-    'PS-mvapich2',
-    'PS-openmpi3',
-    'EX01-lb-mpich3',
-    'EX01-lb-mpich3-approx2',
-    'EX01-mpich3',
+    ('LHC', 'lb-mpich3'),
+    ('LHC', 'lb-mpich3-approx2'),
+    # ('LHC', 'lb-openmpi3'),
+    # ('LHC', 'lb-openmpi3-approx2'),
+    ('LHC', 'lb-mvapich2'),
+    ('LHC', 'lb-mvapich2-approx2'),
+    ('LHC', 'dynamic-lb-mpich3'),
+    ('LHC', 'dynamic-lb-mpich3-approx2'),
+    # ('LHC', 'dynamic-lb-openmpi3'),
+    # ('LHC', 'dynamic-lb-openmpi3-approx2'),
+    # ('LHC', 'mpich3'),
+    # ('LHC', 'mvapich2'),
+    # ('LHC', 'openmpi3'),
+    ('LHC', 'dynamic-lb-mvapich2'),
+    ('LHC', 'dynamic-lb-mvapich2-approx2'),
+    ('SPS', 'lb-mpich3'),
+    ('SPS', 'lb-mpich3-approx2'),
+    # ('SPS', 'lb-openmpi3'),
+    # ('SPS', 'lb-openmpi3-approx2'),
+    ('SPS', 'lb-mvapich2'),
+    ('SPS', 'lb-mvapich2-approx2'),
+    ('SPS', 'dynamic-lb-mpich3'),
+    ('SPS', 'dynamic-lb-mpich3-approx2'),
+    # ('SPS', 'dynamic-lb-openmpi3'),
+    # ('SPS', 'dynamic-lb-openmpi3-approx2'),
+    ('SPS', 'dynamic-lb-mvapich2'),
+    ('SPS', 'dynamic-lb-mvapich2-approx2'),
+    ('PS', 'lb-mpich3'),
+    ('PS', 'lb-mpich3-approx2'),
+    # ('PS', 'lb-openmpi3'),
+    # ('PS', 'lb-openmpi3-approx2'),
+    ('PS', 'lb-mvapich2'),
+    ('PS', 'lb-mvapich2-approx2'),
+    ('PS', 'dynamic-lb-mpich3'),
+    ('PS', 'dynamic-lb-mpich3-approx2'),
+    # ('PS', 'dynamic-lb-openmpi3'),
+    # ('PS', 'dynamic-lb-openmpi3-approx2'),
+    ('PS', 'dynamic-lb-mvapich2'),
+    ('PS', 'dynamic-lb-mvapich2-approx2'),
+    # ('PS', 'mpich3'),
+    # ('PS', 'mvapich2'),
+    # ('PS', 'openmpi3'),
+    # ('EX01', 'lb-mpich3'),
+    # ('EX01', 'lb-mpich3-approx2'),
+    # ('EX01', 'mpich3'),
 ]
 conf = {
     'files': {
-        '{}/raw/{}/particles-report.csv': {
+        '{}/raw/{}/{}/particles-report.csv': {
             'dic_rows': ['n'],
             'dic_cols': ['turn_num', 'parts_avg', 'parts_min',
                          'parts_max', 'tcomp_avg', 'tcomp_min',
@@ -125,10 +143,11 @@ conf = {
 }
 
 if __name__ == '__main__':
-    for case in cases:
+    for case_tup in cases:
+        case = case_tup[0] + '-' + case_tup[1]
         plots_dir = {}
         for file, fconfig in conf['files'].items():
-            file = file.format(res_dir, case)
+            file = file.format(res_dir, case_tup[0], case_tup[1])
             print(file)
             data = np.genfromtxt(file, delimiter='\t', dtype=str)
             header, data = list(data[0]), data[1:]
@@ -149,14 +168,15 @@ if __name__ == '__main__':
             width = step / (len(plots_dir.keys()) + 1)
             for nw, data in plots_dir.items():
                 x = np.array(data[pltconf['x_name']], float)
-                idx = np.linspace(0, len(x)-1, conf['points'], dtype=int)
-                x = x[idx]
-                y = np.sum([np.array(data[y_name], float)[idx]
+                y = np.sum([np.array(data[y_name], float)
                             for y_name in pltconf['y_name']], axis=0)
-                ymin = np.sum([np.array(data[y_name], float)[idx]
+                ymin = np.sum([np.array(data[y_name], float)
                                for y_name in pltconf['y_min_name']], axis=0)
-                ymax = np.sum([np.array(data[y_name], float)[idx]
+                ymax = np.sum([np.array(data[y_name], float)
                                for y_name in pltconf['y_max_name']], axis=0)
+                if x[0] == 0:
+                    x, y, ymin, ymax = x[1:], y[1:], ymin[1:], ymax[1:]
+                idx = np.linspace(0, len(x)-1, conf['points'], dtype=int)
                 if pltconf['title'] in ['tconst', 'tcomm', 'tcomp', 'ttotal', 'tpp']:
                     ymin = np.cumsum(ymin) / x / (y[0]/x[0])
                     ymax = np.cumsum(ymax) / x / (y[0]/x[0])
@@ -164,6 +184,7 @@ if __name__ == '__main__':
                     plt.axhline(1, color='k', ls='dotted', lw=1, alpha=0.5)
                     if np.max(ymax) > 2.:
                         plt.ylim(top=2.)
+                x, y, ymin, ymax = x[idx], y[idx], ymin[idx], ymax[idx]
 
                 plt.bar(np.arange(len(x)) + pos, y, width=width,
                         label='{}'.format(nw), lw=1, edgecolor='0',

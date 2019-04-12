@@ -59,7 +59,9 @@ class Worker:
         args = parse()
         self.indices = {}
         # self.times = {}
-        self.interval = 100
+        self.start_turn = 100
+        self.start_interval = 500
+        self.interval = 500
         self.intracomm = MPI.COMM_WORLD
         self.rank = self.intracomm.rank
 
@@ -217,7 +219,7 @@ class Worker:
 
     @timing.timeit(key='comm:redistribute')
     @mpiprof.traceit(key='comm:redistribute')
-    def redistribute(self, turn, beam, tcomp, tcomm, tconst):
+    def redistribute(self, turn, beam, tcomp, tconst):
         latency = tcomp / beam.n_macroparticles
         recvbuf = np.empty(3 * self.workers, dtype=float)
         self.intracomm.Allgather(
@@ -239,12 +241,9 @@ class Worker:
             elif dPi[i] > Pi[i]:
                 dPi[i] = Pi[i]
 
-        if np.sum(np.abs(dPi))/2 < 1e-4 * P:
-            self.interval = min(2*self.interval, 6400)
-        else:
-            self.interval = 100
 
-        transactions = calc_transactions(dPi, 128)[self.rank]
+
+        transactions = calc_transactions(dPi, 256)[self.rank]
         if dPi[self.rank] > 0 and len(transactions) > 0:
             reqs = []
             tot_to_send = np.sum([t[1] for t in transactions])
@@ -296,13 +295,18 @@ class Worker:
                 beam.id[i:i+t[1]] = buf[2*t[1]:3*t[1]]
                 i += t[1]
             beam.n_macroparticles += tot_to_recv
+        
+        if np.sum(np.abs(dPi))/2 < 1e-4 * P:
+            self.interval = min(2*self.interval, 4000)
+            return self.interval
+        else:
+            self.interval = self.start_interval
+            return self.start_turn
 
-        return self.interval
-
-    def report(self, turn, beam, tcomp, tcomm, tconst):
+    def report(self, turn, beam, tcomp, tcomm, tconst, tsync):
         latency = tcomp / beam.n_macroparticles
-        self.logger.critical('[{}]: Turn {}, Tconst {}, Tcomp {}, Tcomm {}, Latency {}, Particles {}'.format(
-            self.rank, turn, tconst, tcomp, tcomm, latency, beam.n_macroparticles))
+        self.logger.critical('[{}]: Turn {}, Tconst {}, Tcomp {}, Tcomm {}, Tsync {}, Latency {}, Particles {}'.format(
+            self.rank, turn, tconst, tcomp, tcomm, tsync, latency, beam.n_macroparticles))
 
     def greet(self):
         self.logger.debug('greet')

@@ -297,24 +297,24 @@ if args['loadbalance'] == 'times':
     if args['loadbalancearg'] != 0:
         intv = N_t // (args['loadbalancearg']+1)
     else:
-        intv = N_t // (100 + 1)
-    lbturns = np.arange(0, N_t, intv)[1:]
+        intv = N_t // (10 + 1)
+    lbturns = np.arange(worker.start_turn, N_t, intv)[1:]
 
 elif args['loadbalance'] == 'interval':
     if args['loadbalancearg'] != 0:
-        lbturns = np.arange(0, N_t, args['loadbalancearg'])
+        lbturns = np.arange(worker.start_turn, N_t, args['loadbalancearg'])
     else:
-        lbturns = np.arange(0, N_t, 100)
+        lbturns = np.arange(worker.start_turn, N_t, 1000)
 
 elif args['loadbalance'] == 'dynamic':
-    lbturns = [100]
+    lbturns = [worker.start_turn]
     # print('Warning: Dynamic load balance policy not supported.')
 
 
 worker.sync()
 timing.reset()
 start_t = time.time()
-tcomp_old = tcomm_old = tconst_old = 0
+tcomp_old = tcomm_old = tconst_old = tsync_old = 0
 
 for turn in range(N_t):
     # Plots and outputting
@@ -352,9 +352,11 @@ for turn in range(N_t):
     # Update profile
     if (approx == 0):
         profile.track()
+        worker.sync()
         profile.reduce_histo()
     elif (approx == 1) and (turn % N_t_reduce == 0):
         profile.track()
+        worker.sync()
         profile.reduce_histo()
     elif (approx == 2):
         profile.track()
@@ -377,26 +379,28 @@ for turn in range(N_t):
     if worker.isHostLast:
         tracker.pre_track()
 
+    worker.sync()
     worker.sendrecv(totVoltage.induced_voltage, tracker.rf_voltage)
 
     tracker.track_only()
 
-    if turn in lbturns:
+    if (turn in lbturns):
         tcomp_new = timing.get(['comp:'])
         tcomm_new = timing.get(['comm:'])
-        tconst_new = timing.get(['serial:'])
-        intv = worker.redistribute(turn, beam,
-                                   tcomp=tcomp_new-tcomp_old,
-                                   tcomm=tcomm_new-tcomm_old,
-                                   tconst=tconst_new-tconst_old)
+        tconst_new = timing.get(['serial:'], ['serial:sync'])
+        tsync_new = timing.get(['serial:sync'])
+        intv = worker.redistribute(turn, beam, tcomp=tcomp_new-tcomp_old,
+                                   tconst=(tconst_new-tconst_old) + (tcomm_new - tcomm_old))
         if args['loadbalance'] == 'dynamic':
             lbturns[0] += intv
         worker.report(turn, beam, tcomp=tcomp_new-tcomp_old,
                       tcomm=tcomm_new-tcomm_old,
-                      tconst=tconst_new-tconst_old)
+                      tconst=tconst_new-tconst_old,
+                      tsync=tsync_new-tsync_old)
         tcomp_old = tcomp_new
         tcomm_old = tcomm_new
         tconst_old = tconst_new
+        tsync_old = tsync_new
     # worker.hostsync()
     # worker.sync()
     # import matplotlib.pyplot as plt

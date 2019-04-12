@@ -18,7 +18,7 @@ images_dir = res_dir + 'plots/redistribute/'
 if not os.path.exists(images_dir):
     os.makedirs(images_dir)
 
-case = 'ps'
+case = 'lhc'
 
 config = {
 
@@ -83,8 +83,25 @@ config = {
         #         'type': ['total']
         #     }
         # },
+        
+        '{}/raw/{}/mpich3/comm-comp-report.csv'.format(res_dir, case.upper()): {
+            'key': '{}-mpich3'.format(case),
+            'lines': {
+                'omp': ['10'],
+                'type': ['total']
+            }
+        },
 
-        '{}/raw/{}-lb-mpich3/comm-comp-report.csv'.format(res_dir, case.upper()): {
+        '{}/raw/{}/mvapich2/comm-comp-report.csv'.format(res_dir, case.upper()): {
+            'key': '{}-mvapich2'.format(case),
+            'lines': {
+                'omp': ['10'],
+                'type': ['total']
+            }
+        },
+
+
+        '{}/raw/{}/lb-mpich3/comm-comp-report.csv'.format(res_dir, case.upper()): {
             'key': '{}-lbmpich3'.format(case),
             'lines': {
                 'omp': ['10'],
@@ -92,7 +109,7 @@ config = {
             }
         },
 
-        '{}/raw/{}-lb-mpich3-approx2/comm-comp-report.csv'.format(res_dir, case.upper()): {
+        '{}/raw/{}/lb-mpich3-approx2/comm-comp-report.csv'.format(res_dir, case.upper()): {
             'key': '{}-lbmpich3apprx'.format(case),
             'lines': {
                 'omp': ['10'],
@@ -100,7 +117,7 @@ config = {
             }
         },
 
-        '{}/raw/{}-lb-mvapich2/comm-comp-report.csv'.format(res_dir, case.upper()): {
+        '{}/raw/{}/lb-mvapich2/comm-comp-report.csv'.format(res_dir, case.upper()): {
             'key': '{}-lbmvapich2'.format(case),
             'lines': {
                 'omp': ['10'],
@@ -108,174 +125,69 @@ config = {
             }
         },
 
-        '{}/raw/{}-lb-mvapich2-approx2/comm-comp-report.csv'.format(res_dir, case.upper()): {
+        '{}/raw/{}/lb-mvapich2-approx2/comm-comp-report.csv'.format(res_dir, case.upper()): {
             'key': '{}-lbmvapich2apprx'.format(case),
             'lines': {
                 'omp': ['10'],
                 'type': ['total']
             }
         },
-        '{}/raw/{}-lb-openmpi3/comm-comp-report.csv'.format(res_dir, case.upper()): {
-            'key': '{}-lbopenmpi3'.format(case),
+        '{}/raw/{}/dynamic-lb-mpich3/comm-comp-report.csv'.format(res_dir, case.upper()): {
+            'key': '{}-dynlbmpich3'.format(case),
             'lines': {
                 'omp': ['10'],
                 'type': ['total']
             }
         },
 
-        '{}/raw/{}-lb-openmpi3-approx2/comm-comp-report.csv'.format(res_dir, case.upper()): {
-            'key': '{}-lbopenmpi3apprx'.format(case),
+        '{}/raw/{}/dynamic-lb-mpich3-approx2/comm-comp-report.csv'.format(res_dir, case.upper()): {
+            'key': '{}-dynlbmpich3apprx'.format(case),
             'lines': {
                 'omp': ['10'],
                 'type': ['total']
             }
         },
 
-        '{}/raw/{}-approx2-openmpi3/comm-comp-report.csv'.format(res_dir, case.upper()): {
-            'key': '{}-openmpi3apprx'.format(case),
-            'lines': {
-                'omp': ['10'],
-                'type': ['total']
-            }
-        },
-        '{}/raw/{}-approx2-mvapich2/comm-comp-report.csv'.format(res_dir, case.upper()): {
-            'key': '{}-mvapich2apprx'.format(case),
-            'lines': {
-                'omp': ['10'],
-                'type': ['total']
-            }
-        },
-        '{}/raw/{}-approx2-mpich3/comm-comp-report.csv'.format(res_dir, case.upper()): {
-            'key': '{}-mpich3apprx'.format(case),
+        '{}/raw/{}/dynamic-lb-mvapich2/comm-comp-report.csv'.format(res_dir, case.upper()): {
+            'key': '{}-dynlbmvapich2'.format(case),
             'lines': {
                 'omp': ['10'],
                 'type': ['total']
             }
         },
 
-        res_dir+'raw/PS-b21-t10k-mpich3/comm-comp-report.csv': {
-                'key': '{}-mpich3'.format(case),
-                'lines': {
-                    'omp': ['10'],
-                    'type': ['total']
-                }
+        '{}/raw/{}/dynamic-lb-mvapich2-approx2/comm-comp-report.csv'.format(res_dir, case.upper()): {
+            'key': '{}-dynlbmvapich2apprx'.format(case),
+            'lines': {
+                'omp': ['10'],
+                'type': ['total']
+            }
         },
-
-        res_dir+'raw/PS-b21-t10k-mvapich2/comm-comp-report.csv': {
-                'key': '{}-mvapich2'.format(case),
-                'lines': {
-                    'omp': ['10'],
-                    'type': ['total']
-                }
-        },
-
-        res_dir+'raw/PS-b21-t10k-openmpi3/comm-comp-report.csv': {
-                'key': '{}-openmpi3'.format(case),
-                'lines': {
-                    'omp': ['10'],
-                    'type': ['total']
-                }
-        },
-
-        # res_dir+'raw/LHC-96B-2MPPB-t10k-mpich3/comm-comp-report.csv': {
-        #     'key': 'lhc-mpich3',
-        #     'lines': {
-        #         'omp': ['10'],
-        #         'type': ['total']
-        #     }
-        # },
-
-        # res_dir+'raw/LHC-96B-2MPPB-t10k-mvapich2/comm-comp-report.csv': {
-        #     'key': 'lhc-mvapich2',
-        #     'lines': {
-        #         'omp': ['10'],
-        #         'type': ['total']
-        #     }
-        # },
-
-        # res_dir+'raw/LHC-96B-2MPPB-t10k-openmpi3/comm-comp-report.csv': {
-        #     'key': 'lhc-openmpi3',
-        #     'lines': {
-        #         'omp': ['10'],
-        #         'type': ['total']
-        #     }
-        # },
-
-
-        # res_dir+'raw/EX01-lb-openmpi3/comm-comp-report.csv': {
-        #     'key': 'lhc-lbopenmpi3',
-        #     'lines': {
-        #         'omp': ['10'],
-        #         'type': ['total']
-        #     }
-        # },
-        # res_dir+'raw/EX01-lb-mvapich2/comm-comp-report.csv': {
-        #     'key': 'lhc-lbmvapich2',
-        #     'lines': {
-        #         'omp': ['10'],
-        #         'type': ['total']
-        #     }
-        # },
-        # res_dir+'raw/PS-approx2-mpich3/comm-comp-report.csv': {
-        #     'key': 'ps-mpich3',
-        #     'lines': {
-        #         'omp': ['10'],
-        #         'type': ['total']
-        #     }
-        # },
-        # res_dir+'raw/PS-approx2-openmpi3/comm-comp-report.csv': {
-        #     'key': 'ps-openmpi3',
-        #     'lines': {
-        #         'omp': ['10'],
-        #         'type': ['total']
-        #     }
-        # },
-        # res_dir+'raw/PS-approx2-mvapich2/comm-comp-report.csv': {
-        #     'key': 'ps-mvapich2',
-        #     'lines': {
-        #         'omp': ['10'],
-        #         'type': ['total']
-        #     }
-        # },
-        # res_dir+'raw/PS-lb-mpich3/comm-comp-report.csv': {
-        #     'key': 'ps-lbmpich3',
-        #     'lines': {
-        #         'omp': ['10'],
-        #         'type': ['total']
-        #     }
-        # },
-        # res_dir+'raw/PS-lb-openmpi3/comm-comp-report.csv': {
-        #     'key': 'ps-lbopenmpi3',
-        #     'lines': {
-        #         'omp': ['10'],
-        #         'type': ['total']
-        #     }
-        # },
-        # res_dir+'raw/PS-lb-mvapich2/comm-comp-report.csv': {
-        #     'key': 'ps-lbmvapich2',
-        #     'lines': {
-        #         'omp': ['10'],
-        #         'type': ['total']
-        #     }
-        # },
 
     },
     'labels': {
 
         '{}-mpich3'.format(case): '{}-mpich3'.format(case),
         '{}-lbmpich3'.format(case): '{}-lb-mpich3'.format(case),
-        '{}-lbmpich3apprx'.format(case): '{}-lb-mpich3-approx2'.format(case),
         '{}-mpich3apprx'.format(case): '{}-mpich3-approx2'.format(case),
+        '{}-dynlbmpich3'.format(case): '{}-dynamic-lb-mpich3'.format(case),
+        '{}-lbmpich3apprx'.format(case): '{}-lb-mpich3-approx2'.format(case),
+        '{}-dynlbmpich3apprx'.format(case): '{}-dynamic-lb-mpich3-approx2'.format(case),
 
         '{}-mvapich2'.format(case): '{}-mvapich2'.format(case),
         '{}-lbmvapich2'.format(case): '{}-lb-mvapich2'.format(case),
-        '{}-lbmvapich2apprx'.format(case): '{}-lb-mvapich2-approx2'.format(case),
         '{}-mvapich2apprx'.format(case): '{}-mvapich2-approx2'.format(case),
+        '{}-dynlbmvapich2'.format(case): '{}-dynamic-lb-mvapich2'.format(case),
+        '{}-lbmvapich2apprx'.format(case): '{}-lb-mvapich2-approx2'.format(case),
+        '{}-dynlbmvapich2apprx'.format(case): '{}-dynamic-lb-mvapich2-approx2'.format(case),
 
         '{}-openmpi3'.format(case): '{}-openmpi3'.format(case),
         '{}-lbopenmpi3'.format(case): '{}-lb-openmpi3'.format(case),
-        '{}-lbopenmpi3apprx'.format(case): '{}-lb-openmpi3-approx2'.format(case),
         '{}-openmpi3apprx'.format(case): '{}-openmpi3-approx2'.format(case),
+        '{}-dynlbopenmpi3'.format(case): '{}-dynamic-lb-openmpi3'.format(case),
+        '{}-lbopenmpi3apprx'.format(case): '{}-lb-openmpi3-approx2'.format(case),
+        '{}-dynlbopenmpi3apprx'.format(case): '{}-dynamic-lb-openmpi3-approx2'.format(case),
+
     },
     'markers': {
         'ex01': 'd',
@@ -290,24 +202,26 @@ config = {
         'ps': '--'
     },
     'colors': {
-        # 'lhc': 'tab:blue',
-        # 'sps': 'tab:orange',
-        # 'ps': 'tab:green',
-
         'mpich3': 'xkcd:light yellow',
         'lbmpich3': 'xkcd:yellow',
-        'mpich3apprx': 'xkcd:light green',
+        # 'mpich3apprx': 'xkcd:light green',
         'lbmpich3apprx': 'xkcd:green',
 
         'mvapich2': 'xkcd:light orange',
         'lbmvapich2': 'xkcd:orange',
-        'mvapich2apprx': 'xkcd:light red',
+        # 'mvapich2apprx': 'xkcd:light red',
         'lbmvapich2apprx': 'xkcd:red',
 
-        'openmpi3': 'xkcd:light pink',
-        'lbopenmpi3': 'xkcd:pink',
-        'openmpi3apprx': 'xkcd:light purple',
-        'lbopenmpi3apprx': 'xkcd:purple',
+        # 'openmpi3': 'xkcd:light pink',
+        # 'lbopenmpi3': 'xkcd:pink',
+        # 'openmpi3apprx': 'xkcd:light purple',
+        # 'lbopenmpi3apprx': 'xkcd:purple',
+
+        'dynlbmpich3': 'xkcd:light pink',
+        'dynlbmpich3apprx': 'xkcd:pink',
+
+        'dynlbmvapich2': 'xkcd:light purple',
+        'dynlbmvapich2apprx': 'xkcd:purple',
 
 
     },
@@ -329,7 +243,7 @@ config = {
 
     # 'exclude': [['v1', 'notcm'], ['v2', 'notcm'], ['v4', 'notcm']],
     'x_name': 'n',
-    'x_to_keep': [2, 4, 8, 12, 16],
+    'x_to_keep': [4, 8, 12, 16],
     'omp_name': 'omp',
     'y_name': 'avg_time(sec)',
     # 'y_err_name': 'std',
@@ -350,7 +264,7 @@ config = {
         'pad': 1, 'top': 1, 'bottom': 1, 'left': 1,
         'direction': 'inout', 'length': 3, 'width': 0.5,
     },
-    'image_name': '{}/{}-lb-redistribute.pdf'.format(images_dir, case),
+    'image_name': '{}/{}-dyn-lb.pdf'.format(images_dir, case),
 
 }
 
@@ -380,20 +294,22 @@ if __name__ == '__main__':
     for case in ['lhc', 'sps', 'ps', 'ex01']:
         for mpiv in ['mpich3', 'lbmpich3',
                      'mpich3apprx', 'lbmpich3apprx',
+                     'dynlbmpich3', 'dynlbmpich3apprx',
                      'mvapich2', 'lbmvapich2',
                      'mvapich2apprx', 'lbmvapich2apprx',
+                     'dynlbmvapich2', 'dynlbmvapich2apprx',
                      'openmpi3', 'lbopenmpi3',
                      'openmpi3apprx', 'lbopenmpi3apprx']:
 
+            key = '{}-{}'.format(case, mpiv)
+            if key not in plots_dir:
+                continue
             if 'mpich3' in mpiv:
                 version = 'mpich3'
             elif 'mvapich2' in mpiv:
                 version = 'mvapich2'
             elif 'openmpi3' in mpiv:
                 version = 'openmpi3'
-            key = '{}-{}'.format(case, mpiv)
-            if key not in plots_dir:
-                continue
             values = plots_dir[key]
 
             label = config['labels'][key]
@@ -436,7 +352,7 @@ if __name__ == '__main__':
                     color=config['colors'][mpiv],
                     # label=label,
                     edgecolor='0.3',
-                    alpha=0.8,
+                    # alpha=0.8,
                     hatch=config['hatches'][version])
             pos += width
         pos += width * step
