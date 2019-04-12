@@ -36,7 +36,7 @@ parser.add_argument('-r', '--report', type=str, default='all',
 parser.add_argument('-s', '--script', type=str, default=this_directory + 'report_workers.py',
                     help='The path to the report_workers script.')
 
-parser.add_argument('-k', '--keep', type=int, default=2,
+parser.add_argument('-k', '--keep', type=int, default=-1,
                     help='The number of top best runs to keep for the average calculation. Use -1 for all.')
 
 parser.add_argument('-u', '--update', action='store_true',

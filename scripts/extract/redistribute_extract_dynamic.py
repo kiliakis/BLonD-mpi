@@ -46,9 +46,6 @@ parser.add_argument('-s',
                     default=this_directory + 'helper_redistribute.py',
                     help='The path to the helper_redistribute script.')
 
-parser.add_argument('-k', '--keep', type=int, default=2,
-                    help='The number of top best runs to keep for the average calculation. Use -1 for all.')
-
 parser.add_argument('-u',
                     '--update',
                     action='store_true',
