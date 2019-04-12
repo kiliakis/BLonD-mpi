@@ -177,10 +177,16 @@ if __name__ == '__main__':
                 if x[0] == 0:
                     x, y, ymin, ymax = x[1:], y[1:], ymin[1:], ymax[1:]
                 idx = np.linspace(0, len(x)-1, conf['points'], dtype=int)
-                if pltconf['title'] in ['tconst', 'tcomm', 'tcomp', 'ttotal', 'tpp']:
-                    ymin = np.cumsum(ymin) / x / (y[0]/x[0])
-                    ymax = np.cumsum(ymax) / x / (y[0]/x[0])
-                    y = np.cumsum(y) / x / (y[0]/x[0])
+                if pltconf['title'] in ['tconst', 'tcomm',
+                                        'tcomp', 'tsync', 'ttotal', 'tpp']:
+                    turndiff = np.diff(np.insert(x, 0, 0))
+                    y /= turndiff
+                    ymin /= turndiff * y[0]
+                    ymax /= turndiff * y[0]
+                    y /= y[0]
+                    # ymin = np.cumsum(ymin) / x / (y[0]/x[0])
+                    # ymax = np.cumsum(ymax) / x / (y[0]/x[0])
+                    # y = np.cumsum(y) / x / (y[0]/x[0])
                     plt.axhline(1, color='k', ls='dotted', lw=1, alpha=0.5)
                     if np.max(ymax) > 2.:
                         plt.ylim(top=2.)

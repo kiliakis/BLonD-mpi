@@ -33,9 +33,6 @@ parser.add_argument('-r', '--report', type=str, default='all',
 parser.add_argument('-s', '--script', type=str, default=this_directory + 'helper_redistribute.py',
                     help='The path to the helper_redistribute script.')
 
-parser.add_argument('-k', '--keep', type=int, default=2,
-                    help='The number of top best runs to keep for the average calculation. Use -1 for all.')
-
 parser.add_argument('-u', '--update', action='store_true',
                     help='Force update of already calculated reports.')
 
@@ -58,22 +55,26 @@ def generate_reports(input, report_script):
             p.wait()
 
 
-def calc_histo(files, outfile, outfile_std):
+def write_avg(files, outfile, outfile_std):
     acc_data = []
     default_header = []
     data_dic = {}
     for f in files:
-        data = np.genfromtxt(f, dtype=str, delimiter='\t')
-        header, data = data[0], data[1:]
-        wids, data = data[:, 0], data[:, 1:]
-        header = header[1:]  # remove the wid
-
+        dic = {}
+        try:
+            data = np.genfromtxt(f, dtype=str, delimiter='\t')
+            header, data = data[0], data[1:]
+            wids, data = data[:, 0], data[:, 1:]
+            header = header[1:]  # remove the wid
+        except IndexError as ie:
+            print('Problem with file: ', indir + '/' + f)
+            continue
+            
         if len(default_header) == 0:
             default_header = header
         elif not np.array_equal(default_header, header):
             print('Problem with file: ', indir+'/'+f)
             continue
-        dic = {}
         # Get some general info
         ppb = int(f.split('_p')[1].split('_')[0])
         bunches = int(f.split('_b')[1].split('_')[0])
@@ -83,8 +84,8 @@ def calc_histo(files, outfile, outfile_std):
         # go through the data column by column
         for i, h in enumerate(header):
             lst = [d[i].split('|') for d in data]
-            min_num = np.min([len(l) for l in lst])
-            lst = [l[:min_num] for l in lst]
+            # min_num = np.min([len(l) for l in lst])
+            # lst = [l[:min_num] for l in lst]
             dic[h] = np.array(lst, float)
             if h == 'parts':
                 dic[h] = np.insert(dic[h], 0, parts_t0, axis=1)
@@ -135,7 +136,7 @@ def aggregate_reports(input):
         files = [os.path.join(dirs, s, log_worker_fname) for s in sdirs]
         print(dirs)
         # try:
-        calc_histo(files, open(os.path.join(dirs, log_fname), 'w'),
+        write_avg(files, open(os.path.join(dirs, log_fname), 'w'),
                    open(os.path.join(dirs, log_fname_std), 'w'))
         # except Exception as e:
         # print('[Error] Dir: {}, Exception: {}, line: {}'.format(dirs, e,
