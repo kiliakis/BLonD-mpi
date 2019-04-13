@@ -7,14 +7,16 @@ run_configs = [
     # 'mpich3',
     # 'mvapich2',
     # 'openmpi3',
-    'lb-mpich3',
-    'lb-mvapich2',
+    # 'lb-mpich3',
+    # 'lb-mvapich2',
+    'lb-mpich3-intv100',
+    'lb-mvapich2-intv100',
     # 'lb-openmpi3',
-    'lb-mpich3-approx2',
-    'lb-mvapich2-approx2',
+    # 'lb-mpich3-approx2',
+    # 'lb-mvapich2-approx2',
     # 'lb-openmpi3-approx2',
-    # 'dynamic-lb-mpich3',
-    # 'dynamic-lb-mvapich2',
+    'dynamic-lb-mpich3',
+    'dynamic-lb-mvapich2',
     # 'dynamic-lb-openmpi3',
     # 'dynamic-lb-mpich3-approx2',
     # 'dynamic-lb-mvapich2-approx2',
@@ -127,6 +129,34 @@ configs = {
         'partition': cycle(['be-short']),
         'repeats': 5,
     },
+
+    'lb-mpich3-intv100': {
+        'exe': cycle(['SPS_main_random_lb.py']),
+        'p': cycle([4000000]),
+        'b': cycle([72]),  # 72
+        's': cycle([1408]),
+        't': cycle([10000]),  # 4000
+        'm': cycle([0]),
+        'reduce': cycle([1]),
+        'load': cycle([0.0]),
+        'mtw': cycle([0]),
+        'approx': cycle([0]),
+        'log': cycle([True]),
+        'lb': cycle(['interval']),
+        'lba': cycle([100]),
+        'timing': cycle(['-time']),  # otherwise pass -time
+        'seed': cycle([0]),
+        'w': [] +
+        [4, 8, 12, 16],
+        # + list(np.arange(2, 17, 2)),
+        'o': cycle([10]),
+        'mpi': cycle(['mpich3']),
+        'time': cycle([60]),
+        'partition': cycle(['be-short']),
+        'repeats': 5,
+    },
+
+
     'lb-openmpi3': {
         'exe': cycle(['SPS_main_random_lb.py']),
         'p': cycle([4000000]),
@@ -166,6 +196,32 @@ configs = {
         'log': cycle([True]),
         'lb': cycle(['interval']),
         'lba': cycle([1000]),
+        'timing': cycle(['-time']),  # otherwise pass -time
+        'seed': cycle([0]),
+        'w': [] +
+        [4, 8, 12, 16],
+        #+ list(np.arange(2, 17, 2)),
+        'o': cycle([10]),
+        'mpi': cycle(['mvapich2']),
+        'time': cycle([60]),
+        'partition': cycle(['be-short']),
+        'repeats': 5,
+    },
+
+    'lb-mvapich2-intv100': {
+        'exe': cycle(['SPS_main_random_lb.py']),
+        'p': cycle([4000000]),
+        'b': cycle([72]),  # 72
+        's': cycle([1408]),
+        't': cycle([10000]),  # 4000
+        'm': cycle([0]),
+        'reduce': cycle([1]),
+        'load': cycle([0.0]),
+        'mtw': cycle([0]),
+        'approx': cycle([0]),
+        'log': cycle([True]),
+        'lb': cycle(['interval']),
+        'lba': cycle([100]),
         'timing': cycle(['-time']),  # otherwise pass -time
         'seed': cycle([0]),
         'w': [] +

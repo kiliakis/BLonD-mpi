@@ -18,7 +18,7 @@ images_dir = res_dir + 'plots/redistribute/'
 if not os.path.exists(images_dir):
     os.makedirs(images_dir)
 
-case = 'lhc'
+case = 'ps'
 
 config = {
 
@@ -84,13 +84,13 @@ config = {
         #     }
         # },
         
-        '{}/raw/{}/mpich3/comm-comp-report.csv'.format(res_dir, case.upper()): {
-            'key': '{}-mpich3'.format(case),
-            'lines': {
-                'omp': ['10'],
-                'type': ['total']
-            }
-        },
+        # '{}/raw/{}/mpich3/comm-comp-report.csv'.format(res_dir, case.upper()): {
+        #     'key': '{}-mpich3'.format(case),
+        #     'lines': {
+        #         'omp': ['10'],
+        #         'type': ['total']
+        #     }
+        # },
 
         '{}/raw/{}/mvapich2/comm-comp-report.csv'.format(res_dir, case.upper()): {
             'key': '{}-mvapich2'.format(case),
@@ -132,37 +132,37 @@ config = {
                 'type': ['total']
             }
         },
-        '{}/raw/{}/dynamic-lb-mpich3/comm-comp-report.csv'.format(res_dir, case.upper()): {
-            'key': '{}-dynlbmpich3'.format(case),
-            'lines': {
-                'omp': ['10'],
-                'type': ['total']
-            }
-        },
+        # '{}/raw/{}/dynamic-lb-mpich3/comm-comp-report.csv'.format(res_dir, case.upper()): {
+        #     'key': '{}-dynlbmpich3'.format(case),
+        #     'lines': {
+        #         'omp': ['10'],
+        #         'type': ['total']
+        #     }
+        # },
 
-        '{}/raw/{}/dynamic-lb-mpich3-approx2/comm-comp-report.csv'.format(res_dir, case.upper()): {
-            'key': '{}-dynlbmpich3apprx'.format(case),
-            'lines': {
-                'omp': ['10'],
-                'type': ['total']
-            }
-        },
+        # '{}/raw/{}/dynamic-lb-mpich3-approx2/comm-comp-report.csv'.format(res_dir, case.upper()): {
+        #     'key': '{}-dynlbmpich3apprx'.format(case),
+        #     'lines': {
+        #         'omp': ['10'],
+        #         'type': ['total']
+        #     }
+        # },
 
-        '{}/raw/{}/dynamic-lb-mvapich2/comm-comp-report.csv'.format(res_dir, case.upper()): {
-            'key': '{}-dynlbmvapich2'.format(case),
-            'lines': {
-                'omp': ['10'],
-                'type': ['total']
-            }
-        },
+        # '{}/raw/{}/dynamic-lb-mvapich2/comm-comp-report.csv'.format(res_dir, case.upper()): {
+        #     'key': '{}-dynlbmvapich2'.format(case),
+        #     'lines': {
+        #         'omp': ['10'],
+        #         'type': ['total']
+        #     }
+        # },
 
-        '{}/raw/{}/dynamic-lb-mvapich2-approx2/comm-comp-report.csv'.format(res_dir, case.upper()): {
-            'key': '{}-dynlbmvapich2apprx'.format(case),
-            'lines': {
-                'omp': ['10'],
-                'type': ['total']
-            }
-        },
+        # '{}/raw/{}/dynamic-lb-mvapich2-approx2/comm-comp-report.csv'.format(res_dir, case.upper()): {
+        #     'key': '{}-dynlbmvapich2apprx'.format(case),
+        #     'lines': {
+        #         'omp': ['10'],
+        #         'type': ['total']
+        #     }
+        # },
 
     },
     'labels': {
