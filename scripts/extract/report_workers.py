@@ -12,9 +12,9 @@ this_directory = os.path.dirname(os.path.realpath(__file__)) + '/'
 parser = argparse.ArgumentParser(description='Report the avg time spent on communication and computation.',
                                  usage='python script.py [-p file_pattern] [-i indir] [-o outfile]')
 
-parser.add_argument('-p', '--pattern', type=str, default='report-worker-*.csv',
+parser.add_argument('-p', '--pattern', type=str, default='worker-*.csv',
                     help='The report file names pattern. '
-                    ' Default: report-worker-*.csv')
+                    ' Default: worker-*.csv')
 
 parser.add_argument('-o', '--outfile', type=argparse.FileType('w'),
                     default=sys.stdout,
