@@ -563,7 +563,7 @@ elif args['loadbalance'] == 'dynamic':
 worker.sync()
 timing.reset()
 start_t = time.time()
-tcomp_old = tcomm_old = tconst_old = 0
+tcomp_old = tcomm_old = tconst_old = tsync_old = 0
 
 
 # for i in range(n_turns):
