@@ -541,6 +541,7 @@ if N_t_monitor > 0 and worker.isMaster:
 
 
 mpiprint("Ready for tracking!\n")
+lbturns = []
 if args['loadbalance'] == 'times':
     if args['loadbalancearg'] != 0:
         intv = N_t // (args['loadbalancearg']+1)
@@ -611,10 +612,10 @@ for turn in range(N_t):
         tcomm_new = timing.get(['comm:'])
         tconst_new = timing.get(['serial:'], ['serial:sync'])
         tsync_new = timing.get(['serial:sync'])
-        intv = worker.redistribute(turn, beam, tcomp=tcomp_new-tcomp_old,
-                                   tconst=(tconst_new-tconst_old) + (tcomm_new - tcomm_old))
-        if args['loadbalance'] == 'dynamic':
-            lbturns[0] += intv
+        # intv = worker.redistribute(turn, beam, tcomp=tcomp_new-tcomp_old,
+        #                            tconst=(tconst_new-tconst_old) + (tcomm_new - tcomm_old))
+        # if args['loadbalance'] == 'dynamic':
+        #     lbturns[0] += intv
         worker.report(turn, beam, tcomp=tcomp_new-tcomp_old,
                       tcomm=tcomm_new-tcomm_old,
                       tconst=tconst_new-tconst_old,
