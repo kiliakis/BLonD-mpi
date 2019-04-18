@@ -352,11 +352,11 @@ for turn in range(N_t):
     # Update profile
     if (approx == 0):
         profile.track()
-        worker.sync()
+        # worker.sync()
         profile.reduce_histo()
     elif (approx == 1) and (turn % N_t_reduce == 0):
         profile.track()
-        worker.sync()
+        # worker.sync()
         profile.reduce_histo()
     elif (approx == 2):
         profile.track()
@@ -382,7 +382,7 @@ for turn in range(N_t):
         tcomp_new = timing.get(['comp:'])
         tcomm_new = timing.get(['comm:'])
         tconst_new = timing.get(['serial:'], ['serial:sync'])
-        tsync_new = timing.get(['serial:sync'])
+        tsync_new = 0
         # intv = worker.redistribute(turn, beam, tcomp=tcomp_new-tcomp_old,
         #                            tconst=(tconst_new-tconst_old) + (tcomm_new - tcomm_old))
         # if args['loadbalance'] == 'dynamic':
