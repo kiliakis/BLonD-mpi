@@ -129,10 +129,11 @@ if __name__ == '__main__':
             # for w in datadic[num_workers][phase].keys():
             for run in sorted(datadic[num_workers][phase].keys()):
                 yn = np.array(datadic[num_workers][phase][run]['y'], float)
-                if phase == 'comp':
-                    xn = np.array(datadic[num_workers][phase][run]['parts'], float)
-                elif phase in ['comm', 'serial']:
-                    xn = np.array(datadic[num_workers][phase][run]['slices'], float)
+                xn = np.array(datadic[num_workers][phase][run]['parts'], float)
+                # if phase == 'comp':
+                #     xn = np.array(datadic[num_workers][phase][run]['parts'], float)
+                # elif phase in ['comm', 'serial']:
+                #     xn = np.array(datadic[num_workers][phase][run]['slices'], float)
                 # idx = np.argsort(xn)
                 # xn, yn = xn[idx], yn[idx]
                 # plt.scatter(x, y, s=2, c=figconf['colors'][w])
@@ -141,13 +142,12 @@ if __name__ == '__main__':
                 # x = np.array(sorted(total_x))
                 for deg in [1, 2, 3]:
                     p = np.polyfit(xn, yn, deg=deg)
-                    y = 0
-                    label = ''
-                    for a, exp in zip(p, range(len(p), 0, -1)):
-                        y += a * np.array(xn)**(exp-1)
+                    y = np.polyval(p, xn)
+                    # for a, exp in zip(p, range(len(p), 0, -1)):
+                    #     y += a * np.array(xn)**(exp-1)
                         # label = label + '{:.1f}x^{:.0f}+'.format(a, exp-1)
                     # label = label[:-4]
-                    mse = np.mean((y - yn)**2/np.abs(y))
+                    mse = np.sum((y - yn)**2/yn)
                     records.append([num_workers, phase, run, deg, mse])
                     label = 'P{}(x)'.format(deg)
                     if label in labels:
@@ -165,7 +165,7 @@ if __name__ == '__main__':
             # plt.scatter(xticsk, yvals, ls='-', color=figconf['colors'][2 * deg], lw=1,
             #             label='{}\nNMSE={:.1f}'.format(label, mse))
             ax.tick_params(**figconf['tick_params'])
-            plt.ylim(bottom=0)
+            # plt.ylim(bottom=0)
             plt.legend(**figconf['legend'])
             plt.xticks(**figconf['title'])
             plt.yticks(fontsize=8)
