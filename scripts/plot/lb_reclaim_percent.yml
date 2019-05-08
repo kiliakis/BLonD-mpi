@@ -1,7 +1,7 @@
 # This config is used to evaluate a feature for every kernel
 figure:
-    colors: {'comm': 'xkcd:orange', 'serial':'xkcd:green',
-            'comp': 'xkcd:blue', 'total': 'xkcd:red'}
+    colors: {'EX01': 'xkcd:orange', 'PS':'xkcd:green',
+            'LHC': 'xkcd:blue', 'SPS': 'xkcd:red'}
     # colors: ['xkcd:light blue', 'xkcd:blue', 'xkcd:light orange', 'xkcd:orange',
     #          'xkcd:light green', 'xkcd:green', 'xkcd:light red', 'xkcd:red',
     #          'xkcd:light purple', 'xkcd:purple', 'xkcd:light brown', 'xkcd:brown',

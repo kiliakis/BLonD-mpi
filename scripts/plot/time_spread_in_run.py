@@ -119,36 +119,39 @@ if __name__ == '__main__':
             run += 1
     figconf = locyc['figure']
     fig, ax = plt.subplots(**figconf['figure'])
-    # plt.sca(ax)
-    # plt.title(**figconf['title'])
     # records = [['num_workers', 'phase', 'runid', 'deg', 'nmse']]
     labels = set()
     for i, num_workers in enumerate(sorted(list(datadic.keys()))):
         pos = 0
         w = 1 / (len(datadic[num_workers]) + 1)
-        totavg = np.mean([v for v in datadic[num_workers]['total'].values()])
+        # totavg = np.mean([v for v in datadic[num_workers]['total'].values()])
         for j, phase in enumerate(datadic[num_workers].keys()):
 
             vals = np.array([v for v in datadic[num_workers][phase].values()])
+            avgs = np.mean(vals, axis=1)
+            mins = np.min(vals, axis=1)
+            maxs = np.max(vals, axis=1)
+            spreads = (maxs - mins) / avgs
+            avg = np.mean(spreads)
             # vals = vals.flatten() / totavg
-            vals = np.mean(vals, axis=1) / totavg
-            avg = np.mean(vals)
-            yerrlow = np.min(vals)
-            yerrhigh = np.max(vals)
+            # avg = np.mean(vals)
+            # yerrlow = np.min(vals)
+            # yerrhigh = np.max(vals)
             
             label=None
             if i == 0 and j == 0:
                 label = 'measurement'
 
             # plt.errorbar([i+pos]*len(avgs), avgs/avg,
-            plt.errorbar([i+pos]*len(vals), vals,
+            plt.errorbar([i+pos]*len(spreads), spreads,
                          markersize=6, color='black',
                          marker='x', label=label)
             label=None
             if i == 0:
                 label = phase
             # plt.bar(i+pos, 1, width=w, yerr=[[yerrlow], [yerrhigh]],
-            plt.bar(i+pos, avg, width=w, yerr=[[avg-yerrlow], [yerrhigh-avg]],
+            plt.bar(i+pos, avg, width=w, 
+                # yerr=[[avg-yerrlow], [yerrhigh-avg]],
                     color=figconf['colors'][phase],
                     edgecolor='0', label=label,
                     capsize=5, alpha=0.7)
@@ -156,9 +159,9 @@ if __name__ == '__main__':
 
     ax.tick_params(**figconf['tick_params'])
     # plt.ylim(bottom=0)
-    plt.title('Time spread across runs, {}'.format(testcase))
+    plt.title('Time spread across workers in the same run, {}'.format(testcase))
     plt.xlabel('Cores (x10)', **figconf['title'])
-    plt.ylabel('Normalized Runtime', **figconf['title'])
+    plt.ylabel('Normalized Spread', **figconf['title'])
     plt.legend(**figconf['legend'])
     plt.xticks(np.arange(len(datadic.keys()))+w, sorted(list(datadic.keys())),
                **figconf['title'])

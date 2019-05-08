@@ -1,3 +1,14 @@
+Almost done, what is the problem with SPS?
+
+I want to show the percentage of time lost due to imbalance
+*) Assuming that the min comm time was the time all workers should need.
+*) Assuming that the comp time would be the average. 
+*) And the serial time as is. 
+
+Then the imbalanced time is: max(total_time) - max(min(comm) + avg(comp) + serial) / normalize
+
+
+
 1) The program is run with the classic python mainfile.py
     * Perhaps arg parser to set the num of processes/nodes
 2) Spawn(executable, args, maxprocs, info, root, errcodes)
