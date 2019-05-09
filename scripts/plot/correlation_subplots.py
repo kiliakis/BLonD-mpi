@@ -56,7 +56,8 @@ if __name__ == '__main__':
     elif 'ex01' in args.indir.lower():
         testcase = 'EX01'
     outfiles = [
-        '{}/{}-{}.jpeg'.format(args.outdir, this_filename[:-3], testcase)]
+        '{}/{}-{}.jpeg'.format(args.outdir, this_filename[:-3], testcase),
+        '{}/{}-{}.pdf'.format(args.outdir, this_filename[:-3], testcase)]
 
     datadic = {}
     for dirs, subdirs, files in os.walk(args.indir):
@@ -93,9 +94,9 @@ if __name__ == '__main__':
                 datadic[workers][phase][i]['x'].append(int(parts)/1e6)
                 datadic[workers][phase][i]['y'].append(acc)
     figconf = locyc['figure']
-    fig, ax_arr = plt.subplots(ncols=len(locyc['phases']), nrows=len(datadic),
-                               **figconf['figure'])
-    for i, num_workers in enumerate(sorted(list(datadic.keys()))):
+    fig, ax_arr = plt.subplots(**figconf['figure'])
+    # for i, num_workers in enumerate(sorted(list(datadic.keys()))):
+    for i, num_workers in enumerate([4, 16]):
         for j, phase in enumerate(datadic[num_workers].keys()):
             ax = ax_arr[i][j]
             plt.sca(ax)
@@ -109,11 +110,11 @@ if __name__ == '__main__':
             for w in datadic[num_workers][phase].keys():
                 x = datadic[num_workers][phase][w]['x']
                 y = datadic[num_workers][phase][w]['y']
-                plt.scatter(x, y, s=2, c=figconf['colors'][w])
+                plt.scatter(x, y, s=4, c=figconf['colors'][w])
                 total_x += x
                 total_y += y
             x = np.array(sorted(total_x))
-            for deg in [1, 2, 3]:
+            for deg in [1, 2]:
                 p = np.polyfit(total_x, total_y, deg=deg)
                 y = 0
                 label = ''
@@ -122,7 +123,7 @@ if __name__ == '__main__':
                     label = label + '{:.1f}x^{:.0f}+'.format(a, exp-1)
                 label = label[:-4]
                 mse = np.mean((y - total_y)**2/y)
-                plt.plot(x, y, ls='-', color=figconf['colors'][2 * deg], lw=1,
+                plt.plot(x, y, ls='-', color=figconf['colors'][2 * deg-1], lw=1.5,
                          label='{}\nNMSE={:.1f}'.format(label, mse))
             ax.tick_params(**figconf['tick_params'])
             plt.legend(**figconf['legend'])

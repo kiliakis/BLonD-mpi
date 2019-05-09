@@ -352,14 +352,14 @@ for turn in range(N_t):
     # Update profile
     if (approx == 0):
         profile.track()
-        worker.sync()
+        # worker.sync()
         profile.reduce_histo()
     elif (approx == 1) and (turn % N_t_reduce == 0):
         profile.track()
-        worker.sync()
+        # worker.sync()
         profile.reduce_histo()
     elif (approx == 2):
-        profile.track()
+        # profile.track()
         profile.scale_histo()
 
     if (N_t_monitor > 0) and (turn % N_t_monitor == 0):
@@ -379,7 +379,7 @@ for turn in range(N_t):
     if worker.isHostLast:
         tracker.pre_track()
 
-    worker.sync()
+    # worker.sync()
     worker.sendrecv(totVoltage.induced_voltage, tracker.rf_voltage)
 
     tracker.track_only()

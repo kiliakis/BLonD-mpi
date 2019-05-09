@@ -74,7 +74,7 @@ if __name__ == '__main__':
         red = configdir.split('_r')[1].split('_')[0]
         seed = configdir.split('_seed')[1].split('_')[0]
         approx = configdir.split('_approx')[1].split('_')[0]
-        mpiv = configdir.split('_mpi')[1].split('_')[0]
+        # mpiv = configdir.split('_mpi')[1].split('_')[0]
         if workers not in datadic:
             datadic[workers] = {}
 
@@ -99,7 +99,7 @@ if __name__ == '__main__':
                     else:
                         acc = np.sum([float(r[h.index('total_time(sec)')])
                                       for r in data if phase in r[h.index('function')]])
-                        
+
                     y[phase].append(acc)
             for phase in y.keys():
                 if phase not in datadic[workers]:
@@ -123,7 +123,8 @@ if __name__ == '__main__':
     # plt.title(**figconf['title'])
     # records = [['num_workers', 'phase', 'runid', 'deg', 'nmse']]
     labels = set()
-    for i, num_workers in enumerate(sorted(list(datadic.keys()))):
+    workers = [2, 4, 8, 12, 16]
+    for i, num_workers in enumerate(workers):
         pos = 0
         w = 1 / (len(datadic[num_workers]) + 1)
         totavg = np.mean([v for v in datadic[num_workers]['total'].values()])
@@ -135,8 +136,8 @@ if __name__ == '__main__':
             avg = np.mean(vals)
             yerrlow = np.min(vals)
             yerrhigh = np.max(vals)
-            
-            label=None
+
+            label = None
             if i == 0 and j == 0:
                 label = 'measurement'
 
@@ -144,7 +145,7 @@ if __name__ == '__main__':
             plt.errorbar([i+pos]*len(vals), vals,
                          markersize=6, color='black',
                          marker='x', label=label)
-            label=None
+            label = None
             if i == 0:
                 label = phase
             # plt.bar(i+pos, 1, width=w, yerr=[[yerrlow], [yerrhigh]],
@@ -155,13 +156,12 @@ if __name__ == '__main__':
             pos += w
 
     ax.tick_params(**figconf['tick_params'])
-    # plt.ylim(bottom=0)
+    plt.ylim(top=1.5)
     plt.title('Time spread across runs, {}'.format(testcase))
     plt.xlabel('Cores (x10)', **figconf['title'])
     plt.ylabel('Normalized Runtime', **figconf['title'])
     plt.legend(**figconf['legend'])
-    plt.xticks(np.arange(len(datadic.keys()))+w, sorted(list(datadic.keys())),
-               **figconf['title'])
+    plt.xticks(np.arange(len(workers))+w, workers, **figconf['title'])
     plt.yticks(fontsize=8)
     plt.tight_layout()
 

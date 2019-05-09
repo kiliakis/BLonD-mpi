@@ -7,11 +7,11 @@ figure:
              'xkcd:light purple', 'xkcd:purple', 'xkcd:light brown', 'xkcd:brown',
              'xkcd:light pink', 'xkcd:pink', 'xkcd:light grey', 'xkcd:grey']
     figure:
-        # nrows: 1
-        # ncols: 1
+        nrows: 2
+        ncols: 3
         sharex: 'all'
         sharey: 'row'
-        figsize: [9,6]
+        # figsize: [9,6]
     ticks:
         x:
             fontsize: '9'

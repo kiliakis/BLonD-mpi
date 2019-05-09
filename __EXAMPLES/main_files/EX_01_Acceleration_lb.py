@@ -225,11 +225,11 @@ for turn in range(N_t):
     # Update profile
     if (approx == 0):
         profile.track()
-        worker.sync()
+        # worker.sync()
         profile.reduce_histo()
     elif (approx == 1) and (turn % N_t_reduce == 0):
         profile.track()
-        worker.sync()
+        # worker.sync()
         profile.reduce_histo()
     elif (approx == 2):
         profile.track()

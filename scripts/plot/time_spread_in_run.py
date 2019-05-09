@@ -74,7 +74,7 @@ if __name__ == '__main__':
         red = configdir.split('_r')[1].split('_')[0]
         seed = configdir.split('_seed')[1].split('_')[0]
         approx = configdir.split('_approx')[1].split('_')[0]
-        mpiv = configdir.split('_mpi')[1].split('_')[0]
+        # mpiv = configdir.split('_mpi')[1].split('_')[0]
         if workers not in datadic:
             datadic[workers] = {}
 
@@ -121,7 +121,8 @@ if __name__ == '__main__':
     fig, ax = plt.subplots(**figconf['figure'])
     # records = [['num_workers', 'phase', 'runid', 'deg', 'nmse']]
     labels = set()
-    for i, num_workers in enumerate(sorted(list(datadic.keys()))):
+    workers = [2, 4, 8, 12, 16]
+    for i, num_workers in enumerate(workers):
         pos = 0
         w = 1 / (len(datadic[num_workers]) + 1)
         # totavg = np.mean([v for v in datadic[num_workers]['total'].values()])
@@ -158,13 +159,13 @@ if __name__ == '__main__':
             pos += w
 
     ax.tick_params(**figconf['tick_params'])
+    plt.ylim(top=2)
     # plt.ylim(bottom=0)
     plt.title('Time spread across workers in the same run, {}'.format(testcase))
     plt.xlabel('Cores (x10)', **figconf['title'])
     plt.ylabel('Normalized Spread', **figconf['title'])
     plt.legend(**figconf['legend'])
-    plt.xticks(np.arange(len(datadic.keys()))+w, sorted(list(datadic.keys())),
-               **figconf['title'])
+    plt.xticks(np.arange(len(workers))+w, workers, **figconf['title'])
     plt.yticks(fontsize=8)
     plt.tight_layout()
 

@@ -80,7 +80,7 @@ if __name__ == '__main__':
             red = configdir.split('_r')[1].split('_')[0]
             seed = configdir.split('_seed')[1].split('_')[0]
             approx = configdir.split('_approx')[1].split('_')[0]
-            mpiv = configdir.split('_mpi')[1].split('_')[0]
+            # mpiv = configdir.split('_mpi')[1].split('_')[0]
             if workers not in datadic:
                 datadic[testcase][workers] = {}
 
@@ -118,15 +118,18 @@ if __name__ == '__main__':
     phase = 'total'
     pos = 0
     w = 1 / (len(datadic.keys()) + 1)
+    workers = [2, 4, 8, 12, 16]
     for testcase, dic in datadic.items():
         x = sorted(list(dic.keys()))
-        for i, num_workers in enumerate(sorted(list(dic.keys()))):
+        for i, num_workers in enumerate(workers):
+            if num_workers not in dic:
+                continue
             # totavg = np.mean([v for v in datadic[num_workers]['total'].values()])
             total_time = np.max(
                 [v for v in dic[num_workers]['total'].values()], axis=1)
             total_time_lb = np.min([v for v in dic[num_workers]['comm'].values()], axis=1) \
                 + np.mean([v for v in dic[num_workers]['comp'].values()], axis=1) \
-                + np.max([v for v in dic[num_workers]
+                + np.mean([v for v in dic[num_workers]
                           ['serial'].values()], axis=1)
             time_diff = 100 * (total_time - total_time_lb) / total_time
             avg = np.mean(time_diff)
@@ -146,9 +149,10 @@ if __name__ == '__main__':
                          markersize=6, color='black',
                          marker='x', label=None,
                          linestyle='')
-            label = None
-            if i == 0:
-                label = testcase
+            label = testcase
+            if label in labels:
+                label = None
+            labels.add(label)
             # plt.bar(i+pos, 1, width=w, yerr=[[yerrlow], [yerrhigh]],
             plt.bar(i+pos, avg, width=w,
                     # yerr=[[avg-yerrlow], [yerrhigh-avg]],
@@ -162,12 +166,12 @@ if __name__ == '__main__':
         pos += w
 
     ax.tick_params(**figconf['tick_params'])
-    # plt.ylim(bottom=0)
+    # plt.ylim(upper=2)
     plt.title('Time lost due to load imbalance, {}'.format(testcase))
     plt.xlabel('Cores (x10)', **figconf['title'])
     plt.ylabel('Normalized Runtime', **figconf['title'])
     plt.legend(**figconf['legend'])
-    plt.xticks(np.arange(len(x)), x, **figconf['title'])
+    plt.xticks(np.arange(len(workers))+(pos-w)/2, workers, **figconf['title'])
     plt.yticks(fontsize=8)
     plt.tight_layout()
 
