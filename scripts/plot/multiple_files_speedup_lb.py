@@ -14,6 +14,7 @@ this_filename = sys.argv[0].split('/')[-1]
 project_dir = this_directory + '../../'
 res_dir = project_dir + 'results/'
 images_dir = res_dir + 'plots/redistribute/'
+# images_dir = res_dir + '/blond-meeting/'
 
 if not os.path.exists(images_dir):
     os.makedirs(images_dir)
@@ -101,23 +102,23 @@ config = {
         },
 
 
-        '{}/raw/{}/lb-mpich3/comm-comp-report.csv'.format(res_dir, case.upper()): {
-            'key': '{}-lbmpich3'.format(case),
-            'lines': {
-                'omp': ['10'],
-                'type': ['total']
-            }
-        },
+        # '{}/raw/{}/lb-mpich3/comm-comp-report.csv'.format(res_dir, case.upper()): {
+        #     'key': '{}-lbmpich3'.format(case),
+        #     'lines': {
+        #         'omp': ['10'],
+        #         'type': ['total']
+        #     }
+        # },
 
-        '{}/raw/{}/lb-mpich3-approx2/comm-comp-report.csv'.format(res_dir, case.upper()): {
-            'key': '{}-lbmpich3apprx'.format(case),
-            'lines': {
-                'omp': ['10'],
-                'type': ['total']
-            }
-        },
+        # '{}/raw/{}/lb-mpich3-approx2/comm-comp-report.csv'.format(res_dir, case.upper()): {
+        #     'key': '{}-lbmpich3apprx'.format(case),
+        #     'lines': {
+        #         'omp': ['10'],
+        #         'type': ['total']
+        #     }
+        # },
 
-        '{}/raw/{}/lb-mvapich2/comm-comp-report.csv'.format(res_dir, case.upper()): {
+        '{}/blond-meeting/{}/lb-mvapich2/comm-comp-report.csv'.format(res_dir, case.upper()): {
             'key': '{}-lbmvapich2'.format(case),
             'lines': {
                 'omp': ['10'],
@@ -125,13 +126,13 @@ config = {
             }
         },
 
-        '{}/raw/{}/lb-mvapich2-approx2/comm-comp-report.csv'.format(res_dir, case.upper()): {
-            'key': '{}-lbmvapich2apprx'.format(case),
-            'lines': {
-                'omp': ['10'],
-                'type': ['total']
-            }
-        },
+        # '{}/raw/{}/lb-mvapich2-approx2/comm-comp-report.csv'.format(res_dir, case.upper()): {
+        #     'key': '{}-lbmvapich2apprx'.format(case),
+        #     'lines': {
+        #         'omp': ['10'],
+        #         'type': ['total']
+        #     }
+        # },
         # '{}/raw/{}/dynamic-lb-mpich3/comm-comp-report.csv'.format(res_dir, case.upper()): {
         #     'key': '{}-dynlbmpich3'.format(case),
         #     'lines': {
@@ -264,7 +265,7 @@ config = {
         'pad': 1, 'top': 1, 'bottom': 1, 'left': 1,
         'direction': 'inout', 'length': 3, 'width': 0.5,
     },
-    'image_name': '{}/{}-dyn-lb.pdf'.format(images_dir, case),
+    'image_name': '{}/{}-task-parallel.pdf'.format(images_dir, case),
 
 }
 

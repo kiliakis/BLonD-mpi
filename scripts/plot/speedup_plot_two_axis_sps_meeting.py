@@ -19,7 +19,7 @@ plots_config = {
     'plot1': {
         'files': {
 
-            res_dir+'raw/SPS-b72-4MPPB-t10k-2/comm-comp-report.csv': {
+            res_dir+'raw/SPS/b72-4MPPB-t10k-2/comm-comp-report.csv': {
                 'key': 'exact',
                 # 'reference':  {'time': 430., 'parts': 4000000, 'turns': 100},
                 'lines': {
@@ -36,7 +36,7 @@ plots_config = {
             #     }
             # },
 
-            res_dir+'raw/SPS-b72-4MPPB-t10k-red2-time-2/comm-comp-report.csv': {
+            res_dir+'raw/SPS/b72-4MPPB-t10k-red2-time-2/comm-comp-report.csv': {
                 'key': '2turns',
                 # 'reference':  {'time': 430., 'parts': 4000000, 'turns': 100},
                 'lines': {
@@ -44,7 +44,7 @@ plots_config = {
                     'type': ['total']
                 }
             },
-            res_dir+'raw/SPS-b72-4MPPB-t10k-red3-time-3/comm-comp-report.csv': {
+            res_dir+'raw/SPS/b72-4MPPB-t10k-red3-time-3/comm-comp-report.csv': {
                 'key': '3turns',
                 # 'reference':  {'time': 430., 'parts': 4000000, 'turns': 100},
                 'lines': {
@@ -52,7 +52,7 @@ plots_config = {
                     'type': ['total']
                 }
             },
-            res_dir+'raw/SPS-b72-4MPPB-t10k-red4-time-3/comm-comp-report.csv': {
+            res_dir+'raw/SPS/b72-4MPPB-t10k-red4-time-3/comm-comp-report.csv': {
                 'key': '4turns',
                 # 'reference':  {'time': 430., 'parts': 4000000, 'turns': 100},
                 'lines': {

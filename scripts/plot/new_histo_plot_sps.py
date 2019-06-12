@@ -127,7 +127,7 @@ plots_config = {
 
     'plot3': {
         'files': {
-            res_dir+'raw/SPS-72B-4MPPB-uint16-r1-2/comm-comp-report.csv': {
+            res_dir+'raw/SPS/72B-4MPPB-uint16-r1-2/comm-comp-report.csv': {
                     'lines': {
                         'omp': ['10'],
                         'type': ['comp', 'serial', 'comm', 'other', 'overhead', 'total']}
@@ -147,9 +147,13 @@ plots_config = {
             # 'comp': 'tab:blue',
             # 'serial': 'tab:orange',
             # 'other': 'tab:purple'
-            'comm': '0.2',
             'comp': '0.6',
             'serial': '1',
+            'comm': '0.2',
+            # 'comp': 'xkcd:pale green',
+            # 'serial': 'xkcd:red',
+            # 'comm': 'xkcd:dark red',
+
             # 'other': '1'
 
             # '10': 'tab:red'
@@ -176,7 +180,8 @@ plots_config = {
         'title': 'Run-Time breakdown',
         # 'ylim': [0, 100],
         'figsize': (5, 3),
-        'image_name': images_dir + 'SPS-newhisto-liu.pdf'
+        'image_name': [images_dir + 'SPS-newhisto-liu.pdf',
+                        images_dir + 'SPS-newhisto-liu.png']
 
     },
 
@@ -210,20 +215,21 @@ if __name__ == '__main__':
         # exit()
 
         fig = plt.figure(figsize=config['figsize'])
-        ax1 = fig.add_subplot(111)
+        ax1 = plt.gca()
+        # ax1 = fig.add_subplot(111)
         ax2 = ax1.twinx()
+        plt.sca(ax1)
 
         plt.grid(False, axis='y')
 
         # plt.grid(True, which='major', alpha=0.6)
         # plt.grid(True, which='minor', alpha=0.6, linestyle=':')
         # plt.minorticks_on()
-        ax1.set_title(label='')
-        ax1.set_xlabel(config['xlabel'])
-        ax1.set_ylabel(config['ylabel'], color='tab:red')
+        # plt.title(label='')
+        plt.xlabel(config['xlabel'])
+        plt.ylabel(config['ylabel'], color='tab:red')
 
-        ax2.set_ylabel('Speedup', color='tab:blue')
-        # ax2.set_ylim((0, 110))
+
 
 
         # plt.yscale('log', basex=2)
@@ -233,7 +239,7 @@ if __name__ == '__main__':
         displs = 0.
         xticks = []
         for omp in final_dir.keys():
-            bottom = None
+            bottom = []
             for phase in config['order']:
                 values = final_dir[omp][phase]
             # for phase, values in final_dir[omp].items():
@@ -247,8 +253,8 @@ if __name__ == '__main__':
                 y_err = np.array(
                     values[:, header.index(config['y_err_name'])], float)
 
-                if bottom is None:
-                    bottom = np.empty_like(y)
+                if len(bottom)==0:
+                    bottom = np.zeros(len(y))
 
                 if len(x) > len(xticks):
                     xticks = x
@@ -265,11 +271,11 @@ if __name__ == '__main__':
                 #                       [:, header.index(config['y_err_name'])], float)
 
                 # print(bot, y)
-                ax1.bar(x + displs, y, width=config['width'],
+                plt.bar(x + displs, y, width=config['width'],
                         bottom=bottom,
                         # yerr=y_err,
-                        capsize=1, linewidth=.5,
-                        edgecolor='tab:red',
+                        capsize=1, linewidth=1,
+                        edgecolor='tab:red', 
                         color=config['colors'][phase],
                         hatch=config['hatches'][omp])
                 # label=phase)
@@ -284,6 +290,9 @@ if __name__ == '__main__':
             # x = np.array(values[:, header.index(config['x_name'])], float)
             # x = (x) * int(omp)
 
+        plt.sca(ax2)
+        plt.ylabel('Speedup', color='tab:blue')
+
         for key, values in plots_dir.items():
             if 'total' not in key:
                 continue
@@ -293,7 +302,7 @@ if __name__ == '__main__':
             x = (x) * omp
 
             y = np.array(values[:, header.index(config['y_name_ax2'])], float)
-            parts = np.array(values[:, header.index('ppb')], float)
+            parts = np.array(values[:, header.index('parts')], float)
             turns = np.array(values[:, header.index('turns')], float)
             # This is the throughput
             y = parts * turns / y
@@ -306,8 +315,10 @@ if __name__ == '__main__':
 
             speedup = y / yref
 
-            ax2.errorbar(x, speedup, yerr=None, color='tab:blue', 
-                linewidth=2, marker='s')
+            plt.errorbar(x, speedup, yerr=None, color='tab:blue', 
+                linewidth=1.5, marker='s')
+
+        # ax2.set_ylim((0, 110))
             # , color=config['colors']['speedup'],
             #              capsize=2, marker=config['markers'][key], markersize=4,
             #              linewidth=1.)
@@ -320,6 +331,10 @@ if __name__ == '__main__':
 
         handles = []
         for k, v in config['colors'].items():
+            if k == 'comm':
+                k = 'communication'
+            elif k == 'comp':
+                k = 'parallel'
             patch = mpatches.Patch(label=k, edgecolor='black', facecolor=v,
                                    linewidth=.5,)
             handles.append(patch)
@@ -339,7 +354,7 @@ if __name__ == '__main__':
             [], [], color='tab:blue', marker='s', label='speedup')
         handles.append(line)
 
-        plt.xticks(xticks+config['width']/2, np.array(xticks, int)//10)
+        plt.xticks(xticks+0*config['width']/2, np.array(xticks, int)//10)
         # plt.legend(loc='best', fancybox=True, fontsize=9.5,
         plt.legend(handles=handles, loc='upper left', fancybox=True, fontsize=10,
                    ncol=1, columnspacing=1,
@@ -347,7 +362,8 @@ if __name__ == '__main__':
                    handletextpad=0.2, handlelength=2., borderaxespad=0)
         # bbox_to_anchor=(0.1, 1.15))
         plt.tight_layout()
-        save_and_crop(fig, config['image_name'], dpi=900, bbox_inches='tight')
+        for outfile in config['image_name']:
+            save_and_crop(fig, outfile, dpi=900, bbox_inches='tight')
         # plt.savefig(config['image_name'], dpi=600, bbox_inches='tight')
         plt.show()
         plt.close()

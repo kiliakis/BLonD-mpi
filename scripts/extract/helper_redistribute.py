@@ -34,17 +34,43 @@ parser.add_argument('-r', '--report', type=str, choices=['particles'],
 
 
 def report_particles(indir, files, outfile):
-    regexp = re.compile(
+    regexp1 = re.compile(
         '.*\[(\d+)\].*Turn\s(\d+),\sTconst\s(.*),\sTcomp\s(.*),\sTcomm\s(.*),\sTsync\s(.*),\sLatency\s(.*),\sParticles\s(\d+)')
+    regexp2 = re.compile(
+        '.*\[(\d+)\].*Turn\s(\d+),\sTconst\s(.*),\sTcomp\s(.*),\sTcomm\s(.*),\sLatency\s(.*),\sParticles\s(\d+)')
+
     # re_tracking = re.compile('.*\[(\d+)\].*Tracking\s+(\d+)\s+particles.')
     # re_time = re.compile('.*\[(\d+)\].*Time\s(.*)\ssec.')
     # re_latency = re.compile('.*\[(\d+)\].*Latency\s(.*)\ssec/particle.')
     data = {}
     for f in files:
         for line in open(indir + '/' + f, 'r'):
-            if (regexp.search(line)):
-                match = regexp.search(line)
+            if (regexp1.search(line)):
+                match = regexp1.search(line)
                 wid, turn, tconst, tcomp, tcomm, tsync, tpp, parts = match.groups()
+                wid = int(wid)
+                if wid not in data:
+                    data[wid] = {}
+                if 'parts' not in data[wid]:
+                    data[wid]['parts'] = []
+                    data[wid]['tconst'] = []
+                    data[wid]['tcomp'] = []
+                    data[wid]['tcomm'] = []
+                    data[wid]['tsync'] = []
+                    data[wid]['turn'] = []
+                    data[wid]['tpp'] = []
+
+                data[wid]['parts'].append(parts)
+                data[wid]['turn'].append(turn)
+                data[wid]['tpp'].append(tpp)
+                data[wid]['tcomp'].append(tcomp)
+                data[wid]['tconst'].append(tconst)
+                data[wid]['tcomm'].append(tcomm)
+                data[wid]['tsync'].append(tsync)
+            elif (regexp2.search(line)):
+                match = regexp2.search(line)
+                wid, turn, tconst, tcomp, tcomm, tpp, parts = match.groups()
+                tsync = '0.0'
                 wid = int(wid)
                 if wid not in data:
                     data[wid] = {}
