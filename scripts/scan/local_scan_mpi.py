@@ -13,15 +13,15 @@ import importlib
 this_directory = os.path.dirname(os.path.realpath(__file__)) + "/"
 this_filename = sys.argv[0].split('/')[-1]
 
-parser = argparse.ArgumentParser(description='Submit the mpi jobs to the batch scheduler.',
-                                 usage='python scan_mpi.py -i in.yml')
+parser = argparse.ArgumentParser(description='Run MPI jobs locally.',
+                                 usage='python local_scan_mpi.py -i in.yml')
 
 parser.add_argument('-i', '--input', type=str, default=None, nargs='+',
                     help='The input file(s) containing the configs to run.')
 
 if __name__ == '__main__':
     args = parser.parse_args()
-    yc = yaml.load(open(this_directory + 'config.yml', 'r'))
+    yc = yaml.load(open(this_directory + 'local_config.yml', 'r'))
     for input in args.input:
         module = importlib.import_module(input.split('/')[-1].replace('.py', ''),
                                          package=os.path.dirname(input).replace('/', '.'))
@@ -77,7 +77,7 @@ if __name__ == '__main__':
                                       exes, approxs, timings, mpis,
                                       logs, lbs, lbas):
 
-                N = (w * o + 20-1) // 20
+                N = 1
 
                 job_name = job_name_form.format(p, b, s, t, w, o, N,
                                                 r, mtw, seed, approx, mpi,
@@ -102,10 +102,7 @@ if __name__ == '__main__':
                             os.makedirs(d)
                     # exe_args = ['-n', str('python', exe,
                     exe_args = [
-                        # '-n', str(w),
-                        mpiconf['module_name'],
-                        mpiconf['path'],
-                        mpiconf['path']+'python', yc['exe_home']+exe,
+                        'python', yc['exe_home']+exe,
                         '-p', str(int(p)), '-s', str(s),
                         '-b', str(int(b)), '-addload', str(load),
                         '-t', str(t), '-o', str(o), '-seed', str(seed),
@@ -118,18 +115,11 @@ if __name__ == '__main__':
                         exe_args += ['--log', '-logdir', log_dir]
 
                     print(job_name, timestr)
-                    batch_args = ['-N', str(N), '-n', str(w),
-                                  '--ntasks-per-node', str(ceil(w/N)),
-                                  '-c', str(o),  # str(o),
-                                  '-t', str(time), '-p', partition,
-                                  '-o', output,
-                                  '-e', error,
-                                  '-J', case + '-' + analysis + job_name.split('/')[0] + '-' + str(i)]
+                    batch_args = ['-n', str(w)]
 
-                    all_args = ['sbatch'] + batch_args + \
-                        [yc['batch_script']] + exe_args
-                    subprocess.call(all_args, stdout=stdout,
-                                    stderr=stdout, env=os.environ.copy())
+                    all_args = ['mpirun'] + batch_args + exe_args
+                    subprocess.call(all_args, stdout=open(output, 'w'),
+                                    stderr=open(error, 'w'), env=os.environ.copy())
                     # sleep(5)
                     current_sim += 1
                     print("%lf %% is completed" % (100.0 * current_sim

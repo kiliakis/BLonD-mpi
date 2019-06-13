@@ -81,7 +81,7 @@ parser.add_argument('-tracefile', '--tracefile', type=str, default='mpe-trace',
                     help='The file name to save the MPE trace (without the file extension).'
                     '\nDefault: mpe-trace')
 
-parser.add_argument('-lb', '--loadbalance', type=str, choices=['off', 'times', 'interval', 'dynamic'],
+parser.add_argument('-lb', '--loadbalance', type=str, choices=['off', 'times', 'interval', 'dynamic', 'reportonly'],
                     default=0,
                     help='Load balance policy: off, times, interval, dynamic.'
                     '\nDefault: off ')

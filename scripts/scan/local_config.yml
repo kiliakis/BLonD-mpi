@@ -1,0 +1,15 @@
+home: '/afs/cern.ch/work/k/kiliakis/'
+blond_home: '/afs/cern.ch/work/k/kiliakis/git/BLonD-mpi/'
+exe_home: '/afs/cern.ch/work/k/kiliakis/git/BLonD-mpi/__EXAMPLES/main_files/'
+blond_repos: '/afs/cern.ch/work/k/kiliakis/git/blond_repos/'
+result_dir: '/afs/cern.ch/work/k/kiliakis/git/BLonD-mpi/results/local_raw/'
+mpi_versions:
+    openmpi3:
+        module_name: 'mpi/openmpi/3.0.0'
+        path: '/hpcscratch/user/kiliakis/install/miniconda3-openmpi3.0.0/bin/'
+    mvapich2:
+        module_name: 'mpi/mvapich2/2.3'
+        path: '/hpcscratch/user/kiliakis/install/miniconda3-mvapich2.3/bin/'
+    mpich3:
+        module_name: 'mpi/mpich/3.2.1'
+        path: '/hpcscratch/user/kiliakis/install/anaconda3/bin/'

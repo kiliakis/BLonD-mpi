@@ -28,7 +28,7 @@ configs = {
 
 
     'lb-mpich3-approx2': {
-        'exe': cycle(['SPS_main_random_lb.py']),
+        'exe': cycle(['SPS_main_random_tp.py']),
         'p': cycle([4000000]),
         'b': cycle([72]),  # 72
         's': cycle([1408]),
@@ -54,7 +54,7 @@ configs = {
     },
 
     'lb-openmpi3-approx2': {
-        'exe': cycle(['SPS_main_random_lb.py']),
+        'exe': cycle(['SPS_main_random_tp.py']),
         'p': cycle([4000000]),
         'b': cycle([72]),  # 72
         's': cycle([1408]),
@@ -80,7 +80,7 @@ configs = {
         'repeats': 5,
     },
     'lb-mvapich2-approx2': {
-        'exe': cycle(['SPS_main_random_lb.py']),
+        'exe': cycle(['SPS_main_random_tp.py']),
         'p': cycle([4000000]),
         'b': cycle([72]),  # 72
         's': cycle([1408]),
@@ -105,7 +105,7 @@ configs = {
     },
 
     'lb-mpich3': {
-        'exe': cycle(['SPS_main_random_lb.py']),
+        'exe': cycle(['SPS_main_random_tp.py']),
         'p': cycle([4000000]),
         'b': cycle([72]),  # 72
         's': cycle([1408]),
@@ -131,7 +131,7 @@ configs = {
     },
 
     'lb-mpich3-intv100': {
-        'exe': cycle(['SPS_main_random_lb.py']),
+        'exe': cycle(['SPS_main_random_tp.py']),
         'p': cycle([4000000]),
         'b': cycle([72]),  # 72
         's': cycle([1408]),
@@ -158,7 +158,7 @@ configs = {
 
 
     'lb-openmpi3': {
-        'exe': cycle(['SPS_main_random_lb.py']),
+        'exe': cycle(['SPS_main_random_tp.py']),
         'p': cycle([4000000]),
         'b': cycle([72]),  # 72
         's': cycle([1408]),
@@ -183,7 +183,7 @@ configs = {
         'repeats': 5,
     },
     'lb-mvapich2': {
-        'exe': cycle(['SPS_main_random_lb.py']),
+        'exe': cycle(['SPS_main_random_tp.py']),
         'p': cycle([4000000]),
         'b': cycle([72]),  # 72
         's': cycle([1408]),
@@ -209,7 +209,7 @@ configs = {
     },
 
     'lb-mvapich2-intv100': {
-        'exe': cycle(['SPS_main_random_lb.py']),
+        'exe': cycle(['SPS_main_random_tp.py']),
         'p': cycle([4000000]),
         'b': cycle([72]),  # 72
         's': cycle([1408]),
@@ -236,7 +236,7 @@ configs = {
 
 
     'dynamic-lb-mpich3-approx2': {
-        'exe': cycle(['SPS_main_random_lb.py']),
+        'exe': cycle(['SPS_main_random_tp.py']),
         'p': cycle([4000000]),
         'b': cycle([72]),  # 72
         's': cycle([1408]),
@@ -262,7 +262,7 @@ configs = {
     },
 
     'dynamic-lb-openmpi3-approx2': {
-        'exe': cycle(['SPS_main_random_lb.py']),
+        'exe': cycle(['SPS_main_random_tp.py']),
         'p': cycle([4000000]),
         'b': cycle([72]),  # 72
         's': cycle([1408]),
@@ -288,7 +288,7 @@ configs = {
         'repeats': 5,
     },
     'dynamic-lb-mvapich2-approx2': {
-        'exe': cycle(['SPS_main_random_lb.py']),
+        'exe': cycle(['SPS_main_random_tp.py']),
         'p': cycle([4000000]),
         'b': cycle([72]),  # 72
         's': cycle([1408]),
@@ -313,7 +313,7 @@ configs = {
     },
 
     'dynamic-lb-mpich3': {
-        'exe': cycle(['SPS_main_random_lb.py']),
+        'exe': cycle(['SPS_main_random_tp.py']),
         'p': cycle([4000000]),
         'b': cycle([72]),  # 72
         's': cycle([1408]),
@@ -338,7 +338,7 @@ configs = {
         'repeats': 5,
     },
     'dynamic-lb-openmpi3': {
-        'exe': cycle(['SPS_main_random_lb.py']),
+        'exe': cycle(['SPS_main_random_tp.py']),
         'p': cycle([4000000]),
         'b': cycle([72]),  # 72
         's': cycle([1408]),
@@ -363,7 +363,7 @@ configs = {
         'repeats': 5,
     },
     'dynamic-lb-mvapich2': {
-        'exe': cycle(['SPS_main_random_lb.py']),
+        'exe': cycle(['SPS_main_random_tp.py']),
         'p': cycle([4000000]),
         'b': cycle([72]),  # 72
         's': cycle([1408]),

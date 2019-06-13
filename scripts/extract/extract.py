@@ -128,7 +128,7 @@ def aggregate_reports(input):
 
 def collect_reports(input, outfile, filename):
     print('\n--------Collecting reports-------\n')
-    header = ['ppb', 'bunches', 'slices', 'turns', 'n', 'omp', 'N', 'red']
+    # header = ['ppb', 'bunches', 'slices', 'turns', 'n', 'omp', 'N', 'red']
     records = []
     for dirs, subdirs, files in os.walk(input):
         if filename not in files:
@@ -144,21 +144,30 @@ def collect_reports(input, outfile, filename):
             ws = config.split('_w')[1].split('_')[0]
             oss = config.split('_o')[1].split('_')[0]
             Ns = config.split('_N')[1].split('_')[0]
-            rs = config.split('_r')[1].split('_')[0]
+            rs = config.split('_red')[1].split('_')[0]
+            mtw = config.split('_mtw')[1].split('_')[0]
+            seed = config.split('_seed')[1].split('_')[0]
+            approx = config.split('_approx')[1].split('_')[0]
+            mpiv = config.split('_mpi')[1].split('_')[0]
+            lb = config.split('_lb')[1].split('_')[0]
+            lba = config.split('_lba')[1].split('_')[0]
 
             data = np.genfromtxt(os.path.join(dirs, filename),
                                  dtype=str, delimiter='\t')
 
             data_head, data = data[0], data[1:]
             for r in data:
-                records.append([ps, bs, ss, ts, ws, oss, Ns, rs] + list(r))
+                records.append([ps, bs, ss, ts, ws, Ns, oss, rs,
+                                mtw, seed, approx, mpiv, lb, lba] + list(r))
         except:
             print('[Error] dir ', dirs)
             continue
-    records.sort(key=lambda a: (float(a[0]), int(a[1]), int(a[2]),
-                                int(a[3]), int(a[4]), int(a[5]), int(a[6])))
+    records.sort(key=lambda a: (float(a[0]), int(a[1]), int(a[2]), int(a[4]),
+                                int(a[9]), a[11]))
     writer = csv.writer(outfile, delimiter='\t')
-    writer.writerow(header + list(data_head))
+    header = ['ppb', 'b', 's', 't', 'n', 'N', 'omp',
+              'red', 'mtw', 'seed', 'approx', 'mpi', 'lb', 'lba'] + list(data_head)
+    writer.writerow(header)
     writer.writerows(records)
 
 

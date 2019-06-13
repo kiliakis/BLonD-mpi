@@ -62,6 +62,7 @@ class Worker:
         self.start_turn = 100
         self.start_interval = 500
         self.interval = 500
+        self.coefficients = {'particles': [], 'times': []}
         self.intracomm = MPI.COMM_WORLD
         self.rank = self.intracomm.rank
 
@@ -220,92 +221,149 @@ class Worker:
     @timing.timeit(key='comm:redistribute')
     @mpiprof.traceit(key='comm:redistribute')
     def redistribute(self, turn, beam, tcomp, tconst):
-        latency = tcomp / beam.n_macroparticles
-        recvbuf = np.empty(3 * self.workers, dtype=float)
-        self.intracomm.Allgather(
-            np.array([latency, tconst, beam.n_macroparticles]), recvbuf)
+        self.coefficients['particles'].append(beam.n_macroparticles)
+        self.coefficients['times'].append(tcomp)
 
-        latencies = recvbuf[::3]
-        ctimes = recvbuf[1::3]
-        Pi_old = recvbuf[2::3]
-
-        P = np.sum(Pi_old)
-        sum1 = np.sum(ctimes/latencies)
-        sum2 = np.sum(1./latencies)
-        Pi = (P + sum1 - ctimes * sum2)/(latencies * sum2)
-        dPi = np.rint(Pi_old - Pi)
-
-        for i in range(len(dPi)):
-            if dPi[i] < 0 and -dPi[i] > Pi[i]:
-                dPi[i] = -Pi[i]
-            elif dPi[i] > Pi[i]:
-                dPi[i] = Pi[i]
-
-
-
-        transactions = calc_transactions(dPi, 2**4)[self.rank]
-        if dPi[self.rank] > 0 and len(transactions) > 0:
-            reqs = []
-            tot_to_send = np.sum([t[1] for t in transactions])
-            i = beam.n_macroparticles - tot_to_send
-            for t in transactions:
-                # I need to send t[1] particles to t[0]
-                # buf[:t[1]] de, then dt, then id
-                buf = np.empty(3*t[1], float)
-                buf[0:t[1]] = beam.dE[i:i+t[1]]
-                buf[t[1]:2*t[1]] = beam.dt[i:i+t[1]]
-                buf[2*t[1]:3*t[1]] = beam.id[i:i+t[1]]
-                i += t[1]
-                # self.logger.critical(
-                #     '[{}]: Sending {} parts to {}.'.format(self.rank, t[1], t[0]))
-                reqs.append(self.intracomm.Isend(buf, t[0]))
-            # Then I need to resize local beam.dt and beam.dE, also
-            # beam.n_macroparticles
-            beam.dE = beam.dE[:beam.n_macroparticles-tot_to_send]
-            beam.dt = beam.dt[:beam.n_macroparticles-tot_to_send]
-            beam.id = beam.id[:beam.n_macroparticles-tot_to_send]
-            beam.n_macroparticles -= tot_to_send
-            for req in reqs:
+        if len(self.coefficients['times']) < 2:
+            # If it is the first time the function is called,
+            # I need to do something different, I don't have enough data
+            # to caluclate the coefficients.
+            if self.hostworkers != 2:
+                exit('Only support two workers per node for now!')
+            # we exchange with the neighbour only the time it took us to compute
+            recvbuf = np.empty(2 * self.hostworkers, dtype=float)
+            self.hostcomm.Allgather(
+                np.array([beam.n_macroparticles, tcomp]), recvbuf)
+            req = None
+            # let's say 1% of the particles
+            P = np.sum(recvbuf[::2])
+            size = int(1. * P/100)
+            # There are only two values in the array, if more than the mean,
+            # its the slow worker
+            buf = np.empty(3*size, dtype=float)
+            if tcomp > np.mean(recvbuf[1::2]):
+                # if I am slower, I need to send
+                i = beam.n_macroparticles - size
+                buf[0:size] = beam.dE[i:i+size]
+                buf[size:2*size] = beam.dt[i:i+size]
+                buf[2*size:3*size] = beam.id[i:i+size]
+                req = self.hostcomm.Isend(buf, 1-self.hostrank)
+                # Then I need to resize local beam.dt and beam.dE, also
+                # beam.n_macroparticles
+                beam.dE = beam.dE[:beam.n_macroparticles-size]
+                beam.dt = beam.dt[:beam.n_macroparticles-size]
+                beam.id = beam.id[:beam.n_macroparticles-size]
+                beam.n_macroparticles -= size
+            else:
+                req = self.hostcomm.Irecv(buf, 1-self.hostrank)
                 req.Wait()
-            # req[0].Waitall(req)
-        elif dPi[self.rank] < 0 and len(transactions) > 0:
-            reqs = []
-            recvbuf = []
-            for t in transactions:
-                # I need to receive t[1] particles from t[0]
-                # The buffer contains: de, dt, id
-                buf = np.empty(3*t[1], float)
-                recvbuf.append(buf)
-                # self.logger.critical(
-                #     '[{}]: Receiving {} parts from {}.'.format(self.rank, t[1], t[0]))
-                reqs.append(self.intracomm.Irecv(buf, t[0]))
-            for req in reqs:
-                req.Wait()
-            # req[0].Waitall(req)
-            # Then I need to resize local beam.dt and beam.dE, also
-            # beam.n_macroparticles
-            tot_to_recv = np.sum([t[1] for t in transactions])
-            beam.dE = np.resize(beam.dE, beam.n_macroparticles + tot_to_recv)
-            beam.dt = np.resize(beam.dt, beam.n_macroparticles + tot_to_recv)
-            beam.id = np.resize(beam.id, beam.n_macroparticles + tot_to_recv)
-            i = beam.n_macroparticles
-            for buf, t in zip(recvbuf, transactions):
-                beam.dE[i:i+t[1]] = buf[0:t[1]]
-                beam.dt[i:i+t[1]] = buf[t[1]:2*t[1]]
-                beam.id[i:i+t[1]] = buf[2*t[1]:3*t[1]]
-                i += t[1]
-            beam.n_macroparticles += tot_to_recv
-        
-        if np.sum(np.abs(dPi))/2 < 1e-4 * P:
-            self.interval = min(2*self.interval, 4000)
+                # Then I need to resize local beam.dt and beam.dE, also
+                # beam.n_macroparticles
+                beam.dE = np.resize(beam.dE, beam.n_macroparticles + size)
+                beam.dt = np.resize(beam.dt, beam.n_macroparticles + size)
+                beam.id = np.resize(beam.id, beam.n_macroparticles + size)
+                i = beam.n_macroparticles
+                beam.dE[i:i+size] = buf[0:size]
+                beam.dt[i:i+size] = buf[size:2*size]
+                beam.id[i:i+size] = buf[2*size:3*size]
+                beam.n_macroparticles += size
             return self.interval
+
         else:
-            self.interval = self.start_interval
-            return self.start_turn
+            weights = np.ones(len(self.coefficients['times']))
+            weights[-1] = np.sum(weights[:-1])
+            p = np.polyfit(self.coefficients['particles'],
+                           self.coefficients['times'], deg=1,
+                           w=weights)
+            latency = p[0]
+            tconst += p[1]
+            # latency = tcomp / beam.n_macroparticles
+            recvbuf = np.empty(3 * self.workers, dtype=float)
+            self.intracomm.Allgather(
+                np.array([latency, tconst, beam.n_macroparticles]), recvbuf)
+
+            latencies = recvbuf[::3]
+            ctimes = recvbuf[1::3]
+            Pi_old = recvbuf[2::3]
+
+            P = np.sum(Pi_old)
+            sum1 = np.sum(ctimes/latencies)
+            sum2 = np.sum(1./latencies)
+            Pi = (P + sum1 - ctimes * sum2)/(latencies * sum2)
+            dPi = np.rint(Pi_old - Pi)
+
+            for i in range(len(dPi)):
+                if dPi[i] < 0 and -dPi[i] > Pi[i]:
+                    dPi[i] = -Pi[i]
+                elif dPi[i] > Pi[i]:
+                    dPi[i] = Pi[i]
+
+            transactions = calc_transactions(dPi, 2**4)[self.rank]
+            if dPi[self.rank] > 0 and len(transactions) > 0:
+                reqs = []
+                tot_to_send = np.sum([t[1] for t in transactions])
+                i = beam.n_macroparticles - tot_to_send
+                for t in transactions:
+                    # I need to send t[1] particles to t[0]
+                    # buf[:t[1]] de, then dt, then id
+                    buf = np.empty(3*t[1], dtype=float)
+                    buf[0:t[1]] = beam.dE[i:i+t[1]]
+                    buf[t[1]:2*t[1]] = beam.dt[i:i+t[1]]
+                    buf[2*t[1]:3*t[1]] = beam.id[i:i+t[1]]
+                    i += t[1]
+                    # self.logger.critical(
+                    #     '[{}]: Sending {} parts to {}.'.format(self.rank, t[1], t[0]))
+                    reqs.append(self.intracomm.Isend(buf, t[0]))
+                # Then I need to resize local beam.dt and beam.dE, also
+                # beam.n_macroparticles
+                beam.dE = beam.dE[:beam.n_macroparticles-tot_to_send]
+                beam.dt = beam.dt[:beam.n_macroparticles-tot_to_send]
+                beam.id = beam.id[:beam.n_macroparticles-tot_to_send]
+                beam.n_macroparticles -= tot_to_send
+                for req in reqs:
+                    req.Wait()
+                # req[0].Waitall(req)
+            elif dPi[self.rank] < 0 and len(transactions) > 0:
+                reqs = []
+                recvbuf = []
+                for t in transactions:
+                    # I need to receive t[1] particles from t[0]
+                    # The buffer contains: de, dt, id
+                    buf = np.empty(3*t[1], float)
+                    recvbuf.append(buf)
+                    # self.logger.critical(
+                    #     '[{}]: Receiving {} parts from {}.'.format(self.rank, t[1], t[0]))
+                    reqs.append(self.intracomm.Irecv(buf, t[0]))
+                for req in reqs:
+                    req.Wait()
+                # req[0].Waitall(req)
+                # Then I need to resize local beam.dt and beam.dE, also
+                # beam.n_macroparticles
+                tot_to_recv = np.sum([t[1] for t in transactions])
+                beam.dE = np.resize(
+                    beam.dE, beam.n_macroparticles + tot_to_recv)
+                beam.dt = np.resize(
+                    beam.dt, beam.n_macroparticles + tot_to_recv)
+                beam.id = np.resize(
+                    beam.id, beam.n_macroparticles + tot_to_recv)
+                i = beam.n_macroparticles
+                for buf, t in zip(recvbuf, transactions):
+                    beam.dE[i:i+t[1]] = buf[0:t[1]]
+                    beam.dt[i:i+t[1]] = buf[t[1]:2*t[1]]
+                    beam.id[i:i+t[1]] = buf[2*t[1]:3*t[1]]
+                    i += t[1]
+                beam.n_macroparticles += tot_to_recv
+
+            if np.sum(np.abs(dPi))/2 < 1e-4 * P:
+                self.interval = min(2*self.interval, 4000)
+                return self.interval
+            else:
+                self.interval = self.start_interval
+                return self.start_turn
 
     def report(self, turn, beam, tcomp, tcomm, tconst, tsync):
         latency = tcomp / beam.n_macroparticles
-        self.logger.critical('[{}]: Turn {}, Tconst {}, Tcomp {}, Tcomm {}, Tsync {}, Latency {}, Particles {}'.format(
+        self.logger.critical('[{}]: Turn {}, Tconst {:g}, Tcomp {:g}, Tcomm {:g}, Tsync {:g}, Latency {:g}, Particles {:g}'.format(
             self.rank, turn, tconst, tcomp, tcomm, tsync, latency, beam.n_macroparticles))
 
     def greet(self):

@@ -68,7 +68,7 @@ configs = {
 
 
     'lb-mpich3': {
-        'exe': cycle(['EX_01_Acceleration_lb.py']),
+        'exe': cycle(['EX_01_Acceleration_tp.py']),
         'p': cycle([20000000]),
         'b': cycle([1]),  # 96
         's': cycle([4000]),
@@ -94,7 +94,7 @@ configs = {
     },
 
     'lb-mpich3-approx2': {
-        'exe': cycle(['EX_01_Acceleration_lb.py']),
+        'exe': cycle(['EX_01_Acceleration_tp.py']),
         'p': cycle([20000000]),
         'b': cycle([1]),  # 96
         's': cycle([4000]),

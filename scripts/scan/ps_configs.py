@@ -109,7 +109,7 @@ configs = {
 
 
     'lb-mpich3': {
-        'exe': cycle(['PS_main_lb.py']),
+        'exe': cycle(['PS_main_tp.py']),
         'p': cycle([8000000]),
         'b': cycle([21]),  # 21
         's': cycle([128]),
@@ -135,7 +135,7 @@ configs = {
     },
 
     'lb-mpich3-intv100': {
-        'exe': cycle(['PS_main_lb.py']),
+        'exe': cycle(['PS_main_tp.py']),
         'p': cycle([8000000]),
         'b': cycle([21]),  # 21
         's': cycle([128]),
@@ -162,7 +162,7 @@ configs = {
 
 
     'lb-openmpi3': {
-        'exe': cycle(['PS_main_lb.py']),
+        'exe': cycle(['PS_main_tp.py']),
         'p': cycle([8000000]),
         'b': cycle([21]),  # 21
         's': cycle([128]),
@@ -189,7 +189,7 @@ configs = {
 
 
     'lb-mvapich2': {
-        'exe': cycle(['PS_main_lb.py']),
+        'exe': cycle(['PS_main_tp.py']),
         'p': cycle([8000000]),
         'b': cycle([21]),  # 21
         's': cycle([128]),
@@ -216,7 +216,7 @@ configs = {
 
 
     'lb-mvapich2-intv100': {
-        'exe': cycle(['PS_main_lb.py']),
+        'exe': cycle(['PS_main_tp.py']),
         'p': cycle([8000000]),
         'b': cycle([21]),  # 21
         's': cycle([128]),
@@ -242,7 +242,7 @@ configs = {
     },
 
     'lb-mpich3-approx2': {
-        'exe': cycle(['PS_main_lb.py']),
+        'exe': cycle(['PS_main_tp.py']),
         'p': cycle([8000000]),
         'b': cycle([21]),  # 21
         's': cycle([128]),
@@ -269,7 +269,7 @@ configs = {
 
 
     'lb-openmpi3-approx2': {
-        'exe': cycle(['PS_main_lb.py']),
+        'exe': cycle(['PS_main_tp.py']),
         'p': cycle([8000000]),
         'b': cycle([21]),  # 21
         's': cycle([128]),
@@ -296,7 +296,7 @@ configs = {
 
 
     'lb-mvapich2-approx2': {
-        'exe': cycle(['PS_main_lb.py']),
+        'exe': cycle(['PS_main_tp.py']),
         'p': cycle([8000000]),
         'b': cycle([21]),  # 21
         's': cycle([128]),
@@ -322,7 +322,7 @@ configs = {
     },
 
     'dynamic-lb-mpich3': {
-        'exe': cycle(['PS_main_lb.py']),
+        'exe': cycle(['PS_main_tp.py']),
         'p': cycle([8000000]),
         'b': cycle([21]),  # 21
         's': cycle([128]),
@@ -349,7 +349,7 @@ configs = {
 
 
     'dynamic-lb-openmpi3': {
-        'exe': cycle(['PS_main_lb.py']),
+        'exe': cycle(['PS_main_tp.py']),
         'p': cycle([8000000]),
         'b': cycle([21]),  # 21
         's': cycle([128]),
@@ -376,7 +376,7 @@ configs = {
 
 
     'dynamic-lb-mvapich2': {
-        'exe': cycle(['PS_main_lb.py']),
+        'exe': cycle(['PS_main_tp.py']),
         'p': cycle([8000000]),
         'b': cycle([21]),  # 21
         's': cycle([128]),
@@ -402,7 +402,7 @@ configs = {
     },
 
     'dynamic-lb-mpich3-approx2': {
-        'exe': cycle(['PS_main_lb.py']),
+        'exe': cycle(['PS_main_tp.py']),
         'p': cycle([8000000]),
         'b': cycle([21]),  # 21
         's': cycle([128]),
@@ -429,7 +429,7 @@ configs = {
 
 
     'dynamic-lb-openmpi3-approx2': {
-        'exe': cycle(['PS_main_lb.py']),
+        'exe': cycle(['PS_main_tp.py']),
         'p': cycle([8000000]),
         'b': cycle([21]),  # 21
         's': cycle([128]),
@@ -456,7 +456,7 @@ configs = {
 
 
     'dynamic-lb-mvapich2-approx2': {
-        'exe': cycle(['PS_main_lb.py']),
+        'exe': cycle(['PS_main_tp.py']),
         'p': cycle([8000000]),
         'b': cycle([21]),  # 21
         's': cycle([128]),
