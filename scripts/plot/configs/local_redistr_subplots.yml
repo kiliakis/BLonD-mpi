@@ -3,10 +3,10 @@ keep_only:
     bunches: [4]
     turns: [10000]
 
-to_plot: ['tcomp', 'tconst', 'tcomm', 'tcomp+tconst', 'tsync',  'total']
+to_plot: ['tcomp', 'tconst', 'tcomp+tconst', 'tsync', 'tcomm', 'total']
 figure:
-    colors: {'interval-0': 'xkcd:light orange', 'interval-1':'xkcd:orange',
-             'reportonly-0': 'xkcd:light blue', 'reportonly-1':'xkcd:medium blue'}
+    colors: {'interval-0': 'xkcd:light blue', 'interval-1':'xkcd:blue',
+             'reportonly-0': 'xkcd:light orange', 'reportonly-1':'xkcd:orange'}
     # colors: ['xkcd:light blue', 'xkcd:blue', 'xkcd:light orange', 'xkcd:orange',
     #          'xkcd:light green', 'xkcd:green', 'xkcd:light red', 'xkcd:red',
     #          'xkcd:light purple', 'xkcd:purple', 'xkcd:light brown', 'xkcd:brown',
@@ -38,9 +38,9 @@ figure:
         frameon: True
         fontsize: 10
         labelspacing: 0
-        borderpad: 0.5
+        borderpad: 0.1
         handletextpad: 0.1
-        borderaxespad: 0.1
+        borderaxespad: 0.2
     subplots_adjust:
         wspace: 0.03
         hspace: 0.08

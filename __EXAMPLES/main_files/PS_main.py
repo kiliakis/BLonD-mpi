@@ -557,7 +557,11 @@ elif args['loadbalance'] == 'interval':
 
 elif args['loadbalance'] == 'dynamic':
     lbturns = [worker.start_turn]
-    # print('Warning: Dynamic load balance policy not supported.')
+elif args['loadbalance'] == 'reportonly':
+    if args['loadbalancearg'] != 0:
+        lbturns = np.arange(worker.start_turn, N_t, args['loadbalancearg'])
+    else:
+        lbturns = np.arange(worker.start_turn, N_t, 100)
 
 
 worker.sync()
@@ -574,11 +578,11 @@ for turn in range(N_t):
 
     if (approx == 0):
         profile.track()
-        # worker.sync()
+        worker.sync()
         profile.reduce_histo()
     elif (approx == 1) and (turn % N_t_reduce == 0):
         profile.track()
-        # worker.sync()
+        worker.sync()
         profile.reduce_histo()
     elif (approx == 2):
         profile.track()
@@ -611,11 +615,13 @@ for turn in range(N_t):
         tcomp_new = timing.get(['comp:'])
         tcomm_new = timing.get(['comm:'])
         tconst_new = timing.get(['serial:'], ['serial:sync'])
-        tsync_new = 0
-        # intv = worker.redistribute(turn, beam, tcomp=tcomp_new-tcomp_old,
-        #                            tconst=(tconst_new-tconst_old) + (tcomm_new - tcomm_old))
-        # if args['loadbalance'] == 'dynamic':
-        #     lbturns[0] += intv
+        tsync_new = timing.get(['serial:sync'])
+        if args['loadbalance'] != 'reportonly':
+            intv = worker.redistribute(turn, beam, tcomp=tcomp_new-tcomp_old,
+                                       # tconst=(tconst_new-tconst_old))
+                                       tconst=(tconst_new-tconst_old) + (tcomm_new - tcomm_old))
+        if args['loadbalance'] == 'dynamic':
+            lbturns[0] += intv
         worker.report(turn, beam, tcomp=tcomp_new-tcomp_old,
                       tcomm=tcomm_new-tcomm_old,
                       tconst=tconst_new-tconst_old,

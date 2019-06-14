@@ -187,8 +187,8 @@ if __name__ == '__main__':
                     plt.xlabel('turn (k)', **figconf['label'])
                 if i == 0 or i == 3:
                     plt.ylabel('time (s)', **figconf['label'])
-                if i == 1 or i==3 or i==4 or i == 5:
-                    plt.legend(**figconf['legend'])
+                # if i == 1 or i==3 or i==4 or i == 5:
+                plt.legend(**figconf['legend'])
                 # plt.xticks(np.arange(len(workers))+(pos-w)/2, workers, **figconf['title'])
                 plt.yticks(**figconf['ticks']['y'])
                 plt.xticks(**figconf['ticks']['x'])
