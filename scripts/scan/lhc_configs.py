@@ -5,14 +5,14 @@ case = 'LHC'
 
 run_configs = [
 
-    'mpich3',
-    'mvapich2',
+    #'mpich3',
+    #'mvapich2',
     'tp-mpich3',
     'tp-mvapich2',
     'lb-tp-mpich3',
     'lb-tp-mvapich2',
-    'lb-mpich3',
-    'lb-mvapich2',
+    #'lb-mpich3',
+    #'lb-mvapich2',
     # 'lb-mpich3-intv100',
     # 'lb-mvapich2-intv100',
     # 'lb-mpich3-approx2',
