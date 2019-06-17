@@ -11,6 +11,7 @@
 ##Comment SBATCH --job-name="%x"
 #SBATCH --hint=nomultithread
 #SBATCH --export=ALL
+#SBATCH --mem=0
 ##Comment SBATCH --overcommit
 
 source $HOME/.bashrc
