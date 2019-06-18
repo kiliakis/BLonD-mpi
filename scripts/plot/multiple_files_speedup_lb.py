@@ -3,7 +3,7 @@ import numpy as np
 import os
 import matplotlib.lines as mlines
 import matplotlib.patches as mpatches
-
+from itertools import cycle
 import matplotlib.ticker
 import sys
 from plot.plotting_utilities import *
@@ -21,88 +21,48 @@ if not os.path.exists(images_dir):
 case = 'lhc'
 
 config = {
-    'files': {
-    #     '{}/raw/{}/mvapich2/comm-comp-report.csv'.format(res_dir, case.upper()): {
-    #         'key': '{}'.format(case),
-    #         'lines': {
-    #             'mpi': ['mpich3', 'mvapich2'],
-    #             'lb': ['interval', 'reportonly'],
-    #             'approx': ['0', '2'],
-    #             'lba': ['100', '500'],
-    #             'type': ['total'],
-    #         }
-    #     },
-    #     '{}/raw/{}/mpich3/comm-comp-report.csv'.format(res_dir, case.upper()): {
-    #         'key': '{}'.format(case),
-    #         'lines': {
-    #             'mpi': ['mpich3', 'mvapich2'],
-    #             'lb': ['interval', 'reportonly'],
-    #             'approx': ['0', '2'],
-    #             'lba': ['100', '500'],
-    #             'type': ['total'],
-    #         }
-    #     },
-    #     '{}/raw/{}/lb-mvapich2/comm-comp-report.csv'.format(res_dir, case.upper()): {
-    #         'key': '{}'.format(case),
-    #         'lines': {
-    #             'mpi': ['mpich3', 'mvapich2'],
-    #             'lb': ['interval', 'reportonly'],
-    #             'approx': ['0', '2'],
-    #             'lba': ['100', '500'],
-    #             'type': ['total'],
-    #         }
-    #     },
-    #     '{}/raw/{}/lb-mpich3/comm-comp-report.csv'.format(res_dir, case.upper()): {
-    #         'key': '{}'.format(case),
-    #         'lines': {
-    #             'mpi': ['mpich3', 'mvapich2'],
-    #             'lb': ['interval', 'reportonly'],
-    #             'approx': ['0', '2'],
-    #             'lba': ['100', '500'],
-    #             'type': ['total'],
-    #         }
-    #     },
-
-
-        '{}/raw/{}/tp-mvapich2/comm-comp-report.csv'.format(res_dir, case.upper()): {
-            'key': '{}'.format(case),
+    'figures': {
+        '{} DLB'.format(case.upper()): {
+            'files': [
+                '{}/raw/{}/mvapich2/comm-comp-report.csv'.format(
+                    res_dir, case.upper()),
+                '{}/raw/{}/lb-mvapich2/comm-comp-report.csv'.format(
+                    res_dir, case.upper()),
+                '{}/raw/{}/mpich3/comm-comp-report.csv'.format(
+                    res_dir, case.upper()),
+                '{}/raw/{}/lb-mpich3/comm-comp-report.csv'.format(
+                    res_dir, case.upper())
+            ],
             'lines': {
                 'mpi': ['mpich3', 'mvapich2'],
                 'lb': ['interval', 'reportonly'],
                 'approx': ['0', '2'],
                 'lba': ['100', '500'],
+                'b': ['48'],
                 'type': ['total'],
-            }
+            },
+            'outfiles': ['{}/{}-DLB.pdf'.format(images_dir, case)]
         },
-        '{}/raw/{}/tp-mpich3/comm-comp-report.csv'.format(res_dir, case.upper()): {
-            'key': '{}'.format(case),
+        '{} DLB \w TP'.format(case.upper()): {
+            'files': [
+                '{}/raw/{}/tp-mvapich2/comm-comp-report.csv'.format(
+                    res_dir, case.upper()),
+                '{}/raw/{}/lb-tp-mvapich2/comm-comp-report.csv'.format(
+                    res_dir, case.upper()),
+                '{}/raw/{}/tp-mpich3/comm-comp-report.csv'.format(
+                    res_dir, case.upper()),
+                '{}/raw/{}/lb-tp-mpich3/comm-comp-report.csv'.format(
+                    res_dir, case.upper())
+            ],
             'lines': {
                 'mpi': ['mpich3', 'mvapich2'],
                 'lb': ['interval', 'reportonly'],
                 'approx': ['0', '2'],
                 'lba': ['100', '500'],
+                'b': ['48'],
                 'type': ['total'],
-            }
-        },
-        '{}/raw/{}/lb-tp-mvapich2/comm-comp-report.csv'.format(res_dir, case.upper()): {
-            'key': '{}'.format(case),
-            'lines': {
-                'mpi': ['mpich3', 'mvapich2'],
-                'lb': ['interval', 'reportonly'],
-                'approx': ['0', '2'],
-                'lba': ['100', '500'],
-                'type': ['total'],
-            }
-        },
-        '{}/raw/{}/lb-tp-mpich3/comm-comp-report.csv'.format(res_dir, case.upper()): {
-            'key': '{}'.format(case),
-            'lines': {
-                'mpi': ['mpich3', 'mvapich2'],
-                'lb': ['interval', 'reportonly'],
-                'approx': ['0', '2'],
-                'lba': ['100', '500'],
-                'type': ['total'],
-            }
+            },
+            'outfiles': ['{}/{}-DLB-TP.pdf'.format(images_dir, case)]
         },
     },
     'markers': {
@@ -118,23 +78,33 @@ config = {
         'ps': '--'
     },
     'colors': {
-        'mpich3-wlb': 'xkcd:light green',
-        'mpich3-wolb': 'xkcd:green',
+        'mpich3-LB': cycle(['xkcd:olive green', 'xkcd:blue green']),
+        'mpich3-NoLB': cycle(['xkcd:pastel green']),
 
-        'mvapich2-wlb': 'xkcd:light orange',
-        'mvapich2-wolb': 'xkcd:orange',
+        'mvapich2-LB': cycle(['xkcd:orange', 'xkcd:rust']),
+        'mvapich2-NoLB': cycle(['xkcd:apricot']),
     },
     'hatches': {
-        'mpich3': 'x',
-        'openmpi3': '-',
-        'mvapich2': 'o',
+        'LB': 'x',
+        'NoLB': '',
     },
     'reference': {
-        'ex01': {'time': 21.4, 'ppb': 1000000, 'turns': 2000},
-        'sps': {'time': 430., 'ppb': 4000000, 'turns': 100},
+        # 'ex01': {'time': 21.4, 'ppb': 1000000, 'turns': 2000},
+        # 'sps': {'time': 430., 'ppb': 4000000, 'turns': 100},
+        # 'sps': {'time': 564.44, 'ppb': 4000000, 'b': 72, 'turns': 500},
+        'sps': {'ppb': 4000000, 'b': 72, 'turns': 1000, 'w': 1,
+                'omp': 10, 'time': 352.4},
+        # 'sps': {'ppb': 4000000, 'b': 72, 'turns': 500, 'w': 1,
+        #         'omp': 1, 'time': 1486.180},
         # 'lhc': {'time': 2120., 'ppb': 2000000, 'turns': 1000},
-        'lhc': {'time': 350.831, 'ppb': 2000000, 'b': 48, 'turns': 500},
-        'ps': {'time': 1623.7, 'ppb': 4000000, 'turns': 2000},
+        # 'lhc': {'time': 681.59, 'ppb': 2000000, 'b': 96, 'turns': 500},
+        'lhc': {'ppb': 2000000, 'b': 96, 'turns': 1000, 'w': 1,
+                'omp': 10, 'time': 165.76},
+
+        # 'ps': {'time': 1623.7, 'ppb': 4000000, 'turns': 2000},
+        # 'ps': {'time': 466.085, 'ppb': 8000000, 'b': 21, 'turns': 500},
+        'ps': {'ppb': 8000000, 'b': 21, 'turns': 1000, 'w': 1,
+               'omp': 10, 'time': 135.14},
     },
     # 'sequence': ['mpich3']
 
@@ -161,112 +131,121 @@ config = {
         'pad': 1, 'top': 1, 'bottom': 1, 'left': 1,
         'direction': 'inout', 'length': 3, 'width': 0.5,
     },
-    'image_name': '{}/{}-tp.pdf'.format(images_dir, case),
 
 }
 
 if __name__ == '__main__':
-    plots_dir = {}
-    for file, conf in config['files'].items():
-        # print(file)
-        data = np.genfromtxt(file, delimiter='\t', dtype=str)
-        header, data = list(data[0]), data[1:]
-        temp = get_plots(header, data, conf['lines'],
-                         exclude=conf.get('exclude', []),
-                         prefix=True)
-        for key in temp.keys():
-            plots_dir['{}-{}'.format(conf['key'], key)] = temp[key].copy()
+    for title, figconf in config['figures'].items():
+        plots_dir = {}
+        for file in figconf['files']:
+            # print(file)
+            data = np.genfromtxt(file, delimiter='\t', dtype=str)
+            header, data = list(data[0]), data[1:]
+            temp = get_plots(header, data, figconf['lines'],
+                             exclude=figconf.get('exclude', []),
+                             prefix=True)
+            for key in temp.keys():
+                plots_dir['_{}'.format(key)] = temp[key].copy()
 
-    fig = plt.figure(figsize=config['figsize'])
+        fig = plt.figure(figsize=config['figsize'])
 
-    plt.grid(True, which='major', alpha=0.5)
-    plt.grid(False, which='major', axis='x')
-    plt.title(config['title'])
-    plt.xlabel(config['xlabel'], fontsize=config['fontsize'])
-    plt.ylabel(config['ylabel'], fontsize=config['fontsize'])
+        plt.grid(True, which='major', alpha=0.5)
+        plt.grid(False, which='major', axis='x')
+        plt.title(title)
+        plt.xlabel(config['xlabel'], fontsize=config['fontsize'])
+        plt.ylabel(config['ylabel'], fontsize=config['fontsize'])
 
-    pos = 0
-    step = 0.1
-    width = 1. / (len(plots_dir.keys())+1)
+        pos = 0
+        step = 0.1
+        width = 1. / (len(plots_dir.keys())+1)
 
-    for k in sorted(plots_dir.keys()):
-        values = plots_dir[k]
-        case = k.split('-')[0]
-        mpiv = k.split('-mpi')[1].split('_')[0]
-        lb = k.split('lb')[1].split('_')[0]
-        lba = k.split('lba')[1].split('_')[0]
-        approx = k.split('approx')[1].split('_')[0]
+        for k in sorted(plots_dir.keys()):
+            values = plots_dir[k]
+            mpiv = k.split('_mpi')[1].split('_')[0]
+            lb = k.split('lb')[1].split('_')[0]
+            lba = k.split('lba')[1].split('_')[0]
+            approx = k.split('approx')[1].split('_')[0]
 
-        # key = '{}-{}-{}'.format(case, mpiv, lb)
+            if lb == 'interval':
+                lb = 'LB'
+            elif lb == 'reportonly':
+                lb = 'NoLB'
+            if approx == '2':
+                approx = 'TP'
+            elif approx == '0':
+                approx = 'NoTP'
 
-        label = '{}-{}-{}-{}'.format(mpiv, lb, lba, approx)
-        # color = config['colors']['{}-{}'.format(mpiv, lb)]
-        # hatch = config['hatches'][mpiv]
-        # marker = config['markers'][case]
-        # ls = config['ls'][case]
+            # key = '{}-{}-{}'.format(case, mpiv, lb)
 
-        x = get_values(values, header, config['x_name'])
-        omp = get_values(values, header, config['omp_name'])
-        y = get_values(values, header, config['y_name'])
-        parts = get_values(values, header, 'ppb')
-        bunches = get_values(values, header, 'b')
-        turns = get_values(values, header, 't')
+            label = '{}-{}-{}-{}'.format(mpiv, lb, lba, approx)
+            color = config['colors']['{}-{}'.format(mpiv, lb)].__next__()
+            hatch = config['hatches'][lb]
+            # marker = config['markers'][case]
+            # ls = config['ls'][case]
 
-        # This is the throughput
-        y = parts * bunches * turns / y
+            x = get_values(values, header, config['x_name'])
+            omp = get_values(values, header, config['omp_name'])
+            y = get_values(values, header, config['y_name'])
+            parts = get_values(values, header, 'ppb')
+            bunches = get_values(values, header, 'b')
+            turns = get_values(values, header, 't')
 
-        # Now the reference, 1thread
-        yref = config['reference'][case]['time']
-        partsref = config['reference'][case]['ppb']
-        bunchesref = config['reference'][case]['b']
-        turnsref = config['reference'][case]['turns']
-        yref = partsref * bunchesref * turnsref / yref
+            # This is the throughput
+            y = parts * bunches * turns / y
 
-        speedup = y / yref
+            # Now the reference, 1thread
+            yref = config['reference'][case]['time']
+            partsref = config['reference'][case]['ppb']
+            bunchesref = config['reference'][case]['b']
+            turnsref = config['reference'][case]['turns']
+            yref = partsref * bunchesref * turnsref / yref
 
-        if len(config['x_to_keep']) < len(x):
-            x_new = []
-            speedup_new = []
-            omp_new = []
-            for i in range(len(x)):
-                if x[i] in config['x_to_keep']:
-                    x_new.append(x[i])
-                    speedup_new.append(speedup[i])
-                    omp_new.append(omp[i])
-            x = np.array(x_new)
-            speedup = np.array(speedup_new)
-            omp = np.array(omp_new)
+            speedup = y / yref
 
-        x = x * omp
+            if len(config['x_to_keep']) < len(x):
+                x_new = []
+                speedup_new = []
+                omp_new = []
+                for i in range(len(x)):
+                    if x[i] in config['x_to_keep']:
+                        x_new.append(x[i])
+                        speedup_new.append(speedup[i])
+                        omp_new.append(omp[i])
+                x = np.array(x_new)
+                speedup = np.array(speedup_new)
+                omp = np.array(omp_new)
 
-        # efficiency = 100 * speedup / x
-        plt.bar(np.arange(len(x)) + pos, speedup, width=width,
-                edgecolor='0.3', label=label)
-        # hatch=hatch)
-        pos += width
-    pos += width * step
+            x = x * omp
 
-    plt.xticks(np.arange(len(x)) + pos/2.2, np.array(x//10, int))
+            # efficiency = 100 * speedup / x
+            plt.bar(np.arange(len(x)) + pos, speedup, width=width,
+                    edgecolor='0.3', label=label, hatch=hatch,
+                    color=color)
+            pos += width
+        pos += width * step
 
-    # handles = []
-    # for k, v in config['colors'].items():
-    #     patch = mpatches.Patch(label=k, edgecolor='black', facecolor=v,
-    #                            linewidth=.5, alpha=0.9)
-    #     handles.append(patch)
+        plt.xticks(np.arange(len(x)) + pos/2.2, np.array(x//10, int))
 
-    # for k, v in config['hatches'].items():
-    #     patch = mpatches.Patch(label=k, edgecolor='black',
-    #                            facecolor='0.8', hatch=v, linewidth=.5,)
-    #     handles.append(patch)
+        # handles = []
+        # for k, v in config['colors'].items():
+        #     patch = mpatches.Patch(label=k, edgecolor='black', facecolor=v,
+        #                            linewidth=.5, alpha=0.9)
+        #     handles.append(patch)
 
-    # plt.legend(handles=handles, **config['legend'])
-    plt.legend(**config['legend'])
-    plt.gca().tick_params(**config['tick_params'])
+        # for k, v in config['hatches'].items():
+        #     patch = mpatches.Patch(label=k, edgecolor='black',
+        #                            facecolor='0.8', hatch=v, linewidth=.5,)
+        #     handles.append(patch)
 
-    plt.subplots_adjust(**config['subplots_adjust'])
-    plt.xticks(fontsize=config['fontsize'])
-    plt.yticks(fontsize=config['fontsize'])
-    plt.tight_layout()
-    save_and_crop(fig, config['image_name'], dpi=600, bbox_inches='tight')
-    plt.show()
-    plt.close()
+        # plt.legend(handles=handles, **config['legend'])
+        plt.legend(**config['legend'])
+        plt.gca().tick_params(**config['tick_params'])
+
+        plt.tight_layout()
+        plt.subplots_adjust(**config['subplots_adjust'])
+        plt.xticks(fontsize=config['fontsize'])
+        plt.yticks(fontsize=config['fontsize'])
+        for file in figconf['outfiles']:
+            save_and_crop(fig, file, dpi=600, bbox_inches='tight')
+        plt.show()
+        plt.close()

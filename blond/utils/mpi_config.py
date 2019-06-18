@@ -62,7 +62,7 @@ class Worker:
         self.start_turn = 100
         self.start_interval = 500
         self.interval = 500
-        self.coefficients = {'particles': [], 'times': []}
+        self.coefficients = {'particles': [0], 'times': [0.]}
         self.intracomm = MPI.COMM_WORLD
         self.rank = self.intracomm.rank
 
