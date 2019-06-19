@@ -5,14 +5,14 @@ case = 'LHC'
 
 run_configs = [
 
-    #'mpich3',
-    #'mvapich2',
-    'tp-mpich3',
-    'tp-mvapich2',
-    'lb-tp-mpich3',
-    'lb-tp-mvapich2',
-    #'lb-mpich3',
-    #'lb-mvapich2',
+    'mpich3',
+    # 'mvapich2',
+    # 'tp-mpich3',
+    # 'tp-mvapich2',
+    # 'lb-tp-mpich3',
+    # 'lb-tp-mvapich2',
+    # 'lb-mpich3',
+    # 'lb-mvapich2',
     # 'lb-mpich3-intv100',
     # 'lb-mvapich2-intv100',
     # 'lb-mpich3-approx2',
@@ -28,22 +28,24 @@ configs = {
     'mpich3': {
         'exe': cycle(['_LHC_BUP_2017.py']),
         'p': cycle([2000000]),
-        'b': cycle([48]),  # 96
+        'b': cycle([96]),  # 96
         's': cycle([1000]),
-        't': cycle([10000]),
+        't': cycle([1000]),
         'm': cycle([0]),
         'seed': cycle([0]),
         'reduce': cycle([1]),
         'load': cycle([0.0]),
         'mtw': cycle([50]),
         'approx': cycle([0]),
-        'log': cycle([True]),
+        'log': cycle([False]),
         'lb': cycle(['reportonly']),
         'lba': cycle([500]),
         'timing': cycle(['-time']),  # otherwise pass -time
         'w': [] +
-        [4, 8, 12, 16],
+        [1],
+        # [4, 8, 12, 16],
         #+ list(np.arange(2, 17, 2)),
+        # 'o': cycle([10]),
         'o': cycle([10]),
         'mpi': cycle(['mpich3']),
         'time': cycle([30]),

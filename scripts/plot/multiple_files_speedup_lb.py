@@ -38,7 +38,8 @@ config = {
                 'lb': ['interval', 'reportonly'],
                 'approx': ['0', '2'],
                 'lba': ['100', '500'],
-                'b': ['48'],
+                'b': ['96', '72', '21'],
+                't': ['5000'],
                 'type': ['total'],
             },
             'outfiles': ['{}/{}-DLB.pdf'.format(images_dir, case)]
@@ -59,7 +60,8 @@ config = {
                 'lb': ['interval', 'reportonly'],
                 'approx': ['0', '2'],
                 'lba': ['100', '500'],
-                'b': ['48'],
+                'b': ['96', '72', '21'],
+                't': ['5000'],
                 'type': ['total'],
             },
             'outfiles': ['{}/{}-DLB-TP.pdf'.format(images_dir, case)]
@@ -91,18 +93,20 @@ config = {
     'reference': {
         # 'ex01': {'time': 21.4, 'ppb': 1000000, 'turns': 2000},
         # 'sps': {'time': 430., 'ppb': 4000000, 'turns': 100},
-        # 'sps': {'time': 564.44, 'ppb': 4000000, 'b': 72, 'turns': 500},
+        # 'sps': {'ppb': 4000000, 'b': 72, 'turns': 500, 'w': 1,
+        #         'omp': 1, 'time': 1497.8},
         'sps': {'ppb': 4000000, 'b': 72, 'turns': 1000, 'w': 1,
                 'omp': 10, 'time': 352.4},
-        # 'sps': {'ppb': 4000000, 'b': 72, 'turns': 500, 'w': 1,
-        #         'omp': 1, 'time': 1486.180},
         # 'lhc': {'time': 2120., 'ppb': 2000000, 'turns': 1000},
-        # 'lhc': {'time': 681.59, 'ppb': 2000000, 'b': 96, 'turns': 500},
+        # 'lhc': {'ppb': 2000000, 'b': 96, 'turns': 500, 'w': 1,
+        #         'omp': 1, 'time': 681.59},
         'lhc': {'ppb': 2000000, 'b': 96, 'turns': 1000, 'w': 1,
                 'omp': 10, 'time': 165.76},
 
         # 'ps': {'time': 1623.7, 'ppb': 4000000, 'turns': 2000},
         # 'ps': {'time': 466.085, 'ppb': 8000000, 'b': 21, 'turns': 500},
+        # 'ps': {'ppb': 8000000, 'b': 21, 'turns': 500, 'w': 1,
+        #        'omp': 1, 'time': 502.88},
         'ps': {'ppb': 8000000, 'b': 21, 'turns': 1000, 'w': 1,
                'omp': 10, 'time': 135.14},
     },
@@ -201,21 +205,30 @@ if __name__ == '__main__':
             yref = partsref * bunchesref * turnsref / yref
 
             speedup = y / yref
+            x_new = []
+            sp_new = []
+            for i, xi in enumerate(config['x_to_keep']):
+                x_new.append(xi)
+                if xi in x:
+                    sp_new.append(speedup[list(x).index(xi)])
+                else:
+                    sp_new.append(0)
+            x = np.array(x_new)
+            speedup = np.array(sp_new)    
+            x = x * omp[0]
+            # if len(config['x_to_keep']) < len(x):
+            #     x_new = []
+            #     speedup_new = []
+            #     omp_new = []
+            #     for i in range(len(x)):
+            #         if x[i] in config['x_to_keep']:
+            #             x_new.append(x[i])
+            #             speedup_new.append(speedup[i])
+            #             omp_new.append(omp[i])
+            #     x = np.array(x_new)
+            #     speedup = np.array(speedup_new)
+            #     omp = np.array(omp_new)
 
-            if len(config['x_to_keep']) < len(x):
-                x_new = []
-                speedup_new = []
-                omp_new = []
-                for i in range(len(x)):
-                    if x[i] in config['x_to_keep']:
-                        x_new.append(x[i])
-                        speedup_new.append(speedup[i])
-                        omp_new.append(omp[i])
-                x = np.array(x_new)
-                speedup = np.array(speedup_new)
-                omp = np.array(omp_new)
-
-            x = x * omp
 
             # efficiency = 100 * speedup / x
             plt.bar(np.arange(len(x)) + pos, speedup, width=width,
@@ -224,7 +237,7 @@ if __name__ == '__main__':
             pos += width
         pos += width * step
 
-        plt.xticks(np.arange(len(x)) + pos/2.2, np.array(x//10, int))
+        plt.xticks(np.arange(len(x)) + pos/2.2, np.array(x, int)//10)
 
         # handles = []
         # for k, v in config['colors'].items():

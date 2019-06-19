@@ -4,12 +4,12 @@ import numpy as np
 case = 'PS'
 
 run_configs = [
-    # 'mpich3',
+    'mpich3',
     # 'mvapich2',
-    'tp-mpich3',
-    'tp-mvapich2',
-    'lb-tp-mpich3',
-    'lb-tp-mvapich2',
+    # 'tp-mpich3',
+    # 'tp-mvapich2',
+    # 'lb-tp-mpich3',
+    # 'lb-tp-mvapich2',
     # 'lb-mpich3',
     # 'lb-mvapich2',
     # 'lb-mpich3-intv100',
@@ -27,28 +27,31 @@ configs = {
 
     'mpich3': {
         'exe': cycle(['PS_main.py']),
-        'p': cycle([4000000]),
+        'p': cycle([8000000]),
         'b': cycle([21]),  # 21
         's': cycle([128]),
-        't': cycle([10000]),
+        't': cycle([500]),
+        # 't': cycle([10000]),
         'm': cycle([0]),
         'seed': cycle([0]),
         'reduce': cycle([1]),
         'load': cycle([0.0]),
         'mtw': cycle([50]),
         'approx': cycle([0]),
-        'log': cycle([True]),
+        'log': cycle([False]),
         'lb': cycle(['reportonly']),
         'lba': cycle([500]),
         'timing': cycle(['-time']),  # otherwise pass -time
         'w': [] +
-        [4, 8, 12, 16],
+        [1],
+        # [4, 8, 12, 16],
         # + list(np.arange(2, 17, 2)),
-        'o': cycle([10]),
+        'o': cycle([1]),
+        # 'o': cycle([10]),
         'mpi': cycle(['mpich3']),
         'time': cycle([45]),
         'partition': cycle(['inf-short']),
-        'repeats': 4
+        'repeats': 3
     },
 
     'mvapich2': {
