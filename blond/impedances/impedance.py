@@ -318,9 +318,9 @@ class _InducedVoltage(object):
         # if induced_voltage_1turn.last_turn < self.RFParams.counter[0]:
         # induced_voltage_1turn.last_turn = self.RFParams.counter[0]
 
-        if self.n_fft not in beam_spectrum_dict:
-            self.profile.beam_spectrum_generation(self.n_fft)
-            beam_spectrum_dict[self.n_fft] = self.profile.beam_spectrum
+        # if self.n_fft not in beam_spectrum_dict:
+        self.profile.beam_spectrum_generation(self.n_fft)
+        beam_spectrum_dict[self.n_fft] = self.profile.beam_spectrum
 
         beam_spectrum = beam_spectrum_dict[self.n_fft]
 

@@ -18,7 +18,7 @@ images_dir = res_dir + 'plots/redistribute/'
 if not os.path.exists(images_dir):
     os.makedirs(images_dir)
 
-case = 'lhc'
+case = 'sps'
 
 config = {
     'figures': {
@@ -96,19 +96,19 @@ config = {
         # 'sps': {'ppb': 4000000, 'b': 72, 'turns': 500, 'w': 1,
         #         'omp': 1, 'time': 1497.8},
         'sps': {'ppb': 4000000, 'b': 72, 'turns': 1000, 'w': 1,
-                'omp': 10, 'time': 352.4},
+                'omp': 10, 'time': 415.4},
         # 'lhc': {'time': 2120., 'ppb': 2000000, 'turns': 1000},
         # 'lhc': {'ppb': 2000000, 'b': 96, 'turns': 500, 'w': 1,
         #         'omp': 1, 'time': 681.59},
         'lhc': {'ppb': 2000000, 'b': 96, 'turns': 1000, 'w': 1,
-                'omp': 10, 'time': 165.76},
+                'omp': 10, 'time': 177.585},
 
         # 'ps': {'time': 1623.7, 'ppb': 4000000, 'turns': 2000},
         # 'ps': {'time': 466.085, 'ppb': 8000000, 'b': 21, 'turns': 500},
         # 'ps': {'ppb': 8000000, 'b': 21, 'turns': 500, 'w': 1,
         #        'omp': 1, 'time': 502.88},
         'ps': {'ppb': 8000000, 'b': 21, 'turns': 1000, 'w': 1,
-               'omp': 10, 'time': 135.14},
+               'omp': 10, 'time': 142.066},
     },
     # 'sequence': ['mpich3']
 

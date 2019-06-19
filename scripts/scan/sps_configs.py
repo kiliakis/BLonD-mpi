@@ -30,8 +30,8 @@ configs = {
         'p': cycle([4000000]),
         'b': cycle([72]),  # 72
         's': cycle([1408]),
-        # 't': cycle([10000]),  # 4000
-        't': cycle([500]),  # 4000
+        't': cycle([1000]),  # 4000
+        # 't': cycle([500]),  # 4000
         'm': cycle([0]),
         'reduce': cycle([1]),
         'load': cycle([0.0]),
@@ -46,8 +46,8 @@ configs = {
         [1],
         # [4, 8, 12, 16],
         # + list(np.arange(2, 17, 2)),
-        'o': cycle([1]),
-        # 'o': cycle([10]),
+        # 'o': cycle([1]),
+        'o': cycle([10]),
         'mpi': cycle(['mpich3']),
         'time': cycle([60]),
         'partition': cycle(['inf-short']),

@@ -30,6 +30,7 @@ configs = {
         'p': cycle([2000000]),
         'b': cycle([96]),  # 96
         's': cycle([1000]),
+        # 't': cycle([1000]),
         't': cycle([1000]),
         'm': cycle([0]),
         'seed': cycle([0]),
