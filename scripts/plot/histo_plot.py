@@ -16,7 +16,7 @@ if not os.path.exists(images_dir):
 # csv_file = res_dir + 'csv/interp-kick1/all_results2.csv'
 
 plots_config = {
-    
+
     'plot5': {
         'files': {
             res_dir+'raw/PS-2MPPB-r1/comm-comp-report.csv': {

@@ -61,8 +61,8 @@ config = {
                 't': ['5000'],
                 'type': ['total'],
             },
-            'outfiles': ['{}/{}-DLB.pdf'.format(images_dir, case),
-                         '{}/{}-DLB.jpg'.format(images_dir, case)]
+            'outfiles': ['{}/{}-efficiency-DLB.pdf'.format(images_dir, case),
+                         '{}/{}-efficiency-DLB.jpg'.format(images_dir, case)]
         },
         # '{} DLB \w TP'.format(case.upper()): {
         #     'files': [
@@ -141,12 +141,12 @@ config = {
     'y_name': 'avg_time(sec)',
     # 'y_err_name': 'std',
     'xlabel': 'Cores (x10)',
-    'ylabel': 'Speedup',
+    'ylabel': 'Efficiency',
     'title': {
         's': '{} DLB'.format(case.upper()),
         'fontsize': 10,
-        'y': 0.88,
-        'x': 0.55,
+        'y': 0.96,
+        'x': 0.5,
         'fontweight': 'bold',
     },
     'figsize': [4.5, 2.5],
@@ -159,7 +159,7 @@ config = {
     'ticks': {'fontsize': 9},
     'fontsize': 10,
     'legend': {
-        'loc': 'upper left', 'ncol': 1, 'handlelength': 1, 'fancybox': True,
+        'loc': 'upper left', 'ncol': 4, 'handlelength': 1, 'fancybox': True,
         'framealpha': 0., 'fontsize': 10, 'labelspacing': 0, 'borderpad': 0.5,
         'handletextpad': 0.5, 'borderaxespad': 0, 'columnspacing': 0.5,
     },
@@ -170,7 +170,7 @@ config = {
         'pad': 1, 'top': 0, 'bottom': 1, 'left': 1,
         'direction': 'inout', 'length': 3, 'width': 0.5,
     },
-    'ylim': [0, 12],
+    'ylim': [0, 110],
 
 }
 
@@ -252,14 +252,15 @@ if __name__ == '__main__':
                     sp_new.append(0)
             x = np.array(x_new)
             speedup = np.array(sp_new)
+            # Efficiency
+            speedup = 100 * speedup / x
             x = x * omp[0]
 
-            # efficiency = 100 * speedup / x
             plt.bar(np.arange(len(x)) + pos, speedup, width=0.8*width,
                     edgecolor='0.', label=label, hatch=hatch,
                     color=color)
             for i, j in zip(np.arange(len(x)) + pos, speedup):
-                plt.gca().annotate('{:.1f}'.format(j), xy=(i, j),
+                plt.gca().annotate('{:.0f}'.format(j), xy=(i, j),
                                    **config['annotate'])
             pos += width
         pos += width * step
