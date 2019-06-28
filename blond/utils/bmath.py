@@ -34,6 +34,7 @@ _CPU_func_dict = {
     'add': butils_wrap.add,
     'mul': butils_wrap.mul,
     'beam_phase': bphysics_wrap.beam_phase,
+    'fast_resonator': bphysics_wrap.fast_resonator,
     'kick': bphysics_wrap.kick,
     'rf_volt_comp': bphysics_wrap.rf_volt_comp,
     'drift': bphysics_wrap.drift,
