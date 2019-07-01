@@ -4,10 +4,11 @@ import numpy as np
 case = 'EX01'
 
 run_configs = [
-    'mpich3-approx2',
+    # 'mpich3-approx2',
     'mpich3',
-    'lb-mpich3',
-    'lb-mpich3-approx2',
+    # 'lb-mpich3',
+    # 'lb-mpich3-approx2',
+    'mvapich2'
 ]
 
 configs = {

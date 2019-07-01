@@ -30,36 +30,37 @@ configs = {
         'p': cycle([8000000]),
         'b': cycle([21]),  # 21
         's': cycle([128]),
-        't': cycle([500]),
-        # 't': cycle([10000]),
+        # 't': cycle([5000]),
+        't': cycle([1000]),
         'm': cycle([0]),
         'seed': cycle([0]),
         'reduce': cycle([1]),
         'load': cycle([0.0]),
         'mtw': cycle([50]),
         'approx': cycle([0]),
-        'log': cycle([False]),
+        'log': cycle([True]),
         'lb': cycle(['reportonly']),
+        # 'lb': cycle(['off']),
         'lba': cycle([500]),
         'timing': cycle(['-time']),  # otherwise pass -time
         'w': [] +
-        [1],
         # [4, 8, 12, 16],
+        [1],
         # + list(np.arange(2, 17, 2)),
-        'o': cycle([1]),
         # 'o': cycle([10]),
+        'o': cycle([20]),
         'mpi': cycle(['mpich3']),
         'time': cycle([45]),
         'partition': cycle(['inf-short']),
-        'repeats': 3
+        'repeats': 4
     },
 
     'mvapich2': {
         'exe': cycle(['PS_main.py']),
-        'p': cycle([4000000]),
+        'p': cycle([8000000]),
         'b': cycle([21]),  # 21
         's': cycle([128]),
-        't': cycle([10000]),
+        't': cycle([5000]),
         'm': cycle([0]),
         'seed': cycle([0]),
         'reduce': cycle([1]),
@@ -83,10 +84,10 @@ configs = {
 
     'tp-mpich3': {
         'exe': cycle(['PS_main_tp.py']),
-        'p': cycle([4000000]),
+        'p': cycle([8000000]),
         'b': cycle([21]),  # 21
         's': cycle([128]),
-        't': cycle([10000]),
+        't': cycle([5000]),
         'm': cycle([0]),
         'seed': cycle([0]),
         'reduce': cycle([1]),
@@ -109,10 +110,10 @@ configs = {
 
     'tp-mvapich2': {
         'exe': cycle(['PS_main_tp.py']),
-        'p': cycle([4000000]),
+        'p': cycle([8000000]),
         'b': cycle([21]),  # 21
         's': cycle([128]),
-        't': cycle([10000]),
+        't': cycle([5000]),
         'm': cycle([0]),
         'seed': cycle([0]),
         'reduce': cycle([1]),
@@ -124,21 +125,21 @@ configs = {
         'lba': cycle([500]),
         'timing': cycle(['-time']),  # otherwise pass -time
         'w': [] +
-        [4, 8, 12, 16],
+        [8],
         # + list(np.arange(2, 17, 2)),
         'o': cycle([10]),
         'mpi': cycle(['mvapich2']),
-        'time': cycle([45]),
+        'time': cycle([30]),
         'partition': cycle(['inf-short']),
-        'repeats': 4
+        'repeats': 5
     },
 
     'lb-mpich3': {
         'exe': cycle(['PS_main.py']),
-        'p': cycle([4000000]),
+        'p': cycle([8000000]),
         'b': cycle([21]),  # 21
         's': cycle([128]),
-        't': cycle([10000]),
+        't': cycle([5000]),
         'm': cycle([0]),
         'seed': cycle([0]),
         'reduce': cycle([1]),
@@ -161,10 +162,10 @@ configs = {
 
     'lb-mvapich2': {
         'exe': cycle(['PS_main.py']),
-        'p': cycle([4000000]),
+        'p': cycle([8000000]),
         'b': cycle([21]),  # 21
         's': cycle([128]),
-        't': cycle([10000]),
+        't': cycle([5000]),
         'm': cycle([0]),
         'seed': cycle([0]),
         'reduce': cycle([1]),
@@ -176,21 +177,23 @@ configs = {
         'lba': cycle([500]),
         'timing': cycle(['-time']),  # otherwise pass -time
         'w': [] +
-        [4, 8, 12, 16],
+        # [4, 8],
+        [16],
+
         # + list(np.arange(2, 17, 2)),
         'o': cycle([10]),
         'mpi': cycle(['mvapich2']),
-        'time': cycle([45]),
+        'time': cycle([30]),
         'partition': cycle(['inf-short']),
-        'repeats': 4
+        'repeats': 5
     },
 
     'lb-tp-mpich3': {
         'exe': cycle(['PS_main_tp.py']),
-        'p': cycle([4000000]),
+        'p': cycle([8000000]),
         'b': cycle([21]),  # 21
         's': cycle([128]),
-        't': cycle([10000]),
+        't': cycle([5000]),
         'm': cycle([0]),
         'seed': cycle([0]),
         'reduce': cycle([1]),
@@ -202,7 +205,9 @@ configs = {
         'lba': cycle([500]),
         'timing': cycle(['-time']),  # otherwise pass -time
         'w': [] +
+        # [4, 8],
         [4, 8, 12, 16],
+
         # + list(np.arange(2, 17, 2)),
         'o': cycle([10]),
         'mpi': cycle(['mpich3']),
@@ -213,10 +218,10 @@ configs = {
 
     'lb-tp-mvapich2': {
         'exe': cycle(['PS_main_tp.py']),
-        'p': cycle([4000000]),
+        'p': cycle([8000000]),
         'b': cycle([21]),  # 21
         's': cycle([128]),
-        't': cycle([10000]),
+        't': cycle([5000]),
         'm': cycle([0]),
         'seed': cycle([0]),
         'reduce': cycle([1]),
@@ -228,13 +233,15 @@ configs = {
         'lba': cycle([500]),
         'timing': cycle(['-time']),  # otherwise pass -time
         'w': [] +
-        [4, 8, 12, 16],
+        # [4, 8],
+        [12],
+
         # + list(np.arange(2, 17, 2)),
         'o': cycle([10]),
         'mpi': cycle(['mvapich2']),
-        'time': cycle([45]),
+        'time': cycle([30]),
         'partition': cycle(['inf-short']),
-        'repeats': 4
+        'repeats': 5
     },
 
 
