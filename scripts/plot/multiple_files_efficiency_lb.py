@@ -61,8 +61,8 @@ config = {
                 't': ['5000'],
                 'type': ['total'],
             },
-            'outfiles': ['{}/{}-efficiency-DLB.pdf'.format(images_dir, case),
-                         '{}/{}-efficiency-DLB.jpg'.format(images_dir, case)]
+            'outfiles': ['{}/{}-efficiency-DLB-o20.pdf'.format(images_dir, case),
+                         '{}/{}-efficiency-DLB-o20.jpg'.format(images_dir, case)]
         },
         # '{} DLB \w TP'.format(case.upper()): {
         #     'files': [
@@ -113,24 +113,27 @@ config = {
         'NoLB': '',
     },
     'reference': {
-        # 'ex01': {'time': 21.4, 'ppb': 1000000, 'turns': 2000},
-        # 'sps': {'time': 430., 'ppb': 4000000, 'turns': 100},
         # 'sps': {'ppb': 4000000, 'b': 72, 'turns': 500, 'w': 1,
         #         'omp': 1, 'time': 1497.8},
+        # 'sps': {'ppb': 4000000, 'b': 72, 'turns': 1000, 'w': 1,
+        #         'omp': 10, 'time': 415.4},
         'sps': {'ppb': 4000000, 'b': 72, 'turns': 1000, 'w': 1,
-                'omp': 10, 'time': 415.4},
-        # 'lhc': {'time': 2120., 'ppb': 2000000, 'turns': 1000},
+                'omp': 20, 'time': 225.85},
+
         # 'lhc': {'ppb': 2000000, 'b': 96, 'turns': 500, 'w': 1,
         #         'omp': 1, 'time': 681.59},
+        # 'lhc': {'ppb': 2000000, 'b': 96, 'turns': 1000, 'w': 1,
+        #         'omp': 10, 'time': 177.585},
         'lhc': {'ppb': 2000000, 'b': 96, 'turns': 1000, 'w': 1,
-                'omp': 10, 'time': 177.585},
+                'omp': 20, 'time': 103.04},
 
-        # 'ps': {'time': 1623.7, 'ppb': 4000000, 'turns': 2000},
         # 'ps': {'time': 466.085, 'ppb': 8000000, 'b': 21, 'turns': 500},
         # 'ps': {'ppb': 8000000, 'b': 21, 'turns': 500, 'w': 1,
         #        'omp': 1, 'time': 502.88},
+        # 'ps': {'ppb': 8000000, 'b': 21, 'turns': 1000, 'w': 1,
+        #        'omp': 10, 'time': 142.066},
         'ps': {'ppb': 8000000, 'b': 21, 'turns': 1000, 'w': 1,
-               'omp': 10, 'time': 142.066},
+               'omp': 20, 'time': 96.0},
     },
     # 'sequence': ['mpich3']
 
@@ -140,7 +143,7 @@ config = {
     'omp_name': 'omp',
     'y_name': 'avg_time(sec)',
     # 'y_err_name': 'std',
-    'xlabel': 'Cores (x10)',
+    'xlabel': 'Nodes (x20 Cores)',
     'ylabel': 'Efficiency',
     'title': {
         's': '{} DLB'.format(case.upper()),
@@ -160,7 +163,7 @@ config = {
     'fontsize': 10,
     'legend': {
         'loc': 'upper left', 'ncol': 4, 'handlelength': 1, 'fancybox': True,
-        'framealpha': 0., 'fontsize': 10, 'labelspacing': 0, 'borderpad': 0.5,
+        'framealpha': 0., 'fontsize': 10, 'labelspacing': 0, 'borderpad': 0.2,
         'handletextpad': 0.5, 'borderaxespad': 0, 'columnspacing': 0.5,
     },
     'subplots_adjust': {
@@ -170,7 +173,7 @@ config = {
         'pad': 1, 'top': 0, 'bottom': 1, 'left': 1,
         'direction': 'inout', 'length': 3, 'width': 0.5,
     },
-    'ylim': [0, 110],
+    'ylim': [0, 130],
 
 }
 
@@ -239,6 +242,7 @@ if __name__ == '__main__':
             partsref = config['reference'][case]['ppb']
             bunchesref = config['reference'][case]['b']
             turnsref = config['reference'][case]['turns']
+            ompref = config['reference'][case]['omp']
             yref = partsref * bunchesref * turnsref / yref
 
             speedup = y / yref
@@ -253,7 +257,7 @@ if __name__ == '__main__':
             x = np.array(x_new)
             speedup = np.array(sp_new)
             # Efficiency
-            speedup = 100 * speedup / x
+            speedup = 100 * speedup / (x * omp[0] / ompref)
             x = x * omp[0]
 
             plt.bar(np.arange(len(x)) + pos, speedup, width=0.8*width,
@@ -266,7 +270,7 @@ if __name__ == '__main__':
         pos += width * step
         plt.ylim(config['ylim'])
         plt.xlim(0-.6*width, len(x)-.6*width)
-        plt.xticks(np.arange(len(x)) + 1.5 * width, np.array(x, int)//10)
+        plt.xticks(np.arange(len(x)) + 1.5 * width, np.array(x, int)//20)
 
         plt.legend(**config['legend'])
         plt.gca().tick_params(**config['tick_params'])
