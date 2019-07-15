@@ -22,6 +22,8 @@ from builtins import range, object
 import numpy as np
 from scipy.constants import c, physical_constants
 import ctypes
+from ..utils import bmath as bm
+
 # from ..setup_cpp import libblond
 from .. import libblond
 
@@ -375,12 +377,12 @@ class Resonators(_ImpedanceObject):
     def _imped_calc_cpp(self, frequency_array):
         r"""
         Impedance calculation method as a function of frequency optimised in C++
-        
+
         Parameters
         ----------
         frequency_array : float array
             Input frequency array in Hz
-        
+
         Attributes
         ----------
         frequency_array : float array
@@ -388,19 +390,11 @@ class Resonators(_ImpedanceObject):
         impedance : complex array
             Output impedance in :math:`\Omega + j \Omega`
         """
-        
-        self.frequency_array = frequency_array
-        self.impedance = np.zeros(len(self.frequency_array), complex)
-        realImp = np.zeros(len(self.frequency_array))
-        imagImp = np.zeros(len(self.frequency_array))
 
-        libblond.fast_resonator_real_imag(realImp.ctypes.data_as(ctypes.c_void_p), imagImp.ctypes.data_as(ctypes.c_void_p),
-               self.frequency_array.ctypes.data_as(ctypes.c_void_p), self.R_S.ctypes.data_as(ctypes.c_void_p),
-               self.Q.ctypes.data_as(ctypes.c_void_p), self.frequency_R.ctypes.data_as(ctypes.c_void_p),
-               ctypes.c_uint(self.n_resonators), ctypes.c_uint(len(self.frequency_array)))
- 
-        self.impedance.real = realImp
-        self.impedance.imag = imagImp
+        self.frequency_array = frequency_array
+        self.impedance = bm.fast_resonator(self.R_S, self.Q,
+                                           self.frequency_array, 
+                                           self.frequency_R)
 
 
 
