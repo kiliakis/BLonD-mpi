@@ -327,7 +327,7 @@ class Beam(object):
         size = len(self.dt)
         worker.indices['beam'] = {'start': 0,
                                   'stride': 0,
-                                  'size': size,
+                                  # 'size': size,
                                   'total_size': self.n_macroparticles}
         self.n_macroparticles = size
 
@@ -336,9 +336,9 @@ class Beam(object):
         from ..utils.mpi_config import worker
 
         total_size = worker.indices['beam']['total_size']
-        self.dt = worker.gather(self.dt, total_size)
-        self.dE = worker.gather(self.dE, total_size)
-        self.id = worker.gather(self.id, total_size)
+        self.dt = worker.allgather(self.dt, total_size)
+        self.dE = worker.allgather(self.dE, total_size)
+        self.id = worker.allgather(self.id, total_size)
         self.n_macroparticles = total_size
 
     def gather_statistics(self):

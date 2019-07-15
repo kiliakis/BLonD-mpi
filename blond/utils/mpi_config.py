@@ -119,6 +119,36 @@ class Worker:
             self.intracomm.Gatherv(var, recvbuf, root=0)
             return var
 
+    @timing.timeit(key='comm:allgather')
+    @mpiprof.traceit(key='comm:allgather')
+    def allgather(self, var, size):
+        self.logger.debug('allgather')
+
+        counts = [size // self.workers + 1 if i < size % self.workers
+                  else size // self.workers for i in range(self.workers)]
+        displs = np.append([0], np.cumsum(counts[:-1]))
+        sendbuf = np.copy(var)
+        recvbuf = np.resize(var, np.sum(counts))
+
+        self.intracomm.Allgatherv(sendbuf,
+                               [recvbuf, counts, displs, recvbuf.dtype.char])
+        return recvbuf
+
+        # if self.isMaster:
+        #     counts = [size // self.workers + 1 if i < size % self.workers
+        #               else size // self.workers for i in range(self.workers)]
+        #     displs = np.append([0], np.cumsum(counts[:-1]))
+        #     sendbuf = np.copy(var)
+        #     recvbuf = np.resize(var, np.sum(counts))
+
+        #     self.intracomm.Allgatherv(sendbuf,
+        #                            [recvbuf, counts, displs, recvbuf.dtype.char], root=0)
+        #     return recvbuf
+        # else:
+        #     self.intracomm.Allgatherv(var, recvbuf, root=0)
+        #     return var
+
+
     @timing.timeit(key='comm:scatter')
     @mpiprof.traceit(key='comm:scatter')
     def scatter(self, var, size):
