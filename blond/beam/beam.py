@@ -286,32 +286,18 @@ class Beam(object):
     # of split split or gather gather sequence
     def split(self):
         from ..utils.mpi_config import worker
-        if len(worker.indices) == 0 or worker.isMaster:
-            start, size = worker.split(self.n_macroparticles)
-            self.dt = self.dt[start: start + size]
-            self.dE = self.dE[start: start + size]
-            self.id = self.id[start: start + size]
-            worker.indices['beam'] = {'start': start,
-                                      'size': size,
-                                      'stride': 1,
-                                      'total_size': self.n_macroparticles}
-            self.n_macroparticles = size
 
-    # def split_random(self):
-    #     from ..utils.mpi_config import worker
-    #     if len(worker.indices) == 0 or worker.isMaster:
-    #         # start, size = worker.split(self.n_macroparticles)
-    #         start = worker.rank
-    #         stride = worker.workers
-    #         self.dt = np.ascontiguousarray(self.dt[start:: stride])
-    #         self.dE = np.ascontiguousarray(self.dE[start:: stride])
-    #         self.id = np.ascontiguousarray(self.id[start:: stride])
-    #         size = len(self.dt)
-    #         worker.indices['beam'] = {'start': start,
-    #                                   'size': size,
-    #                                   'stride': stride,
-    #                                   'total_size': self.n_macroparticles}
-    #         self.n_macroparticles = size
+        ids = np.arange(self.n_macroparticles)
+        ids = worker.scatter(ids, self.n_macroparticles)
+        self.dt = np.ascontiguousarray(self.dt[ids])
+        self.dE = np.ascontiguousarray(self.dE[ids])
+        self.id = np.ascontiguousarray(self.id[ids])
+        size = len(self.dt)
+        worker.indices['beam'] = {'start': 0,
+                                  'stride': 0,
+                                  # 'size': size,
+                                  'total_size': self.n_macroparticles}
+        self.n_macroparticles = size
 
 
     def split_random(self):
