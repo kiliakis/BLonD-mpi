@@ -4,12 +4,13 @@ import numpy as np
 case = 'SPS'
 
 run_configs = [
-    'mpich3',
+    # 'mpich3',
     # 'mvapich2',
     # 'tp-mpich3',
     # 'tp-mvapich2',
     # 'lb-tp-mpich3',
     # 'lb-tp-mvapich2',
+    'lb-tp-approx0-mvapich2',
     # 'lb-mpich3',
     # 'lb-mvapich2',
     # 'lb-mpich3-intv100',
@@ -25,7 +26,7 @@ run_configs = [
 
 configs = {
 
-     'mpich3': {
+    'mpich3': {
         'exe': cycle(['SPS_main_random.py']),
         'p': cycle([4000000]),
         'b': cycle([72]),  # 72
@@ -42,8 +43,8 @@ configs = {
         'lba': cycle([500]),
         'timing': cycle(['-time']),  # otherwise pass -time
         'seed': cycle([0]),
-        'w': [] +
-        [1],
+        'w': []
+        + [1],
         # [4, 8, 12, 16],
         # + list(np.arange(2, 17, 2)),
         # 'o': cycle([10]),
@@ -53,7 +54,7 @@ configs = {
         'partition': cycle(['inf-short']),
         'repeats': 4,
     },
-    
+
     'mvapich2': {
         'exe': cycle(['SPS_main_random.py']),
         'p': cycle([4000000]),
@@ -70,8 +71,8 @@ configs = {
         'lba': cycle([500]),
         'timing': cycle(['-time']),  # otherwise pass -time
         'seed': cycle([0]),
-        'w': [] +
-        [4, 8, 12, 16],
+        'w': []
+        + [4, 8, 12, 16],
         #+ list(np.arange(2, 17, 2)),
         'o': cycle([10]),
         'mpi': cycle(['mvapich2']),
@@ -80,7 +81,7 @@ configs = {
         'repeats': 4,
     },
 
-     'tp-mpich3': {
+    'tp-mpich3': {
         'exe': cycle(['SPS_main_random_tp.py']),
         'p': cycle([4000000]),
         'b': cycle([72]),  # 72
@@ -96,8 +97,8 @@ configs = {
         'lba': cycle([500]),
         'timing': cycle(['-time']),  # otherwise pass -time
         'seed': cycle([0]),
-        'w': [] +
-        [4, 8, 12, 16],
+        'w': []
+        + [4, 8, 12, 16],
         # + list(np.arange(2, 17, 2)),
         'o': cycle([10]),
         'mpi': cycle(['mpich3']),
@@ -105,7 +106,7 @@ configs = {
         'partition': cycle(['inf-short']),
         'repeats': 4,
     },
-    
+
     'tp-mvapich2': {
         'exe': cycle(['SPS_main_random_tp.py']),
         'p': cycle([4000000]),
@@ -122,8 +123,8 @@ configs = {
         'lba': cycle([500]),
         'timing': cycle(['-time']),  # otherwise pass -time
         'seed': cycle([0]),
-        'w': [] +
-        [4, 8, 12, 16],
+        'w': []
+        + [4, 8, 12, 16],
         #+ list(np.arange(2, 17, 2)),
         'o': cycle([10]),
         'mpi': cycle(['mvapich2']),
@@ -133,7 +134,7 @@ configs = {
     },
 
 
-     'lb-mpich3': {
+    'lb-mpich3': {
         'exe': cycle(['SPS_main_random.py']),
         'p': cycle([4000000]),
         'b': cycle([72]),  # 72
@@ -159,7 +160,7 @@ configs = {
         'partition': cycle(['inf-short']),
         'repeats': 4,
     },
-    
+
     'lb-mvapich2': {
         'exe': cycle(['SPS_main_random.py']),
         'p': cycle([4000000]),
@@ -189,7 +190,7 @@ configs = {
     },
 
 
-     'lb-tp-mpich3': {
+    'lb-tp-mpich3': {
         'exe': cycle(['SPS_main_random_tp.py']),
         'p': cycle([4000000]),
         'b': cycle([72]),  # 72
@@ -215,7 +216,7 @@ configs = {
         'partition': cycle(['inf-short']),
         'repeats': 4,
     },
-    
+
     'lb-tp-mvapich2': {
         'exe': cycle(['SPS_main_random_tp.py']),
         'p': cycle([4000000]),
@@ -227,6 +228,33 @@ configs = {
         'load': cycle([0.0]),
         'mtw': cycle([0]),
         'approx': cycle([2]),
+        'log': cycle([True]),
+        'lb': cycle(['interval']),
+        'lba': cycle([500]),
+        'timing': cycle(['-time']),  # otherwise pass -time
+        'seed': cycle([0]),
+        'w': [] +
+        # [4, 8],
+        [4, 8, 12, 16],
+        #+ list(np.arange(2, 17, 2)),
+        'o': cycle([10]),
+        'mpi': cycle(['mvapich2']),
+        'time': cycle([30]),
+        'partition': cycle(['inf-short']),
+        'repeats': 5,
+    },
+
+    'lb-tp-approx0-mvapich2': {
+        'exe': cycle(['SPS_main_random_tp.py']),
+        'p': cycle([4000000]),
+        'b': cycle([72]),  # 72
+        's': cycle([1408]),
+        't': cycle([5000]),  # 4000
+        'm': cycle([0]),
+        'reduce': cycle([1]),
+        'load': cycle([0.0]),
+        'mtw': cycle([0]),
+        'approx': cycle([0]),
         'log': cycle([True]),
         'lb': cycle(['interval']),
         'lba': cycle([500]),
@@ -259,8 +287,8 @@ configs = {
         'lba': cycle([1000]),
         'timing': cycle(['-time']),  # otherwise pass -time
         'seed': cycle([0]),
-        'w': [] +
-        [4, 8, 12, 16],
+        'w': []
+        + [4, 8, 12, 16],
         # + list(np.arange(2, 17, 2)),
         'o': cycle([10]),
         'mpi': cycle(['mpich3']),
@@ -269,7 +297,7 @@ configs = {
         'repeats': 5,
     },
 
- 
+
     'lb-mvapich2-approx2': {
         'exe': cycle(['SPS_main_random_tp.py']),
         'p': cycle([4000000]),
@@ -311,8 +339,8 @@ configs = {
         'lba': cycle([100]),
         'timing': cycle(['-time']),  # otherwise pass -time
         'seed': cycle([0]),
-        'w': [] +
-        [4, 8, 12, 16],
+        'w': []
+        + [4, 8, 12, 16],
         # + list(np.arange(2, 17, 2)),
         'o': cycle([10]),
         'mpi': cycle(['mpich3']),
@@ -338,8 +366,8 @@ configs = {
         'lba': cycle([100]),
         'timing': cycle(['-time']),  # otherwise pass -time
         'seed': cycle([0]),
-        'w': [] +
-        [4, 8, 12, 16],
+        'w': []
+        + [4, 8, 12, 16],
         #+ list(np.arange(2, 17, 2)),
         'o': cycle([10]),
         'mpi': cycle(['mvapich2']),
@@ -365,8 +393,8 @@ configs = {
         'lba': cycle([1000]),
         'timing': cycle(['-time']),  # otherwise pass -time
         'seed': cycle([0]),
-        'w': [] +
-        [4, 8, 12, 16],
+        'w': []
+        + [4, 8, 12, 16],
         # + list(np.arange(2, 17, 2)),
         'o': cycle([10]),
         'mpi': cycle(['mpich3']),
@@ -416,8 +444,8 @@ configs = {
         'lba': cycle([1000]),
         'timing': cycle(['-time']),  # otherwise pass -time
         'seed': cycle([0]),
-        'w': [] +
-        [4, 8, 12, 16],
+        'w': []
+        + [4, 8, 12, 16],
         # + list(np.arange(2, 17, 2)),
         'o': cycle([10]),
         'mpi': cycle(['mpich3']),
@@ -441,8 +469,8 @@ configs = {
         'lba': cycle([1000]),
         'timing': cycle(['-time']),  # otherwise pass -time
         'seed': cycle([0]),
-        'w': [] +
-        [4, 8, 12, 16],
+        'w': []
+        + [4, 8, 12, 16],
         #+ list(np.arange(2, 17, 2)),
         'o': cycle([10]),
         'mpi': cycle(['openmpi3']),
@@ -466,8 +494,8 @@ configs = {
         'lba': cycle([1000]),
         'timing': cycle(['-time']),  # otherwise pass -time
         'seed': cycle([0]),
-        'w': [] +
-        [4, 8, 12, 16],
+        'w': []
+        + [4, 8, 12, 16],
         #+ list(np.arange(2, 17, 2)),
         'o': cycle([10]),
         'mpi': cycle(['mvapich2']),
@@ -476,7 +504,7 @@ configs = {
         'repeats': 5,
     },
 
-   
+
 
     'SPS-weak-scale-mpich3': {
         'exe': cycle(['SPS_main_random.py']),
