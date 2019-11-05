@@ -36,21 +36,42 @@ case = args.case
 
 config = {
     'figures': {
+        '{}'.format(case.upper()): {
+            'files': [
+                '{}/raw/{}/mvapich2/comm-comp-report.csv'.format(
+                    res_dir, case.upper()),
+                '{}/raw/{}/approx2-mvapich2/comm-comp-report.csv'.format(
+                    res_dir, case.upper()),
+                '{}/raw/{}/tp-approx0-mvapich2/comm-comp-report.csv'.format(
+                    res_dir, case.upper()),
+                '{}/raw/{}/tp-mvapich2/comm-comp-report.csv'.format(
+                    res_dir, case.upper()),
+            ],
+            'lines': {
+                'mpi': ['mpich3', 'mvapich2'],
+                'lb': ['interval', 'reportonly'],
+                'approx': ['0', '2'],
+                'lba': ['500'],
+                'b': ['96', '72', '21'],
+                't': ['5000'],
+                'type': ['total'],
+            },
+            'outfiles': ['{}/{}-NoDLB-speedup-o20.pdf'.format(images_dir, case),
+                         '{}/{}-NoDLB-speedup-o20.jpg'.format(images_dir, case)]
+        },
+
         '{} DLB'.format(case.upper()): {
             'files': [
                 '{}/raw/{}/mvapich2/comm-comp-report.csv'.format(
                     res_dir, case.upper()),
-                '{}/raw/{}/tp-mvapich2/comm-comp-report.csv'.format(
-                    res_dir, case.upper()),
                 '{}/raw/{}/lb-mvapich2/comm-comp-report.csv'.format(
+                    res_dir, case.upper()),
+                # '{}/raw/{}/lb-approx2-mvapich2/comm-comp-report.csv'.format(
+                #     res_dir, case.upper()),
+                '{}/raw/{}/lb-tp-approx0-mvapich2/comm-comp-report.csv'.format(
                     res_dir, case.upper()),
                 '{}/raw/{}/lb-tp-mvapich2/comm-comp-report.csv'.format(
                     res_dir, case.upper()),
-
-                # '{}/raw/{}/mpich3/comm-comp-report.csv'.format(
-                #     res_dir, case.upper()),
-                # '{}/raw/{}/lb-mpich3/comm-comp-report.csv'.format(
-                #     res_dir, case.upper())
             ],
             'lines': {
                 'mpi': ['mpich3', 'mvapich2'],
@@ -64,29 +85,6 @@ config = {
             'outfiles': ['{}/{}-DLB-speedup-o20.pdf'.format(images_dir, case),
                          '{}/{}-DLB-speedup-o20.jpg'.format(images_dir, case)]
         },
-        # '{} DLB \w TP'.format(case.upper()): {
-        #     'files': [
-        #         '{}/raw/{}/tp-mvapich2/comm-comp-report.csv'.format(
-        #             res_dir, case.upper()),
-        #         '{}/raw/{}/lb-tp-mvapich2/comm-comp-report.csv'.format(
-        #             res_dir, case.upper()),
-        #         # '{}/raw/{}/tp-mpich3/comm-comp-report.csv'.format(
-        #         #     res_dir, case.upper()),
-        #         # '{}/raw/{}/lb-tp-mpich3/comm-comp-report.csv'.format(
-        #         #     res_dir, case.upper())
-        #     ],
-        #     'lines': {
-        #         'mpi': ['mpich3', 'mvapich2'],
-        #         'lb': ['interval', 'reportonly'],
-        #         'approx': ['0', '2'],
-        #         'lba': ['500'],
-        #         'b': ['96', '72', '21'],
-        #         't': ['5000'],
-        #         'type': ['total'],
-        #     },
-        #     'outfiles': ['{}/{}-DLB-TP.pdf'.format(images_dir, case),
-        #                  '{}/{}-DLB-TP.jpg'.format(images_dir, case)]
-        # },
     },
     'markers': {
         'ex01': 'd',
@@ -146,7 +144,7 @@ config = {
     'xlabel': 'Nodes (x20 Cores)',
     'ylabel': 'Speedup',
     'title': {
-        's': '{} DLB'.format(case.upper()),
+        's': '{}'.format(case.upper()),
         'fontsize': 10,
         'y': 0.88,
         'x': 0.55,
@@ -188,8 +186,10 @@ if __name__ == '__main__':
                              exclude=figconf.get('exclude', []),
                              prefix=True)
             for key in temp.keys():
-                plots_dir['_{}'.format(key)] = temp[key].copy()
-
+                if 'tp-' in file:
+                    plots_dir['_{}_tp1'.format(key)] = temp[key].copy()
+                else:
+                    plots_dir['_{}_tp0'.format(key)] = temp[key].copy()
         fig = plt.figure(figsize=config['figsize'])
 
         plt.grid(True, which='major', alpha=0.5)
@@ -208,20 +208,28 @@ if __name__ == '__main__':
             lb = k.split('lb')[1].split('_')[0]
             lba = k.split('lba')[1].split('_')[0]
             approx = k.split('approx')[1].split('_')[0]
-
+            tp = k.split('tp')[1].split('_')[0]
             if lb == 'interval':
                 lb = 'LB'
             elif lb == 'reportonly':
                 lb = 'NoLB'
+            if tp == '1':
+                tp = 'TP'
+            elif tp == '0':
+                tp = 'NoTP'
             if approx == '2':
-                approx = 'TP'
-            elif approx == '0':
-                approx = 'NoTP'
+                approx = 'Apprx'
+            else:
+                approx = 'NoApprx'
+            # if approx == '2':
+            #     approx = 'TP'
+            # elif approx == '0':
+            #     approx = 'NoTP'
 
             # key = '{}-{}-{}'.format(case, mpiv, lb)
 
             # label = '{}-{}-{}-{}'.format(mpiv, lb, lba, approx)
-            label = '{}-{}'.format(lb, approx)
+            label = '{}-{}-{}'.format(lb, tp, approx)
             color = config['colors']['{}'.format(mpiv)].__next__()
             hatch = config['hatches'][lb]
             # marker = config['markers'][case]
