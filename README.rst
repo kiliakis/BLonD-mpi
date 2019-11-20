@@ -177,7 +177,7 @@ Changes required in the main file
 	
 .. code-block:: python
   
-  from blond.utils.mpi_config import worker, print
+  from blond.utils.mpi_config import worker, mpi_print
    	
 2. After having initialized the beam and preferably just before the start of the main loop:
   
@@ -206,7 +206,7 @@ This line splits the beam coordinates equally between the workers.
 .. code-block:: python 
   
     profile.track() 
-    profile.reducte_histo() 
+    profile.reduce_histo() 
 
 6. Finally, in the end of the simulation main loop, you can terminate all workers except from the master with:
 
