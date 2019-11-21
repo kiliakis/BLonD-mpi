@@ -120,7 +120,6 @@ Setting up the MPI installation
 	
 	# Module loads
 	module load compiler/gcc7
-	module load slurm/be
 	module load mpi/mpich/3.2.1
 
   
@@ -167,6 +166,17 @@ Setting up the MPI installation
     python blond/compile.py -p --libs="-L$HOME/install/lib -lfftw3_omp"
   
 * adjust your main file as needed (described bellow).
+
+
+SLURM Documentation and Useful Resources
+----------------------------------------
+
+* CERN knowledge base articles: https://cern.service-now.com/service-portal/faq.do?fe=linuxHPC
+
+* SLURM documentation: https://slurm.schedmd.com/documentation.html
+
+* SLURM commands man pages: https://slurm.schedmd.com/man_index.html
+
 
 
 Changes required in the main file
