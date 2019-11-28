@@ -17,6 +17,18 @@ C++ Math library
 
 extern "C" {
 
+  void where_more_than(const double *__restrict__ data, const int n,
+                       const double c1,
+                       bool *__restrict__ res);
+
+  void where_less_than(const double *__restrict__ data, const int n,
+                       const double c1,
+                       bool *__restrict__ res);
+
+  void where_more_less_than(const double *__restrict__ data, const int n,
+                            const double c1, const double c2,
+                            bool *__restrict__ res);
+
   void convolution(const double * __restrict__ signal,
                    const int SignalLen,
                    const double * __restrict__ kernel,
@@ -57,7 +69,7 @@ extern "C" {
   void add_uint16_vector_inplace(uint16_t *__restrict__ a,
                                  const uint16_t *__restrict__ b,
                                  const int size);
-  
+
   void add_uint32_vector(const uint32_t *__restrict__ a,
                          const uint32_t *__restrict__ b,
                          const int size,
