@@ -273,7 +273,10 @@ class BeamFeedback(object):
         if self.time_offset is None:
             # indexes = np.ones(self.profile.n_slices, dtype=bool)
             # time_offset = 0.0
-            coeff = bm.beam_phase(self, omega_rf, phi_rf)
+            coeff = bm.beam_phase(self.profile.bin_centers,
+                                  self.profile.n_macroparticles,
+                                  self.profile.alpha, omega_rf, phi_rf,
+                                  self.profile.bin_size)
         else:
             indexes = self.profile.bin_centers >= self.time_offset
             time_offset = self.time_offset
@@ -294,39 +297,6 @@ class BeamFeedback(object):
         # Project beam phase to (pi/2,3pi/2) range
         self.phi_beam = np.arctan(coeff) + np.pi
 
-    # def beam_phase(self):
-    #     '''
-    #     *Beam phase measured at the main RF frequency and phase. The beam is
-    #     convolved with the window function of the band-pass filter of the
-    #     machine. The coefficients of sine and cosine components determine the
-    #     beam phase, projected to the range -Pi/2 to 3/2 Pi. Note that this beam
-    #     phase is already w.r.t. the instantaneous RF phase.*
-    #     '''
-
-    #     # Main RF frequency at the present turn
-    #     omega_rf = self.rf_station.omega_rf[0,self.rf_station.counter[0]]
-    #     phi_rf = self.rf_station.phi_rf[0,self.rf_station.counter[0]]
-
-    #     if self.time_offset is None:
-    #         indexes = np.ones(self.profile.n_slices, dtype=bool)
-    #         time_offset = 0.0
-    #     else:
-    #         indexes = self.profile.bin_centers >= self.time_offset
-    #         time_offset = self.time_offset
-
-    #     # Convolve with window function
-    #     scoeff = np.trapz( np.exp(self.alpha*(self.profile.bin_centers[indexes]
-    #                                             - time_offset)) \
-    #                        *np.sin(omega_rf*self.profile.bin_centers[indexes]\
-    #                                + phi_rf) \
-    #                        *self.profile.n_macroparticles[indexes],
-    #                        dx=self.profile.bin_size )
-    #     ccoeff = np.trapz( np.exp(self.alpha*(self.profile.bin_centers[indexes]
-    #                                             - time_offset)) \
-    #                        *np.cos(omega_rf*self.profile.bin_centers[indexes]\
-    #                                + phi_rf) \
-    #                        *self.profile.n_macroparticles[indexes],
-    #                        dx=self.profile.bin_size )
 
     #     # Project beam phase to (pi/2,3pi/2) range
     #     self.phi_beam = np.arctan(scoeff/ccoeff) + np.pi
@@ -335,11 +305,10 @@ class BeamFeedback(object):
     @mpiprof.traceit(key='serial:beam_phase_sharpWindow')
     def beam_phase_sharpWindow(self):
         '''
-        *Beam phase measured at the main RF frequency and phase. The beam is 
+        *Beam phase measured at the main RF frequency and phase. The beam is
         averaged over a window. The coefficients of sine and cosine components
-        determine the 
-        beam phase, projected to the range -Pi/2 to 3/2 Pi. Note that this beam
-        phase is already w.r.t. the instantaneous RF phase.*
+        determine the beam phase, projected to the range -Pi/2 to 3/2 Pi.
+        Note that this beam phase is already w.r.t. the instantaneous RF phase.*
         '''
 
         # Main RF frequency at the present turn
@@ -353,21 +322,16 @@ class BeamFeedback(object):
                                      self.profile.bin_centers
                                      <= (-1/self.alpha + self.time_offset -
                                          2 * np.pi / omega_rf))
-            # left_boundary = self.profile.bin_centers \
-            #     >= self.time_offset - np.pi/omega_rf
-            # right_boundary = self.profile.bin_centers \
-            #     <= -1/self.alpha + self.time_offset - 2*np.pi/omega_rf
-            # indexes = left_boundary * right_boundary
         else:
             indexes = np.ones(self.profile.n_slices, dtype=bool)
 
         # Convolve with window function
-        scoeff = np.trapz(np.sin(omega_rf*self.profile.bin_centers[indexes] +
-                                 phi_rf) *
-                          self.profile.n_macroparticles[indexes],
+        scoeff = np.trapz(np.sin(omega_rf*self.profile.bin_centers[indexes]
+                                 + phi_rf)
+                          * self.profile.n_macroparticles[indexes],
                           dx=self.profile.bin_size)
-        ccoeff = np.trapz(np.cos(omega_rf*self.profile.bin_centers[indexes] +
-                                 phi_rf) *
+        ccoeff = np.trapz(np.cos(omega_rf*self.profile.bin_centers[indexes]
+                                 + phi_rf) *
                           self.profile.n_macroparticles[indexes],
                           dx=self.profile.bin_size)
 

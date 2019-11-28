@@ -146,7 +146,7 @@ class Beam(object):
         self.n_macroparticles = int(n_macroparticles)
         self.ratio = self.intensity/self.n_macroparticles
         self.id = np.arange(1, self.n_macroparticles + 1, dtype=int)
-        self.losses = 0
+        self.n_total_macroparticles_lost = 0
 
     @property
     def n_macroparticles_lost(self):
@@ -284,10 +284,14 @@ class Beam(object):
 
     # Split and gather should be going in pairs, undefined behavior in case
     # of split split or gather gather sequence
-    def split(self):
+    # When random==True shuffles the particles before split
+    def split(self, random=False):
         from ..utils.mpi_config import worker
-
         ids = np.arange(self.n_macroparticles)
+        if random:
+            import random
+            random.shuffle(ids)
+
         ids = worker.scatter(ids, self.n_macroparticles)
         self.dt = np.ascontiguousarray(self.dt[ids])
         self.dE = np.ascontiguousarray(self.dE[ids])
@@ -295,17 +299,21 @@ class Beam(object):
         size = len(self.dt)
         worker.indices['beam'] = {'start': 0,
                                   'stride': 0,
-                                  # 'size': size,
                                   'total_size': self.n_macroparticles}
         self.n_macroparticles = size
 
 
-    def split_random(self):
-        from ..utils.mpi_config import worker
-        import random
 
+    # Split and gather should be going in pairs, undefined behavior in case
+    # of split split or gather gather sequence
+    # When random==True shuffles the particles before split
+    def split(self, random=False):
+        from ..utils.mpi_config import worker
         ids = np.arange(self.n_macroparticles)
-        random.shuffle(ids)
+        if random:
+            import random
+            random.shuffle(ids)
+
         ids = worker.scatter(ids, self.n_macroparticles)
         self.dt = np.ascontiguousarray(self.dt[ids])
         self.dE = np.ascontiguousarray(self.dE[ids])
@@ -313,56 +321,58 @@ class Beam(object):
         size = len(self.dt)
         worker.indices['beam'] = {'start': 0,
                                   'stride': 0,
-                                  # 'size': size,
                                   'total_size': self.n_macroparticles}
         self.n_macroparticles = size
 
-
+    # This function needs to be called by all workers!
     def gather(self):
         from ..utils.mpi_config import worker
 
-        total_size = worker.indices['beam']['total_size']
-        self.dt = worker.allgather(self.dt, total_size)
-        self.dE = worker.allgather(self.dE, total_size)
-        self.id = worker.allgather(self.id, total_size)
-        self.n_macroparticles = total_size
+        size = worker.indices['beam']['total_size']
+        self.dt = worker.allgather(self.dt, size)
+        self.dE = worker.allgather(self.dE, size)
+        self.id = worker.allgather(self.id, size)
+        self.n_macroparticles = size
 
+    # This function needs to be called by all workers!
     def gather_statistics(self):
         from ..utils.mpi_config import worker
+        size = worker.workers
 
-        total_size = worker.workers
-        mean_dt_arr = worker.gather(np.array([self.mean_dt]), total_size)
-        mean_dE_arr = worker.gather(np.array([self.mean_dE]), total_size)
-        losses_arr = worker.gather(
-            np.array([self.n_macroparticles_lost]), total_size)
+        temp = worker.gather(np.array([self.mean_dt]), size)
+        self.mean_dt = np.mean(temp)
 
-        self.mean_dt = np.mean(mean_dt_arr)
-        self.mean_dE = np.mean(mean_dE_arr)
-        self.losses = np.sum(losses_arr)
+        temp = worker.gather(np.array([self.mean_dE]), size)
+        self.mean_dE = np.mean(temp)
 
-    def gather_mean_dE(self):
-        from ..utils.mpi_config import worker
+        temp = worker.gather(np.array([self.n_macroparticles_lost]), size)
+        self.n_total_macroparticles_lost = np.sum(temp)
 
-        total_size = worker.workers
-        self.mean_dE = np.mean(self.dE)
-        mean_dE_arr = worker.gather(np.array([self.mean_dE]), total_size)
-        self.mean_dE = np.mean(mean_dE_arr)
-        return self.mean_dE
 
-    def gather_mean_dt(self):
-        from ..utils.mpi_config import worker
+    # # This function needs to be called by all workers!
+    # def gather_mean_dE(self):
+    #     from ..utils.mpi_config import worker
 
-        total_size = worker.workers
-        self.mean_dt = np.mean(self.dt)
-        mean_dt_arr = worker.gather(np.array([self.mean_dt]), total_size)
-        self.mean_dt = np.mean(mean_dt_arr)
-        return self.mean_dt
+    #     total_size = worker.workers
+    #     self.mean_dE = np.mean(self.dE)
+    #     mean_dE_arr = worker.gather(np.array([self.mean_dE]), total_size)
+    #     self.mean_dE = np.mean(mean_dE_arr)
+    #     return self.mean_dE
 
-    def gather_losses(self):
-        from ..utils.mpi_config import worker
+    # def gather_mean_dt(self):
+    #     from ..utils.mpi_config import worker
 
-        total_size = worker.workers
-        losses_arr = worker.gather(
-            np.array([self.n_macroparticles_lost]), total_size)
-        self.losses = np.mean(losses_arr)
-        return self.losses
+    #     total_size = worker.workers
+    #     self.mean_dt = np.mean(self.dt)
+    #     mean_dt_arr = worker.gather(np.array([self.mean_dt]), total_size)
+    #     self.mean_dt = np.mean(mean_dt_arr)
+    #     return self.mean_dt
+
+    # def gather_losses(self):
+    #     from ..utils.mpi_config import worker
+
+    #     total_size = worker.workers
+    #     losses_arr = worker.gather(
+    #         np.array([self.n_macroparticles_lost]), total_size)
+    #     self.losses = np.mean(losses_arr)
+    #     return self.losses

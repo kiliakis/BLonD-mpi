@@ -162,6 +162,35 @@ extern "C" {
         }
     }
 
+    void where_more_than(const double *__restrict__ data, const int n,
+                         const double c1,
+                         bool *__restrict__ res)
+    {
+        #pragma omp parallel for
+        for (int i = 0; i < n; i++) {
+            res[i] = data[i] > c1;
+        }
+    }
+
+    void where_less_than(const double *__restrict__ data, const int n,
+                         const double c1,
+                         bool *__restrict__ res)
+    {
+        #pragma omp parallel for
+        for (int i = 0; i < n; i++) {
+            res[i] = data[i] < c1;
+        }
+    }
+
+    void where_more_less_than(const double *__restrict__ data, const int n,
+                         const double c1, const double c2,
+                         bool *__restrict__ res)
+    {
+        #pragma omp parallel for
+        for (int i = 0; i < n; i++) {
+            res[i] = (data[i] > c1) && (data[i] < c2);
+        }
+    }
 
     double mean(const double * __restrict__ data, const int n)
     {
@@ -293,17 +322,11 @@ extern "C" {
                 y[i] = right;
             else
                 y[i] = yp[pos - 1] + (yp[pos] - yp[pos - 1]) * c;
-            // else if (xp[pos] == x[i])
-            //     y[i] = yp[pos];
-            // else if (pos == 0)
-            //     y[i] = left;
         }
     }
 
-
-
-// Function to implement integration of f(x) over the interval
-// [a,b] using the trapezoid rule with nsub subdivisions.
+    // Function to implement integration of f(x) over the interval
+    // [a,b] using the trapezoid rule with nsub subdivisions.
     void cumtrapz_wo_initial(const double * __restrict__ f,
                              const double deltaX,
                              const int nsub,
@@ -564,6 +587,5 @@ extern "C" {
         // std::transform(a, a + n, b, res, multiplies<complex<double>>());
 
     }
-
 
 }

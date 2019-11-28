@@ -94,7 +94,6 @@ extern "C" void linear_interp_time_translation(
 
 }
 
-
 extern "C" void linear_interp_kick_n_drift(double * __restrict__ beam_dt,
         double * __restrict__ beam_dE,
         const double * __restrict__ voltage_array,

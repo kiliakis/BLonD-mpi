@@ -5,6 +5,8 @@
  *      Author: kiliakis
  */
 
+#ifdef USEFFTW3
+
 #include "fft.h"
 #include <complex>
 #include <vector>
@@ -13,7 +15,7 @@
 #include <fftw3.h>
 #include <functional>
 #include <iostream>
-#include <omp.h>
+
 
 // FFTW_PATIENT: run a lot of ffts to discover the best plan.
 // Will not use the multithreaded version unless the fft size
@@ -31,7 +33,7 @@
 
 static std::vector<fft_plan_t> planV;
 static bool hasBeenInit = false;
-const uint FFTW_FLAGS = FFTW_MEASURE | FFTW_DESTROY_INPUT;
+const unsigned FFTW_FLAGS = FFTW_MEASURE | FFTW_DESTROY_INPUT;
 
 using namespace std;
 // Parameters are like python's numpy.fft.rfft
@@ -46,6 +48,7 @@ extern "C" {
                        const unsigned flag = FFTW_ESTIMATE,
                        const int threads = 1)
     {
+#ifdef FFTW3PARALLEL
         if (threads > 1) {
             if (!hasBeenInit) {
                 if (fftw_init_threads() == 0)
@@ -54,6 +57,7 @@ extern "C" {
                 fftw_plan_with_nthreads(threads);
             }
         }
+#endif
         // cout << "Threads: " << threads << "\n";
 
         fftw_complex *a = reinterpret_cast<fftw_complex *>(in);
@@ -66,6 +70,7 @@ extern "C" {
                         const int threads = 1)
 
     {
+#ifdef FFTW3PARALLEL
         if (threads > 1) {
             if (!hasBeenInit) {
                 if (fftw_init_threads() == 0)
@@ -74,6 +79,7 @@ extern "C" {
                 fftw_plan_with_nthreads(threads);
             }
         }
+#endif
         // cout << "Threads: " << threads << "\n";
         fftw_complex *b = reinterpret_cast<fftw_complex *>(out);
         return fftw_plan_dft_r2c_1d(n, in, b, flag);
@@ -83,6 +89,7 @@ extern "C" {
                          const unsigned flag = FFTW_ESTIMATE,
                          const int threads = 1)
     {
+#ifdef FFTW3PARALLEL
         if (threads > 1) {
             if (!hasBeenInit) {
                 if (fftw_init_threads() == 0)
@@ -91,6 +98,8 @@ extern "C" {
                 fftw_plan_with_nthreads(threads);
             }
         }
+#endif
+
         // cout << "Threads: " << threads << "\n";
 
         fftw_complex *b = reinterpret_cast<fftw_complex *>(in);
@@ -102,6 +111,7 @@ extern "C" {
                                 const unsigned flag = FFTW_ESTIMATE,
                                 const int threads = 1)
     {
+#ifdef FFTW3PARALLEL
         if (threads > 1) {
             if (!hasBeenInit) {
                 if (fftw_init_threads() == 0)
@@ -110,6 +120,7 @@ extern "C" {
                 fftw_plan_with_nthreads(threads);
             }
         }
+#endif
         // cout << "Threads: " << threads << "\n";
 
         fftw_complex *b = reinterpret_cast<fftw_complex *>(in);
@@ -439,3 +450,7 @@ extern "C" {
         fftw_free(z1);
     }
 }
+
+#else
+// empty file
+#endif

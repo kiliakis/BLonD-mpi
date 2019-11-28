@@ -8,7 +8,6 @@ BLonD math wrapper functions
 import ctypes as ct
 import numpy as np
 import os
-# from setup_cpp import libblondmath as __lib
 from .. import libblond as __lib
 
 

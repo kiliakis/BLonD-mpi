@@ -17,7 +17,6 @@
 from __future__ import division, print_function
 from builtins import range, object
 import numpy as np
-from numpy.fft import rfft, irfft, rfftfreq
 from ctypes import c_uint, c_double, c_void_p
 from scipy.constants import e
 from ..toolbox.next_regular import next_regular
@@ -445,7 +444,6 @@ class InducedVoltageTime(_InducedVoltage):
         _InducedVoltage.__init__(self, Beam, Profile, frequency_resolution=None,
                                  wake_length=wake_length, multi_turn_wake=multi_turn_wake,
                                  RFParams=RFParams, mtw_mode=mtw_mode)
-        self.needs_beam_spectrum = True
 
     def process(self):
         """
@@ -538,7 +536,6 @@ class InducedVoltageFreq(_InducedVoltage):
                                  frequency_resolution=frequency_resolution,
                                  multi_turn_wake=multi_turn_wake, RFParams=RFParams,
                                  mtw_mode=mtw_mode)
-        self.needs_beam_spectrum = True
 
     def process(self):
         """

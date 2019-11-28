@@ -17,7 +17,7 @@
 from __future__ import division, print_function
 from builtins import object
 import numpy as np
-from numpy.fft import rfft, rfftfreq
+# from numpy.fft import rfft, rfftfreq
 from scipy import ndimage
 import ctypes
 from ..toolbox import filters_and_fitting as ffroutines
@@ -438,21 +438,25 @@ class Profile(object):
 
     @timing.timeit(key='comp:histo')
     @mpiprof.traceit(key='comp:histo')
-    def _slice(self):
+    def _slice(self, reduce=True):
         """
-        Constant space slicing with a constant frame. 
+        Constant space slicing with a constant frame.
         """
-        bm.slice(self)
+        bm.slice(self.Beam.dt, self.n_macroparticles, self.cut_left,
+                 self.cut_right)
 
-    def reduce_histo(self):
+        if reduce:
+            self.reduce_histo()
+
+    def reduce_histo(self, dtype=np.uint32):
         from ..utils.mpi_config import worker
 
         with timing.timed_region('serial:conversion'):
             with mpiprof.traced_region('serial:conversion'):
-                self.n_macroparticles = self.n_macroparticles.astype(
-                    np.uint32, order='C')
+                self.n_macroparticles = self.n_macroparticles.astype(dtype, order='C')
 
-        worker.allreduce(self.n_macroparticles, dtype=np.uint32)
+
+        worker.allreduce(self.n_macroparticles, dtype=dtype)
 
         with timing.timed_region('serial:conversion'):
             with mpiprof.traced_region('serial:conversion'):
@@ -467,11 +471,15 @@ class Profile(object):
 
         # self.n_macroparticles *= worker.workers
 
-    def _slice_smooth(self):
+    def _slice_smooth(self, reduce=True):
         """
         At the moment 4x slower than _slice but smoother (filtered).
         """
-        bm.slice_smooth(self)
+        bm.slice_smooth(self.Beam.dt, self.n_macroparticles, self.cut_left,
+                        self.cut_right)
+
+        if reduce:
+            self.reduce_histo(dtype=np.float64)
 
     def apply_fit(self):
         """

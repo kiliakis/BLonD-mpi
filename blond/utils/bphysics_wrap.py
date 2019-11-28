@@ -19,14 +19,7 @@ def __getLen(x):
     return ct.c_int(len(x))
 
 
-def beam_phase(beamFB, omegarf, phirf):
-    return _beam_phase(beamFB.profile.bin_centers,
-                       beamFB.profile.n_macroparticles,
-                       beamFB.alpha, omegarf, phirf,
-                       beamFB.profile.bin_size)
-
-
-def _beam_phase(bin_centers, profile, alpha, omegarf, phirf, bin_size):
+def beam_phase(bin_centers, profile, alpha, omegarf, phirf, bin_size):
     __lib.beam_phase.restype = ct.c_double
     coeff = __lib.beam_phase(__getPointer(bin_centers),
                              __getPointer(profile),
@@ -81,6 +74,9 @@ def drift(ring, dt, dE, turn):
                 ct.c_double(ring.eta_0[turn]),
                 ct.c_double(ring.eta_1[turn]),
                 ct.c_double(ring.eta_2[turn]),
+                ct.c_double(ring.alpha_0[turn]),
+                ct.c_double(ring.alpha_1[turn]),
+                ct.c_double(ring.alpha_2[turn]),
                 ct.c_double(ring.rf_params.beta[turn]),
                 ct.c_double(ring.rf_params.energy[turn]),
                 __getLen(dt))
@@ -99,9 +95,9 @@ def linear_interp_kick(dt, dE, voltage,
                              ct.c_double(acceleration_kick))
 
 
-def linear_interp_kick_n_drift(dt, dE, total_voltage, bin_centers, charge, acc_kick,
-                               solver, t_rev, length_ratio, alpha_order, eta_0, eta_1,
-                               eta_2, beta, energy):
+def linear_interp_kick_n_drift(dt, dE, total_voltage, bin_centers, charge,
+                               acc_kick, solver, t_rev, length_ratio,
+                               alpha_order, eta_0, eta_1, eta_2, beta, energy):
     __lib.linear_interp_kick_n_drift(__getPointer(dt),
                                      __getPointer(dE),
                                      __getPointer(total_voltage),
@@ -125,22 +121,22 @@ def linear_interp_time_translation(ring, dt, dE, turn):
     pass
 
 
-def slice(profile):
-    __lib.histogram(__getPointer(profile.Beam.dt),
-                    __getPointer(profile.n_macroparticles),
-                    ct.c_double(profile.cut_left),
-                    ct.c_double(profile.cut_right),
-                    ct.c_int(profile.n_slices),
-                    ct.c_int(profile.Beam.n_macroparticles))
+def slice(beam_dt, profile, cut_left, cut_right):
+    __lib.histogram(__getPointer(beam_dt),
+                    __getPointer(profile),
+                    ct.c_double(cut_left),
+                    ct.c_double(cut_right),
+                    __getLen(profile),
+                    __getLen(beam_dt))
 
 
-def slice_smooth(profile):
-    __lib.smooth_histogram(__getPointer(profile.Beam.dt),
-                           __getPointer(profile.n_macroparticles),
-                           ct.c_double(profile.cut_left),
-                           ct.c_double(profile.cut_right),
-                           ct.c_int(profile.n_slices),
-                           ct.c_int(profile.Beam.n_macroparticles))
+def slice_smooth(beam_dt, profile, cut_left, cut_right):
+    __lib.smooth_histogram(__getPointer(beam_dt),
+                           __getPointer(profile),
+                           ct.c_double(cut_left),
+                           ct.c_double(cut_right),
+                           __getLen(profile),
+                           __getLen(beam_dt))
 
 
 def music_track(music):

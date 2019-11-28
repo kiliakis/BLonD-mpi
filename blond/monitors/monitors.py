@@ -335,6 +335,44 @@ class SlicesMonitor(object):
         the slicing.
     '''
 
+    def __init__(self, filename, n_turns, profile):
+
+        self.h5file = hp.File(filename + '.h5', 'w')
+        self.n_turns = n_turns
+        self.i_turn = 0
+        self.profile = profile
+        self.h5file.create_group('Slices')
+
+    def track(self, bunch):
+
+        if not self.i_turn:
+            self.create_data(self.h5file['Slices'], (self.profile.n_slices,
+                                                     self.n_turns))
+            self.write_data(self.profile, self.h5file['Slices'], self.i_turn)
+        else:
+            self.write_data(self.profile, self.h5file['Slices'], self.i_turn)
+
+        self.i_turn += 1
+
+    def create_data(self, h5group, dims):
+
+        h5group.create_dataset("n_macroparticles", dims, compression="gzip",
+                               compression_opts=9)
+
+    def write_data(self, bunch, h5group, i_turn):
+
+        h5group["n_macroparticles"][:, i_turn] = self.profile.n_macroparticles
+
+    def close(self):
+        self.h5file.close()
+
+
+class MultiBunchMonitor(object):
+
+    ''' Class able to save multi-bunch profile, i.e. the histogram derived from
+        the slicing.
+    '''
+
     def __init__(self, filename, n_turns, profile, rf, Nbunches, buffer_size=100):
 
         self.h5file = hp.File(filename + '.h5', 'w')
