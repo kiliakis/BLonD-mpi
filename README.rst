@@ -176,7 +176,6 @@ Set-up Instructions
   
   # Module loads
   module load compiler/gcc7
-  module load slurm/be
   module load mpi/mvapich2/2.3
 
   
@@ -225,18 +224,45 @@ Set-up Instructions
 * adjust your main file as needed (described bellow).
 
 
+<<<<<<< HEAD
 Changes required in the main file for MPI
 -----------------------------------------
+||||||| merged common ancestors
+Changes required in the main file
+---------------------------------
+=======
+SLURM Documentation and Useful Resources
+----------------------------------------
+
+* CERN knowledge base articles: https://cern.service-now.com/service-portal/faq.do?fe=linuxHPC
+
+* SLURM documentation: https://slurm.schedmd.com/documentation.html
+
+* SLURM commands man pages: https://slurm.schedmd.com/man_index.html
+
+
+
+Changes required in the main file
+---------------------------------
+>>>>>>> 0ccbe87abfbd5e6c4f93f764fd16026175d653b1
 
 
 1. This statements in the beginning of the script:
   
  .. code-block:: python
   
+<<<<<<< HEAD
   from blond.utils import bmath as bm
   from blond.utils.mpi_config import worker, mpiprint
   bm.use_mpi()  
 
+||||||| merged common ancestors
+  from blond.utils.mpi_config import worker, print
+   	
+=======
+  from blond.utils.mpi_config import worker, mpi_print
+   	
+>>>>>>> 0ccbe87abfbd5e6c4f93f764fd16026175d653b1
 2. After having initialized the beam and preferably just before the start of the main loop:
   
  .. code-block:: python
@@ -259,7 +285,15 @@ Changes required in the main file for MPI
   
     beam.gather()
   
+<<<<<<< HEAD
 5. Finally, in the end of the simulation main loop, you can terminate all workers except from the master with:
+||||||| merged common ancestors
+    profile.track() 
+    profile.reducte_histo() 
+=======
+    profile.track() 
+    profile.reduce_histo() 
+>>>>>>> 0ccbe87abfbd5e6c4f93f764fd16026175d653b1
 
  .. code-block:: python
   
