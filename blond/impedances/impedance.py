@@ -291,7 +291,7 @@ class _InducedVoltage(object):
                 self.n_mtw_fft = next_regular(self.n_mtw_memory)
                 # Frequency and omega arrays
                 self.freq_mtw = \
-                    rfftfreq(self.n_mtw_fft, d=self.profile.bin_size)
+                    bm.rfftfreq(self.n_mtw_fft, d=self.profile.bin_size)
                 self.omegaj_mtw = 2.0j * np.pi * self.freq_mtw
                 # Selecting time-shift method
                 self.shift_trev = self.shift_trev_freq

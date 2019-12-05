@@ -115,8 +115,8 @@ class CutOptions(object):
 
         if self.cuts_unit == 'rad' and self.RFParams is None:
             # CutError
-            raise RuntimeError('You should pass an RFParams object to '
-                               + 'convert from radians to seconds')
+            raise RuntimeError('You should pass an RFParams object to ' +
+                               'convert from radians to seconds')
         if self.cuts_unit != 'rad' and self.cuts_unit != 's':
             # CutError
             raise RuntimeError('cuts_unit should be "s" or "rad"')
@@ -149,10 +149,10 @@ class CutOptions(object):
 
         else:
 
-            self.cut_left = self.convert_coordinates(self.cut_left,
-                                                     self.cuts_unit)
-            self.cut_right = self.convert_coordinates(self.cut_right,
-                                                      self.cuts_unit)
+            self.cut_left = float(self.convert_coordinates(self.cut_left,
+                                                           self.cuts_unit))
+            self.cut_right = float(self.convert_coordinates(self.cut_right,
+                                                            self.cuts_unit))
 
         self.edges = np.linspace(self.cut_left, self.cut_right,
                                  self.n_slices + 1)
@@ -445,18 +445,22 @@ class Profile(object):
         bm.slice(self.Beam.dt, self.n_macroparticles, self.cut_left,
                  self.cut_right)
 
-        if reduce:
+        if bm.mpiMode() and reduce:
             self.reduce_histo()
 
     def reduce_histo(self, dtype=np.uint32):
+        if not bm.mpiMode():
+            raise RuntimeError(
+                'ERROR: Cannot use this routine unless in MPI Mode')
+
         from ..utils.mpi_config import worker
 
         with timing.timed_region('serial:conversion'):
             with mpiprof.traced_region('serial:conversion'):
-                self.n_macroparticles = self.n_macroparticles.astype(dtype, order='C')
+                self.n_macroparticles = self.n_macroparticles.astype(
+                    dtype, order='C')
 
-
-        worker.allreduce(self.n_macroparticles, dtype=dtype)
+        worker.allreduce(self.n_macroparticles)
 
         with timing.timed_region('serial:conversion'):
             with mpiprof.traced_region('serial:conversion'):
@@ -466,6 +470,10 @@ class Profile(object):
     @timing.timeit(key='serial:scale_histo')
     @mpiprof.traceit(key='serial:scale_histo')
     def scale_histo(self):
+        if not bm.mpiMode():
+            raise RuntimeError(
+                'ERROR: Cannot use this routine unless in MPI Mode')
+        
         from ..utils.mpi_config import worker
         bm.mul(self.n_macroparticles, worker.workers, self.n_macroparticles)
 
@@ -478,7 +486,7 @@ class Profile(object):
         bm.slice_smooth(self.Beam.dt, self.n_macroparticles, self.cut_left,
                         self.cut_right)
 
-        if reduce:
+        if bm.mpiMode() and reduce:
             self.reduce_histo(dtype=np.float64)
 
     def apply_fit(self):
@@ -535,7 +543,7 @@ class Profile(object):
             shiftX=shiftX)
 
     def fwhm_multibunch(self, n_bunches, bunch_spacing_buckets,
-                        bucket_size_tau, bucket_tolerance=0.40, 
+                        bucket_size_tau, bucket_tolerance=0.40,
                         shift=0, shiftX=0):
         """
         Computation of the bunch length and position from the FWHM
@@ -544,7 +552,7 @@ class Profile(object):
 
         self.bunchPosition, self.bunchLength = ffroutines.fwhm_multibunch(
             self.n_macroparticles, self.bin_centers, n_bunches,
-            bunch_spacing_buckets, bucket_size_tau, bucket_tolerance, 
+            bunch_spacing_buckets, bucket_size_tau, bucket_tolerance,
             shift=shift, shiftX=shiftX)
 
     def beam_spectrum_freq_generation(self, n_sampling_fft):

@@ -17,38 +17,31 @@ from ..utils import bmath as bm
 worker = None
 
 
-def c_add_uint32(xmem, ymem, dt):
-    x = np.frombuffer(xmem, dtype=np.uint32)
-    y = np.frombuffer(ymem, dtype=np.uint32)
-    bm.add(y, x, inplace=True)
+def mpiprint(*args, all=False):
+    if worker.isMaster or all:
+        print('[{}]'.format(worker.rank), *args)
 
-
-add_op_uint32 = MPI.Op.Create(c_add_uint32, commute=True)
-
-
-def c_add_uint16(xmem, ymem, dt):
-    x = np.frombuffer(xmem, dtype=np.uint16)
-    y = np.frombuffer(ymem, dtype=np.uint16)
-    bm.add(y, x, inplace=True)
-
-
-add_op_uint16 = MPI.Op.Create(c_add_uint16, commute=True)
-
-
-def print_wrap(f):
+def master_wrap(f):
     @wraps(f)
-    def wrap(*args):
-        msg = '[{}] '.format(worker.rank) + ' '.join([str(a) for a in args])
+    def wrap(*args, **kwargs):
         if worker.isMaster:
-            worker.logger.debug(msg)
-            return f('[{}]'.format(worker.rank), *args)
+            return f(*args, **kwargs)
         else:
-            return worker.logger.debug(msg)
+            return None
     return wrap
 
 
-mpiprint = print_wrap(print)
-
+def sequential_wrap(f, beam, split_args={}, gather_args={}):
+    @wraps(f)
+    def wrap(*args, **kw):
+        beam.gather(**gather_args)
+        if worker.isMaster:
+            result = f(*args, **kw)
+        else:
+            result = None
+        beam.split(**split_args)
+        return result
+    return wrap
 
 class Worker:
     @timing.timeit(key='serial:init')
@@ -104,12 +97,18 @@ class Worker:
     @mpiprof.traceit(key='comm:gather')
     def gather(self, var, size):
         self.logger.debug('gather')
+        # First I need to know the total size
+        counts = np.zeros(self.workers, dtype=int)
+        sendbuf = np.array([len(var)], dtype=int)
+        self.intracomm.Gather(sendbuf, counts, root=0)
+        total_size = np.sum(counts)
+
         if self.isMaster:
-            counts = [size // self.workers + 1 if i < size % self.workers
-                      else size // self.workers for i in range(self.workers)]
+            # counts = [size // self.workers + 1 if i < size % self.workers
+            #           else size // self.workers for i in range(self.workers)]
             displs = np.append([0], np.cumsum(counts[:-1]))
             sendbuf = np.copy(var)
-            recvbuf = np.resize(var, np.sum(counts))
+            recvbuf = np.resize(var, total_size)
 
             self.intracomm.Gatherv(sendbuf,
                                    [recvbuf, counts, displs, recvbuf.dtype.char], root=0)
@@ -124,46 +123,41 @@ class Worker:
     def allgather(self, var, size):
         self.logger.debug('allgather')
 
-        counts = [size // self.workers + 1 if i < size % self.workers
-                  else size // self.workers for i in range(self.workers)]
+        # One first gather to collect all the sizes
+        counts = np.zeros(self.workers, dtype=int)
+        sendbuf = np.array([len(var)], dtype=int)
+        self.intracomm.Allgather(sendbuf, counts)
+
+        total_size = np.sum(counts)
+        # counts = [size // self.workers + 1 if i < size % self.workers
+        #           else size // self.workers for i in range(self.workers)]
         displs = np.append([0], np.cumsum(counts[:-1]))
         sendbuf = np.copy(var)
-        recvbuf = np.resize(var, np.sum(counts))
+        recvbuf = np.resize(var, total_size)
 
         self.intracomm.Allgatherv(sendbuf,
-                               [recvbuf, counts, displs, recvbuf.dtype.char])
+                                  [recvbuf, counts, displs, recvbuf.dtype.char])
         return recvbuf
-
-        # if self.isMaster:
-        #     counts = [size // self.workers + 1 if i < size % self.workers
-        #               else size // self.workers for i in range(self.workers)]
-        #     displs = np.append([0], np.cumsum(counts[:-1]))
-        #     sendbuf = np.copy(var)
-        #     recvbuf = np.resize(var, np.sum(counts))
-
-        #     self.intracomm.Allgatherv(sendbuf,
-        #                            [recvbuf, counts, displs, recvbuf.dtype.char], root=0)
-        #     return recvbuf
-        # else:
-        #     self.intracomm.Allgatherv(var, recvbuf, root=0)
-        #     return var
 
 
     @timing.timeit(key='comm:scatter')
     @mpiprof.traceit(key='comm:scatter')
-    def scatter(self, var, size):
+    def scatter(self, var):
         self.logger.debug('scatter')
+
+        # First broadcast the total_size from the master
+        total_size = int(self.intracomm.bcast(len(var), root=0))
+
+        # Then calculate the counts (size for each worker)
+        counts = [total_size // self.workers + 1 if i < total_size % self.workers
+                  else total_size // self.workers for i in range(self.workers)]
+        
         if self.isMaster:
-            counts = [size // self.workers + 1 if i < size % self.workers
-                      else size // self.workers for i in range(self.workers)]
             displs = np.append([0], np.cumsum(counts[:-1]))
-            # sendbuf = np.copy(var)
             recvbuf = np.empty(counts[worker.rank], dtype=var.dtype.char)
             self.intracomm.Scatterv([var, counts, displs, var.dtype.char],
                                     recvbuf, root=0)
         else:
-            counts = [size // self.workers + 1 if i < size % self.workers
-                      else size // self.workers for i in range(self.workers)]
             sendbuf = None
             recvbuf = np.empty(counts[worker.rank], dtype=var.dtype.char)
             self.intracomm.Scatterv(sendbuf, recvbuf, root=0)
@@ -174,11 +168,23 @@ class Worker:
     @mpiprof.traceit(key='comm:allreduce')
     def allreduce(self, sendbuf, recvbuf=None, dtype=np.uint32):
         self.logger.debug('allreduce')
-
-        if dtype == np.uint32:
-            op = add_op_uint32
-        elif dtype == np.uint16:
+        dtype = sendbuf.dtype.name
+        if dtype == 'int16':
+            op = add_op_int16
+        elif dtype == 'int32':
+            op = add_op_int32
+        elif dtype == 'int64':
+            op = add_op_int64
+        elif dtype == 'uint16':
             op = add_op_uint16
+        elif dtype == 'uint32':
+            op = add_op_uint32
+        elif dtype == 'uint64':
+            op = add_op_uint64
+        elif dtype == 'float32':
+            op = add_op_float32
+        elif dtype == 'float64':
+            op = add_op_float64
         else:
             print('Error: Not recognized dtype:{}'.format(dtype))
             exit(-1)
@@ -274,3 +280,74 @@ class MPILog(object):
 
 if worker is None:
     worker = Worker()
+
+def c_add_float32(xmem, ymem, dt):
+    x = np.frombuffer(xmem, dtype=np.float32)
+    y = np.frombuffer(ymem, dtype=np.float32)
+    bm.add(y, x, inplace=True)
+
+
+add_op_float32 = MPI.Op.Create(c_add_float32, commute=True)
+
+
+def c_add_float64(xmem, ymem, dt):
+    x = np.frombuffer(xmem, dtype=np.float64)
+    y = np.frombuffer(ymem, dtype=np.float64)
+    bm.add(y, x, inplace=True)
+
+
+add_op_float64 = MPI.Op.Create(c_add_float64, commute=True)
+
+
+def c_add_uint16(xmem, ymem, dt):
+    x = np.frombuffer(xmem, dtype=np.uint16)
+    y = np.frombuffer(ymem, dtype=np.uint16)
+    bm.add(y, x, inplace=True)
+
+
+add_op_uint16 = MPI.Op.Create(c_add_uint16, commute=True)
+
+
+def c_add_uint32(xmem, ymem, dt):
+    x = np.frombuffer(xmem, dtype=np.uint32)
+    y = np.frombuffer(ymem, dtype=np.uint32)
+    bm.add(y, x, inplace=True)
+
+
+add_op_uint32 = MPI.Op.Create(c_add_uint32, commute=True)
+
+
+def c_add_uint64(xmem, ymem, dt):
+    x = np.frombuffer(xmem, dtype=np.uint64)
+    y = np.frombuffer(ymem, dtype=np.uint64)
+    bm.add(y, x, inplace=True)
+
+
+add_op_uint64 = MPI.Op.Create(c_add_uint64, commute=True)
+
+
+def c_add_int16(xmem, ymem, dt):
+    x = np.frombuffer(xmem, dtype=np.int16)
+    y = np.frombuffer(ymem, dtype=np.int16)
+    bm.add(y, x, inplace=True)
+
+
+add_op_int16 = MPI.Op.Create(c_add_int16, commute=True)
+
+
+def c_add_int32(xmem, ymem, dt):
+    x = np.frombuffer(xmem, dtype=np.int32)
+    y = np.frombuffer(ymem, dtype=np.int32)
+    bm.add(y, x, inplace=True)
+
+
+add_op_int32 = MPI.Op.Create(c_add_int32, commute=True)
+
+
+def c_add_int64(xmem, ymem, dt):
+    x = np.frombuffer(xmem, dtype=np.int64)
+    y = np.frombuffer(ymem, dtype=np.int64)
+    bm.add(y, x, inplace=True)
+
+
+add_op_int64 = MPI.Op.Create(c_add_int64, commute=True)

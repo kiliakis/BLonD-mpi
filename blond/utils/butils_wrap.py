@@ -172,58 +172,33 @@ def convolve(signal, kernel, mode='full', result=None):
                       __getPointer(result))
     return result
 
-
-def rfft(signal, fftsize=0, result=None):
-    if (fftsize == 0) and (result == None):
-        result = np.empty(len(signal)//2 + 1, dtype=np.complex128)
-    elif (fftsize != 0) and (result == None):
-        result = np.empty(fftsize//2 + 1, dtype=np.complex128)
-
-    __lib.rfft(__getPointer(signal),
-               __getLen(signal),
-               __getPointer(result),
-               ct.c_int(int(fftsize)),
-               ct.c_int(int(os.environ.get('OMP_NUM_THREADS', 1))))
-
-    return result
+# Similar to np.where with a condition of more_than < x < less_than
+# You need to define at least one of more_than, less_than
+# @return: a bool array, size equal to the input,
+#           True: element satisfied the cond, False: otherwise
 
 
-def irfft(signal, fftsize=0, result=None):
+def where(x, more_than=None, less_than=None, result=None):
+    if result is None:
+        result = np.empty(len(x), dtype=np.bool)
+    if more_than is None and less_than is not None:
+        __lib.where_less_than(__getPointer(x), __getLen(x),
+                              ct.c_double(less_than),
+                              __getPointer(result))
+    elif more_than is not None and less_than is None:
+        __lib.where_more_than(__getPointer(x), __getLen(x),
+                              ct.c_double(more_than),
+                              __getPointer(result))
 
-    if (fftsize == 0) and (result == None):
-        result = np.empty(2*len(signal)-1, dtype=np.float64)
-    elif (fftsize != 0) and (result == None):
-        result = np.empty(fftsize, dtype=np.float64)
+    elif more_than is not None and less_than is not None:
+        __lib.where_more_less_than(__getPointer(x), __getLen(x),
+                                   ct.c_double(more_than),
+                                   ct.c_double(less_than),
+                                   __getPointer(result))
 
-    __lib.irfft(__getPointer(signal),
-                __getLen(signal),
-                __getPointer(result),
-                ct.c_int(int(fftsize)),
-                ct.c_int(int(os.environ.get('OMP_NUM_THREADS', 1))))
-    return result
-
-
-def irfft_packed(signal, fftsize=0, result=None):
-
-    n0 = len(signal[0])
-    howmany = len(signal)
-
-    signal = np.ascontiguousarray(np.reshape(signal, -1))
-
-    if (fftsize == 0) and (result == None):
-        result = np.empty(howmany * 2*(n0-1), dtype=np.float64)
-    elif (fftsize != 0) and (result == None):
-        result = np.empty(howmany * fftsize, dtype=np.float64)
-
-    __lib.irfft_packed(__getPointer(signal),
-                       n0,
-                       howmany,
-                       __getPointer(result),
-                       ct.c_int(int(fftsize)),
-                       ct.c_int(int(os.environ.get('OMP_NUM_THREADS', 1))))
-
-    result = np.reshape(result, (howmany, -1))
-
+    else:
+        raise RuntimeError(
+            '[bmath:where] You need to define at least one of more_than, less_than')
     return result
 
 
@@ -310,7 +285,7 @@ def interp_const_space(x, xp, yp, left=None, right=None, result=None):
                              ct.c_double(right),
                              __getPointer(result))
     return result
-
+    
 
 def cumtrapz(y, x=None, dx=1.0, initial=None, result=None):
     if x is not None:
@@ -392,3 +367,69 @@ def sort(x, reverse=False):
         # SortError
         raise RuntimeError('[sort] Datatype %s not supported' % x.dtype)
     return x
+
+
+def rfft(a, n=0, result=None):
+    if (n == 0) and (result == None):
+        result = np.empty(len(a)//2 + 1, dtype=np.complex128)
+    elif (n != 0) and (result == None):
+        result = np.empty(n//2 + 1, dtype=np.complex128)
+
+    __lib.rfft(__getPointer(a),
+               __getLen(a),
+               __getPointer(result),
+               ct.c_int(int(n)),
+               ct.c_int(int(os.environ.get('OMP_NUM_THREADS', 1))))
+
+    return result
+
+
+def irfft(a, n=0, result=None):
+
+    if (n == 0) and (result == None):
+        result = np.empty(2*(len(a)-1), dtype=np.float64)
+    elif (n != 0) and (result == None):
+        result = np.empty(n, dtype=np.float64)
+
+    __lib.irfft(__getPointer(a),
+                __getLen(a),
+                __getPointer(result),
+                ct.c_int(int(n)),
+                ct.c_int(int(os.environ.get('OMP_NUM_THREADS', 1))))
+    return result
+
+
+def rfftfreq(n, d=1.0, result=None):
+    if d == 0:
+        raise ZeroDivisionError('d must be non-zero')
+    if result is None:
+        result = np.empty(n//2 + 1, dtype=np.float64)
+
+    __lib.rfftfreq(ct.c_int(n),
+                   __getPointer(result),
+                   ct.c_double(d))
+    return result
+
+
+def irfft_packed(signal, fftsize=0, result=None):
+
+    n0 = len(signal[0])
+    howmany = len(signal)
+
+    signal = np.ascontiguousarray(np.reshape(signal, -1))
+
+    if (fftsize == 0) and (result == None):
+        result = np.empty(howmany * 2*(n0-1), dtype=np.float64)
+    elif (fftsize != 0) and (result == None):
+        result = np.empty(howmany * fftsize, dtype=np.float64)
+
+    __lib.irfft_packed(__getPointer(signal),
+                       n0,
+                       howmany,
+                       __getPointer(result),
+                       ct.c_int(int(fftsize)),
+                       ct.c_int(int(os.environ.get('OMP_NUM_THREADS', 1))))
+
+    result = np.reshape(result, (howmany, -1))
+
+    return result

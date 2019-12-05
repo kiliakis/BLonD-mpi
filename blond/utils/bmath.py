@@ -8,6 +8,10 @@ BLonD math and physics core functions
 import numpy as np
 from ..utils import butils_wrap
 from ..utils import bphysics_wrap
+from numpy import fft
+
+__exec_mode = 'single_node'
+# Other modes: multi_node
 
 # dictionary storing the CPU versions of the desired functions #
 _CPU_func_dict = {
@@ -20,6 +24,7 @@ _CPU_func_dict = {
     'exp': butils_wrap.exp,
     'mean': butils_wrap.mean,
     'std': butils_wrap.std,
+    'where': butils_wrap.where,
     'interp': butils_wrap.interp,
     'interp_const_space': butils_wrap.interp_const_space,
     'cumtrapz': butils_wrap.cumtrapz,
@@ -61,6 +66,24 @@ _FFTW_func_dict = {
     'rfftfreq': butils_wrap.rfftfreq
 }
 
+_MPI_func_dict = {
+
+}
+
+
+def use_mpi():
+    '''
+    Replace some bm functions with MPI implementations
+    '''
+    global __exec_mode
+    globals().update(_MPI_func_dict)
+    __exec_mode = 'multi_node'
+
+
+def mpiMode():
+    global __exec_mode
+    return __exec_mode == 'multi_node'
+
 
 def use_fftw():
     '''
@@ -80,10 +103,14 @@ def update_active_dict(new_dict):
     '''
     if not hasattr(update_active_dict, 'active_dict'):
         update_active_dict.active_dict = new_dict
+
     # delete all old implementations/references from globals()
-    for key in globals().keys():
-        if key in update_active_dict.active_dict.keys():
+    for key in update_active_dict.active_dict.keys():
+        if key in globals():
             del globals()[key]
+    # for key in globals().keys():
+    #     if key in update_active_dict.active_dict.keys():
+    #         del globals()[key]
     # add the new active dict to the globals()
     globals().update(new_dict)
     update_active_dict.active_dict = new_dict

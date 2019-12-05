@@ -193,7 +193,7 @@ def fast_resonator(R_S, Q, frequency_array, frequency_R, impedance=None):
     realImp = np.zeros(len(frequency_array), dtype=np.float64)
     imagImp = np.zeros(len(frequency_array), dtype=np.float64)
 
-    __lib.fast_resonator(
+    __lib.fast_resonator_real_imag(
         __getPointer(realImp),
         __getPointer(imagImp),
         __getPointer(frequency_array),

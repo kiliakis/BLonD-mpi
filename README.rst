@@ -6,7 +6,7 @@
     :target: https://coveralls.io/github/blond-admin/BLonD?branch=master
 
 
-Copyright 2016 CERN. This software is distributed under the terms of the
+Copyright 2019 CERN. This software is distributed under the terms of the
 GNU General Public Licence version 3 (GPL Version 3), copied verbatim in
 the file LICENCE.txt. In applying this licence, CERN does not waive the
 privileges and immunities granted to it by virtue of its status as an
@@ -26,7 +26,7 @@ synchrotrons.
 LINKS
 =====
 
-Repository: https://github.com/dquartul/BLonD
+Repository: https://github.com/blond-admin/BLonD
 
 Documentation: http://blond-admin.github.io/BLonD/
 
@@ -46,34 +46,48 @@ Requirements
 3. That's all!
 
 
+Windows GCC Installation Instructions
+-------------------------------------
+
+1. Download the latest mingw-w64 using this link: https://sourceforge.net/projects/mingw-w64/files/latest/download
+
+2. Run the downloaded executable.
+
+3. Make sure to select: **Architecture: x86_64**, **Threads: posix** and **Exception: seh**
+
+4. Select the installation location, e.g.: ``"C:\Users\myname\mingw-64"``
+
+5. Wait for the installation to complete, then add the following path to your User Environment Variable Path: ``"C:\Users\myname\mingw-64\mingw64\bin"`` 
+
+6. To validate the correct setup of gcc, open a command prompt and type: ``gcc --version``. The first output line should contain the gcc version you just installed. 
+
+
 Install Steps
 -------------
 
+* The easy way: 
+    .. code-block:: bash
 
-* The easy way:
-
-  .. code-block:: bash
-
-      $ pip install blond
+        $ pip install blond
 
 
 * If this fails try this:
 
   1. Clone the repository from github or download and extract the zip from here_.
+
   2. Navigate to the downloaded BLonD directory and run:
 
-  .. code-block:: bash
+    .. code-block:: bash
 
-      $ python setup.py install
+        $ python setup.py install
 
 
-* If it still fails:
+* If it still fails, navigate to the BLonD directory and run:
 
-  1. Navigate to the BLonD directory and run:
-    
-  .. code-block:: bash
+  1.  
+    .. code-block:: bash
       
-      $ python setup.py compile
+       $ python setup.py compile
 
   2. Then you have to use the PYTHONPATH variable or some other mechanism to point to the BLonD installation.
 
@@ -85,43 +99,85 @@ Confirm proper installation
 ---------------------------
 
 * Run the unittests with pytest (may need to be installed first with pip install pytest):
+    .. code-block:: bash
 
-  .. code-block:: bash
-
-    $ pytest -v unittests
+        $ pytest -v unittests
 
 * Try to run some of the main files found in the examples:
+    .. code-block:: bash
 
-  .. code-block:: bash
-
-    $ python __EXAMPLES/main_files/EX_01_Acceleration.py
-    $ python __EXAMPLES/main_files/EX_02_Main_long_ps_booster.py
-    $ etc..
+        $ python __EXAMPLES/main_files/EX_01_Acceleration.py
+        $ python __EXAMPLES/main_files/EX_02_Main_long_ps_booster.py
+        $ etc..
 
 
-Setting up the MPI installation
--------------------------------
+Use the FFTW3 library for the FFTs
+----------------------------------
+So far only the ``rfft()``, ``irfft()`` and ``fftfreq()`` routines are supported. ``fft_convolve()`` to be added soon. 
+
+* Windows:
+
+  1. Download and unzip the pre-compiled FFTW3 library. Link: ftp://ftp.fftw.org/pub/fftw/fftw-3.3.5-dll64.zip
+
+  2. Copy the ``libfftw3-3.dll`` under your python's distribution directory.
+
+  3. Run the ``blond/compile.py`` with the flag ``--with-fftw``. 
+
+  4. If the FFTW3 library is not installed in one of the default directories, use the ``--with-fftw-lib`` and ``--with-fftw-header`` to point to the directories where the shared library and header files are stored.
+
+  5. To use the supported routines, you need to call the function ``use_fftw()`` from ``bmath.py``:
+      .. code-block:: python
+
+        from blond.utils import bmath as bm
+        bm.use_fftw()
+        ...
+        bm.rfft(...)
+        bm.irfft(...)
+        bm.rfftfreq(...)
+
+* Linux:
+  
+  1. Download and compile the FFTW3 library. Link: http://www.fftw.org/fftw-3.3.8.tar.gz
+
+  2. Run the ``blond/compile.py`` with the flag: ``--with-fftw``.
+
+  3. If the FFTW3 library is not installed in one of the default directories, use the ``--with-fftw-lib`` and ``--with-fftw-header`` to point to the directories where the shared library and header files are stored.
+
+  4. Optionally, you can enable one of the flags ``--with-fftw-omp`` or ``--with-fftw-threads`` to use the multithreaded FFTs. 
+
+  5. To use the supported routines, you need to call the function ``use_fftw()`` from ``bmath.py``:
+      .. code-block:: python
+
+        from blond.utils import bmath as bm
+        bm.use_fftw()
+        ...
+        bm.rfft(...)
+        bm.irfft(...)
+        bm.rfftfreq(...)
+
+
+Using the multi-node (MPI) implementation
+=========================================
+
+Set-up Instructions
+-------------------
 
 * Add the following lines in your ~/.bashrc, then source it:
 
   .. code-block:: bash
-  	
-	# Environment variables definitions
-	export LD_LIBRARY_PATH="$HOME/install/lib"
-	export C_INCLUDE_PATH="$HOME/install/include"
-	export CXX_INCLUDE_PATH="$HOME/install/include"
-	export CPLUS_INCLUDE_PATH="$HOME/install/include"
-	export PATH="$HOME/install/anaconda3/bin:$PATH"
-	
-	# User aliases
-	alias mysqueue="squeue -u $USER"
-	alias myscancel="scancel -u $USER"
-	alias mywatch="watch -n 30 'squeue -u $USER'"
-	
-	# Module loads
-	module load compiler/gcc7
-	module load slurm/be
-	module load mpi/mpich/3.2.1
+    
+  # Environment variables definitions
+  export LD_LIBRARY_PATH="$HOME/install/lib"
+  
+  # User aliases
+  alias mysqueue="squeue -u $USER"
+  alias myscancel="scancel -u $USER"
+  alias mywatch="watch -n 30 'squeue -u $USER'"
+  
+  # Module loads
+  module load compiler/gcc7
+  module load slurm/be
+  module load mpi/mvapich2/2.3
 
   
 * Download and install anaconda3:
@@ -162,34 +218,36 @@ Setting up the MPI installation
     cd ~
     mkdir -p git
     cd git
-    git clone --branch=master https://github.com/kiliakis/BLonD-mpi.git
-    cd BLonD-mpi
-    python blond/compile.py -p --libs="-L$HOME/install/lib -lfftw3_omp"
+    git clone --branch=master https://github.com/blond-admin/BLonD.git
+    cd BLonD
+    python blond/compile.py -p
   
 * adjust your main file as needed (described bellow).
 
 
-Changes required in the main file
----------------------------------
+Changes required in the main file for MPI
+-----------------------------------------
 
 
-1. This import in the beginning of your script:
-	
-.. code-block:: python
+1. This statements in the beginning of the script:
   
-  from blond.utils.mpi_config import worker, print
-   	
+ .. code-block:: python
+  
+  from blond.utils import bmath as bm
+  from blond.utils.mpi_config import worker, mpiprint
+  bm.use_mpi()  
+
 2. After having initialized the beam and preferably just before the start of the main loop:
   
-.. code-block:: python
+ .. code-block:: python
   
     beam.split()
-   
-This line splits the beam coordinates equally between the workers.
+
+ This line splits the beam coordinates equally among the workers.
 
 3. If there is code block that you want it to be executed by a single worker only, you need to surround it with this if condition:
   
-.. code-block:: python
+ .. code-block:: python
   
     if worker.isMaster:
         foo()
@@ -197,28 +255,23 @@ This line splits the beam coordinates equally between the workers.
    
 4. If you need to re-assemble the whole beam back to the master worker you need to run:
   
-.. code-block:: python
+ .. code-block:: python
   
     beam.gather()
-	
-5. After calling the profile.track() function, each worker has the histogram of its own part of the beam only. To make the global histogram available to all workers you need to run:
   
-.. code-block:: python 
-  
-    profile.track() 
-    profile.reducte_histo() 
+5. Finally, in the end of the simulation main loop, you can terminate all workers except from the master with:
 
-6. Finally, in the end of the simulation main loop, you can terminate all workers except from the master with:
-
-.. code-block:: python
+ .. code-block:: python
   
     worker.finalize()
 
-7. To run your script, you need to pass it to **mpirun** or **mpiexec**. To spawn P MPI processes run:
+6. To run your script, you need to pass it to **mpirun** or **mpiexec**. To spawn P MPI processes run:
 
-.. code-block:: bash
+ .. code-block:: bash
     
     $ mpirun -n P python main_file.py
+
+7. For more examples have a look at the __EXAMPLES/mpi_main_files/ directory. 
 
 
 CURRENT DEVELOPERS

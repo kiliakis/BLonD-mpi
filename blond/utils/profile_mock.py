@@ -67,6 +67,5 @@ def stop_timing(*args, **kw):
 def report(*args, **kw):
     pass
 
-
 def reset(*args, **kw):
     pass
