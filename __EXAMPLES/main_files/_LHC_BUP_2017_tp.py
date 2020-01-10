@@ -60,7 +60,8 @@ if worker.isMaster:
 N_b = 1.2e9          # Intensity
 N_p = 250000         # Macro-particles
 NB = 48              # Number of bunches
-
+freq_res = 2.09e5
+# freq_res = 4.e5
 # Machine and RF parameters
 C = 26658.883        # Machine circumference [m]
 h = 35640            # Harmonic number
@@ -216,7 +217,7 @@ ZTot = np.loadtxt(wrkDir + r'input/Zlong_Allthemachine_450GeV_B1_LHC_inj_450GeV_
                   skiprows=1)
 ZTable = InputTable(ZTot[:, 0], ZTot[:, 1], ZTot[:, 2])
 indVoltage = InducedVoltageFreq(
-    beam, profile, [ZTable], frequency_resolution=4.e5)
+    beam, profile, [ZTable], frequency_resolution=freq_res)
 totVoltage = TotalInducedVoltage(beam, profile, [indVoltage])
 
 # TODO add the noiseFB

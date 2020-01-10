@@ -21,7 +21,7 @@ parser.add_argument('-c', '--cases', type=str, nargs='+',
                     choices=['lhc', 'sps', 'ps', 'ex01'],
                     help='The test-case to plot.')
 
-parser.add_argument('-k', '--keysuffix', type=str, default='',
+parser.add_argument('-k', '--keysuffix', type=str, default='weak',
                     help='A key suffix to use.')
 
 
@@ -49,6 +49,11 @@ gconfig = {
                 'lhc': '-',
                 'sps': ':',
                 'ps': '--'
+    },
+    'approx': {
+        '0': 'exact',
+        '1': 'SMD',
+        '2': 'RDS',
     },
     # 'colors': {
     # 'mvapich2': cycle(['xkcd:pastel green', 'xkcd:green', 'xkcd:olive green', 'xkcd:blue green']),
@@ -90,8 +95,8 @@ gconfig = {
 
     # 'exclude': [['v1', 'notcm'], ['v2', 'notcm'], ['v4', 'notcm']],
     'x_name': 'n',
-    # 'x_to_keep': [2, 4, 8, 16, 32, 64],
-    'x_to_keep': [8, 16],
+    'x_to_keep': [4, 8, 16, 32, 64],
+    # 'x_to_keep': [8, 16],
     'omp_name': 'omp',
     'y_name': 'avg_time(sec)',
     # 'y_err_name': 'std',
@@ -127,9 +132,9 @@ gconfig = {
         'pad': 1, 'top': 0, 'bottom': 1, 'left': 1,
         'direction': 'inout', 'length': 0, 'width': 0.5,
     },
-    'ylim': [0, 8.8],
-    'ylim2': [10, 90],
-    'yticks': [0, 2, 4, 6, 8],
+    'ylim': [0, 28],
+    'ylim2': [0, 110],
+    'yticks': [4, 8, 12, 16, 20, 24],
     'yticks2': [0, 20, 40, 60, 80, 100],
     'outfiles': ['{}/{}-{}-sp-eff-{}.pdf',
                  '{}/{}-{}-sp-eff-{}.jpg']
@@ -157,20 +162,18 @@ lconfig = {
         # },
         'mpi-flavor': {
             'files': [
-                # '{}/raw/{}/mvapich2/comm-comp-report.csv',
-                # '{}/raw/{}/lb-mvapich2/comm-comp-report.csv',
-                # '{}/raw/{}/lb-tp-approx0-mvapich2/comm-comp-report.csv',
-                # '{}/raw/{}/lb-approx2-mvapich2/comm-comp-report.csv',
-                '{}/compfront/{}/approx0-mpich3-impl/comm-comp-report.csv',
-                '{}/compfront/{}/approx0-mvapich2-impl/comm-comp-report.csv',
-                '{}/compfront/{}/approx0-openmpi3-impl/comm-comp-report.csv',
+                '{}/compfront/{}/lb-tp-approx0-mvapich2-weak-scaling/comm-comp-report.csv',
+                '{}/compfront/{}/lb-tp-approx2-mvapich2-weak-scaling/comm-comp-report.csv',
+                '{}/compfront/{}/lb-tp-approx1-mvapich2-weak-scaling/comm-comp-report.csv',
             ],
             'lines': {
                 'mpi': ['mpich3', 'mvapich2', 'openmpi3'],
                 'lb': ['interval', 'reportonly'],
                 'approx': ['0', '1', '2'],
                 'lba': ['500'],
-                'b': ['96', '48', '72', '21'],
+                # 'b': ['6', '12', '24', '96', '192',
+                #       '48', '21', '9', '18', '36',
+                #       '72', '144', '288'],
                 't': ['5000'],
                 'type': ['total'],
             }
@@ -187,7 +190,7 @@ if __name__ == '__main__':
         ax_arr = np.atleast_1d(ax_arr)
         for col, case in enumerate(args.cases):
             ax = ax_arr[col]
-            ax2 = ax.twinx()
+            # ax2 = ax.twinx()
             plt.sca(ax)
             plots_dir = {}
             for file in figconf['files']:
@@ -213,28 +216,25 @@ if __name__ == '__main__':
             if col == len(args.cases) - 1:
                 plt.xlabel(gconfig['xlabel'], labelpad=3,
                            fontsize=gconfig['fontsize'])
-            if col == 1:
-                plt.ylabel(gconfig['ylabel'], labelpad=3, color='xkcd:green',
-                           fontweight='bold',
-                           fontsize=gconfig['fontsize'])
+            # if col == 1:
+            plt.ylabel(gconfig['ylabel'], labelpad=3, color='xkcd:green',
+                       fontweight='bold',
+                       fontsize=gconfig['fontsize'])
             plt.setp(ax.get_yticklabels(), color="xkcd:green")
 
-            plt.sca(ax2)
-            if col == 1:
-                plt.ylabel(gconfig['ylabel2'], labelpad=3,
-                           fontweight='bold', color='xkcd:blue',
-                           fontsize=gconfig['fontsize'])
-            plt.setp(ax2.get_yticklabels(), color="xkcd:blue")
-            plt.yticks(gconfig['yticks2'], **gconfig['ticks'])
-            # if col == len(args.cases) - 1:
-            # else:
-            #     plt.yticks([])
-            plt.ylim(gconfig['ylim2'])
+            # plt.sca(ax2)
+            # if col == 1:
+            #     plt.ylabel(gconfig['ylabel2'], labelpad=3,
+            #                fontweight='bold', color='xkcd:blue',
+            #                fontsize=gconfig['fontsize'])
+            # plt.setp(ax2.get_yticklabels(), color="xkcd:blue")
+            # plt.yticks(gconfig['yticks2'], **gconfig['ticks'])
+            # plt.ylim(gconfig['ylim2'])
             plt.sca(ax)
 
             pos = 0
             step = 0.1
-            width = 1. / (2*len(plots_dir.keys())+0.4)
+            width = 1. / (1*len(plots_dir.keys())+0.4)
 
             # colors = [cm.Greens(x) for x in np.linspace(0.2, 0.8, len(plots_dir))]
             colors1 = [cm.Greens(x)
@@ -261,14 +261,15 @@ if __name__ == '__main__':
                     tp = 'TP'
                 elif tp == '0':
                     tp = 'NoTP'
-                if approx == '2':
-                    approx = 'AC'
-                else:
-                    approx = 'NoAC'
+                approx = gconfig['approx'][approx]
+                # if approx == '2':
+                #     approx = 'AC'
+                # else:
+                #     approx = 'NoAC'
                 # key = '{}-{}-{}'.format(case, mpiv, lb)
 
                 # label = '{}-{}-{}-{}'.format(lb, tp, approx, experiment)
-                label = '{}'.format(mpiv)
+                label = '{}'.format(approx)
                 # label = '{}-{}'.format(tp, approx)
                 # color = gconfig['colors']['{}'.format(mpiv)].__next__()
                 # hatch = gconfig['hatches'][lb]
@@ -311,16 +312,16 @@ if __name__ == '__main__':
                 plt.bar(np.arange(len(x)) + pos, speedup, width=0.9*width,
                         edgecolor='0.', label=label, hatch=gconfig['hatches'][idx],
                         color=colors1[idx])
-                ax2.bar(np.arange(len(x)) + pos + width, efficiency, width=0.9*width,
-                        edgecolor='0.', label=label, hatch=gconfig['hatches'][idx],
-                        color=colors2[idx])
+                # ax2.bar(np.arange(len(x)) + pos + width, efficiency, width=0.9*width,
+                #         edgecolor='0.', label=label, hatch=gconfig['hatches'][idx],
+                #         color=colors2[idx])
                 if True or idx != 1:
                     for i, s, e in zip(np.arange(len(x)) + pos, speedup, efficiency):
                         ax.annotate('{:.1f}'.format(s), xy=(i, s),
                                     **gconfig['annotate'])
-                        ax2.annotate('{:.0f}'.format(e), xy=(i+width, e),
-                                     **gconfig['annotate'])
-                pos += 2 * width
+                        # ax2.annotate('{:.0f}'.format(e), xy=(i+width, e),
+                        #              **gconfig['annotate'])
+                pos += 1 * width
             # pos += width * step
             plt.ylim(gconfig['ylim'])
             plt.xlim(0-.8*width, len(x)-.7*width)
