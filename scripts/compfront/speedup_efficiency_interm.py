@@ -51,17 +51,19 @@ gconfig = {
         'ps': '--'
     },
     'approx': {
-        '0': 'exact',
-        '1': 'SMD',
+        '0': '',
+        '1': 'SRP',
         '2': 'RDS',
     },
-    'approx-hatch': {
-        'exact': '',
-        'SMD': '//',
-        'RDS': '--'
-    },
-    'colors': ['xkcd:pastel green', 'xkcd:pastel blue',
-               'xkcd:light red', 'xkcd:light orange'],
+    # 'approx-hatch': {
+    #     'exact': '',
+    #     'SRP': '//',
+    #     'RDS': '--'
+    # },
+    'hatches': ['', '', 'xx', '', 'xx', '', 'xx'],
+    'colors': ['0.1', '0.45', '0.45', '0.7', '0.7', '0.95', '0.95'],
+    # 'colors': ['xkcd:pastel green', 'xkcd:pastel blue',
+    #            'xkcd:light red', 'xkcd:light orange'],
     # 'colors': {
     # 'mvapich2': cycle(['xkcd:pastel green', 'xkcd:green', 'xkcd:olive green', 'xkcd:blue green']),
     # 'mvapich2': cycle([cm.Greens(x) for x in np.linspace(0.2, 0.8, 3)]),
@@ -74,7 +76,7 @@ gconfig = {
     #     'LB': 'x',
     #     'NoLB': '',
     # },
-    'hatches': ['', '//', '--'] * 4,
+    # 'hatches': ['', '//', '--'] * 4,
     'reference': {
         # 'sps': {'ppb': 4000000, 'b': 72, 'turns': 500, 'w': 1,
         #         'omp': 1, 'time': 1497.8},
@@ -108,76 +110,61 @@ gconfig = {
     'y_name': 'avg_time(sec)',
     # 'y_err_name': 'std',
     'xlabel': 'Nodes (x20 Cores)',
-    'ylabel': 'Speedup',
+    'ylabel': 'Norm. Runtime',
     'ylabel2': 'Efficiency',
     'title': {
-                # 's': '{}'.format(case.upper()),
-                'fontsize': 10,
-                'y': 0.74,
-                # 'x': 0.55,
-                'fontweight': 'bold',
+        's': '',
+        'fontsize': 10,
+        'y': 0.74,
+        # 'x': 0.55,
+        'fontweight': 'bold',
     },
-    'figsize': [5, 5],
+    'figsize': [5, 2.1],
     'annotate': {
         'fontsize': 9,
         'textcoords': 'data',
         'va': 'bottom',
         'ha': 'center'
     },
-    'ticks': {'fontsize': 9, 'rotation':45},
+    'xticks': {'fontsize': 10, 'rotation': '0', 'fontweight': 'bold'},
+    'ticks': {'fontsize': 10, 'rotation': '0'},
     'fontsize': 10,
     'legend': {
-        'loc': 'upper left', 'ncol': 4, 'handlelength': 1.5, 'fancybox': True,
-        'framealpha': 0., 'fontsize': 10, 'labelspacing': 0, 'borderpad': 0.5,
-        'handletextpad': 0.5, 'borderaxespad': 0, 'columnspacing': 0.8,
-        'bbox_to_anchor': (0, 1.25)
+        'loc': 'upper left', 'ncol': 7, 'handlelength': 1.1, 'fancybox': True,
+        'framealpha': 0., 'fontsize': 9, 'labelspacing': 0, 'borderpad': 0.5,
+        'handletextpad': 0.2, 'borderaxespad': 0, 'columnspacing': 0.3,
+        'bbox_to_anchor': (-0.01, 1.12)
     },
     'subplots_adjust': {
         'wspace': 0.0, 'hspace': 0.1, 'top': 0.93
     },
     'tick_params': {
-        'pad': 1, 'top': 0, 'bottom': 1, 'left': 1,
-        'direction': 'inout', 'length': 0, 'width': 0.5,
+        'pad': 1, 'top': 0, 'bottom': 0, 'left': 1,
+        'direction': 'out', 'length': 3, 'width': 1,
     },
-    'ylim': [0, 10],
-    'ylim2': [10, 90],
-    'yticks': [0, 2, 4, 6, 8],
-    'yticks2': [0, 20, 40, 60, 80, 100],
-    'outfiles': ['{}/{}-{}-sp-eff-{}.pdf',
-                 '{}/{}-{}-sp-eff-{}.jpg']
+    'fontname': 'DejaVu Sans Mono',
+    'ylim': [0.45, 1.02],
+    # 'ylim2': [10, 90],
+    'yticks': [0.5, 0.6, 0.7, .8, .9, 1.],
+    # 'yticks2': [0, 20, 40, 60, 80, 100],
+    'outfiles': ['{}/{}-{}-normtime-{}.pdf',
+                 '{}/{}-{}-normtime-{}.jpg']
 }
 
 
 lconfig = {
     'figures': {
-        # 'NoDLB': {
-        #     'files': [
-        #         # '{}/raw/{}/mvapich2/comm-comp-report.csv',
-        #         '{}/raw/{}/tp-approx0-mvapich2/comm-comp-report.csv',
-        #         '{}/raw/{}/approx2-mvapich2/comm-comp-report.csv',
-        #         '{}/raw/{}/tp-mvapich2/comm-comp-report.csv',
-        #     ],
-        #     'lines': {
-        #         'mpi': ['mpich3', 'mvapich2'],
-        #         'lb': ['interval', 'reportonly'],
-        #         'approx': ['0', '2'],
-        #         'lba': ['500'],
-        #         'b': ['96', '72', '21'],
-        #         't': ['5000'],
-        #         'type': ['total'],
-        #     }
-        # },
-        'mpi-flavor': {
+        'interm': {
             'files': [
                 '{}/compfront/{}/approx0-mvapich2-interm/comm-comp-report.csv',
                 '{}/compfront/{}/approx2-mvapich2-interm/comm-comp-report.csv',
                 '{}/compfront/{}/approx1-mvapich2-interm/comm-comp-report.csv',
                 '{}/compfront/{}/tp-approx0-mvapich2-interm/comm-comp-report.csv',
-                '{}/compfront/{}/tp-approx2-mvapich2-interm/comm-comp-report.csv',
-                '{}/compfront/{}/tp-approx1-mvapich2-interm/comm-comp-report.csv',
-                '{}/compfront/{}/lb-approx0-mvapich2-interm/comm-comp-report.csv',
-                '{}/compfront/{}/lb-approx2-mvapich2-interm/comm-comp-report.csv',
-                '{}/compfront/{}/lb-approx1-mvapich2-interm/comm-comp-report.csv',
+                # '{}/compfront/{}/tp-approx2-mvapich2-interm/comm-comp-report.csv',
+                # '{}/compfront/{}/tp-approx1-mvapich2-interm/comm-comp-report.csv',
+                # '{}/compfront/{}/lb-approx0-mvapich2-interm/comm-comp-report.csv',
+                # '{}/compfront/{}/lb-approx2-mvapich2-interm/comm-comp-report.csv',
+                # '{}/compfront/{}/lb-approx1-mvapich2-interm/comm-comp-report.csv',
                 '{}/compfront/{}/lb-tp-approx0-mvapich2-interm/comm-comp-report.csv',
                 '{}/compfront/{}/lb-tp-approx2-mvapich2-interm/comm-comp-report.csv',
                 '{}/compfront/{}/lb-tp-approx1-mvapich2-interm/comm-comp-report.csv',
@@ -196,16 +183,28 @@ lconfig = {
 
 }
 
+plt.rcParams['font.family'] = gconfig['fontname']
+
+
 if __name__ == '__main__':
     for title, figconf in lconfig['figures'].items():
-        fig, ax_arr = plt.subplots(ncols=1, nrows=len(args.cases),
-                                   sharex=True, sharey=True,
-                                   figsize=gconfig['figsize'])
-        ax_arr = np.atleast_1d(ax_arr)
+        fig, ax = plt.subplots(ncols=1, nrows=1,
+                               sharex=True, sharey=True,
+                               figsize=gconfig['figsize'])
+        plt.sca(ax)
+        plt.title(**gconfig['title'])
+        # plt.xlabel(gconfig['xlabel'], labelpad=3,
+        #            fontsize=gconfig['fontsize'])
+        plt.ylabel(gconfig['ylabel'], labelpad=3,
+                   fontweight='bold',
+                   fontsize=gconfig['fontsize'])
+        pos = 0
+        step = 1.
+        labels = set()
+        avg = {}
+        xticks = []
+        xtickspos = []
         for col, case in enumerate(args.cases):
-            ax = ax_arr[col]
-            # ax2 = ax.twinx()
-            plt.sca(ax)
             plots_dir = {}
             for file in figconf['files']:
                 file = file.format(res_dir, case.upper())
@@ -222,42 +221,28 @@ if __name__ == '__main__':
                     else:
                         plots_dir['_{}_{}_tp0'.format(
                             key, args.keysuffix)] = temp[key].copy()
-            # plt.grid(True, which='major', alpha=0.5)
-            # plt.grid(False, which='major', axis='x')
-            plt.title('{}'.format(case.upper()), **gconfig['title'])
-            if col == len(args.cases) - 1:
-                plt.xlabel(gconfig['xlabel'], labelpad=3,
-                           fontsize=gconfig['fontsize'])
-            # if col == 1:
-            plt.ylabel(gconfig['ylabel'], labelpad=3, color='xkcd:green',
-                       fontweight='bold',
-                       fontsize=gconfig['fontsize'])
-            plt.setp(ax.get_yticklabels(), color="xkcd:green")
+            width = .95*step / (len(plots_dir.keys()))
 
-            # plt.sca(ax2)
-            # if col == 1:
-            #     plt.ylabel(gconfig['ylabel2'], labelpad=3,
-            #                fontweight='bold', color='xkcd:blue',
-            #                fontsize=gconfig['fontsize'])
-            # plt.setp(ax2.get_yticklabels(), color="xkcd:blue")
-            # plt.yticks(gconfig['yticks2'], **gconfig['ticks'])
-            # # if col == len(args.cases) - 1:
-            # # else:
-            # #     plt.yticks([])
-            # plt.ylim(gconfig['ylim2'])
-            # plt.sca(ax)
+            # First the reference value
+            keyref = ''
+            for k in plots_dir.keys():
+                if 'approx0' in k and 'tp0' in k and 'lbreportonly' in k:
+                    keyref = k
+                    break
+            if keyref == '':
+                print('ERROR: reference key not found')
+                exit(-1)
 
-            pos = 0
-            step = 0.1
-            width = 1. / (1*len(plots_dir.keys())+0.4)
+            refvals = plots_dir[keyref]
 
-            # colors = [cm.Greens(x) for x in np.linspace(0.2, 0.8, len(plots_dir))]
-            colors1 = [cm.Greens(x)
-                       for x in np.linspace(0.5, 0.8, len(plots_dir))]
-            colors2 = [cm.Blues(x)
-                       for x in np.linspace(0.5, 0.8, len(plots_dir))]
-            xticks = []
-            xtickspos = []
+            x = get_values(refvals, header, gconfig['x_name'])
+            omp = get_values(refvals, header, gconfig['omp_name'])
+            y = get_values(refvals, header, gconfig['y_name'])
+            parts = get_values(refvals, header, 'ppb')
+            bunches = get_values(refvals, header, 'b')
+            turns = get_values(refvals, header, 't')
+            yref = parts * bunches * turns / y
+
             for idx, k in enumerate(plots_dir.keys()):
                 values = plots_dir[k]
                 mpiv = k.split('_mpi')[1].split('_')[0]
@@ -272,13 +257,13 @@ if __name__ == '__main__':
                 experiment = k.split('_')[-1]
                 # tp = k.split('tp')[1].split('_')[0]
                 if lb == 'interval':
-                    lb = 'LB'
+                    lb = 'LB-'
                 elif lb == 'reportonly':
-                    lb = 'NoLB'
+                    lb = ''
                 if tp == 'tp1':
-                    tp = 'TP'
+                    tp = 'TP-'
                 elif tp == 'tp0':
-                    tp = 'NoTP'
+                    tp = ''
                 approx = gconfig['approx'][approx]
                 # if approx == '2':
                 #     approx = 'AC'
@@ -286,7 +271,11 @@ if __name__ == '__main__':
                 #     approx = 'NoAC'
                 # key = '{}-{}-{}'.format(case, mpiv, lb)
 
-                label = '{}-{}-{}'.format(lb, tp, approx)
+                label = '{}{}{}'.format(lb, tp, approx)
+                if label == '':
+                    label = 'base'
+                if label[-1] == '-':
+                    label = label[:-1]
                 # label = '{}'.format(mpiv)
                 # label = '{}-{}'.format(tp, approx)
                 # color = gconfig['colors']['{}'.format(mpiv)].__next__()
@@ -304,15 +293,7 @@ if __name__ == '__main__':
                 # This is the throughput
                 y = parts * bunches * turns / y
 
-                # Now the reference, 1thread
-                yref = gconfig['reference'][case]['time']
-                partsref = gconfig['reference'][case]['ppb']
-                bunchesref = gconfig['reference'][case]['b']
-                turnsref = gconfig['reference'][case]['turns']
-                yref = partsref * bunchesref * turnsref / yref
-                ompref = gconfig['reference'][case]['omp']
-
-                speedup = y / yref
+                speedup = yref / y
                 x_new = []
                 sp_new = []
                 for i, xi in enumerate(gconfig['x_to_keep']):
@@ -323,51 +304,65 @@ if __name__ == '__main__':
                         sp_new.append(0)
                 x = np.array(x_new)
                 speedup = np.array(sp_new)
-                efficiency = 100 * speedup / (x * omp[0] / ompref)
+                # efficiency = 100 * speedup / (x * omp[0] / ompref)
                 x = x * omp[0]
 
+                # width = .9 * step / (len(x))
+                if label not in avg:
+                    avg[label] = []
+                avg[label].append(speedup)
                 # efficiency = 100 * speedup / x
-                plt.bar(np.arange(len(x)) + pos, speedup, width=0.9*width,
-                        edgecolor='0.', label=None, hatch=gconfig['approx-hatch'][approx],
-                        color=gconfig['colors'][idx//3])
-                xticks.append(label)
-                xtickspos.append(pos)
+                if label in labels:
+                    label = None
+                else:
+                    labels.add(label)
+                plt.bar(pos + idx*width, speedup, width=0.9*width,
+                        edgecolor='0.', label=label, hatch=gconfig['hatches'][idx],
+                        color=gconfig['colors'][idx])
+                # xticks.append(label)
+                # xtickspos.append(pos)
 
-                # ax2.bar(np.arange(len(x)) + pos + width, efficiency, width=0.9*width,
-                #         edgecolor='0.', label=label, hatch=gconfig['hatches'][idx],
-                #         color=colors2[idx])
-                if True or idx != 1:
-                    for i, s, e in zip(np.arange(len(x)) + pos, speedup, efficiency):
-                        ax.annotate('{:.1f}'.format(s), xy=(i, s),
-                                    **gconfig['annotate'])
-                        # ax2.annotate('{:.0f}'.format(e), xy=(i+width, e),
-                        #              **gconfig['annotate'])
-                pos += 1 * width
-            # pos += width * step
+                # if True or idx != 1:
+                #     for i, s in zip(np.arange(len(x)) + pos, speedup):
+                #         ax.annotate('{:.1f}'.format(s), xy=(i, s),
+                #                     **gconfig['annotate'])
+                # pos += width
+            pos += step
 
-            if col == 0:
-                # handles = []
-                # handles.append(mpatches.Patch(label='Speedup', edgecolor='black',
-                #                               facecolor=colors1[0]))
-                # handles.append(mpatches.Patch(label='Efficiency', edgecolor='black',
-                #                               facecolor=colors2[0]))
-
-                # plt.legend(handles=handles, **gconfig['legend'])
-                # plt.legend(**gconfig['legend'])
-                pass
-
-            # ax.tick_params(**gconfig['tick_params'])
-            # ax.tick_params(axis='y', color=colors1[0])
-
-            # ax2.tick_params(**gconfig['tick_params'])
-            # ax2.tick_params(axis='y', color=colors2[0])
-            plt.xticks(**gconfig['ticks'])
-            plt.yticks(gconfig['yticks'], **gconfig['ticks'])
+        # vals = np.mean(avg, axis=0)
+        for idx, key in enumerate(avg.keys()):
+            vals = avg[key]
+            val = np.mean(vals)
+            # xticks.append(x[idx])
+            # xtickspos.append(pos + idx*width)
+            plt.bar(pos + idx*width, val, width=0.9*width,
+                    edgecolor='0.', label=None, hatch=gconfig['hatches'][idx],
+                    color=gconfig['colors'][idx])
+            text = '{:.2f}'.format(val)
+            if idx == 0:
+                text = ''
+            else:
+                text = text[:]
+            ax.annotate(text, xy=(pos + idx*width, 0.01 + val),
+                        rotation='90',
+                        **gconfig['annotate'])
+        pos += step
 
         plt.ylim(gconfig['ylim'])
-        # plt.xlim(0-.8*width, len(xticks)-.7*width)
-        plt.xticks(xtickspos, xticks)
+        handles, labels = ax.get_legend_handles_labels()
+        # labels = (np.array(labels)[[0, 4, 1, 5, 2, 6, 3]]).tolist()
+        # handles = [handles[0], handles[4], handles[1], handles[5], handles[2],
+        #            handles[6], handles[3]]
+        print(labels)
 
+        plt.legend(handles=handles, labels=labels, **gconfig['legend'])
+        plt.xlim(0-1.3*width/2, pos-1.4*width/2)
+        plt.yticks(gconfig['yticks'], **gconfig['ticks'])
+
+        plt.xticks(np.arange(pos) + step/2,
+                   [c.upper() for c in args.cases] + ['AVG'], **gconfig['xticks'])
+
+        ax.tick_params(**gconfig['tick_params'])
         plt.tight_layout()
         plt.subplots_adjust(**gconfig['subplots_adjust'])
         for file in gconfig['outfiles']:

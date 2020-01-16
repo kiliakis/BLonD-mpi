@@ -58,7 +58,7 @@ gconfig = {
     # 'mvapich2': cycle(['xkcd:orange', 'xkcd:rust']),
     # 'mvapich2-NoLB': cycle(['xkcd:apricot']),
     # },
-    'hatches': ['', '', '//', '', 'xx'],
+    'hatches': ['', '', 'xx', '', 'xx'],
     'colors': ['0.3', '0.6', '0.6', '0.9', '0.9'],
     # 'hatches': {
     #     'LB': 'x',
@@ -92,7 +92,7 @@ gconfig = {
 
     # 'exclude': [['v1', 'notcm'], ['v2', 'notcm'], ['v4', 'notcm']],
     'x_name': 'omp',
-    'x_to_keep': [2, 4, 5, 10, 20],
+    'x_to_keep': [2, 5, 10, 20],
     # 'x_to_keep': [8, 16],
     'omp_name': 'n',
     'y_name': 'avg_time(sec)',
@@ -107,7 +107,7 @@ gconfig = {
         # 'x': 0.55,
         'fontweight': 'bold',
     },
-    'figsize': [5, 2.2],
+    'figsize': [5, 2.1],
     'annotate': {
         'fontsize': 9,
         'textcoords': 'data',
@@ -116,15 +116,15 @@ gconfig = {
     },
     'title_annotate': {
         's': 'Workers-Per-Node:',
-        'xytext': (0.05, .973),
-        'xy': (0.05, .973),
+        'xytext': (0.19, .95),
+        'xy': (0.05, .96),
         'fontsize': 10,
         'textcoords': 'axes fraction',
         'va': 'top',
         'ha': 'left'
     },
     'ticks': {'fontsize': 10},
-    'xticks': {'fontsize': 10, 'rotation': '0'},
+    'xticks': {'fontsize': 10, 'rotation': '0', 'fontweight': 'bold'},
     'fontsize': 10,
     'legend': {
         'loc': 'upper right', 'ncol': 5, 'handlelength': 1.5, 'fancybox': True,
@@ -138,7 +138,7 @@ gconfig = {
     },
     'tick_params': {
         'pad': 1, 'top': 0, 'bottom': 0, 'left': 1,
-        'direction': 'inout', 'length': 5, 'width': 1,
+        'direction': 'out', 'length': 3, 'width': 1,
     },
     'fontname': 'DejaVu Sans Mono',
     'ylim': [.5, 1.1],
@@ -175,6 +175,7 @@ lconfig = {
 }
 
 plt.rcParams['font.family'] = gconfig['fontname']
+
 
 
 if __name__ == '__main__':
@@ -238,6 +239,8 @@ if __name__ == '__main__':
                 lb = k.split('lb')[1].split('_')[0]
                 lba = k.split('lba')[1].split('_')[0]
                 approx = k.split('approx')[1].split('_')[0]
+                # workers = k.split('_w')[1].split('_')[0]
+                # nodes = k.split('_N')[1].split('_')[0]
                 if 'tp' in k:
                     tp = '1'
                 else:
@@ -343,7 +346,7 @@ if __name__ == '__main__':
             # xticks.append(x[idx])
             # xtickspos.append(pos + idx*width)
             plt.bar(pos + idx*width, val, width=0.9*width,
-                    edgecolor='0.', label=str(x[idx]), hatch=gconfig['hatches'][idx],
+                    edgecolor='0.', label=str(20//x[idx]), hatch=gconfig['hatches'][idx],
                     color=gconfig['colors'][idx])
             text = '{:.2f}'.format(val)
             if idx == 0:

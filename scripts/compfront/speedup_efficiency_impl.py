@@ -68,7 +68,7 @@ gconfig = {
     #     'NoLB': '',
     # },
     'hatches': ['', '', ''],
-    'colors': ['0.3', '0.6', '0.9'],
+    'colors': ['0.1', '0.5', '0.8'],
     'reference': {
         # 'sps': {'ppb': 4000000, 'b': 72, 'turns': 500, 'w': 1,
         #         'omp': 1, 'time': 1497.8},
@@ -111,7 +111,7 @@ gconfig = {
                 # 'x': 0.55,
                 'fontweight': 'bold',
     },
-    'figsize': [5, 2.2],
+    'figsize': [5, 2.],
     'annotate': {
         'fontsize': 9,
         'textcoords': 'data',
@@ -131,12 +131,12 @@ gconfig = {
     },
     'tick_params': {
         'pad': 1, 'top': 0, 'bottom': 0, 'left': 1,
-        'direction': 'inout', 'length': 5, 'width': 1,
+        'direction': 'out', 'length': 3, 'width': 1,
     },
     'fontname': 'DejaVu Sans Mono',
-    'ylim': [.75, 1.5],
+    'ylim': [.9, 1.4],
     # 'ylim2': [10, 90],
-    'yticks': [.8, 1., 1.2, 1.4],
+    'yticks': [.9, 1., 1.1, 1.2, 1.3, 1.4],
     # 'yticks2': [0, 20, 40, 60, 80, 100],
     'outfiles': ['{}/{}-{}-normtime-{}.pdf',
                  '{}/{}-{}-normtime-{}.jpg']
@@ -176,6 +176,7 @@ if __name__ == '__main__':
         plt.sca(ax)
         plt.title(**gconfig['title'])
         plt.xlabel(gconfig['xlabel'], labelpad=3,
+                   fontweight='bold',
                    fontsize=gconfig['fontsize'])
         plt.ylabel(gconfig['ylabel'], labelpad=3, color='xkcd:black',
                    fontweight='bold',
@@ -295,6 +296,8 @@ if __name__ == '__main__':
                 plt.bar(pos + width * idx, normtime, width=0.9*width,
                         edgecolor='0.', label=label, hatch=gconfig['hatches'][idx],
                         color=gconfig['colors'][idx])
+                # ax.annotate('{:.2f}'.format(normtime[0]), xy=(pos + idx*width, normtime[0]),
+                #         **gconfig['annotate'])
                 # if True or idx != 1:
                 #     for i, s in zip(np.arange(len(x)) + pos + width * col, speedup):
                 #         ax.annotate('{:.1f}'.format(s), xy=(i, s),
@@ -329,7 +332,7 @@ if __name__ == '__main__':
         plt.legend(**gconfig['legend'])
         # plt.legend()
         ax.tick_params(**gconfig['tick_params'])
-        plt.xticks(**gconfig['ticks'])
+        plt.xticks(**gconfig['ticks'], fontweight='bold')
         plt.yticks(gconfig['yticks'], **gconfig['ticks'])
 
         plt.tight_layout()
