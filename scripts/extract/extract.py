@@ -8,15 +8,64 @@ import subprocess
 import argparse
 import glob
 
+'''
+Instructions on how this script works
+
+1) in each report directory (experiment/config/run/report/) there is a report 
+    file each worker (worker-XX.csv).
+2) The average of these files is store in exp/config/run/avg-workers.csv and
+    comm-comp-workers.csv
+3) The std of these files is stored in exp/config/run/avg-workers-std.csv
+4) All these are done in the generate_reports phase (calling report_workers.py)
+5) Then commes the aggregate phase, that reads the avg-workers.csv, avg-workers-std.csv,
+and comm-comp-workers.csv from all runs and generates the: 
+    * exp/config/avg.csv: The average of the averages
+    * exp/config/avg-std.csv: The std of the averages
+    * exp/config/avg-std-std.csv: The std of the stds
+    * exp/config/avg-std-avg.csv: The average of the stds
+    * exp/config/comm-comp.csv: The average of the averages
+    * exp/config/comm-comp-std.csv: The std of the averages
+6) Then there is the collect phase which collects the data for each config
+and stores it into the files:
+    * exp/avg-report.csv: All the avg.csv contents 
+    * exp/avg-std-report.csv: All the avg-std.csv contents
+    * exp/avg-std-avg-report.csv: All the avg-std-avg.csv contents
+    * exp/avg-std-std-report.csv: All the avg-std-std.csv contents
+    * exp/comm-comp-report.csv: All the comm-comp.csv contents
+    * exp/comm-comp-std-report.csv: All the comm-comp-std.csv contents
+'''
 
 this_directory = os.path.dirname(os.path.realpath(__file__)) + '/'
+
+# 1st phase (generate), input
+worker_pattern = 'worker-*.csv'
+
+# 1st phase output, 2nd phase input (aggregate)
+average_worker_fname = 'avg-workers.csv'
+delta_worker_fname = 'delta-workers.csv'
+average_std_worker_fname = 'avg-workers-std.csv'
+comm_comp_worker_fname = 'comm-comp-workers.csv'
+
+# 2nd phase output, 3rd phase input (collect)
 average_fname = 'avg.csv'
 average_std_fname = 'avg-std.csv'
-average_worker_fname = 'avg-workers.csv'
+delta_average_fname = 'delta-avg.csv'
+delta_std_fname = 'delta-std.csv'
+average_std_std_fname = 'avg-std-std.csv'
+average_std_avg_fname = 'avg-std-avg.csv'
 comm_comp_fname = 'comm-comp.csv'
 comm_comp_std_fname = 'comm-comp-std.csv'
-comm_comp_worker_fname = 'comm-comp-workers.csv'
-worker_pattern = 'worker-*.csv'
+
+# 3rd phase output (collect)
+avg_report = 'avg-report.csv'
+avg_std_report = 'avg-std-report.csv'
+delta_report = 'delta-report.csv'
+delta_std_report = 'delta-std-report.csv'
+avg_std_avg_report = 'avg-std-avg-report.csv'
+avg_std_std_report = 'avg-std-std-report.csv'
+comm_comp_report = 'comm-comp-report.csv'
+comm_comp_std_report = 'comm-comp-std-report.csv'
+
 
 parser = argparse.ArgumentParser(description='Generate a csv report from the input raw data.',
                                  usage='python extract.py -i [indir] -o [outfile]')
@@ -42,6 +91,9 @@ parser.add_argument('-k', '--keep', type=int, default=None,
 parser.add_argument('-u', '--update', action='store_true',
                     help='Force update of already calculated reports.')
 
+parser.add_argument('-d', '--delta', action='store_true',
+                    help='Calculate the worker times deltas too.')
+
 
 def generate_reports(input, report_script):
     print('\n--------Generating reports-------\n')
@@ -54,6 +106,7 @@ def generate_reports(input, report_script):
         report_dir = os.path.join(dirs, 'report')
         outfile1 = os.path.join(dirs, comm_comp_worker_fname)
         outfile2 = os.path.join(dirs, average_worker_fname)
+        outfile3 = os.path.join(dirs, delta_worker_fname)
         if (args.update or (not os.path.isfile(outfile1))):
             ps.append(subprocess.Popen(['python', report_script, '-r', 'comm-comp',
                                         '-i', report_dir, '-o', outfile1,
@@ -63,6 +116,12 @@ def generate_reports(input, report_script):
             ps.append(subprocess.Popen(['python', report_script, '-r', 'avg',
                                         '-i', report_dir, '-o', outfile2,
                                         '-p', worker_pattern]))
+
+        if args.delta and (args.update or (not os.path.isfile(outfile3))):
+            ps.append(subprocess.Popen(['python', report_script, '-r', 'delta',
+                                        '-i', report_dir, '-o', outfile3,
+                                        '-p', worker_pattern]))
+
         for p in ps:
             p.wait()
 
@@ -110,21 +169,24 @@ def aggregate_reports(input):
         sdirs = fnmatch.filter(subdirs, date_pattern)
         if len(sdirs) == 0:
             continue
-        files = [os.path.join(dirs, s, comm_comp_worker_fname) for s in sdirs]
         print(dirs)
-        # try:
+
+        files = [os.path.join(dirs, s, comm_comp_worker_fname) for s in sdirs]
         write_avg(files, open(os.path.join(dirs, comm_comp_fname), 'w'),
                   open(os.path.join(dirs, comm_comp_std_fname), 'w'))
-        # except Exception as e:
-        #     print('[Error] Dir ', dirs)
 
         files = [os.path.join(dirs, s, average_worker_fname) for s in sdirs]
-        # try:
         write_avg(files, open(os.path.join(dirs, average_fname), 'w'),
                   open(os.path.join(dirs, average_std_fname), 'w'))
-        # except Exception as e:
-        #     print('[Error] Dir ', dirs)
 
+        files = [os.path.join(dirs, s, average_std_worker_fname) for s in sdirs]
+        write_avg(files, open(os.path.join(dirs, average_std_avg_fname), 'w'),
+                  open(os.path.join(dirs, average_std_std_fname), 'w'))
+
+        if args.delta:
+            files = [os.path.join(dirs, s, delta_worker_fname) for s in sdirs]
+            write_avg(files, open(os.path.join(dirs, delta_average_fname), 'w'),
+                      open(os.path.join(dirs, delta_std_fname), 'w'))
 
 def collect_reports(input, outfile, filename):
     print('\n--------Collecting reports-------\n')
@@ -188,16 +250,24 @@ if __name__ == '__main__':
                 collect_reports(indir, sys.stdout, comm_comp_fname)
             elif args.outfile == 'file':
                 collect_reports(indir,
-                                open(os.path.join(indir, 'avg-std-report.csv'), 'w'),
+                                open(os.path.join(indir, avg_std_report), 'w'),
                                 average_std_fname)
                 collect_reports(indir,
-                                open(os.path.join(indir, 'avg-report.csv'), 'w'),
+                                open(os.path.join(indir, avg_report), 'w'),
                                 average_fname)
                 collect_reports(indir,
-                                open(os.path.join(indir,
-                                                  'comm-comp-report.csv'), 'w'),
+                                open(os.path.join(indir, avg_std_avg_report), 'w'),
+                                average_std_avg_fname)
+                collect_reports(indir,
+                                open(os.path.join(indir, comm_comp_report), 'w'),
                                 comm_comp_fname)
                 collect_reports(indir,
-                                open(os.path.join(indir,
-                                                  'comm-comp-std-report.csv'), 'w'),
+                                open(os.path.join(indir, comm_comp_std_report), 'w'),
                                 comm_comp_std_fname)
+                if args.delta:
+                    collect_reports(indir,
+                                    open(os.path.join(indir, delta_std_report), 'w'),
+                                    delta_std_fname)
+                    collect_reports(indir,
+                                    open(os.path.join(indir, delta_report), 'w'),
+                                    delta_average_fname)

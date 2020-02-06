@@ -16,8 +16,8 @@ parser.add_argument('-p', '--pattern', type=str, default='worker-*.csv',
                     help='The report file names pattern. '
                     ' Default: worker-*.csv')
 
-parser.add_argument('-o', '--outfile', type=argparse.FileType('w'),
-                    default=sys.stdout,
+parser.add_argument('-o', '--outfile', type=str,
+                    default='stdout',
                     help='The file(s) to save the report.'
                     ' Default: Print to the stdout')
 
@@ -26,9 +26,9 @@ parser.add_argument('-i', '--indir', type=str, default='./',
                     ' Default: Use the current working directory.')
 
 
-parser.add_argument('-r', '--report', type=str, choices=['comm-comp', 'avg'],
+parser.add_argument('-r', '--report', type=str, choices=['comm-comp', 'avg', 'delta'],
                     default='comm-comp',
-                    help='Choose from 2 report types: comm-comp or avg.'
+                    help='Choose from 3 report types: comm-comp, avg, delta'
                     ' Default: comm-comp.')
 
 
@@ -66,45 +66,12 @@ def report_comm_comp(indir, files, outfile):
         except:
             pass
 
-    outfile.write(string)
+    if outfile == sys.stdout:
+        print(string)
+    else:
+        with open(outfile, 'w') as f:
+            f.write(string)
 
-
-# def report_avg(indir, files, outfile):
-#     default_funcs = []
-#     default_header = []
-#     acc_data = []
-#     num = 0
-#     for f in files:
-#         data = np.genfromtxt(indir+'/'+f, dtype=str, delimiter='\t')
-#         header, data = data[0], data[1:]
-#         funcs, data = data[:, 0], np.array(data[:, 1:], float)
-#         if len(default_funcs) == 0:
-#             default_funcs = funcs
-#         elif not np.array_equal(default_funcs, funcs):
-#             print('Problem with file: ', indir+'/'+f)
-#             continue
-
-#         if len(default_header) == 0:
-#             default_header = header
-#         elif not np.array_equal(default_header, header):
-#             print('Problem with file: ', indir+'/'+f)
-#             continue
-
-#         if len(acc_data) == 0:
-#             acc_data = data
-#         else:
-#             acc_data += data
-#         num += 1
-#     try:
-#         acc_data = np.around(acc_data/num, 2)
-#     except TypeError as e:
-#         print('[Error] with dir ', indir)
-#         return
-
-#     writer = csv.writer(outfile, delimiter='\t')
-#     writer.writerow(default_header)
-#     for f, r in zip(default_funcs, acc_data):
-#         writer.writerow([f]+list(r))
 
 def report_avg(indir, files, outfile):
     acc_data = []
@@ -133,11 +100,57 @@ def report_avg(indir, files, outfile):
         acc_data_std.append(
             [f] + list(np.around(np.std(data_dic[f], axis=0), 2)))
 
-    writer1 = csv.writer(outfile, delimiter='\t')
-    writer1.writerows(acc_data)
-    # writer2 = csv.writer(outfile.replace('.csv', '-std.csv'), delimiter='\t')
-    # writer2.writerows(acc_data_std)
+    # print(outfile)
+    if outfile == sys.stdout:
+        print(acc_data)
+        print(acc_data_std)
+    else:
+        writer1 = csv.writer(open(outfile, 'w'), delimiter='\t')
+        writer1.writerows(acc_data)
 
+        writer2 = csv.writer(open(outfile.replace('.csv', '-std.csv'), 'w'), delimiter='\t')
+        writer2.writerows(acc_data_std)
+
+
+def report_delta(indir, files, outfile):
+    acc_data = []
+    default_header = []
+    data_dic = {}
+    for f in files:
+        data = np.genfromtxt(indir + '/' + f, dtype=str, delimiter='\t')
+        header, data = data[0], data[1:]
+        funcs, data = data[:, 0], np.array(data[:, 1:], float)
+
+        if len(default_header) == 0:
+            default_header = header
+        elif not np.array_equal(default_header, header):
+            print('Problem with file: ', indir+'/'+f)
+            continue
+
+        for i, f in enumerate(funcs):
+            if f not in data_dic:
+                data_dic[f] = []
+            data_dic[f].append(data[i])
+
+    acc_data = [default_header]
+    # acc_data_std = [default_header]
+    for f, v in data_dic.items():
+        mins = np.min(data_dic[f], axis=0)
+        maxs = np.max(data_dic[f], axis=0)
+        acc_data.append([f] + list(np.around(maxs-mins, 2)))
+        # acc_data_std.append(
+        #     [f] + list(np.around(np.std(data_dic[f], axis=0), 2)))
+
+    # print(outfile)
+    if outfile == sys.stdout:
+        print(acc_data)
+        # print(acc_data_std)
+    else:
+        writer1 = csv.writer(open(outfile, 'w'), delimiter='\t')
+        writer1.writerows(acc_data)
+
+        # writer2 = csv.writer(open(outfile.replace('.csv', '-std.csv'), 'w'), delimiter='\t')
+        # writer2.writerows(acc_data_std)
 
 if __name__ == '__main__':
     args = parser.parse_args()
@@ -152,3 +165,5 @@ if __name__ == '__main__':
         report_comm_comp(indir, files, outfile)
     elif args.report == 'avg':
         report_avg(indir, files, outfile)
+    elif args.report == 'delta':
+        report_delta(indir, files, outfile)

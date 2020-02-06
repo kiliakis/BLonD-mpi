@@ -24,6 +24,8 @@ parser.add_argument('-c', '--cases', type=str, nargs='+',
 parser.add_argument('-k', '--keysuffix', type=str, default='strong',
                     help='A key suffix to use.')
 
+parser.add_argument('-e', '--errorbars', action='store_true',
+                    help='Add errorbars.')
 
 parser.add_argument('-s', '--show', action='store_true',
                     help='Show the plots.')
@@ -81,7 +83,7 @@ gconfig = {
         #         'omp': 20, 'time': 7732.82},
         'sps': {'ppb': 4000000, 'b': 288, 'turns': 5000, 'w': 1,
                 'omp': 20, 'time': 5873.38},
-                # 'omp': 20, 'time': 4295.51},
+        # 'omp': 20, 'time': 4295.51},
 
         # 'lhc': {'ppb': 2000000, 'b': 96, 'turns': 1000, 'w': 1,
         #         'omp': 20, 'time': 103.04},
@@ -126,10 +128,10 @@ gconfig = {
     'ticks': {'fontsize': 10},
     'fontsize': 10,
     'legend': {
-        'loc': 'lower right', 'ncol': 1, 'handlelength': 1.5, 'fancybox': False,
-        'framealpha': .0, 'fontsize': 10, 'labelspacing': 0, 'borderpad': 0.5,
+        'loc': 'upper left', 'ncol': 1, 'handlelength': 1.5, 'fancybox': False,
+        'framealpha': .7, 'fontsize': 10, 'labelspacing': 0, 'borderpad': 0.5,
         'handletextpad': 0.5, 'borderaxespad': 0, 'columnspacing': 0.8,
-        # 'bbox_to_anchor': (0., 1.2)
+        'bbox_to_anchor': (0., 0.85)
     },
     'subplots_adjust': {
         'wspace': 0.0, 'hspace': 0.1, 'top': 0.93
@@ -145,23 +147,25 @@ gconfig = {
     'fontname': 'DejaVu Sans Mono',
 
     # 'ylim': [0, 28],
-    'ylim': [1.6, 32],
+    'ylim': [0, 36],
     'xlim': [1.6, 36],
     # 'yticks': [4, 8, 12, 16, 20, 24],
     # 'yticks': [2, 4, 8, 12, 16, 20, 24, 28, 32],
-    'yticks': [2, 4, 8, 16, 32],
+    'yticks': [4, 8, 12, 16, 20, 24, 28, 32],
     'outfiles': ['{}/{}-{}-speedup-{}.pdf',
                  '{}/{}-{}-speedup-{}.jpg']
 }
 
 
 lconfig = {
+    'errorfile': 'comm-comp-std-report.csv',
+    'datafile': 'comm-comp-report.csv',
     'figures': {
         'strong': {
             'files': [
-                '{}/compfront/{}/lb-tp-approx0-mvapich2-strong-scaling/comm-comp-report.csv',
-                '{}/compfront/{}/lb-tp-approx2-mvapich2-strong-scaling/comm-comp-report.csv',
-                '{}/compfront/{}/lb-tp-approx1-mvapich2-strong-scaling/comm-comp-report.csv',
+                '{}/compfront/{}/lb-tp-approx0-mvapich2-strong-scaling/{}',
+                '{}/compfront/{}/lb-tp-approx2-mvapich2-strong-scaling/{}',
+                '{}/compfront/{}/lb-tp-approx1-mvapich2-strong-scaling/{}',
             ],
             'lines': {
                 'mpi': ['mpich3', 'mvapich2', 'openmpi3'],
@@ -191,13 +195,15 @@ if __name__ == '__main__':
             ax = ax_arr[col]
             # ax2 = ax.twinx()
             plt.sca(ax)
-            ax.set_yscale('log', basey= 2)
-            ax.set_xscale('log', basex= 2)
+            # ax.set_yscale('log', basey=2)
+            ax.set_xscale('log', basex=2)
             plots_dir = {}
+            errors_dir = {}
             for file in figconf['files']:
-                file = file.format(res_dir, case.upper())
+                # file = file.format(res_dir, case.upper())
                 # print(file)
-                data = np.genfromtxt(file, delimiter='\t', dtype=str)
+                data = np.genfromtxt(file.format(res_dir, case.upper(), lconfig['datafile']),
+                                     delimiter='\t', dtype=str)
                 header, data = list(data[0]), data[1:]
                 temp = get_plots(header, data, figconf['lines'],
                                  exclude=figconf.get('exclude', []),
@@ -205,13 +211,20 @@ if __name__ == '__main__':
                 for key in temp.keys():
                     plots_dir['_{}_{}'.format(
                         key, args.keysuffix)] = temp[key].copy()
-                    # if 'tp-' in file:
-                    #     plots_dir['_{}_tp1'.format(key)] = temp[key].copy()
-                    # else:
-                    #     plots_dir['_{}_tp0'.format(key)] = temp[key].copy()
-            # fig = plt.figure(figsize=config['figsize'])
 
-            plt.grid(True, which='major', alpha=0.5, zorder=1)
+                if args.errorbars:
+                    data = np.genfromtxt(file.format(res_dir, case.upper(), lconfig['errorfile']),
+                                         delimiter='\t', dtype=str)
+                    header, data = list(data[0]), data[1:]
+                    temp = get_plots(header, data, figconf['lines'],
+                                     exclude=figconf.get('exclude', []),
+                                     prefix=True)
+                    for key in temp.keys():
+                        errors_dir['_{}_{}'.format(
+                            key, args.keysuffix)] = temp[key].copy()
+
+            plt.grid(True, which='both', axis='y', alpha=0.5)
+            # plt.grid(True, which='minor', alpha=0.5, zorder=1)
             plt.grid(False, which='major', axis='x')
             plt.title('{}'.format(case.upper()), **gconfig['title'])
             if col == 1:
@@ -222,27 +235,11 @@ if __name__ == '__main__':
                 plt.ylabel(gconfig['ylabel'], labelpad=3,
                            fontweight='bold',
                            fontsize=gconfig['fontsize'])
-            # plt.setp(ax.get_yticklabels(), color="xkcd:green")
-
-            # plt.sca(ax2)
-            # if col == 1:
-            #     plt.ylabel(gconfig['ylabel2'], labelpad=3,
-            #                fontweight='bold', color='xkcd:blue',
-            #                fontsize=gconfig['fontsize'])
-            # plt.setp(ax2.get_yticklabels(), color="xkcd:blue")
-            # plt.yticks(gconfig['yticks2'], **gconfig['ticks'])
-            # plt.ylim(gconfig['ylim2'])
-            # plt.sca(ax)
 
             pos = 0
             step = 0.1
             width = 1. / (1*len(plots_dir.keys())+0.4)
 
-            # colors = [cm.Greens(x) for x in np.linspace(0.2, 0.8, len(plots_dir))]
-            # colors1 = [cm.Greens(x)
-            #            for x in np.linspace(0.5, 0.8, len(plots_dir))]
-            # colors2 = [cm.Blues(x)
-            #            for x in np.linspace(0.5, 0.8, len(plots_dir))]
             for idx, k in enumerate(plots_dir.keys()):
                 values = plots_dir[k]
                 mpiv = k.split('_mpi')[1].split('_')[0]
@@ -264,23 +261,8 @@ if __name__ == '__main__':
                 elif tp == '0':
                     tp = 'NoTP'
                 approx = gconfig['approx'][approx]
-                # if approx == '2':
-                #     approx = 'AC'
-                # else:
-                #     approx = 'NoAC'
-                # key = '{}-{}-{}'.format(case, mpiv, lb)
 
-                # label = '{}-{}-{}-{}'.format(lb, tp, approx, experiment)
                 label = '{}'.format(approx)
-                # if label in labels:
-                #     label = None
-                # else:
-                #     labels.add(label)
-                # label = '{}-{}'.format(tp, approx)
-                # color = gconfig['colors']['{}'.format(mpiv)].__next__()
-                # hatch = gconfig['hatches'][lb]
-                # marker = config['markers'][case]
-                # ls = config['ls'][case]
 
                 x = get_values(values, header, gconfig['x_name'])
                 omp = get_values(values, header, gconfig['omp_name'])
@@ -288,10 +270,15 @@ if __name__ == '__main__':
                 parts = get_values(values, header, 'ppb')
                 bunches = get_values(values, header, 'b')
                 turns = get_values(values, header, 't')
+                if args.errorbars:
+                    # yerr is normalized to y
+                    yerr = get_values(errors_dir[k], header, gconfig['y_name'])
+                    yerr = yerr/y
+                else:
+                    yerr = np.zeros(len(y))
 
                 # This is the throughput
                 y = parts * bunches * turns / y
-
                 # Now the reference, 1thread
                 yref = gconfig['reference'][case]['time']
                 partsref = gconfig['reference'][case]['ppb']
@@ -301,27 +288,36 @@ if __name__ == '__main__':
                 ompref = gconfig['reference'][case]['omp']
 
                 speedup = y / yref
+                # yerr = yerr / yref
+
                 x_new = []
                 sp_new = []
+                yerr_new = []
                 for i, xi in enumerate(gconfig['x_to_keep']):
-                    x_new.append(xi)
                     if xi in x:
+                        x_new.append(xi)
                         sp_new.append(speedup[list(x).index(xi)])
-                    else:
-                        sp_new.append(0)
+                        yerr_new.append(yerr[list(x).index(xi)])
+                    # else:
+                    #     sp_new.append(0)
                 x = np.array(x_new)
                 speedup = np.array(sp_new)
-                efficiency = 100 * speedup / (x * omp[0] / ompref)
+                yerr = np.array(yerr_new)
+                # yerr is denormalized again
+                yerr = yerr * speedup
+                # efficiency = 100 * speedup / (x * omp[0] / ompref)
                 x = x * omp[0]
 
-                # efficiency = 100 * speedup / x
-                # plt.bar(np.arange(len(x)) + pos, speedup, width=0.9*width,
-                #         edgecolor='0.', label=label, hatch=gconfig['hatches'][idx],
-                #         color=gconfig['colors'][idx])
-                plt.plot(x//20, speedup,
-                        label=label, marker=gconfig['markers'][idx],
-                        color=gconfig['colors'][idx])
-                print("{}:{}:".format(case, label), speedup)
+                plt.errorbar(x//20, speedup,
+                             label=label, marker=gconfig['markers'][idx],
+                             color=gconfig['colors'][idx],
+                             yerr=yerr,
+                             capsize=2)
+                print("{}:{}:".format(case, label), end='\t')
+                for xi, yi, yeri in zip(x//20, speedup, yerr):
+                    print('N:{:.0f} {:.2f}±{:.2f}'.format(xi, yi, yeri), end=' ')
+                print('')
+                # print("{}:{}:".format(case, label), speedup)
                 pos += 1 * width
             # pos += width * step
             plt.ylim(gconfig['ylim'])
