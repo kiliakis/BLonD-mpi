@@ -115,13 +115,13 @@ gconfig = {
         'ha': 'center'
     },
     'title_annotate': {
-        's': 'Workers-Per-Node:',
-        'xytext': (0.19, .95),
-        'xy': (0.05, .96),
-        'fontsize': 10,
-        'textcoords': 'axes fraction',
-        'va': 'top',
-        'ha': 'left'
+        'label': 'Workers-Per-Node:',
+        # 'xytext': (0.19, .95),
+        # 'xy': (0.05, .96),
+        # 'fontsize': 10,
+        # 'textcoords': 'axes fraction',
+        # 'va': 'top',
+        # 'ha': 'left'
     },
     'ticks': {'fontsize': 10},
     'xticks': {'fontsize': 10, 'rotation': '0', 'fontweight': 'bold'},
@@ -129,7 +129,7 @@ gconfig = {
     'legend': {
         'loc': 'upper right', 'ncol': 5, 'handlelength': 1.5, 'fancybox': True,
         'framealpha': 0., 'fontsize': 10, 'labelspacing': 0, 'borderpad': 0.5,
-        'handletextpad': 0.5, 'borderaxespad': 0, 'columnspacing': 0.8, 
+        'handletextpad': 0.5, 'borderaxespad': 0.1, 'columnspacing': 0.8,
         # 'title': 'Worker-Per-Node',
         # 'bbox_to_anchor': (0, 1.25)
     },
@@ -149,7 +149,7 @@ gconfig = {
     # 'yticks': [0, 2, 4, 6, 8],
     # 'yticks2': [0, 20, 40, 60, 80, 100],
     'outfiles': ['{}/{}-{}-normtime-{}.pdf',
-                 '{}/{}-{}-normtime-{}.jpg']
+                 '{}/{}-{}-normtime-{}.png']
 }
 
 
@@ -175,7 +175,7 @@ lconfig = {
 }
 
 plt.rcParams['font.family'] = gconfig['fontname']
-
+plt.rcParams['text.usetex'] = True
 
 
 if __name__ == '__main__':
@@ -184,8 +184,9 @@ if __name__ == '__main__':
                                sharex=True, sharey=True,
                                figsize=gconfig['figsize'])
         plt.sca(ax)
-        ax.annotate(**gconfig['title_annotate'])
-        plt.title(**gconfig['title'])
+        plt.plot([], [], ls=' ', **gconfig['title_annotate'])
+        # ax.annotate(**gconfig['title_annotate'])
+        # plt.title(**gconfig['title'])
         plt.xlabel(gconfig['xlabel'], labelpad=3,
                    fontsize=gconfig['fontsize'])
         plt.ylabel(gconfig['ylabel'], labelpad=3, color='xkcd:black',

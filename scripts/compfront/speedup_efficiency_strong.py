@@ -130,7 +130,7 @@ gconfig = {
     'legend': {
         'loc': 'upper left', 'ncol': 1, 'handlelength': 1.5, 'fancybox': False,
         'framealpha': .7, 'fontsize': 10, 'labelspacing': 0, 'borderpad': 0.5,
-        'handletextpad': 0.5, 'borderaxespad': 0, 'columnspacing': 0.8,
+        'handletextpad': 0.5, 'borderaxespad': 0.1, 'columnspacing': 0.8,
         'bbox_to_anchor': (0., 0.85)
     },
     'subplots_adjust': {
@@ -153,7 +153,7 @@ gconfig = {
     # 'yticks': [2, 4, 8, 12, 16, 20, 24, 28, 32],
     'yticks': [4, 8, 12, 16, 20, 24, 28, 32],
     'outfiles': ['{}/{}-{}-speedup-{}.pdf',
-                 '{}/{}-{}-speedup-{}.jpg']
+                 '{}/{}-{}-speedup-{}.png']
 }
 
 
@@ -183,6 +183,7 @@ lconfig = {
 
 }
 plt.rcParams['font.family'] = gconfig['fontname']
+plt.rcParams['text.usetex'] = True
 
 if __name__ == '__main__':
     for title, figconf in lconfig['figures'].items():

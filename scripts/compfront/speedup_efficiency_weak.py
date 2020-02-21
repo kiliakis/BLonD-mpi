@@ -114,7 +114,7 @@ gconfig = {
     'legend': {
         'loc': 'lower left', 'ncol': 1, 'handlelength': 1., 'fancybox': True,
         'framealpha': 0., 'fontsize': 10, 'labelspacing': 0, 'borderpad': 0.5,
-        'handletextpad': 0.5, 'borderaxespad': 0, 'columnspacing': 0.8,
+        'handletextpad': 0.5, 'borderaxespad': 0.1, 'columnspacing': 0.8,
         # 'bbox_to_anchor': (0, 1.25)
     },
     'subplots_adjust': {
@@ -135,7 +135,7 @@ gconfig = {
     'yticks': [0, 0.2, 0.4, 0.6, 0.8, 1.0],
     # 'yticks2': [0, 20, 40, 60, 80, 100],
     'outfiles': ['{}/{}-{}-normthroughput-{}.pdf',
-                 '{}/{}-{}-normthroughput-{}.jpg']
+                 '{}/{}-{}-normthroughput-{}.png']
 }
 
 
@@ -165,6 +165,7 @@ lconfig = {
 }
 
 plt.rcParams['font.family'] = gconfig['fontname']
+plt.rcParams['text.usetex'] = True
 
 
 if __name__ == '__main__':

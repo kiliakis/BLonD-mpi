@@ -112,7 +112,7 @@ gconfig = {
     'y_name': 'percent',
     # 'y_err_name': 'std',
     'xlabel': 'Nodes (x20 Cores)',
-    'ylabel': 'Runtime(%)',
+    'ylabel': 'Runtime(\%)',
     'ylabel2': 'Efficiency',
     'title': {
                 # 's': '{}'.format(case.upper()),
@@ -132,9 +132,9 @@ gconfig = {
     'fontsize': 10,
     'legend': {
         'loc': 'upper left', 'ncol': 1, 'handlelength': 1.5, 'fancybox': False,
-        'framealpha': 0, 'fontsize': 10, 'labelspacing': 0, 'borderpad': 0.5,
-        'handletextpad': 0.5, 'borderaxespad': 0, 'columnspacing': 0.8,
-        'bbox_to_anchor': (0., 0.90)
+        'framealpha': 0.8, 'fontsize': 10, 'labelspacing': 0, 'borderpad': 0.5,
+        'handletextpad': 0.5, 'borderaxespad': 0.1, 'columnspacing': 0.8,
+        'bbox_to_anchor': (0., 0.85)
     },
     'subplots_adjust': {
         'wspace': 0.0, 'hspace': 0.1, 'top': 0.93
@@ -156,7 +156,7 @@ gconfig = {
     # 'yticks': [2, 4, 8, 12, 16, 20, 24, 28, 32],
     # 'yticks': [2, 4, 8, 16, 32],
     'outfiles': ['{}/{}-{}-breakdown-{}.pdf',
-                 '{}/{}-{}-speedup-{}.jpg']
+                 '{}/{}-{}-breakdown-{}.png']
 }
 
 
@@ -184,6 +184,7 @@ lconfig = {
 
 }
 plt.rcParams['font.family'] = gconfig['fontname']
+plt.rcParams['text.usetex'] = True
 
 if __name__ == '__main__':
     for title, figconf in lconfig['figures'].items():

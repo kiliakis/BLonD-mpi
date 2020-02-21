@@ -123,7 +123,7 @@ gconfig = {
     'legend': {
         'loc': 'upper left', 'ncol': 3, 'handlelength': 1.5, 'fancybox': True,
         'framealpha': 0., 'fontsize': 10, 'labelspacing': 0, 'borderpad': 0.5,
-        'handletextpad': 0.5, 'borderaxespad': 0, 'columnspacing': 0.8,
+        'handletextpad': 0.5, 'borderaxespad': 0.1, 'columnspacing': 0.8,
         # 'bbox_to_anchor': (0, 1.25)
     },
     'subplots_adjust': {
@@ -139,7 +139,7 @@ gconfig = {
     'yticks': [.9, 1., 1.1, 1.2, 1.3, 1.4],
     # 'yticks2': [0, 20, 40, 60, 80, 100],
     'outfiles': ['{}/{}-{}-normtime-{}.pdf',
-                 '{}/{}-{}-normtime-{}.jpg']
+                 '{}/{}-{}-normtime-{}.png']
 }
 
 
@@ -166,6 +166,7 @@ lconfig = {
 }
 
 plt.rcParams['font.family'] = gconfig['fontname']
+plt.rcParams['text.usetex'] = True
 
 
 if __name__ == '__main__':
@@ -174,10 +175,10 @@ if __name__ == '__main__':
                                sharex=True, sharey=True,
                                figsize=gconfig['figsize'])
         plt.sca(ax)
-        plt.title(**gconfig['title'])
-        plt.xlabel(gconfig['xlabel'], labelpad=3,
-                   fontweight='bold',
-                   fontsize=gconfig['fontsize'])
+        # plt.title(**gconfig['title'])
+        # plt.xlabel(gconfig['xlabel'], labelpad=3,
+        #            fontweight='bold',
+        #            fontsize=gconfig['fontsize'])
         plt.ylabel(gconfig['ylabel'], labelpad=3, color='xkcd:black',
                    fontweight='bold',
                    fontsize=gconfig['fontsize'])
