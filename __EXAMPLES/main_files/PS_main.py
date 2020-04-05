@@ -76,7 +76,7 @@ except:
 
 # Simulation inputs
 
-loaded_program = np.load(os.path.join(inputDir, 'LHC1.npz'))
+loaded_program = np.load(os.path.join(inputDir, 'LHC1.npz'), allow_pickle=True)
 momentumTime = loaded_program['momentumTime'] / 1e3  # s
 momentum = loaded_program['momentum'] * 1e9  # eV/c
 
