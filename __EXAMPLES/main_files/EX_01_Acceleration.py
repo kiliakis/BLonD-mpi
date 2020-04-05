@@ -65,7 +65,7 @@ n_slices = 100
 n_bunches = 1
 n_turns_reduce = 1
 n_iterations = n_turns
-
+seed = 0
 worker.greet()
 if worker.isMaster:
     worker.print_version()
@@ -76,20 +76,19 @@ if worker.isMaster:
 
 args = parse()
 
-n_iterations = args.get('turns', n_iterations)
-n_particles = args.get('particles', n_particles)
-n_bunches = args.get('bunches', n_bunches)
-n_turns_reduce = args.get('reduce', n_turns_reduce)
-if args.get('time', False) is True:
-    timing.mode = 'timing'
-os.environ['OMP_NUM_THREADS'] = str(args.get('omp', '1'))
-seed = args.get('seed')
-approx = args.get('approx')
-withtp = int(args.get('withtp'))
+n_iterations = n_iterations if args['turns'] == None else args['turns']
+n_particles = n_particles if args['particles'] == None else args['particles']
+n_bunches = n_bunches if args['bunches'] == None else args['bunches']
+n_turns_reduce = n_turns_reduce if args['reduce'] == None else args['reduce']
+timing.mode = args['time']
+os.environ['OMP_NUM_THREADS'] = str(args['omp'])
+withtp = args['withtp']
+seed = seed if args['seed'] == None else args['seed']
+approx = args['approx']
 
 worker.initLog(args['log'], args['logdir'])
 worker.initTrace(args['trace'], args['tracefile'])
-worker.taskparallelism(withtp)
+worker.taskparallelism = withtp
 
 mpiprint(args)
 
@@ -177,7 +176,7 @@ for turn in range(n_iterations):
     elif (approx == 2):
         profile.track()
         profile.scale_histo()
-        
+
 
     if (turn in lbturns):
         tcomp_new = timing.get(['comp:'])

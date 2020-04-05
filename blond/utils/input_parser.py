@@ -18,7 +18,7 @@ parser.add_argument('-t', '--turns', type=int,
                     help='Number of simulation turns.')
 
 parser.add_argument('-mtw', '--mtw', type=int,
-                    help='Number of simulation turns.')
+                    help='Number of turns to keep the wake field in memory.')
 
 parser.add_argument('-addload', '--addload', type=float, default=0.0,
                     help='Additional Load for tasks close to the master.')
@@ -28,7 +28,7 @@ parser.add_argument('-beginafter', '--beginafter', type=int,
                     help='Start the approximation after so many turns.')
 
 
-parser.add_argument('-approx', '--approx', type=int, choices=[0, 1, 2],
+parser.add_argument('-approx', '--approx', type=int, choices=[0, 1, 2], default=0,
                     help='Which approximation to use: 0 (No approx), 1 (global reduce), 2 (scale histo).')
 
 parser.add_argument('-withtp', '--withtp', action='store_true',
@@ -66,7 +66,7 @@ parser.add_argument('-monitorfile', '--monitorfile', type=str, default=None,
                     '\nDefault: Descriptive name based on simulation config.')
 
 
-parser.add_argument('-seed', '--seed', type=int, default=None,
+parser.add_argument('-seed', '--seed', type=int, default=0,
                     help='Seed value for the particle distribution generation.'
                     '\nDefault: None')
 

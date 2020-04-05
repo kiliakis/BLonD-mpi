@@ -57,8 +57,10 @@ class Worker:
     def __init__(self):
         self.start_turn = 100
         self.start_interval = 500
+        self.indices = {}
         self.interval = 500
         self.coefficients = {'particles': [0], 'times': [0.]}
+        self.taskparallelism = False
 
         # Global inter-communicator
         self.intercomm = MPI.COMM_WORLD
@@ -105,11 +107,11 @@ class Worker:
 
     @property
     def isFirst(self):
-        return self.intrarank == 0
+        return (self.intrarank == 0) or (self.taskparallelism is False)
 
     @property
     def isLast(self):
-        return self.intrarank == self.intraworkers-1
+        return (self.intrarank == self.intraworkers-1) or (self.taskparallelism is False)
 
     # Define the begin and size numbers in order to split a variable of length size
 

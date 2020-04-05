@@ -76,23 +76,19 @@ bl_target = 1.25e-9  # 4 sigma r.m.s. target bunch length in [ns]
 
 n_turns_reduce = 1
 n_iterations = n_turns
-
+seed = 0
 args = parse()
 
-n_iterations = args.get('turns', n_iterations)
-n_particles = args.get('particles', n_particles)
-n_bunches = args.get('bunches', n_bunches)
-n_turns_reduce = args.get('reduce', n_turns_reduce)
-if args.get('time', False) is True:
-    timing.mode = 'timing'
-os.environ['OMP_NUM_THREADS'] = str(args.get('omp', '1'))
-seed = args.get('seed')
-approx = args.get('approx')
-withtp = int(args.get('withtp'))
+n_iterations = n_iterations if args['turns'] == None else args['turns']
+n_particles = n_particles if args['particles'] == None else args['particles']
+n_bunches = n_bunches if args['bunches'] == None else args['bunches']
+n_turns_reduce = n_turns_reduce if args['reduce'] == None else args['reduce']
+seed = seed if args['seed'] == None else args['seed']
+approx = args['approx']
+timing.mode = args['time']
+os.environ['OMP_NUM_THREADS'] = str(args['omp'])
+withtp = args['withtp']
 
-worker.initLog(args['log'], args['logdir'])
-worker.initTrace(args['trace'], args['tracefile'])
-worker.taskparallelism(withtp)
 
 mpiprint(args)
 # mpiprint({'iterations': n_iterations, 'particles_per_bunch': n_particles,
@@ -105,11 +101,10 @@ mpiprint(args)
 # Simulation setup -------------------------------------------------------------
 mpiprint("Setting up the simulation...")
 mpiprint("")
-wrkDir = r'/afs/cern.ch/work/k/kiliakis/public/helga/'
 
 # Import pre-processed momentum and voltage for the acceleration ramp
 if REAL_RAMP:
-    ps = np.load(wrkDir+r'input/LHC_momentum_programme_6.5TeV.npz')['arr_0']
+    ps = np.load(os.path.join(inputDir,'LHC_momentum_programme_6.5TeV.npz'))['arr_0']
     # ps = np.loadtxt(wrkDir+r'input/LHC_momentum_programme_6.5TeV.dat',
     # unpack=True)
     ps = np.ascontiguousarray(ps)
@@ -138,7 +133,7 @@ LHCnoise = FlatSpectrum(ring, rf, fmin_s0=0.8571, fmax_s0=1.001,
                         initial_amplitude=1.e-5,
                         predistortion='weightfunction')
 LHCnoise.dphi = np.load(
-    wrkDir+r'input/LHCNoise_fmin0.8571_fmax1.001_ampl1e-5_weightfct_6.5TeV.npz')['arr_0']
+    os.path.join(inputDir, 'LHCNoise_fmin0.8571_fmax1.001_ampl1e-5_weightfct_6.5TeV.npz'))['arr_0']
 LHCnoise.dphi = np.ascontiguousarray(LHCnoise.dphi[0:n_turns+1])
 mpiprint("RF phase noise loaded...")
 
@@ -185,7 +180,7 @@ mpiprint("   SL t_i = %.4f t_f = %.4f" % (PL.lhc_t[0], PL.lhc_t[n_turns]))
 # Injecting noise in the cavity, PL on
 
 # Define machine impedance from http://impedance.web.cern.ch/impedance/
-ZTot = np.loadtxt(wrkDir + r'input/Zlong_Allthemachine_450GeV_B1_LHC_inj_450GeV_B1.dat',
+ZTot = np.loadtxt(os.path.join(inputDir, 'Zlong_Allthemachine_450GeV_B1_LHC_inj_450GeV_B1.dat'),
                   skiprows=1)
 ZTable = InputTable(ZTot[:, 0], ZTot[:, 1], ZTot[:, 2])
 indVoltage = InducedVoltageFreq(
@@ -356,10 +351,6 @@ timing.report(total_time=1e3*(end_t-start_t),
               out_file='worker-{}.csv'.format(os.getpid()))
 
 worker.finalize()
-
-
-# if N_t_monitor > 0:
-#     slicesMonitor.close()
 
 
 mpiprint('dE mean: ', np.mean(beam.dE))
