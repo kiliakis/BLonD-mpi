@@ -13,7 +13,6 @@ except ImportError:
     from ..utils import profile_mock as timing
     mpiprof = timing
 
-from ..utils.input_parser import parse
 from ..utils import bmath as bm
 
 worker = None
@@ -56,9 +55,7 @@ class Worker:
     @timing.timeit(key='serial:init')
     @mpiprof.traceit(key='serial:init')
     def __init__(self):
-        args = parse()
         self.indices = {}
-        # self.times = {}
         self.start_turn = 100
         self.start_interval = 500
         self.interval = 500
@@ -82,18 +79,23 @@ class Worker:
         self.hostrank = self.hostcomm.rank
         self.hostworkers = self.hostcomm.size
 
-        self.log = args['log']
-        self.trace = args['trace']
+        self.log = False
+        self.trace = False
 
+    def initLog(self, log, logdir):
+        self.log = log
         if self.log:
-            self.logger = MPILog(rank=self.rank, log_dir=args['logdir'])
+            self.logger = MPILog(rank=self.rank, log_dir=logdir)
         else:
             self.logger = MPILog(rank=self.rank)
             self.logger.disable()
 
+    def initTrace(self, trace, tracefile):
+        self.trace = trace
         if self.trace:
             mpiprof.mode = 'tracing'
-            mpiprof.init(logfile=args['tracefile'])
+            mpiprof.init(logfile=tracefile)
+
 
     def __del__(self):
         # if self.trace:
@@ -104,11 +106,11 @@ class Worker:
         return self.rank == 0
 
     @property
-    def isHostFirst(self):
+    def isFirst(self):
         return self.hostrank == 0
 
     @property
-    def isHostLast(self):
+    def isLast(self):
         return self.hostrank == self.hostworkers-1
 
     # Define the begin and size numbers in order to split a variable of length size

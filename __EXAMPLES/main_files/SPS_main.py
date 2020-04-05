@@ -76,54 +76,35 @@ PL_2ndLoop = 'F_Loop'
 FB_strength = 'present'
 
 # simulation parameters
-seed = 0
-n_macroparticles_pb = int(4e6)  # 4M macroparticles per bunch
+n_particles = int(4e6)  # 4M macroparticles per bunch
 n_bins_rf = 256  # number of slices per RF-bucket
 nFrev = 2  # multiples of f_rev for frequency resolution
 
-N_t = n_turns
-N_t_reduce = 1
-N_t_monitor = 0
-log = False
+n_iterations = n_turns
+n_turns_reduce = 1
 args = parse()
-approx = 0
 
 
-if args.get('turns', None) is not None:
-    N_t = args['turns']
-
-if args.get('particles', None) is not None:
-    n_macroparticles_pb = args['particles']
-
+n_iterations = args.get('turns', n_iterations)
+n_particles = args.get('particles', n_particles)
+n_bunches = args.get('bunches', n_bunches)
+n_turns_reduce = args.get('reduce', n_turns_reduce)
 if args.get('time', False) is True:
     timing.mode = 'timing'
+os.environ['OMP_NUM_THREADS'] = str(args.get('omp', '1'))
+seed = args.get('seed')
+log = args.get('log')
+approx = args.get('approx')
+withtp = int(args.get('withtp'))
 
-if args.get('omp', None) is not None:
-    os.environ['OMP_NUM_THREADS'] = str(args['omp'])
+worker.taskparallelism(withtp)
+mpiprint(args)
 
-if args.get('bunches', None) is not None:
-    n_bunches = args['bunches']
-
-if args.get('reduce', None) is not None:
-    N_t_reduce = args['reduce']
-
-if args.get('monitor', None) is not None:
-    N_t_monitor = args['monitor']
-
-if args.get('seed', None) is not None:
-    seed = args['seed']
-
-if args.get('log', None) is not None:
-    log = args['log']
-
-if args.get('approx', None) is not None:
-    approx = int(args['approx'])
-
-mpiprint({'N_t': N_t, 'n_macroparticles_pb': n_macroparticles_pb,
-          'timing.mode': timing.mode, 'n_bunches': n_bunches,
-          'N_t_reduce': N_t_reduce,
-          'N_t_monitor': N_t_monitor, 'seed': seed, 'log': log,
-          'approx': approx})
+# mpiprint({'n_iterations': n_iterations, 'particles_per_bunch': n_particles,
+#        'timing.mode': timing.mode, 'n_bunches': n_bunches,
+#        'n_turns_reduce': n_turns_reduce,
+#        'seed': seed, 'log': log,
+#        'approx': approx, 'withtp': withtp})
 
 # initialize simulation
 
@@ -156,7 +137,7 @@ if SPS_PHASELOOP is True:
 
 case += '_'+FB_strength+'FBstr'
 
-case += '_seed'+str(seed) + '_'+str(n_macroparticles_pb/1e6)+'Mmppb'
+case += '_seed'+str(seed) + '_'+str(n_particles/1e6)+'Mmppb'
 case += '_'+str(n_bins_rf)+'binRF_' + str(nFrev)+'fRes'
 mpiprint('simulating case: '+case)
 mpiprint('saving in: '+save_folder)
@@ -229,7 +210,7 @@ elif n_rf_systems == 1:
 
 
 # --- PS beam --------------------------------------------------------
-n_macroparticles = n_bunches * n_macroparticles_pb
+n_macroparticles = n_bunches * n_particles
 beam = Beam(ring, n_macroparticles, intensity)
 
 # PS_n_bunches = 1
@@ -252,9 +233,9 @@ cut_right = t_batch_end + profile_margin
 
 # number of rf-buckets of the beam
 # + rf-buckets before the beam + rf-buckets after the beam
-n_slices = n_bins_rf * (bunch_spacing * (n_bunches-1) + 1 +
-                        int(np.round((t_batch_begin - cut_left)/t_rf)) +
-                        int(np.round((cut_right - t_batch_end)/t_rf)))
+n_slices = n_bins_rf * (bunch_spacing * (n_bunches-1) + 1
+                        + int(np.round((t_batch_begin - cut_left)/t_rf))
+                        + int(np.round((cut_right - t_batch_end)/t_rf)))
 
 profile = Profile(beam, CutOptions=CutOptions(cut_left=cut_left,
                                               cut_right=cut_right, n_slices=n_slices))
@@ -459,7 +440,7 @@ mpiprint('Creating SPS bunch from PS bunch')
 
 beginIndex = 0
 endIndex = 0
-PS_beam = Beam(ring, n_macroparticles_pb, 0.0)
+PS_beam = Beam(ring, n_particles, 0.0)
 PS_n_bunches = 1
 for copy in range(n_bunches):
     # create binomial distribution;
@@ -469,7 +450,7 @@ for copy in range(n_bunches):
                                        distribution_exponent=0.7,
                                        emittance=0.35)
 
-    endIndex = beginIndex + n_macroparticles_pb
+    endIndex = beginIndex + n_particles
 
     # now place PS bunch at correct position
     beam.dt[beginIndex:endIndex] \
@@ -496,42 +477,29 @@ FBtime = max(longCavityImpedanceReduction.FB_time,
              shortCavityImpedanceReduction.FB_time)/tRev
 
 
-if N_t_monitor > 0 and worker.isMaster:
-    if args.get('monitorfile', None):
-        filename = args['monitorfile']
-    else:
-        filename = 'profiles/sps-t{}-p{}-b{}-sl{}-r{}-m{}-se{}-w{}'.format(
-            N_t, n_macroparticles_pb, n_bunches, n_slices,
-            N_t_reduce, N_t_monitor, seed, worker.workers)
-    slicesMonitor = SlicesMonitor(filename=filename,
-                                  n_turns=np.ceil(1.0 * N_t / N_t_monitor),
-                                  profile=profile,
-                                  rf=rf_station,
-                                  Nbunches=n_bunches)
 mpiprint("Ready for tracking!\n")
 
 lbturns = []
 if args['loadbalance'] == 'times':
     if args['loadbalancearg'] != 0:
-        intv = N_t // (args['loadbalancearg']+1)
+        intv = n_iterations // (args['loadbalancearg']+1)
     else:
-        intv = N_t // (10 + 1)
-    lbturns = np.arange(worker.start_turn, N_t, intv)[1:]
+        intv = n_iterations // (10 + 1)
+    lbturns = np.arange(worker.start_turn, n_iterations, intv)[1:]
 
 elif args['loadbalance'] == 'interval':
     if args['loadbalancearg'] != 0:
-        lbturns = np.arange(worker.start_turn, N_t, args['loadbalancearg'])
+        lbturns = np.arange(worker.start_turn, n_iterations, args['loadbalancearg'])
     else:
-        lbturns = np.arange(worker.start_turn, N_t, 1000)
+        lbturns = np.arange(worker.start_turn, n_iterations, 1000)
 
 elif args['loadbalance'] == 'dynamic':
     lbturns = [worker.start_turn]
 elif args['loadbalance'] == 'reportonly':
     if args['loadbalancearg'] != 0:
-        lbturns = np.arange(worker.start_turn, N_t, args['loadbalancearg'])
+        lbturns = np.arange(worker.start_turn, n_iterations, args['loadbalancearg'])
     else:
-        lbturns = np.arange(worker.start_turn, N_t, 100)
-
+        lbturns = np.arange(worker.start_turn, n_iterations, 100)
 
 delta = 0
 worker.sync()
@@ -539,8 +507,9 @@ timing.reset()
 start_t = time.time()
 tcomp_old = tcomm_old = tconst_old = tsync_old = 0
 
+
 # for turn in range(ring.n_turns):
-for turn in range(N_t):
+for turn in range(n_iterations):
 
     if ring.n_turns <= 450 and turn % 10 == 0:
         mpiprint('turn: '+str(turn))
@@ -552,7 +521,7 @@ for turn in range(N_t):
         profile.track()
         worker.sync()
         profile.reduce_histo()
-    elif (approx == 1) and (turn % N_t_reduce == 0):
+    elif (approx == 1) and (turn % n_turns_reduce == 0):
         profile.track()
         worker.sync()
         profile.reduce_histo()
@@ -560,19 +529,8 @@ for turn in range(N_t):
         profile.track()
         profile.scale_histo()
 
-    if (N_t_monitor > 0) and (turn % N_t_monitor == 0):
-        beam.statistics()
-        beam.gather_statistics()
-        if worker.isMaster:
-            profile.fwhm_multibunch(n_bunches, bunch_spacing,
-                                    rf_station.t_rf[0, turn],
-                                    bucket_tolerance=1.5,
-                                    shift=0.,
-                                    shiftX=-rf_station.phi_rf[0, turn] / rf_station.omega_rf[0, turn] + delta)
-            slicesMonitor.track(turn)
-
     # applying this voltage is done by tracker if interpolation=True
-    if worker.isHostFirst:
+    if worker.isFirst:
         # reduce impedance, poor man's feedback
         if (turn < 8*int(FBtime)):
             longCavityImpedanceReduction.track()
@@ -580,15 +538,15 @@ for turn in range(N_t):
 
         if (approx == 0) or (approx == 2):
             inducedVoltage.induced_voltage_sum()
-        elif (approx == 1) and (turn % N_t_reduce == 0):
+        elif (approx == 1) and (turn % n_turns_reduce == 0):
             inducedVoltage.induced_voltage_sum()
 
-    if worker.isHostLast:
+    if worker.isLast:
         if SPS_PHASELOOP is True:
             phaseLoop.track()
         tracker.pre_track()
 
-    worker.sync()
+    worker.intraSync()
     worker.sendrecv(inducedVoltage.induced_voltage, tracker.rf_voltage)
 
     tracker.track_only()
@@ -596,6 +554,7 @@ for turn in range(N_t):
     if SPS_PHASELOOP is True:
         if turn % PL_save_turns == 0 and turn > 0:
             with timing.timed_region('serial:binShift') as tr:
+            
                 # present beam position
                 beamPosFromPhase = (phaseLoop.phi_beam - rf_station.phi_rf[0, turn])\
                     / rf_station.omega_rf[0, turn] + t_batch_begin
@@ -603,16 +562,32 @@ for turn in range(N_t):
                 delta = beamPosPrev - beamPosFromPhase
                 beamPosPrev = beamPosFromPhase
 
+                # if SAVE_DATA == True:
+                #     PLdelta[PL_save_counter] = delta
+                #     PL_save_counter += 1
+
                 profile.bin_centers -= delta
                 profile.cut_left -= delta
                 profile.cut_right -= delta
                 profile.edges -= delta
+
+                # profileCoarse.bin_centers -= delta
+                # profileCoarse.cut_left -= delta
+                # profileCoarse.cut_right -= delta
+                # profileCoarse.edges -= delta
 
                 # shift time_offset of phase loop as well, so that it starts at correct
                 # bin_center corresponding to time_offset
                 if phaseLoop.alpha != 0:
                     phaseLoop.time_offset -= delta
 
+                # update plot ranges
+                # if SAVE_DATA == True:
+                #     for it, bunch in enumerate(bunches_to_plot):
+                #         l_bounds[it] = profile.cut_left + profile_margin \
+                #             + t_rf*(bunch*bunch_spacing - margin)
+                #         r_bounds[it] = l_bounds[it] + t_rf*(1 + 2*margin)
+    
     if (turn in lbturns):
         tcomp_new = timing.get(['comp:'])
         tcomm_new = timing.get(['comm:'])
@@ -633,7 +608,6 @@ for turn in range(N_t):
         tconst_old = tconst_new
         tsync_old = tsync_new
 
-
 beam.gather()
 end_t = time.time()
 mpiprint('Total time: ', end_t - start_t)
@@ -643,8 +617,6 @@ timing.report(total_time=1e3*(end_t-start_t),
               out_file='worker-{}.csv'.format(os.getpid()))
 
 worker.finalize()
-if N_t_monitor > 0:
-    slicesMonitor.close()
 
 mpiprint('dE mean: ', np.mean(beam.dE))
 mpiprint('dE std: ', np.std(beam.dE))

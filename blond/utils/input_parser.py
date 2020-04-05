@@ -1,11 +1,6 @@
 import argparse
-import sys
 
 parser = argparse.ArgumentParser(description='BLonD simulation mainfile.')
-
-# parser.add_argument('-w', '--workers', type=int, default=3,
-#                     help='Number of worker processes to spawn.'
-#                     '\nDefault: 3 (3 workers + 1 master)')
 
 parser.add_argument('-p', '--particles', type=int,
                     help='Number of macro-particles.')
@@ -18,7 +13,6 @@ parser.add_argument('-b', '--bunches', type=int,
 
 parser.add_argument('-reduce', '--reduce', type=int,
                     help='Number of turns to reduce.')
-
 
 parser.add_argument('-t', '--turns', type=int,
                     help='Number of simulation turns.')
@@ -34,8 +28,11 @@ parser.add_argument('-beginafter', '--beginafter', type=int,
                     help='Start the approximation after so many turns.')
 
 
-parser.add_argument('-approx', '--approx', type=str, choices=['0', '1', '2'],
+parser.add_argument('-approx', '--approx', type=int, choices=[0, 1, 2],
                     help='Which approximation to use: 0 (No approx), 1 (global reduce), 2 (scale histo).')
+
+parser.add_argument('-withtp', '--withtp', action='store_true',
+                    help='Use task-parallelism.')
 
 
 parser.add_argument('-o', '--omp', type=int, default=1,
@@ -51,7 +48,8 @@ parser.add_argument('-logdir', '--logdir', type=str, default='./logs/',
                     '\nDefault: ./logs.')
 
 
-parser.add_argument('-time', '--time', action='store_true',
+parser.add_argument('-time', '--time', type=str, choices=['disabled', 'timing', 'tracing'],
+                    default='disabled',
                     help='Time the specified regions of interest.'
                     '\nDefault: No timing.')
 
@@ -88,10 +86,6 @@ parser.add_argument('-lb', '--loadbalance', type=str, choices=['off', 'times', '
 parser.add_argument('-lba', '--loadbalancearg', type=int, default=0,
                     help='Additional Load balance argument, used only if lb is times or interval.'
                     '\nDefault: 0 --> 10 times per run or every 1k turns.')
-
-# parser.add_argument('-d', '--debug', action='store_true',
-#                     help='Run workers in debug mode.'
-#                     '\nDefault: No')
 
 
 def parse():
