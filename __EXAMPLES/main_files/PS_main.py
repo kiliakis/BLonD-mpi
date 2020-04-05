@@ -132,12 +132,13 @@ n_turns_memory = args.get('mtw', n_turns_memory)
 timing.mode = args.get('time')
 os.environ['OMP_NUM_THREADS'] = str(args.get('omp', '1'))
 seed = args.get('seed')
-log = args.get('log')
 approx = args.get('approx')
 withtp = int(args.get('withtp'))
 
-
+worker.initLog(args['log'], args['logdir'])
+worker.initTrace(args['trace'], args['tracefile'])
 worker.taskparallelism(withtp)
+
 mpiprint(args)
 
 # mpiprint({'n_iterations': n_iterations, 'particles_per_bunch': n_particles,

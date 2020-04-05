@@ -55,39 +55,37 @@ class Worker:
     @timing.timeit(key='serial:init')
     @mpiprof.traceit(key='serial:init')
     def __init__(self):
-        self.indices = {}
         self.start_turn = 100
         self.start_interval = 500
         self.interval = 500
         self.coefficients = {'particles': [0], 'times': [0.]}
-        self.intracomm = MPI.COMM_WORLD
-        self.rank = self.intracomm.rank
 
-        # self.intercomm = MPI.COMM_WORLD.Split(self.rank == 0, self.rank)
-        # self.intercomm = self.intercomm.Create_intercomm(0, MPI.COMM_WORLD, 1)
+        # Global inter-communicator
+        self.intercomm = MPI.COMM_WORLD
+        self.rank = self.intercomm.rank
+        self.workers = self.intercomm.size
 
-        self.workers = self.intracomm.size
-
+        # Setup TP intracomm
         self.hostname = MPI.Get_processor_name()
         self.hostip = socket.gethostbyname(self.hostname)
 
-        # Create communicator with process on the same host
-        # TODO: very rare, but possibile hash collisions are not handled
+        # Create communicator with processes on the same host
         color = np.dot(np.array(self.hostip.split('.'), int)
                        [1:], [1, 256, 256**2])
-        self.hostcomm = self.intracomm.Split(color, self.rank)
-        self.hostrank = self.hostcomm.rank
-        self.hostworkers = self.hostcomm.size
-
+        tempcomm = self.intercomm.Split(color, self.rank)
+        temprank = tempcomm.rank
+        # Break the hostcomm in neighboring pairs
+        self.intracomm = tempcomm.Split(temprank//2, temprank)
+        self.intraworkers = self.intracomm.size
+        self.intrarank = self.intracomm.rank
+        tempcomm.Free()
         self.log = False
         self.trace = False
+        self.logger = MPILog(rank=self.rank)
 
     def initLog(self, log, logdir):
         self.log = log
-        if self.log:
-            self.logger = MPILog(rank=self.rank, log_dir=logdir)
-        else:
-            self.logger = MPILog(rank=self.rank)
+        if not self.log:
             self.logger.disable()
 
     def initTrace(self, trace, tracefile):
@@ -107,11 +105,11 @@ class Worker:
 
     @property
     def isFirst(self):
-        return self.hostrank == 0
+        return self.intrarank == 0
 
     @property
     def isLast(self):
-        return self.hostrank == self.hostworkers-1
+        return self.intrarank == self.intraworkers-1
 
     # Define the begin and size numbers in order to split a variable of length size
 
@@ -135,19 +133,19 @@ class Worker:
         if self.isMaster:
             counts = np.empty(self.workers, int)
             sendbuf = np.array(len(var), int)
-            self.intracomm.Gather(sendbuf, counts, root=0)
+            self.intercomm.Gather(sendbuf, counts, root=0)
             displs = np.append([0], np.cumsum(counts[:-1]))
             sendbuf = np.copy(var)
             recvbuf = np.resize(var, np.sum(counts))
 
-            self.intracomm.Gatherv(sendbuf,
+            self.intercomm.Gatherv(sendbuf,
                                    [recvbuf, counts, displs, recvbuf.dtype.char], root=0)
             return recvbuf
         else:
             recvbuf = None
             sendbuf = np.array(len(var), int)
-            self.intracomm.Gather(sendbuf, recvbuf, root=0)
-            self.intracomm.Gatherv(var, recvbuf, root=0)
+            self.intercomm.Gather(sendbuf, recvbuf, root=0)
+            self.intercomm.Gatherv(var, recvbuf, root=0)
             return var
 
     @timing.timeit(key='comm:scatter')
@@ -160,14 +158,14 @@ class Worker:
             displs = np.append([0], np.cumsum(counts[:-1]))
             # sendbuf = np.copy(var)
             recvbuf = np.empty(counts[worker.rank], dtype=var.dtype.char)
-            self.intracomm.Scatterv([var, counts, displs, var.dtype.char],
+            self.intercomm.Scatterv([var, counts, displs, var.dtype.char],
                                     recvbuf, root=0)
         else:
             counts = [size // self.workers + 1 if i < size % self.workers
                       else size // self.workers for i in range(self.workers)]
             sendbuf = None
             recvbuf = np.empty(counts[worker.rank], dtype=var.dtype.char)
-            self.intracomm.Scatterv(sendbuf, recvbuf, root=0)
+            self.intercomm.Scatterv(sendbuf, recvbuf, root=0)
 
         return recvbuf
 
@@ -185,21 +183,21 @@ class Worker:
             exit(-1)
 
         if (recvbuf is None) or (sendbuf is recvbuf):
-            self.intracomm.Allreduce(MPI.IN_PLACE, sendbuf, op=op)
+            self.intercomm.Allreduce(MPI.IN_PLACE, sendbuf, op=op)
         else:
-            self.intracomm.Allreduce(sendbuf, recvbuf, op=op)
+            self.intercomm.Allreduce(sendbuf, recvbuf, op=op)
 
     @timing.timeit(key='serial:sync')
     @mpiprof.traceit(key='serial:sync')
     def sync(self):
         self.logger.debug('sync')
-        self.intracomm.Barrier()
+        self.intercomm.Barrier()
 
-    @timing.timeit(key='serial:hostsync')
-    @mpiprof.traceit(key='serial:hostsync')
-    def hostsync(self):
-        self.logger.debug('hostsync')
-        self.hostcomm.Barrier()
+    @timing.timeit(key='serial:intraSync')
+    @mpiprof.traceit(key='serial:intraSync')
+    def intraSync(self):
+        self.logger.debug('intraSync')
+        self.intracomm.Barrier()
 
     @timing.timeit(key='serial:finalize')
     @mpiprof.traceit(key='serial:finalize')
@@ -212,12 +210,12 @@ class Worker:
     @mpiprof.traceit(key='comm:sendrecv')
     def sendrecv(self, sendbuf, recvbuf):
         self.logger.debug('sendrecv')
-        if self.isHostFirst and not self.isHostLast:
-            self.hostcomm.Sendrecv(sendbuf, dest=self.hostworkers-1, sendtag=0,
-                                   recvbuf=recvbuf, source=self.hostworkers-1,
+        if self.isFirst and not self.isLast:
+            self.intracomm.Sendrecv(sendbuf, dest=self.intraworkers-1, sendtag=0,
+                                   recvbuf=recvbuf, source=self.intraworkers-1,
                                    recvtag=1)
-        elif self.isHostLast and not self.isHostFirst:
-            self.hostcomm.Sendrecv(recvbuf, dest=0, sendtag=1,
+        elif self.isLast and not self.isFirst:
+            self.intracomm.Sendrecv(recvbuf, dest=0, sendtag=1,
                                    recvbuf=sendbuf, source=0, recvtag=0)
 
     @timing.timeit(key='comm:redistribute')
@@ -230,11 +228,11 @@ class Worker:
             # If it is the first time the function is called,
             # I need to do something different, I don't have enough data
             # to caluclate the coefficients.
-            if self.hostworkers != 2:
+            if self.intraworkers != 2:
                 exit('Only support two workers per node for now!')
             # we exchange with the neighbour only the time it took us to compute
-            recvbuf = np.empty(2 * self.hostworkers, dtype=float)
-            self.hostcomm.Allgather(
+            recvbuf = np.empty(2 * self.intraworkers, dtype=float)
+            self.intraworkers.Allgather(
                 np.array([beam.n_macroparticles, tcomp]), recvbuf)
             req = None
             # let's say 1% of the particles
@@ -249,7 +247,7 @@ class Worker:
                 buf[0:size] = beam.dE[i:i+size]
                 buf[size:2*size] = beam.dt[i:i+size]
                 buf[2*size:3*size] = beam.id[i:i+size]
-                req = self.hostcomm.Isend(buf, 1-self.hostrank)
+                req = self.intraworkers.Isend(buf, 1-self.intrarank)
                 # Then I need to resize local beam.dt and beam.dE, also
                 # beam.n_macroparticles
                 beam.dE = beam.dE[:beam.n_macroparticles-size]
@@ -257,7 +255,7 @@ class Worker:
                 beam.id = beam.id[:beam.n_macroparticles-size]
                 beam.n_macroparticles -= size
             else:
-                req = self.hostcomm.Irecv(buf, 1-self.hostrank)
+                req = self.intraworkers.Irecv(buf, 1-self.intrarank)
                 req.Wait()
                 # Then I need to resize local beam.dt and beam.dE, also
                 # beam.n_macroparticles
@@ -281,7 +279,7 @@ class Worker:
             tconst += p[1]
             # latency = tcomp / beam.n_macroparticles
             recvbuf = np.empty(3 * self.workers, dtype=float)
-            self.intracomm.Allgather(
+            self.intercomm.Allgather(
                 np.array([latency, tconst, beam.n_macroparticles]), recvbuf)
 
             latencies = recvbuf[::3]
@@ -315,7 +313,7 @@ class Worker:
                     i += t[1]
                     # self.logger.critical(
                     #     '[{}]: Sending {} parts to {}.'.format(self.rank, t[1], t[0]))
-                    reqs.append(self.intracomm.Isend(buf, t[0]))
+                    reqs.append(self.intercomm.Isend(buf, t[0]))
                 # Then I need to resize local beam.dt and beam.dE, also
                 # beam.n_macroparticles
                 beam.dE = beam.dE[:beam.n_macroparticles-tot_to_send]
@@ -335,7 +333,7 @@ class Worker:
                     recvbuf.append(buf)
                     # self.logger.critical(
                     #     '[{}]: Receiving {} parts from {}.'.format(self.rank, t[1], t[0]))
-                    reqs.append(self.intracomm.Irecv(buf, t[0]))
+                    reqs.append(self.intercomm.Irecv(buf, t[0]))
                 for req in reqs:
                     req.Wait()
                 # req[0].Waitall(req)

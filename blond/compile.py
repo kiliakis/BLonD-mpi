@@ -17,7 +17,6 @@
 # source /afs/cern.ch/sw/lcg/contrib/gcc/4.8.1/x86_64-slc6/setup.sh
 # TO GET GCC 4.8.1 64 BIT. IN GENERAL IT IS ADVISED TO USE PYTHON 64 BIT PLUS
 # GCC 64 BIT.
-
 from __future__ import print_function
 import os
 import sys
@@ -28,7 +27,7 @@ import argparse
 path = os.path.realpath(__file__)
 basepath = os.sep.join(path.split(os.sep)[:-1])
 
-parser = argparse.ArgumentParser(description='Run python compile.py to'
+parser = argparse.ArgumentParser(description='Run python setup_cpp.py to'
                                  ' compile the cpp routines needed from BLonD')
 
 parser.add_argument('-p', '--parallel',
@@ -48,23 +47,30 @@ parser.add_argument('-c', '--compiler', type=str, default='g++',
                     help='C++ compiler that will be used to compile the'
                     ' source files. Default: g++')
 
-parser.add_argument('--libs', type=str, default='',
-                    help='Any extra libraries needed to compile')
+parser.add_argument('--with-fftw', action='store_true',
+                    help='Use the FFTs from FFTW3.')
+
+parser.add_argument('--with-fftw-threads', action='store_true',
+                    help='Use the multi-threaded FFTs from FFTW3.')
+
+parser.add_argument('--with-fftw-omp', action='store_true',
+                    help='Use the OMP FFTs from FFTW3.')
+
+parser.add_argument('--with-fftw-lib', type=str,
+                    help='Path to the FFTW3 library (.so, .dll).')
+
+parser.add_argument('--with-fftw-header', type=str,
+                    help='Path to the FFTW3 header files.')
 
 parser.add_argument('--flags', type=str, default='',
                     help='Additional compile flags.')
 
-# If True you can launch with 'OMP_NUM_THREADS=xx python MAIN_FILE.py'
-# where xx is the number of threads that you want to launch
-parallel = False
+parser.add_argument('--libs', type=str, default='',
+                    help='Any extra libraries needed to compile')
 
-# If True, the boost library would be used
-boost = False
-# Path to the boost library if not in your CPATH (recommended to use the
-# latest version)
-boost_path = None
-
+# Additional libs needed to compile the blond library
 libs = []
+
 # EXAMPLE FLAGS: -Ofast -std=c++11 -fopt-info-vec -march=native
 #                -mfma4 -fopenmp -ftree-vectorizer-verbose=1
 cflags = ['-O3', '-ffast-math', '-g', '-std=c++11', '-shared',
@@ -90,22 +96,42 @@ cpp_files = [
 
 if (__name__ == "__main__"):
     args = parser.parse_args()
-    parallel = args.parallel
+    boost_path = None
+    with_fftw = args.with_fftw or args.with_fftw_threads or args.with_fftw_omp or \
+        (args.with_fftw_lib is not None) or (args.with_fftw_header is not None)
     if(args.boost is not None):
-        boost = True
         if(args.boost):
             boost_path = os.path.abspath(args.boost)
         else:
             boost_path = ''
         cflags += ['-I', boost_path, '-DBOOST']
-
     compiler = args.compiler
 
     if (args.libs):
         libs = args.libs.split()
 
-    if (parallel is True):
+    if (args.parallel):
         cflags += ['-fopenmp', '-DPARALLEL', '-D_GLIBCXX_PARALLEL']
+
+    if (args.flags):
+        cflags += args.flags.split()
+
+    if with_fftw:
+        cflags += ['-DUSEFFTW3']
+        if args.with_fftw_lib is not None:
+            libs += ['-L', args.with_fftw_lib]
+        if args.with_fftw_header is not None:
+            cflags += ['-I', args.with_fftw_header]
+        if 'win' in sys.platform:
+            libs += ['-lfftw3-3']
+        else:
+            libs += ['-lfftw3']
+            if args.with_fftw_omp:
+                cflags += ['-DFFTW3PARALLEL']
+                libs += ['-lfftw3_omp']
+            elif args.with_fftw_threads:
+                cflags += ['-DFFTW3PARALLEL']
+                libs += ['-lfftw3_threads']
 
     if ('posix' in os.name):
         cflags += ['-fPIC']
@@ -114,14 +140,21 @@ if (__name__ == "__main__"):
         libname = os.path.join(basepath, 'cpp_routines/libblond.dll')
     else:
         print(
-            'YOU DO NOT HAVE A WINDOWS OR LINUX OPERATING SYSTEM. ABORTING...')
+            'YOU ARE NOT USING A WINDOWS OR LINUX OPERATING SYSTEM. ABORTING...')
         sys.exit(-1)
 
     command = [compiler] + cflags + ['-o', libname] + cpp_files + libs
 
-    print('Enable Multi-threaded code: ', parallel)
-    print('Use of boost: ', boost)
-    print('Boost installation path: ', boost_path)
+    print('Enable Multi-threaded code: ', args.parallel)
+    print('Using boost: ', args.boost is not None)
+    if args.boost is not None:
+        print('Boost installation path: ', boost_path)
+    print('With FFTW3: ', with_fftw)
+    if with_fftw:
+        print('Parallel FFTW3:', args.with_fftw_threads or args.with_fftw_omp)
+    if args.with_fftw_lib or args.with_fftw_header:
+        print('FFTW3 Library path: ', args.with_fftw_lib)
+        print('FFTW3 Headers path: ', args.with_fftw_header)
     print('C++ Compiler: ', compiler)
     print('Compiler flags: ', ' '.join(cflags))
     print('Extra libraries: ', ' '.join(libs))

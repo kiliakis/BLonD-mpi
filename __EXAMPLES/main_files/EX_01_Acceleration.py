@@ -18,10 +18,7 @@ No intensity effects
 # from builtins import range
 import numpy as np
 import os
-import sys
-import matplotlib.pyplot as plt
 import time
-import datetime
 try:
     from pyprof import timing
     from pyprof import mpiprof
@@ -48,7 +45,7 @@ this_directory = os.path.dirname(os.path.realpath(__file__)) + '/'
 # Simulation parameters -------------------------------------------------------
 # Bunch parameters
 N_b = 1e9           # Intensity
-N_p = 1e6         # Macro-particles
+n_particles = 1e6         # Macro-particles
 tau_0 = 0.4e-9          # Initial bunch length, 4 sigma [s]
 
 # Machine and RF parameters
@@ -62,19 +59,12 @@ gamma_t = 55.759505  # Transition gamma
 alpha = 1./gamma_t/gamma_t        # First order mom. comp. factor
 
 # Tracking details
-N_t = 2000           # Number of turns to track
+n_turns = 2000           # Number of turns to track
 dt_plt = 1000         # Time steps between plots
-N_slices = 100
+n_slices = 100
 n_bunches = 1
-workers = 3
-debug = False
-log = None
-report = None
-seed = 1
-N_t_reduce = 1
-N_t_monitor = 0
-approx = 0
-
+n_turns_reduce = 1
+n_iterations = n_turns
 
 worker.greet()
 if worker.isMaster:
@@ -85,49 +75,23 @@ if worker.isMaster:
 # exit()
 
 args = parse()
-if args.get('turns', None) is not None:
-    N_t = args['turns']
 
-if args.get('particles', None) is not None:
-    N_p = args['particles']
-
-if args.get('slices', None) is not None:
-    N_slices = args['slices']
-
+n_iterations = args.get('turns', n_iterations)
+n_particles = args.get('particles', n_particles)
+n_bunches = args.get('bunches', n_bunches)
+n_turns_reduce = args.get('reduce', n_turns_reduce)
 if args.get('time', False) is True:
     timing.mode = 'timing'
+os.environ['OMP_NUM_THREADS'] = str(args.get('omp', '1'))
+seed = args.get('seed')
+approx = args.get('approx')
+withtp = int(args.get('withtp'))
 
-if args.get('trace', False) == True:
-    mpiprof.mode = 'tracing'
+worker.initLog(args['log'], args['logdir'])
+worker.initTrace(args['trace'], args['tracefile'])
+worker.taskparallelism(withtp)
 
-if args.get('omp', None) is not None:
-    os.environ['OMP_NUM_THREADS'] = str(args['omp'])
-
-if args.get('bunches', None) is not None:
-    n_bunches = args['bunches']
-
-if args.get('reduce', None) is not None:
-    N_t_reduce = args['reduce']
-
-if args.get('monitor', None) is not None:
-    N_t_monitor = args['monitor']
-
-if args.get('seed', None) is not None:
-    seed = args['seed']
-
-if args.get('log', None) is not None:
-    log = args['log']
-
-if args.get('approx', None) is not None:
-    approx = int(args['approx'])
-
-mpiprint({'N_t': N_t, 'n_macroparticles': N_p,
-       'N_slices': N_slices,
-       'timing.mode': timing.mode,
-       'n_bunches': n_bunches,
-       'N_t_reduce': N_t_reduce,
-       'N_t_monitor': N_t_monitor, 'seed': seed, 'log': log,  'approx': approx})
-
+mpiprint(args)
 
 
 # Simulation setup ------------------------------------------------------------
@@ -135,10 +99,10 @@ mpiprint("Setting up the simulation...")
 
 
 # Define general parameters
-ring = Ring(C, alpha, np.linspace(p_i, p_f, N_t+1), Proton(), N_t)
+ring = Ring(C, alpha, np.linspace(p_i, p_f, n_turns+1), Proton(), n_turns)
 
 # Define beam and distribution
-beam = Beam(ring, N_p, N_b)
+beam = Beam(ring, n_particles, N_b)
 
 
 # Define RF station parameters and corresponding tracker
@@ -150,29 +114,12 @@ bigaussian(ring, rf, beam, tau_0/4, reinsertion=True, seed=seed)
 
 # Need slices for the Gaussian fit
 # TODO add the gaussian fit
-profile = Profile(beam, CutOptions(n_slices=N_slices))
+profile = Profile(beam, CutOptions(n_slices=n_slices))
 # FitOptions(fit_option='gaussian'))
 
 long_tracker = RingAndRFTracker(rf, beam)
 
 beam.split_random()
-
-if N_t_monitor > 0 and worker.isMaster:
-    if args.get('monitorfile', None):
-        filename = args['monitorfile']
-    else:
-        filename = 'profiles/{}-t{}-p{}-b{}-sl{}-r{}-m{}-se{}-w{}'.format('EX_01_Acceleration',
-                                                                      N_t, N_p,
-                                                                      n_bunches, N_slices,
-                                                                      N_t_reduce,
-                                                                      N_t_monitor,
-                                                                      seed,
-                                                                      worker.workers)
-    slicesMonitor = SlicesMonitor(filename=filename,
-                                  n_turns=np.ceil(1.0 * N_t / N_t_monitor),
-                                  profile=profile,
-                                  rf=rf,
-                                  Nbunches=n_bunches)
 
 
 # Accelerator map
@@ -182,16 +129,16 @@ mpiprint("Map set")
 lbturns = []
 if args['loadbalance'] == 'times':
     if args['loadbalancearg'] != 0:
-        intv = N_t // (args['loadbalancearg']+1)
+        intv = n_iterations // (args['loadbalancearg']+1)
     else:
-        intv = N_t // (10 + 1)
-    lbturns = np.arange(worker.start_turn, N_t, intv)[1:]
+        intv = n_iterations // (10 + 1)
+    lbturns = np.arange(worker.start_turn, n_iterations, intv)[1:]
 
 elif args['loadbalance'] == 'interval':
     if args['loadbalancearg'] != 0:
-        lbturns = np.arange(worker.start_turn, N_t, args['loadbalancearg'])
+        lbturns = np.arange(worker.start_turn, n_iterations, args['loadbalancearg'])
     else:
-        lbturns = np.arange(worker.start_turn, N_t, 1000)
+        lbturns = np.arange(worker.start_turn, n_iterations, 1000)
 
 elif args['loadbalance'] == 'dynamic':
     lbturns = [worker.start_turn]
@@ -204,7 +151,7 @@ start_t = time.time()
 tcomp_old = tcomm_old = tconst_old = tsync_old = 0
 
 
-for turn in range(N_t):
+for turn in range(n_iterations):
 
     # Plot has to be done before tracking (at least for cases with separatrix)
     if (turn % dt_plt) == 0:
@@ -224,20 +171,13 @@ for turn in range(N_t):
     if (approx == 0):
         profile.track()
         profile.reduce_histo()
-    elif (approx == 1) and (turn % N_t_reduce == 0):
+    elif (approx == 1) and (turn % n_turns_reduce == 0):
         profile.track()
         profile.reduce_histo()
     elif (approx == 2):
         profile.track()
         profile.scale_histo()
-
-    if (N_t_monitor > 0) and (turn % N_t_monitor == 0):
-        beam.losses_separatrix(ring, rf)
-        beam.statistics()
-        beam.gather_statistics()
-        if worker.isMaster:
-            profile.fwhm()
-            slicesMonitor.track(turn)
+        
 
     if (turn in lbturns):
         tcomp_new = timing.get(['comp:'])
@@ -265,8 +205,6 @@ timing.report(total_time=1e3*(end_t-start_t),
               out_dir=args['timedir'],
               out_file='worker-{}.csv'.format(os.getpid()))
 worker.finalize()
-if N_t_monitor > 0:
-    slicesMonitor.close()
 
 mpiprint('dE mean: ', np.mean(beam.dE))
 mpiprint('dE std: ', np.std(beam.dE))
