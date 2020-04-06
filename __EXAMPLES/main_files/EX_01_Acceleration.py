@@ -125,29 +125,11 @@ beam.split_random()
 # map_ = [long_tracker, profile]
 mpiprint("Map set")
 
-lbturns = []
-if args['loadbalance'] == 'times':
-    if args['loadbalancearg'] != 0:
-        intv = n_iterations // (args['loadbalancearg']+1)
-    else:
-        intv = n_iterations // (10 + 1)
-    lbturns = np.arange(worker.start_turn, n_iterations, intv)[1:]
-
-elif args['loadbalance'] == 'interval':
-    if args['loadbalancearg'] != 0:
-        lbturns = np.arange(worker.start_turn, n_iterations, args['loadbalancearg'])
-    else:
-        lbturns = np.arange(worker.start_turn, n_iterations, 1000)
-
-elif args['loadbalance'] == 'dynamic':
-    lbturns = [worker.start_turn]
-    # print('Warning: Dynamic load balance policy not supported.')
+worker.initDLB(args['loadbalance'], args['loadbalancearg'], n_iterations)
 
 worker.sync()
 timing.reset()
 start_t = time.time()
-# mpiprint(datetime.datetime.now().time())
-tcomp_old = tcomm_old = tconst_old = tsync_old = 0
 
 
 for turn in range(n_iterations):
@@ -177,24 +159,7 @@ for turn in range(n_iterations):
         profile.track()
         profile.scale_histo()
 
-
-    if (turn in lbturns):
-        tcomp_new = timing.get(['comp:'])
-        tcomm_new = timing.get(['comm:'])
-        tconst_new = timing.get(['serial:'], ['serial:sync'])
-        tsync_new = 0
-        # intv = worker.redistribute(turn, beam, tcomp=tcomp_new-tcomp_old,
-        #                            tconst=(tconst_new-tconst_old) + (tcomm_new - tcomm_old))
-        # if args['loadbalance'] == 'dynamic':
-        #     lbturns[0] += intv
-        worker.report(turn, beam, tcomp=tcomp_new-tcomp_old,
-                      tcomm=tcomm_new-tcomm_old,
-                      tconst=tconst_new-tconst_old,
-                      tsync=tsync_new-tsync_old)
-        tcomp_old = tcomp_new
-        tcomm_old = tcomm_new
-        tconst_old = tconst_new
-        tsync_old = tsync_new
+    worker.DLB(turn, beam)
 
 
 beam.gather()
@@ -202,7 +167,7 @@ end_t = time.time()
 
 timing.report(total_time=1e3*(end_t-start_t),
               out_dir=args['timedir'],
-              out_file='worker-{}.csv'.format(os.getpid()))
+              out_file='worker-{}.csv'.format(worker.rank))
 worker.finalize()
 
 mpiprint('dE mean: ', np.mean(beam.dE))

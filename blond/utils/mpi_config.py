@@ -96,7 +96,6 @@ class Worker:
             mpiprof.mode = 'tracing'
             mpiprof.init(logfile=tracefile)
 
-
     def __del__(self):
         # if self.trace:
         mpiprof.finalize()
@@ -214,11 +213,11 @@ class Worker:
         self.logger.debug('sendrecv')
         if self.isFirst and not self.isLast:
             self.intracomm.Sendrecv(sendbuf, dest=self.intraworkers-1, sendtag=0,
-                                   recvbuf=recvbuf, source=self.intraworkers-1,
-                                   recvtag=1)
+                                    recvbuf=recvbuf, source=self.intraworkers-1,
+                                    recvtag=1)
         elif self.isLast and not self.isFirst:
             self.intracomm.Sendrecv(recvbuf, dest=0, sendtag=1,
-                                   recvbuf=sendbuf, source=0, recvtag=0)
+                                    recvbuf=sendbuf, source=0, recvtag=0)
 
     @timing.timeit(key='comm:redistribute')
     @mpiprof.traceit(key='comm:redistribute')
@@ -389,6 +388,57 @@ class Worker:
 
     def timer_reset(self, phase):
         self.times[phase] = {'start': MPI.Wtime(), 'total': 0.}
+
+    def initDLB(self, lb_type, lb_arg, n_iter):
+        self.lb_turns = []
+        self.lb_type = lb_type
+        self.lb_arg = lb_arg
+        if lb_type == 'times':
+            if lb_arg != 0:
+                intv = max(n_iter // (lb_arg+1), 1)
+            else:
+                intv = max(n_iter // (10 + 1), 1)
+            self.lb_turns = np.arange(0, n_iter, intv)[1:]
+
+        elif lb_type == 'interval':
+            if lb_arg != 0:
+                self.lb_turns = np.arange(0, n_iter, lb_arg)[1:]
+            else:
+                self.lb_turns = np.arange(0, n_iter, 1000)[1:]
+        elif lb_type == 'dynamic':
+            self.lb_turns = [self.start_turn]
+        elif lb_type == 'reportonly':
+            if lb_arg != 0:
+                self.lb_turns = np.arange(0, n_iter, lb_arg)
+            else:
+                self.lb_turns = np.arange(0, n_iter, 100)
+        self.dlb_times = {'tcomp': 0, 'tcomm': 0,
+                          'tconst': 0, 'tsync': 0}
+        return self.lb_turns
+
+    def DLB(self, turn, beam):
+        if turn not in self.lb_turns:
+            return
+        tcomp_new = timing.get(['comp:'])
+        tcomm_new = timing.get(['comm:'])
+        tconst_new = timing.get(['serial:'], exclude_lst=[
+                                'serial:sync', 'serial:intraSync'])
+        tsync_new = timing.get(['serial:sync', 'serial:intraSync'])
+        if self.lb_type != 'reportonly':
+            intv = self.redistribute(turn, beam,
+                                     tcomp=tcomp_new-self.dlb_times['tcomp'],
+                                     tconst=((tconst_new-self.dlb_times['tconst'])
+                                             + (tcomm_new - self.dlb_times['tcomm'])))
+        if self.lb_type == 'dynamic':
+            self.lb_turns[0] += intv
+        self.report(turn, beam, tcomp=tcomp_new-self.dlb_times['tcomp'],
+                    tcomm=tcomm_new-self.dlb_times['tcomm'],
+                    tconst=tconst_new-self.dlb_times['tconst'],
+                    tsync=tsync_new-self.dlb_times['tsync'])
+        self.dlb_times['tcomp'] = tcomp_new
+        self.dlb_times['tcomm'] = tcomm_new
+        self.dlb_times['tconst'] = tconst_new
+        self.dlb_times['tsync'] = tsync_new
 
 
 def calc_transactions(dpi, cutoff):

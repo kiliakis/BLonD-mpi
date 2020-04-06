@@ -8,8 +8,6 @@
 import os
 import time
 import numpy as np
-import matplotlib as mpl
-mpl.use('Agg')
 try:
     from pyprof import timing
     from pyprof import mpiprof
@@ -90,12 +88,11 @@ os.environ['OMP_NUM_THREADS'] = str(args['omp'])
 withtp = args['withtp']
 
 
+worker.initLog(args['log'], args['logdir'])
+worker.initTrace(args['trace'], args['tracefile'])
+worker.taskparallelism = withtp
+
 mpiprint(args)
-# mpiprint({'iterations': n_iterations, 'particles_per_bunch': n_particles,
-#           'timing.mode': timing.mode, 'n_bunches': n_bunches,
-#           'n_turns_reduce': n_turns_reduce,
-#           'seed': seed, 'log': args['log'], 'trace': args['trace'], 'approx': approx,
-#           'withtp': withtp})
 
 
 # Simulation setup -------------------------------------------------------------
@@ -214,78 +211,16 @@ beam.split_random()
 mpiprint("Statistics set...")
 
 
-# if N_t_monitor > 0 and worker.isMaster:
-#     if args.get('monitorfile', None):
-#         filename = args['monitorfile']
-#     else:
-#         filename = 'profiles/LHC-v0-t{}-p{}-b{}-sl{}-r{}-m{}-se{}-w{}'.format(
-#             n_turns, n_particles, n_bunches, n_slices, n_turns_reduce, N_t_monitor, seed, worker.workers)
-#     slicesMonitor = SlicesMonitor(filename=filename,
-#                                   n_turns=np.ceil(1.0 * n_turns / N_t_monitor),
-#                                   profile=profile,
-#                                   rf=rf,
-#                                   Nbunches=n_bunches)
-
 mpiprint("Map set")
 
 
-lbturns = []
-if args['loadbalance'] == 'times':
-    if args['loadbalancearg'] != 0:
-        intv = n_iterations // (args['loadbalancearg']+1)
-    else:
-        intv = n_iterations // (10 + 1)
-    lbturns = np.arange(worker.start_turn, n_iterations, intv)[1:]
-
-elif args['loadbalance'] == 'interval':
-    if args['loadbalancearg'] != 0:
-        lbturns = np.arange(worker.start_turn, n_iterations, args['loadbalancearg'])
-    else:
-        lbturns = np.arange(worker.start_turn, n_iterations, 1000)
-
-elif args['loadbalance'] == 'dynamic':
-    lbturns = [worker.start_turn]
-elif args['loadbalance'] == 'reportonly':
-    if args['loadbalancearg'] != 0:
-        lbturns = np.arange(worker.start_turn, n_iterations, args['loadbalancearg'])
-    else:
-        lbturns = np.arange(worker.start_turn, n_iterations, 100)
-
+worker.initDLB(args['loadbalance'], args['loadbalancearg'], n_iterations)
 
 worker.sync()
 timing.reset()
 start_t = time.time()
-tcomp_old = tcomm_old = tconst_old = tsync_old = 0
 
 for turn in range(n_iterations):
-    # Plots and outputting
-    # if MONITORING and (i % dt_plt) == 0:
-    # if (i % dt_plt) == 0:
-    #     mpiprint("Outputting at time step %d, tracking time %.4e s..." % (i, t0))
-    #     mpiprint("RF tracker counter is %d" % rf.counter[0])
-    #     mpiprint("   Beam momentum %0.6e eV" % beam.momentum)
-    #     mpiprint("   Beam energy %.6e eV" % beam.energy)
-    #     mpiprint("   Design RF revolution frequency %.10e Hz" %
-    #           rf.omega_rf_d[0, i])
-    #     mpiprint("   RF revolution frequency %.10e Hz" % rf.omega_rf[0, i])
-    #     mpiprint("   RF phase %.4f rad" % rf.phi_rf[0, i])
-    #     mpiprint("   Beam phase %.4f rad" % PL.phi_beam)
-    #     mpiprint("   Phase noise %.4f rad" % (noiseFB.x*LHCnoise.dphi[i]))
-    #     mpiprint("   PL phase error %.4f rad" % PL.RFnoise.dphi[i])
-    #     mpiprint("   Synchronous phase %.4f rad" % rf.phi_s[i])
-    #     mpiprint("   PL phase correction %.4f rad" % PL.dphi)
-    #     mpiprint("   SL recursion variable %.4e" % PL.lhc_y)
-    #     mpiprint("   Mean bunch position %.4e s" % (beam.mean_dt))
-    #     mpiprint("   Four-times r.m.s. bunch length %.4e s" %
-    #           (4.*beam.sigma_dt))
-    #     mpiprint("   FWHM bunch length %.4e s" % noiseFB.bl_meas)
-    #     mpiprint("")
-    #     sys.stdout.flush()
-    # Remove lost particles to obtain a correct r.m.s. value
-    # if (i % 1000) == 0:  # reduce computational costs
-    #     master.multi_gather({'dt': beam.dt, 'dE': beam.dE})
-    #     beam.losses_separatrix(ring, rf)
-
     # After the first 2/3 of the ramp, regulate down the bunch length
     if turn == 9042249:
         noiseFB.bl_targ = 1.1e-9
@@ -303,13 +238,6 @@ for turn in range(n_iterations):
         profile.track()
         profile.scale_histo()
 
-    # if (approx == 0) or (approx == 2):
-    #     totVoltage.induced_voltage_sum()
-    # elif (approx == 1) and (turn % n_turns_reduce == 0):
-    #     totVoltage.induced_voltage_sum()
-
-    # tracker.track()
-
     if worker.isFirst:
         if (approx == 0) or (approx == 2):
             totVoltage.induced_voltage_sum()
@@ -323,32 +251,14 @@ for turn in range(n_iterations):
 
     tracker.track_only()
 
-    if (turn in lbturns):
-        tcomp_new = timing.get(['comp:'])
-        tcomm_new = timing.get(['comm:'])
-        tconst_new = timing.get(['serial:'], ['serial:sync'])
-        tsync_new = timing.get(['serial:sync'])
-        if args['loadbalance'] != 'reportonly':
-            intv = worker.redistribute(turn, beam, tcomp=tcomp_new-tcomp_old,
-                                       # tconst=(tconst_new-tconst_old))
-                                       tconst=(tconst_new-tconst_old) + (tcomm_new - tcomm_old))
-        if args['loadbalance'] == 'dynamic':
-            lbturns[0] += intv
-        worker.report(turn, beam, tcomp=tcomp_new-tcomp_old,
-                      tcomm=tcomm_new-tcomm_old,
-                      tconst=tconst_new-tconst_old,
-                      tsync=tsync_new-tsync_old)
-        tcomp_old = tcomp_new
-        tcomm_old = tcomm_new
-        tconst_old = tconst_new
-        tsync_old = tsync_new
+    worker.DLB(turn, beam)
 
 beam.gather()
 end_t = time.time()
 
 timing.report(total_time=1e3*(end_t-start_t),
               out_dir=args['timedir'],
-              out_file='worker-{}.csv'.format(os.getpid()))
+              out_file='worker-{}.csv'.format(worker.rank))
 
 worker.finalize()
 

@@ -2,12 +2,11 @@
 """
 Created on Thu Mar 22 16:11:42 2018
 
-@author: schwarz
+@author: schwarz, kiliakis
 """
 
 import numpy as np
 import os
-import h5py
 try:
     from pyprof import timing
     from pyprof import mpiprof
@@ -103,11 +102,6 @@ worker.taskparallelism = withtp
 
 mpiprint(args)
 
-# mpiprint({'n_iterations': n_iterations, 'particles_per_bunch': n_particles,
-#        'timing.mode': timing.mode, 'n_bunches': n_bunches,
-#        'n_turns_reduce': n_turns_reduce,
-#        'seed': seed, 'log': log,
-#        'approx': approx, 'withtp': withtp})
 
 # initialize simulation
 
@@ -255,47 +249,27 @@ frequency_step = nFrev*ring.f_rev[0]
 if SPS_IMPEDANCE == True:
 
     if impedance_model_str == 'present':
-
         number_vvsa = 28
-
         number_vvsb = 36
-
         shield_vvsa = False
-
         shield_vvsb = False
-
         HOM_630_factor = 1
-
         UPP_factor = 25/25
-
         new_MKE = True
-
         BPH_shield = False
-
         BPH_factor = 1
-
     elif impedance_model_str == 'future':
-
         number_vvsa = 28
-
         number_vvsb = 36
-
         shield_vvsa = False
-
         shield_vvsb = False
-
         HOM_630_factor = 1/3
-
         UPP_factor = 10/25
-
         new_MKE = True
-
         BPH_shield = False
-
         BPH_factor = 0
 
     # The main 200MHz impedance is effectively 0.0
-
     impedance_scenario = scenario(MODEL=impedance_model_str,
                                   Flange_VVSA_R_factor=number_vvsa/31,
                                   Flange_VVSB_R_factor=number_vvsb/33,
@@ -482,34 +456,12 @@ FBtime = max(longCavityImpedanceReduction.FB_time,
 
 mpiprint("Ready for tracking!\n")
 
-lbturns = []
-if args['loadbalance'] == 'times':
-    if args['loadbalancearg'] != 0:
-        intv = n_iterations // (args['loadbalancearg']+1)
-    else:
-        intv = n_iterations // (10 + 1)
-    lbturns = np.arange(worker.start_turn, n_iterations, intv)[1:]
-
-elif args['loadbalance'] == 'interval':
-    if args['loadbalancearg'] != 0:
-        lbturns = np.arange(worker.start_turn, n_iterations, args['loadbalancearg'])
-    else:
-        lbturns = np.arange(worker.start_turn, n_iterations, 1000)
-
-elif args['loadbalance'] == 'dynamic':
-    lbturns = [worker.start_turn]
-elif args['loadbalance'] == 'reportonly':
-    if args['loadbalancearg'] != 0:
-        lbturns = np.arange(worker.start_turn, n_iterations, args['loadbalancearg'])
-    else:
-        lbturns = np.arange(worker.start_turn, n_iterations, 100)
+worker.initDLB(args['loadbalance'], args['loadbalancearg'], n_iterations)
 
 delta = 0
 worker.sync()
 timing.reset()
 start_t = time.time()
-tcomp_old = tcomm_old = tconst_old = tsync_old = 0
-
 
 # for turn in range(ring.n_turns):
 for turn in range(n_iterations):
@@ -565,51 +517,19 @@ for turn in range(n_iterations):
                 delta = beamPosPrev - beamPosFromPhase
                 beamPosPrev = beamPosFromPhase
 
-                # if SAVE_DATA == True:
-                #     PLdelta[PL_save_counter] = delta
-                #     PL_save_counter += 1
-
                 profile.bin_centers -= delta
                 profile.cut_left -= delta
                 profile.cut_right -= delta
                 profile.edges -= delta
-
-                # profileCoarse.bin_centers -= delta
-                # profileCoarse.cut_left -= delta
-                # profileCoarse.cut_right -= delta
-                # profileCoarse.edges -= delta
 
                 # shift time_offset of phase loop as well, so that it starts at correct
                 # bin_center corresponding to time_offset
                 if phaseLoop.alpha != 0:
                     phaseLoop.time_offset -= delta
 
-                # update plot ranges
-                # if SAVE_DATA == True:
-                #     for it, bunch in enumerate(bunches_to_plot):
-                #         l_bounds[it] = profile.cut_left + profile_margin \
-                #             + t_rf*(bunch*bunch_spacing - margin)
-                #         r_bounds[it] = l_bounds[it] + t_rf*(1 + 2*margin)
     
-    if (turn in lbturns):
-        tcomp_new = timing.get(['comp:'])
-        tcomm_new = timing.get(['comm:'])
-        tconst_new = timing.get(['serial:'], ['serial:sync'])
-        tsync_new = timing.get(['serial:sync'])
-        if args['loadbalance'] != 'reportonly':
-            intv = worker.redistribute(turn, beam, tcomp=tcomp_new-tcomp_old,
-                                       # tconst=(tconst_new-tconst_old))
-                                       tconst=(tconst_new-tconst_old) + (tcomm_new - tcomm_old))
-        if args['loadbalance'] == 'dynamic':
-            lbturns[0] += intv
-        worker.report(turn, beam, tcomp=tcomp_new-tcomp_old,
-                      tcomm=tcomm_new-tcomm_old,
-                      tconst=tconst_new-tconst_old,
-                      tsync=tsync_new-tsync_old)
-        tcomp_old = tcomp_new
-        tcomm_old = tcomm_new
-        tconst_old = tconst_new
-        tsync_old = tsync_new
+    worker.DLB(turn, beam)
+
 
 beam.gather()
 end_t = time.time()
@@ -617,7 +537,7 @@ mpiprint('Total time: ', end_t - start_t)
 
 timing.report(total_time=1e3*(end_t-start_t),
               out_dir=args['timedir'],
-              out_file='worker-{}.csv'.format(os.getpid()))
+              out_file='worker-{}.csv'.format(worker.rank))
 
 worker.finalize()
 
