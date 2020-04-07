@@ -17,7 +17,7 @@ parser = argparse.ArgumentParser(description='Generate the figure of the MPI lib
 parser.add_argument('-i', '--inputdir', type=str, default=os.path.join(project_dir, 'results'),
                     help='The directory with the results.')
 
-parser.add_argument('-c', '--cases', type=str, nargs='+', default=['lhc','sps','ps'],
+parser.add_argument('-c', '--cases', type=str, nargs='+', default=['lhc', 'sps', 'ps'],
                     choices=['lhc', 'sps', 'ps', 'ex01'],
                     help='The test-case to plot.')
 
@@ -33,18 +33,6 @@ if not os.path.exists(images_dir):
     os.makedirs(images_dir)
 
 gconfig = {
-    'markers': {
-        'ex01': 'd',
-                'lhc': 'o',
-                'sps': 's',
-                'ps': 'x'
-    },
-    'ls': {
-        'ex01': '-:',
-                'lhc': '-',
-                'sps': ':',
-                'ps': '--'
-    },
     'approx': {
         '0': 'exact',
         '1': 'SMD',
@@ -58,7 +46,6 @@ gconfig = {
     'y_name': 'avg_time(sec)',
     'xlabel': '',
     'ylabel': 'Norm. Runtime',
-    'ylabel2': 'Efficiency',
     'title': {
                 's': '',
                 'fontsize': 10,
@@ -91,29 +78,21 @@ gconfig = {
     'fontname': 'DejaVu Sans Mono',
     'ylim': [.9, 1.4],
     'yticks': [.9, 1., 1.1, 1.2, 1.3, 1.4],
-    'outfiles': ['{}/{}-{}.png']
-}
-
-
-lconfig = {
-    'figures': {
-        'plot': {
-            'files': [
-                '{}/mpi/{}/approx0-mvapich2-impl/comm-comp-report.csv',
-                '{}/mpi/{}/approx0-mpich3-impl/comm-comp-report.csv',
-                '{}/mpi/{}/approx0-openmpi3-impl/comm-comp-report.csv',
-            ],
-            'lines': {
-                'mpi': ['mpich3', 'mvapich2', 'openmpi3'],
-                'lb': ['interval', 'reportonly'],
-                'approx': ['0', '1', '2'],
-                'lba': ['500'],
-                'b': ['96', '48', '72', '21'],
-                't': ['5000'],
-                'type': ['total'],
-            }
-        },
-    },
+    'outfiles': ['{}/{}-{}.png'],
+    'files': [
+        '{}/mpi/{}/approx0-mvapich2-impl/comm-comp-report.csv',
+        '{}/mpi/{}/approx0-mpich3-impl/comm-comp-report.csv',
+        '{}/mpi/{}/approx0-openmpi3-impl/comm-comp-report.csv',
+    ],
+    'lines': {
+        'mpi': ['mpich3', 'mvapich2', 'openmpi3'],
+        'lb': ['interval', 'reportonly'],
+        'approx': ['0', '1', '2'],
+        'lba': ['500'],
+        'b': ['96', '48', '72', '21'],
+        't': ['5000'],
+        'type': ['total'],
+    }
 
 }
 
@@ -122,147 +101,148 @@ plt.rcParams['font.family'] = gconfig['fontname']
 
 
 if __name__ == '__main__':
-    for title, figconf in lconfig['figures'].items():
-        fig, ax = plt.subplots(ncols=1, nrows=1,
-                               sharex=True, sharey=True,
-                               figsize=gconfig['figsize'])
-        plt.sca(ax)
-        plt.ylabel(gconfig['ylabel'], labelpad=3, color='xkcd:black',
-                   fontweight='bold',
-                   fontsize=gconfig['fontsize'])
+    fig, ax = plt.subplots(ncols=1, nrows=1,
+                           sharex=True, sharey=True,
+                           figsize=gconfig['figsize'])
+    plt.sca(ax)
+    plt.ylabel(gconfig['ylabel'], labelpad=3, color='xkcd:black',
+               fontweight='bold',
+               fontsize=gconfig['fontsize'])
 
-        pos = 0
-        step = 1.
-        colors1 = ['0.2', '0.5', '0.8']
-        labels = set()
-        avg = {}
+    pos = 0
+    step = 1.
+    colors1 = ['0.2', '0.5', '0.8']
+    labels = set()
+    avg = {}
 
-        for col, case in enumerate(args.cases):
-            print('[{}] tc: {}: {}'.format(this_filename[:-3], case, 'Reading data'))
+    for col, case in enumerate(args.cases):
+        print('[{}] tc: {}: {}'.format(
+            this_filename[:-3], case, 'Reading data'))
 
-            # ax2 = ax.twinx()
-            plots_dir = {}
-            for file in figconf['files']:
-                file = file.format(res_dir, case.upper())
-                # print(file)
-                data = np.genfromtxt(file, delimiter='\t', dtype=str)
-                header, data = list(data[0]), data[1:]
-                temp = get_plots(header, data, figconf['lines'],
-                                 exclude=figconf.get('exclude', []),
-                                 prefix=True)
-                for key in temp.keys():
-                    plots_dir['_{}_'.format(key)] = temp[key].copy()
+        # ax2 = ax.twinx()
+        plots_dir = {}
+        for file in gconfig['files']:
+            file = file.format(res_dir, case.upper())
+            # print(file)
+            data = np.genfromtxt(file, delimiter='\t', dtype=str)
+            header, data = list(data[0]), data[1:]
+            temp = get_plots(header, data, gconfig['lines'],
+                             exclude=gconfig.get('exclude', []),
+                             prefix=True)
+            for key in temp.keys():
+                plots_dir['_{}_'.format(key)] = temp[key].copy()
 
-            # First the reference value
-            keyref = ''
-            for k in plots_dir.keys():
-                if 'mvapich2' in k:
-                    keyref = k
-                    break
-            if keyref == '':
-                print('ERROR: mvapich2 not found')
-                exit(-1)
-            refvals = plots_dir[keyref]
+        # First the reference value
+        keyref = ''
+        for k in plots_dir.keys():
+            if 'mvapich2' in k:
+                keyref = k
+                break
+        if keyref == '':
+            print('ERROR: mvapich2 not found')
+            exit(-1)
+        refvals = plots_dir[keyref]
 
-            x = get_values(refvals, header, gconfig['x_name'])
-            omp = get_values(refvals, header, gconfig['omp_name'])
-            y = get_values(refvals, header, gconfig['y_name'])
-            parts = get_values(refvals, header, 'ppb')
-            bunches = get_values(refvals, header, 'b')
-            turns = get_values(refvals, header, 't')
-            yref = parts * bunches * turns / y
+        x = get_values(refvals, header, gconfig['x_name'])
+        omp = get_values(refvals, header, gconfig['omp_name'])
+        y = get_values(refvals, header, gconfig['y_name'])
+        parts = get_values(refvals, header, 'ppb')
+        bunches = get_values(refvals, header, 'b')
+        turns = get_values(refvals, header, 't')
+        yref = parts * bunches * turns / y
 
-            width = 0.9 * step / (len(plots_dir.keys()))
-            print('[{}] tc: {}: {}'.format(this_filename[:-3], case, 'Plotting data'))
+        width = 0.9 * step / (len(plots_dir.keys()))
+        print('[{}] tc: {}: {}'.format(
+            this_filename[:-3], case, 'Plotting data'))
 
-            for idx, k in enumerate(plots_dir.keys()):
-                values = plots_dir[k]
-                mpiv = k.split('_mpi')[1].split('_')[0]
-                lb = k.split('lb')[1].split('_')[0]
-                lba = k.split('lba')[1].split('_')[0]
-                approx = k.split('approx')[1].split('_')[0]
-                if 'tp' in k:
-                    tp = '1'
-                else:
-                    tp = '0'
-                experiment = k.split('_')[-1]
-                # tp = k.split('tp')[1].split('_')[0]
-                if lb == 'interval':
-                    lb = 'LB'
-                elif lb == 'reportonly':
-                    lb = 'NoLB'
-                if tp == '1':
-                    tp = 'TP'
-                elif tp == '0':
-                    tp = 'NoTP'
-                if approx == '2':
-                    approx = 'AC'
-                else:
-                    approx = 'NoAC'
-                label = '{}'.format(mpiv)
-                if label in labels:
-                    label = None
-                else:
-                    labels.add(label)
+        for idx, k in enumerate(plots_dir.keys()):
+            values = plots_dir[k]
+            mpiv = k.split('_mpi')[1].split('_')[0]
+            lb = k.split('lb')[1].split('_')[0]
+            lba = k.split('lba')[1].split('_')[0]
+            approx = k.split('approx')[1].split('_')[0]
+            if 'tp' in k:
+                tp = '1'
+            else:
+                tp = '0'
+            experiment = k.split('_')[-1]
+            # tp = k.split('tp')[1].split('_')[0]
+            if lb == 'interval':
+                lb = 'LB'
+            elif lb == 'reportonly':
+                lb = 'NoLB'
+            if tp == '1':
+                tp = 'TP'
+            elif tp == '0':
+                tp = 'NoTP'
+            if approx == '2':
+                approx = 'AC'
+            else:
+                approx = 'NoAC'
+            label = '{}'.format(mpiv)
+            if label in labels:
+                label = None
+            else:
+                labels.add(label)
 
-                x = get_values(values, header, gconfig['x_name'])
-                omp = get_values(values, header, gconfig['omp_name'])
-                y = get_values(values, header, gconfig['y_name'])
-                parts = get_values(values, header, 'ppb')
-                bunches = get_values(values, header, 'b')
-                turns = get_values(values, header, 't')
+            x = get_values(values, header, gconfig['x_name'])
+            omp = get_values(values, header, gconfig['omp_name'])
+            y = get_values(values, header, gconfig['y_name'])
+            parts = get_values(values, header, 'ppb')
+            bunches = get_values(values, header, 'b')
+            turns = get_values(values, header, 't')
 
-                # This is the throughput
-                y = parts * bunches * turns / y
+            # This is the throughput
+            y = parts * bunches * turns / y
 
-                normtime = yref / y
-                x_new = []
-                sp_new = []
-                for i, xi in enumerate(gconfig['x_to_keep']):
-                    if xi in x:
-                        x_new.append(xi)
-                        sp_new.append(normtime[list(x).index(xi)])
-                    # else:
-                        # sp_new.append(0)
-                x = np.array(x_new)
-                normtime = np.array(sp_new)
-                x = x * omp[0]
+            normtime = yref / y
+            x_new = []
+            sp_new = []
+            for i, xi in enumerate(gconfig['x_to_keep']):
+                if xi in x:
+                    x_new.append(xi)
+                    sp_new.append(normtime[list(x).index(xi)])
+                # else:
+                    # sp_new.append(0)
+            x = np.array(x_new)
+            normtime = np.array(sp_new)
+            x = x * omp[0]
 
-                if mpiv not in avg:
-                    avg[mpiv] = []
-                avg[mpiv].append(normtime)
+            if mpiv not in avg:
+                avg[mpiv] = []
+            avg[mpiv].append(normtime)
 
-                # efficiency = 100 * speedup / x
-                plt.bar(pos + width * idx, normtime, width=0.9*width,
-                        edgecolor='0.', label=label, hatch=gconfig['hatches'][idx],
-                        color=gconfig['colors'][idx])
-            pos += step
-        # I plot the averages here
-
-        for idx, key in enumerate(avg.keys()):
-            val = np.mean(avg[key])
-            plt.bar(pos + idx*width, val, width=0.9*width,
-                    edgecolor='0.', label=None, hatch=gconfig['hatches'][idx],
+            # efficiency = 100 * speedup / x
+            plt.bar(pos + width * idx, normtime, width=0.9*width,
+                    edgecolor='0.', label=label, hatch=gconfig['hatches'][idx],
                     color=gconfig['colors'][idx])
-            ax.annotate('{:.2f}'.format(val), xy=(pos + idx*width, val),
-                        **gconfig['annotate'])
         pos += step
+    # I plot the averages here
 
-        plt.xticks(np.arange(pos) + width, [c.upper()
-                                            for c in args.cases] + ['AVG'])
+    for idx, key in enumerate(avg.keys()):
+        val = np.mean(avg[key])
+        plt.bar(pos + idx*width, val, width=0.9*width,
+                edgecolor='0.', label=None, hatch=gconfig['hatches'][idx],
+                color=gconfig['colors'][idx])
+        ax.annotate('{:.2f}'.format(val), xy=(pos + idx*width, val),
+                    **gconfig['annotate'])
+    pos += step
 
-        plt.ylim(gconfig['ylim'])
-        plt.legend(**gconfig['legend'])
-        ax.tick_params(**gconfig['tick_params'])
-        plt.xticks(**gconfig['ticks'], fontweight='bold')
-        plt.yticks(gconfig['yticks'], **gconfig['ticks'])
+    plt.xticks(np.arange(pos) + width, [c.upper()
+                                        for c in args.cases] + ['AVG'])
 
-        plt.tight_layout()
-        plt.subplots_adjust(**gconfig['subplots_adjust'])
-        for file in gconfig['outfiles']:
-            file = file.format(images_dir, this_filename[:-3], '-'.join(args.cases))
-            print('[{}] {}: {}'.format(this_filename[:-3], 'Saving figure', file))
-            fig.savefig(file, dpi=600, bbox_inches='tight')
-        if args.show:
-            plt.show()
-        plt.close()
+    plt.ylim(gconfig['ylim'])
+    plt.legend(**gconfig['legend'])
+    ax.tick_params(**gconfig['tick_params'])
+    plt.xticks(**gconfig['ticks'], fontweight='bold')
+    plt.yticks(gconfig['yticks'], **gconfig['ticks'])
+
+    plt.tight_layout()
+    plt.subplots_adjust(**gconfig['subplots_adjust'])
+    for file in gconfig['outfiles']:
+        file = file.format(images_dir, this_filename[:-3], '-'.join(args.cases))
+        print('[{}] {}: {}'.format(this_filename[:-3], 'Saving figure', file))
+        fig.savefig(file, dpi=600, bbox_inches='tight')
+    if args.show:
+        plt.show()
+    plt.close()
