@@ -1,11 +1,6 @@
 import matplotlib.pyplot as plt
 import numpy as np
-
 import os
-from matplotlib import cm
-import matplotlib.lines as mlines
-import matplotlib.patches as mpatches
-from itertools import cycle
 import matplotlib.ticker
 import sys
 from plot.plotting_utilities import *
@@ -14,27 +9,28 @@ import argparse
 this_directory = os.path.dirname(os.path.realpath(__file__)) + "/"
 this_filename = sys.argv[0].split('/')[-1]
 
-parser = argparse.ArgumentParser(description='Run MPI jobs locally.',
-                                 usage='python local_scan_mpi.py -i in.yml')
+project_dir = this_directory + '../../'
 
-parser.add_argument('-c', '--cases', type=str, nargs='+',
+parser = argparse.ArgumentParser(description='Generate the figure with of the strong scaling experiment.',
+                                 usage='python {} -i results/'.format(this_filename))
+
+parser.add_argument('-i', '--inputdir', type=str, default=os.path.join(project_dir, 'results'),
+                    help='The directory with the results.')
+
+parser.add_argument('-c', '--cases', type=str, nargs='+', default=['lhc','sps','ps'],
                     choices=['lhc', 'sps', 'ps', 'ex01'],
                     help='The test-case to plot.')
 
-parser.add_argument('-k', '--keysuffix', type=str, default='strong',
-                    help='A key suffix to use.')
-
+parser.add_argument('-s', '--show', action='store_true',
+                    help='Show the plots.')
 parser.add_argument('-e', '--errorbars', action='store_true',
                     help='Add errorbars.')
 
-parser.add_argument('-s', '--show', action='store_true',
-                    help='Show the plots.')
 
 args = parser.parse_args()
 
-project_dir = this_directory + '../../'
-res_dir = project_dir + 'results/'
-images_dir = res_dir + 'plots/compfront/'
+res_dir = args.inputdir
+images_dir = res_dir + 'plots/'
 
 if not os.path.exists(images_dir):
     os.makedirs(images_dir)
@@ -57,51 +53,17 @@ gconfig = {
         '1': 'SRP',
         '2': 'RDS',
     },
-    # 'colors': {
-    # 'mvapich2': cycle(['xkcd:pastel green', 'xkcd:green', 'xkcd:olive green', 'xkcd:blue green']),
-    # 'mvapich2': cycle([cm.Greens(x) for x in np.linspace(0.2, 0.8, 3)]),
-    # 'mpich3-NoLB': cycle(['xkcd:pastel green']),
-
-    # 'mvapich2': cycle(['xkcd:orange', 'xkcd:rust']),
-    # 'mvapich2-NoLB': cycle(['xkcd:apricot']),
-    # },
     'hatches': ['', '', 'xx'],
     'markers': ['x', 'o', '^'],
-    # 'colors': ['0.', '0.4', '0.65'],
     'colors': ['xkcd:red', 'xkcd:green', 'xkcd:blue'],
-
-    # 'colors': ['0.2', '0.6', '0.9'],
-    # 'hatches': {
-    #     'LB': 'x',
-    #     'NoLB': '',
-    # },
-    # 'hatches': ['', '//', '--', 'xx'],
     'reference': {
-        # 'sps': {'ppb': 4000000, 'b': 72, 'turns': 1000, 'w': 1,
-        #         'omp': 20, 'time': 225.85},
-        # 'sps': {'ppb': 6000000, 'b': 288, 'turns': 5000, 'w': 1,
-        #         'omp': 20, 'time': 7732.82},
         'sps': {'ppb': 4000000, 'b': 288, 'turns': 5000, 'w': 1,
                 'omp': 20, 'time': 5873.38},
-        # 'omp': 20, 'time': 4295.51},
-
-        # 'lhc': {'ppb': 2000000, 'b': 96, 'turns': 1000, 'w': 1,
-        #         'omp': 20, 'time': 103.04},
-        # 'lhc': {'ppb': 6000000, 'b': 192, 'turns': 5000, 'w': 1,
-        #         'omp': 20, 'time': 4772.91},
         'lhc': {'ppb': 4000000, 'b': 192, 'turns': 5000, 'w': 1,
                 'omp': 20, 'time': 3391.31},
-
-        # 'ps': {'ppb': 8000000, 'b': 21, 'turns': 1000, 'w': 1,
-        #        'omp': 20, 'time': 96.0},
-        # 'ps': {'ppb': 32000000, 'b': 21, 'turns': 5000, 'w': 1,
-        #        'omp': 20, 'time': 3402.4},
         'ps': {'ppb': 16000000, 'b': 21, 'turns': 5000, 'w': 1,
                'omp': 20, 'time': 1332.8},
     },
-    # 'sequence': ['mpich3']
-
-    # 'exclude': [['v1', 'notcm'], ['v2', 'notcm'], ['v4', 'notcm']],
     'x_name': 'n',
     'x_to_keep': [4, 8, 16, 32, 64],
     # 'x_to_keep': [8, 16],
@@ -145,15 +107,10 @@ gconfig = {
         'direction': 'out', 'length': 3, 'width': 1,
     },
     'fontname': 'DejaVu Sans Mono',
-
-    # 'ylim': [0, 28],
     'ylim': [0, 36],
     'xlim': [1.6, 36],
-    # 'yticks': [4, 8, 12, 16, 20, 24],
-    # 'yticks': [2, 4, 8, 12, 16, 20, 24, 28, 32],
     'yticks': [4, 8, 12, 16, 20, 24, 28, 32],
-    'outfiles': ['{}/{}-{}-speedup-{}.pdf',
-                 '{}/{}-{}-speedup-{}.png']
+    'outfiles': ['{}/{}-{}.png']
 }
 
 
@@ -163,9 +120,9 @@ lconfig = {
     'figures': {
         'strong': {
             'files': [
-                '{}/compfront/{}/lb-tp-approx0-mvapich2-strong-scaling/{}',
-                '{}/compfront/{}/lb-tp-approx2-mvapich2-strong-scaling/{}',
-                '{}/compfront/{}/lb-tp-approx1-mvapich2-strong-scaling/{}',
+                '{}/mpi/{}/lb-tp-approx0-mvapich2-strong-scaling/{}',
+                '{}/mpi/{}/lb-tp-approx2-mvapich2-strong-scaling/{}',
+                '{}/mpi/{}/lb-tp-approx1-mvapich2-strong-scaling/{}',
             ],
             'lines': {
                 'mpi': ['mpich3', 'mvapich2', 'openmpi3'],
@@ -183,7 +140,7 @@ lconfig = {
 
 }
 plt.rcParams['font.family'] = gconfig['fontname']
-plt.rcParams['text.usetex'] = True
+# plt.rcParams['text.usetex'] = True
 
 if __name__ == '__main__':
     for title, figconf in lconfig['figures'].items():
@@ -210,8 +167,7 @@ if __name__ == '__main__':
                                  exclude=figconf.get('exclude', []),
                                  prefix=True)
                 for key in temp.keys():
-                    plots_dir['_{}_{}'.format(
-                        key, args.keysuffix)] = temp[key].copy()
+                    plots_dir['_{}_'.format(key)] = temp[key].copy()
 
                 if args.errorbars:
                     data = np.genfromtxt(file.format(res_dir, case.upper(), lconfig['errorfile']),
@@ -221,8 +177,7 @@ if __name__ == '__main__':
                                      exclude=figconf.get('exclude', []),
                                      prefix=True)
                     for key in temp.keys():
-                        errors_dir['_{}_{}'.format(
-                            key, args.keysuffix)] = temp[key].copy()
+                        errors_dir['_{}_'.format(key)] = temp[key].copy()
 
             plt.grid(True, which='both', axis='y', alpha=0.5)
             # plt.grid(True, which='minor', alpha=0.5, zorder=1)
@@ -316,7 +271,8 @@ if __name__ == '__main__':
                              capsize=2)
                 print("{}:{}:".format(case, label), end='\t')
                 for xi, yi, yeri in zip(x//20, speedup, yerr):
-                    print('N:{:.0f} {:.2f}±{:.2f}'.format(xi, yi, yeri), end=' ')
+                    print('N:{:.0f} {:.2f}±{:.2f}'.format(
+                        xi, yi, yeri), end=' ')
                 print('')
                 # print("{}:{}:".format(case, label), speedup)
                 pos += 1 * width
@@ -343,9 +299,8 @@ if __name__ == '__main__':
         plt.tight_layout()
         plt.subplots_adjust(**gconfig['subplots_adjust'])
         for file in gconfig['outfiles']:
-            file = file.format(images_dir, title, '-'.join(args.cases),
-                               args.keysuffix)
-            save_and_crop(fig, file, dpi=600, bbox_inches='tight')
+            file = file.format(images_dir, title, '-'.join(args.cases))
+            fig.savefig(file, dpi=600, bbox_inches='tight')
         if args.show:
             plt.show()
         plt.close()

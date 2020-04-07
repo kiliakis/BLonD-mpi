@@ -1,12 +1,6 @@
 import matplotlib.pyplot as plt
 import numpy as np
-
 import os
-from matplotlib import cm
-import matplotlib.lines as mlines
-import matplotlib.patches as mpatches
-from itertools import cycle
-import matplotlib.ticker
 import sys
 from plot.plotting_utilities import *
 import argparse
@@ -14,25 +8,28 @@ import argparse
 this_directory = os.path.dirname(os.path.realpath(__file__)) + "/"
 this_filename = sys.argv[0].split('/')[-1]
 
-parser = argparse.ArgumentParser(description='Run MPI jobs locally.',
-                                 usage='python local_scan_mpi.py -i in.yml')
+project_dir = this_directory + '../../'
 
-parser.add_argument('-c', '--cases', type=str, nargs='+',
+parser = argparse.ArgumentParser(description='Generate the figure of the weak scaling experiment.',
+                                 usage='python {} -i results/'.format(this_filename))
+
+parser.add_argument('-i', '--inputdir', type=str, default=os.path.join(project_dir, 'results'),
+                    help='The directory with the results.')
+
+parser.add_argument('-c', '--cases', type=str, nargs='+', default=['lhc','sps','ps'],
                     choices=['lhc', 'sps', 'ps', 'ex01'],
                     help='The test-case to plot.')
 
-parser.add_argument('-k', '--keysuffix', type=str, default='weak',
-                    help='A key suffix to use.')
-
-
 parser.add_argument('-s', '--show', action='store_true',
                     help='Show the plots.')
+parser.add_argument('-e', '--errorbars', action='store_true',
+                    help='Add errorbars.')
+
 
 args = parser.parse_args()
 
-project_dir = this_directory + '../../'
-res_dir = project_dir + 'results/'
-images_dir = res_dir + 'plots/compfront/'
+res_dir = args.inputdir
+images_dir = res_dir + 'plots/'
 
 if not os.path.exists(images_dir):
     os.makedirs(images_dir)
@@ -57,41 +54,11 @@ gconfig = {
     },
     'hatches': ['', '', 'xx'],
     'markers': ['x', 'o', '^'],
-    # 'colors': ['0.', '0.4', '0.65'],
     'colors': ['xkcd:red', 'xkcd:green', 'xkcd:blue'],
-
-    'reference': {
-        # 'sps': {'ppb': 4000000, 'b': 72, 'turns': 1000, 'w': 1,
-        #         'omp': 20, 'time': 225.85},
-        # 'sps': {'ppb': 6000000, 'b': 288, 'turns': 5000, 'w': 1,
-        #         'omp': 20, 'time': 7732.82},
-        'sps': {'ppb': 4000000, 'b': 288, 'turns': 5000, 'w': 1,
-                'omp': 20, 'time': 5873.38},
-        # 'omp': 20, 'time': 4295.51},
-
-        # 'lhc': {'ppb': 2000000, 'b': 96, 'turns': 1000, 'w': 1,
-        #         'omp': 20, 'time': 103.04},
-        # 'lhc': {'ppb': 6000000, 'b': 192, 'turns': 5000, 'w': 1,
-        #         'omp': 20, 'time': 4772.91},
-        'lhc': {'ppb': 4000000, 'b': 192, 'turns': 5000, 'w': 1,
-                'omp': 20, 'time': 3391.31},
-
-        # 'ps': {'ppb': 8000000, 'b': 21, 'turns': 1000, 'w': 1,
-        #        'omp': 20, 'time': 96.0},
-        # 'ps': {'ppb': 32000000, 'b': 21, 'turns': 5000, 'w': 1,
-        #        'omp': 20, 'time': 3402.4},
-        'ps': {'ppb': 16000000, 'b': 21, 'turns': 5000, 'w': 1,
-               'omp': 20, 'time': 1332.8},
-    },
-    # 'sequence': ['mpich3']
-
-    # 'exclude': [['v1', 'notcm'], ['v2', 'notcm'], ['v4', 'notcm']],
     'x_name': 'n',
     'x_to_keep': [4, 8, 16, 32, 64],
-    # 'x_to_keep': [8, 16],
     'omp_name': 'omp',
     'y_name': 'avg_time(sec)',
-    # 'y_err_name': 'std',
     'xlabel': 'Nodes (x20 Cores)',
     'ylabel': 'Norm. Throughput',
     'ylabel2': 'Efficiency',
@@ -134,8 +101,7 @@ gconfig = {
     # 'ylim2': [0, 110],
     'yticks': [0, 0.2, 0.4, 0.6, 0.8, 1.0],
     # 'yticks2': [0, 20, 40, 60, 80, 100],
-    'outfiles': ['{}/{}-{}-normthroughput-{}.pdf',
-                 '{}/{}-{}-normthroughput-{}.png']
+    'outfiles': ['{}/{}-{}.png'],
 }
 
 
@@ -144,9 +110,9 @@ lconfig = {
 
         'weak': {
             'files': [
-                '{}/compfront/{}/lb-tp-approx0-mvapich2-weak-scaling/comm-comp-report.csv',
-                '{}/compfront/{}/lb-tp-approx2-mvapich2-weak-scaling/comm-comp-report.csv',
-                '{}/compfront/{}/lb-tp-approx1-mvapich2-weak-scaling/comm-comp-report.csv',
+                '{}/mpi/{}/lb-tp-approx0-mvapich2-weak-scaling/comm-comp-report.csv',
+                '{}/mpi/{}/lb-tp-approx2-mvapich2-weak-scaling/comm-comp-report.csv',
+                '{}/mpi/{}/lb-tp-approx1-mvapich2-weak-scaling/comm-comp-report.csv',
             ],
             'lines': {
                 'mpi': ['mpich3', 'mvapich2', 'openmpi3'],
@@ -165,7 +131,7 @@ lconfig = {
 }
 
 plt.rcParams['font.family'] = gconfig['fontname']
-plt.rcParams['text.usetex'] = True
+# plt.rcParams['text.usetex'] = True
 
 
 if __name__ == '__main__':
@@ -189,13 +155,7 @@ if __name__ == '__main__':
                                  exclude=figconf.get('exclude', []),
                                  prefix=True)
                 for key in temp.keys():
-                    plots_dir['_{}_{}'.format(
-                        key, args.keysuffix)] = temp[key].copy()
-                    # if 'tp-' in file:
-                    #     plots_dir['_{}_tp1'.format(key)] = temp[key].copy()
-                    # else:
-                    #     plots_dir['_{}_tp0'.format(key)] = temp[key].copy()
-            # fig = plt.figure(figsize=config['figsize'])
+                    plots_dir['_{}_'.format(key)] = temp[key].copy()
 
             plt.grid(True, which='major', alpha=0.5)
             plt.grid(False, which='major', axis='x')
@@ -229,25 +189,10 @@ if __name__ == '__main__':
             yref /= (x * omp // 20)
             yref = yref[list(x).index(4)]
 
-            # plt.sca(ax2)
-            # if col == 1:
-            #     plt.ylabel(gconfig['ylabel2'], labelpad=3,
-            #                fontweight='bold', color='xkcd:blue',
-            #                fontsize=gconfig['fontsize'])
-            # plt.setp(ax2.get_yticklabels(), color="xkcd:blue")
-            # plt.yticks(gconfig['yticks2'], **gconfig['ticks'])
-            # plt.ylim(gconfig['ylim2'])
-            # plt.sca(ax)
-
             pos = 0
             step = 0.1
             width = 1. / (1*len(plots_dir.keys())+0.4)
 
-            # colors = [cm.Greens(x) for x in np.linspace(0.2, 0.8, len(plots_dir))]
-            # colors1 = [cm.Greens(x)
-            #            for x in np.linspace(0.5, 0.8, len(plots_dir))]
-            # colors2 = [cm.Blues(x)
-            #            for x in np.linspace(0.5, 0.8, len(plots_dir))]
             for idx, k in enumerate(plots_dir.keys()):
                 values = plots_dir[k]
                 mpiv = k.split('_mpi')[1].split('_')[0]
@@ -269,19 +214,7 @@ if __name__ == '__main__':
                 elif tp == '0':
                     tp = 'NoTP'
                 approx = gconfig['approx'][approx]
-                # if approx == '2':
-                #     approx = 'AC'
-                # else:
-                #     approx = 'NoAC'
-                # key = '{}-{}-{}'.format(case, mpiv, lb)
-
-                # label = '{}-{}-{}-{}'.format(lb, tp, approx, experiment)
                 label = '{}'.format(approx)
-                # label = '{}-{}'.format(tp, approx)
-                # color = gconfig['colors']['{}'.format(mpiv)].__next__()
-                # hatch = gconfig['hatches'][lb]
-                # marker = config['markers'][case]
-                # ls = config['ls'][case]
 
                 x = get_values(values, header, gconfig['x_name'])
                 omp = get_values(values, header, gconfig['omp_name'])
@@ -293,14 +226,6 @@ if __name__ == '__main__':
                 # This is the throughput per node
                 y = parts * bunches * turns / y
                 y /= (x * omp//20)
-
-                # Now the reference, 1thread
-                # yref = gconfig['reference'][case]['time']
-                # partsref = gconfig['reference'][case]['ppb']
-                # bunchesref = gconfig['reference'][case]['b']
-                # turnsref = gconfig['reference'][case]['turns']
-                # yref = partsref * bunchesref * turnsref / yref
-                # ompref = gconfig['reference'][case]['omp']
 
                 speedup = y
                 x_new = []
@@ -318,23 +243,10 @@ if __name__ == '__main__':
                 # speedup = speedup / yref
                 speedup = speedup / speedup[0]
 
-                # efficiency = 100 * speedup / x
-                # plt.bar(np.arange(len(x)) + pos, speedup, width=0.9*width,
-                #         edgecolor='0.', label=label, hatch=gconfig['hatches'][idx],
-                #         color=gconfig['colors'][idx])
                 plt.plot(np.arange(len(x)), speedup,
                          label=label, marker=gconfig['markers'][idx],
                          color=gconfig['colors'][idx])
                 print("{}:{}:".format(case, label), speedup)
-                # ax2.bar(np.arange(len(x)) + pos + width, efficiency, width=0.9*width,
-                #         edgecolor='0.', label=label, hatch=gconfig['hatches'][idx],
-                #         color=colors2[idx])
-                # if True or idx != 1:
-                #     for i, s, e in zip(np.arange(len(x)) + pos, speedup, efficiency):
-                #         ax.annotate('{:.1f}'.format(s), xy=(i, s),
-                #                     **gconfig['annotate'])
-                #         # ax2.annotate('{:.0f}'.format(e), xy=(i+width, e),
-                #         #              **gconfig['annotate'])
                 pos += 1 * width
             # pos += width * step
             plt.ylim(gconfig['ylim'])
@@ -353,9 +265,8 @@ if __name__ == '__main__':
         plt.tight_layout()
         plt.subplots_adjust(**gconfig['subplots_adjust'])
         for file in gconfig['outfiles']:
-            file = file.format(images_dir, title, '-'.join(args.cases),
-                               args.keysuffix)
-            save_and_crop(fig, file, dpi=600, bbox_inches='tight')
+            file = file.format(images_dir, title, '-'.join(args.cases))
+            fig.savefig(file, dpi=600, bbox_inches='tight')
         if args.show:
             plt.show()
         plt.close()

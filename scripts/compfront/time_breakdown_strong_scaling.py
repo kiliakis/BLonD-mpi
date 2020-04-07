@@ -1,12 +1,7 @@
 import matplotlib.pyplot as plt
 import numpy as np
-
 import os
-from matplotlib import cm
-import matplotlib.lines as mlines
 import matplotlib.patches as mpatches
-from itertools import cycle
-import matplotlib.ticker
 import sys
 from plot.plotting_utilities import *
 import argparse
@@ -14,26 +9,28 @@ import argparse
 this_directory = os.path.dirname(os.path.realpath(__file__)) + "/"
 this_filename = sys.argv[0].split('/')[-1]
 
-parser = argparse.ArgumentParser(description='Run MPI jobs locally.',
-                                 usage='python local_scan_mpi.py -i in.yml')
+project_dir = this_directory + '../../'
 
-parser.add_argument('-c', '--cases', type=str, nargs='+',
+parser = argparse.ArgumentParser(description='Generate the figure of the run time breakdown.',
+                                 usage='python {} -i results/'.format(this_filename))
+
+parser.add_argument('-i', '--inputdir', type=str, default=os.path.join(project_dir, 'results'),
+                    help='The directory with the results.')
+
+parser.add_argument('-c', '--cases', type=str, nargs='+', default=['lhc','sps','ps'],
                     choices=['lhc', 'sps', 'ps', 'ex01'],
                     help='The test-case to plot.')
 
-parser.add_argument('-k', '--keysuffix', type=str, default='strong',
-                    help='A key suffix to use.')
-
-
 parser.add_argument('-s', '--show', action='store_true',
                     help='Show the plots.')
+parser.add_argument('-e', '--errorbars', action='store_true',
+                    help='Add errorbars.')
+
 
 args = parser.parse_args()
 
-project_dir = this_directory + '../../'
-res_dir = project_dir + 'results/'
-images_dir = res_dir + 'plots/compfront/'
-
+res_dir = args.inputdir
+images_dir = res_dir + 'plots/'
 if not os.path.exists(images_dir):
     os.makedirs(images_dir)
 
@@ -55,62 +52,14 @@ gconfig = {
         '1': 'SRP',
         '2': 'RDS',
     },
-    # 'colors': {
-    # 'mvapich2': cycle(['xkcd:pastel green', 'xkcd:green', 'xkcd:olive green', 'xkcd:blue green']),
-    # 'mvapich2': cycle([cm.Greens(x) for x in np.linspace(0.2, 0.8, 3)]),
-    # 'mpich3-NoLB': cycle(['xkcd:pastel green']),
-
-    # 'mvapich2': cycle(['xkcd:orange', 'xkcd:rust']),
-    # 'mvapich2-NoLB': cycle(['xkcd:apricot']),
-    # },
     'hatches': ['//', '\\', ''],
     'markers': ['x', 'o', '^'],
     'colors': ['0.85', '0.4'],
     'edgecolors': ['xkcd:red', 'xkcd:blue'],
-    # 'colors': ['xkcd:red', 'xkcd:green', 'xkcd:blue'],
-    # 'colors': [[cm.Reds(x) for x in np.linspace(0.2, 0.8, 4)],
-    #            [cm.Greens(x) for x in np.linspace(0.2, 0.8, 4)],
-    #            [cm.Blues(x) for x in np.linspace(0.2, 0.8, 4)]
-    #            ],
-
-    # 'colors': ['0.2', '0.6', '0.9'],
-    # 'hatches': {
-    #     'LB': 'x',
-    #     'NoLB': '',
-    # },
-    # 'hatches': ['', '//', '--', 'xx'],
-    'reference': {
-        # 'sps': {'ppb': 4000000, 'b': 72, 'turns': 1000, 'w': 1,
-        #         'omp': 20, 'time': 225.85},
-        # 'sps': {'ppb': 6000000, 'b': 288, 'turns': 5000, 'w': 1,
-        #         'omp': 20, 'time': 7732.82},
-        'sps': {'ppb': 4000000, 'b': 288, 'turns': 5000, 'w': 1,
-                'omp': 20, 'time': 5873.38},
-        # 'omp': 20, 'time': 4295.51},
-
-        # 'lhc': {'ppb': 2000000, 'b': 96, 'turns': 1000, 'w': 1,
-        #         'omp': 20, 'time': 103.04},
-        # 'lhc': {'ppb': 6000000, 'b': 192, 'turns': 5000, 'w': 1,
-        #         'omp': 20, 'time': 4772.91},
-        'lhc': {'ppb': 4000000, 'b': 192, 'turns': 5000, 'w': 1,
-                'omp': 20, 'time': 3391.31},
-
-        # 'ps': {'ppb': 8000000, 'b': 21, 'turns': 1000, 'w': 1,
-        #        'omp': 20, 'time': 96.0},
-        # 'ps': {'ppb': 32000000, 'b': 21, 'turns': 5000, 'w': 1,
-        #        'omp': 20, 'time': 3402.4},
-        'ps': {'ppb': 16000000, 'b': 21, 'turns': 5000, 'w': 1,
-               'omp': 20, 'time': 1332.8},
-    },
-    # 'sequence': ['mpich3']
-
-    # 'exclude': [['v1', 'notcm'], ['v2', 'notcm'], ['v4', 'notcm']],
     'x_name': 'n',
     'x_to_keep': [4, 8, 16, 32, 64],
-    # 'x_to_keep': [8, 16],
     'omp_name': 'omp',
     'y_name': 'percent',
-    # 'y_err_name': 'std',
     'xlabel': 'Nodes (x20 Cores)',
     'ylabel': 'Runtime(\%)',
     'ylabel2': 'Efficiency',
@@ -149,14 +98,10 @@ gconfig = {
     },
     'fontname': 'DejaVu Sans Mono',
     'phases': ['comm', 'serial'],
-    # 'ylim': [0, 28],
     'ylim': [0, 100],
     'xlim': [1.6, 36],
     'yticks': [0, 20, 40, 60, 80, 100],
-    # 'yticks': [2, 4, 8, 12, 16, 20, 24, 28, 32],
-    # 'yticks': [2, 4, 8, 16, 32],
-    'outfiles': ['{}/{}-{}-breakdown-{}.pdf',
-                 '{}/{}-{}-breakdown-{}.png']
+    'outfiles': ['{}/{}-{}.png']
 }
 
 
@@ -164,9 +109,8 @@ lconfig = {
     'figures': {
         'strong': {
             'files': [
-                '{}/compfront/{}/lb-tp-approx0-mvapich2-strong-scaling/comm-comp-report.csv',
-                # '{}/compfront/{}/lb-tp-approx2-mvapich2-strong-scaling/comm-comp-report.csv',
-                '{}/compfront/{}/lb-tp-approx1-mvapich2-strong-scaling/comm-comp-report.csv',
+                '{}/mpi/{}/lb-tp-approx0-mvapich2-strong-scaling/comm-comp-report.csv',
+                '{}/mpi/{}/lb-tp-approx1-mvapich2-strong-scaling/comm-comp-report.csv',
             ],
             'lines': {
                 'mpi': ['mpich3', 'mvapich2', 'openmpi3'],
@@ -184,7 +128,7 @@ lconfig = {
 
 }
 plt.rcParams['font.family'] = gconfig['fontname']
-plt.rcParams['text.usetex'] = True
+# plt.rcParams['text.usetex'] = True
 
 if __name__ == '__main__':
     for title, figconf in lconfig['figures'].items():
@@ -195,10 +139,7 @@ if __name__ == '__main__':
         labels = set()
         for col, case in enumerate(args.cases):
             ax = ax_arr[col]
-            # ax2 = ax.twinx()
             plt.sca(ax)
-            # ax.set_yscale('log', basey= 2)
-            # ax.set_xscale('log', basex= 2)
             plots_dir = {}
             for file in figconf['files']:
                 file = file.format(res_dir, case.upper())
@@ -254,7 +195,8 @@ if __name__ == '__main__':
                     x = get_values(values, header, gconfig['x_name'])
                     omp = get_values(values, header, gconfig['omp_name'])
                     if phase == 'serial':
-                        y += get_values(final_dir[k]['other'], header, gconfig['y_name'])
+                        y += get_values(final_dir[k]['other'],
+                                        header, gconfig['y_name'])
 
                     x_new = []
                     y_new = []
@@ -269,7 +211,7 @@ if __name__ == '__main__':
                         bottom = np.zeros(len(y))
 
                     plt.bar(np.arange(len(x)) + pos, y, bottom=bottom, width=0.9*width,
-                            label=None, 
+                            label=None,
                             linewidth=1.5,
                             edgecolor=gconfig['edgecolors'][idx],
                             hatch=gconfig['hatches'][idx],
@@ -277,14 +219,9 @@ if __name__ == '__main__':
                             zorder=2)
                     j += 1
                     bottom += y
-                    # plt.plot(x, speedup,
-                    #         label=label, marker=gconfig['markers'][idx],
-                    #         color=gconfig['colors'][idx])
-                    # print("{}:{}:".format(case, label), speedup)
                 pos += width
-            # pos += width * step
-            # plt.xticks(np.arange(len(x)), np.array(x, int)//20)
-            plt.xticks(np.arange(len(x))+step/4, np.array(x, int), **gconfig['ticks'])
+            plt.xticks(np.arange(len(x))+step/4,
+                       np.array(x, int), **gconfig['ticks'])
 
             plt.ylim(gconfig['ylim'])
             plt.xlim(0-width, len(x))
@@ -292,11 +229,6 @@ if __name__ == '__main__':
                 ax.tick_params(**gconfig['tick_params_left'])
             else:
                 ax.tick_params(**gconfig['tick_params_center_right'])
-
-            # if col == 0:
-                # handles, labels = ax.get_legend_handles_labels()
-                # print(labels)
-            # ax.legend(**gconfig['legend'])
 
             plt.xticks(**gconfig['ticks'])
             plt.yticks(gconfig['yticks'], gconfig['yticks'], **gconfig['ticks'])
@@ -308,7 +240,6 @@ if __name__ == '__main__':
                                            linewidth=1.,)
                     handles.append(patch)
 
-
                 for h, tc, e in zip(gconfig['hatches'], labels, gconfig['edgecolors']):
                     patch = mpatches.Patch(label=tc, edgecolor=e,
                                            facecolor='1', hatch=h, linewidth=1.5,)
@@ -317,9 +248,8 @@ if __name__ == '__main__':
         plt.tight_layout()
         plt.subplots_adjust(**gconfig['subplots_adjust'])
         for file in gconfig['outfiles']:
-            file = file.format(images_dir, title, '-'.join(args.cases),
-                               args.keysuffix)
-            save_and_crop(fig, file, dpi=600, bbox_inches='tight')
+            file = file.format(images_dir, title, '-'.join(args.cases))
+            fig.savefig(file, dpi=600, bbox_inches='tight')
         if args.show:
             plt.show()
         plt.close()
