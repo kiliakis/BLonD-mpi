@@ -6,19 +6,9 @@
 #SBATCH --output=setup-job.txt
 #SBATCH --error=setup-job.txt
 #SBATCH --job-name=setup-job
+#SBATCH --export=ALL
 
-# source $HOME/.bashrc
 
-BLOND=$HOME/git/BLonD-mpi
-cd $BLOND
-# echo $BLOND
+cd $BUILD_DIR
 
-# python --version
-# mpicc --version
-# echo $PYTHONPATH
-
-python blond/compile.py -p -l "-L${HOME}/install/lib -lfftw3_omp"
-# export PYTHONPATH=$BLOND:$PYTHONPATH
-# export OMP_NUM_THREADS=2
-# mpiexec -n 1 python -m mpi4py $BLOND/mpi/EX_01_Acceleration-master.py
-# mpiexec -n 1 python -m mpi4py $2 $3
+python blond/compile.py --with-fftw --with-fftw-threads --with-fftw-lib=$INSTALL_DIR/lib/ --with-fftw-header=$INSTALL_DIR/include/ -p
