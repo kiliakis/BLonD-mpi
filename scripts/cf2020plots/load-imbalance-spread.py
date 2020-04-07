@@ -27,7 +27,7 @@ parser.add_argument('-s', '--show', action='store_true',
 args = parser.parse_args()
 
 res_dir = args.inputdir
-images_dir = res_dir + 'plots/'
+images_dir = os.path.join(res_dir, 'plots')
 
 if not os.path.exists(images_dir):
     os.makedirs(images_dir)
@@ -61,7 +61,7 @@ gconfig = {
     'y_name': 'total_time(sec)',
     'percent_name': 'global_percentage',
     'xlabel': 'Nodes (x20 Cores)',
-    'ylabel': 'Time Spread(\%)',
+    'ylabel': r'Time Spread(%)',
     'title': {
                 # 's': '{}'.format(case.upper()),
                 'fontsize': 10,
@@ -153,6 +153,8 @@ if __name__ == '__main__':
         step = 1
         width = 0.9 * step / len(args.cases)
         for col, case in enumerate(args.cases):
+            print('[{}] tc: {}: {}'.format(this_filename[:-3], case, 'Reading data'))
+
             plots_dir = {}
             errors_dir = {}
             deltas_dir = {}
@@ -187,6 +189,8 @@ if __name__ == '__main__':
                                  prefix=True)
                 for key in temp.keys():
                     errors_dir['_{}'.format(key)] = temp[key].copy()
+            
+            print('[{}] tc: {}: {}'.format(this_filename[:-3], case, 'Plotting data'))
 
             for _, k in enumerate(plots_dir.keys()):
                 values = plots_dir[k]
@@ -239,11 +243,11 @@ if __name__ == '__main__':
                         capsize=gconfig['capsize']
                         )
 
-                print("{}:{}:".format(case, label), end='\t')
-                for xi, yi, yeri in zip(x//20, ydelta, yerr):
-                    print('N:{:.0f} {:.2f}±{:.2f}'.format(
-                        xi, yi, yeri), end=' ')
-                print('')
+                # print("{}:{}:".format(case, label), end='\t')
+                # for xi, yi, yeri in zip(x//20, ydelta, yerr):
+                #     print('N:{:.0f} {:.2f}±{:.2f}'.format(
+                #         xi, yi, yeri), end=' ')
+                # print('')
                 # print("{}:{}:".format(case, label), speedup)
             pos += 1 * width
             # pos += width * step
@@ -260,7 +264,8 @@ if __name__ == '__main__':
         plt.tight_layout()
         plt.subplots_adjust(**gconfig['subplots_adjust'])
         for file in gconfig['outfiles']:
-            file = file.format(images_dir, title, '-'.join(args.cases))
+            file = file.format(images_dir, this_filename[:-3], '-'.join(args.cases))
+            print('[{}] {}: {}'.format(this_filename[:-3], 'Saving figure', file))
             fig.savefig(file, dpi=600, bbox_inches='tight')
         if args.show:
             plt.show()

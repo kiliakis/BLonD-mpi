@@ -30,7 +30,8 @@ parser.add_argument('-e', '--errorbars', action='store_true',
 args = parser.parse_args()
 
 res_dir = args.inputdir
-images_dir = res_dir + 'plots/'
+images_dir = os.path.join(res_dir, 'plots')
+
 if not os.path.exists(images_dir):
     os.makedirs(images_dir)
 
@@ -61,7 +62,7 @@ gconfig = {
     'omp_name': 'omp',
     'y_name': 'percent',
     'xlabel': 'Nodes (x20 Cores)',
-    'ylabel': 'Runtime(\%)',
+    'ylabel': 'Runtime(%)',
     'ylabel2': 'Efficiency',
     'title': {
                 # 's': '{}'.format(case.upper()),
@@ -138,6 +139,8 @@ if __name__ == '__main__':
         ax_arr = np.atleast_1d(ax_arr)
         labels = set()
         for col, case in enumerate(args.cases):
+            print('[{}] tc: {}: {}'.format(this_filename[:-3], case, 'Reading data'))
+
             ax = ax_arr[col]
             plt.sca(ax)
             plots_dir = {}
@@ -176,6 +179,8 @@ if __name__ == '__main__':
             pos = 0
             step = 1
             width = 0.85 * step / (len(final_dir.keys()))
+            print('[{}] tc: {}: {}'.format(this_filename[:-3], case, 'Plotting data'))
+
             for idx, k in enumerate(final_dir.keys()):
                 mpiv = k.split('_mpi')[1].split('_')[0]
                 lb = k.split('lb')[1].split('_')[0]
@@ -248,7 +253,8 @@ if __name__ == '__main__':
         plt.tight_layout()
         plt.subplots_adjust(**gconfig['subplots_adjust'])
         for file in gconfig['outfiles']:
-            file = file.format(images_dir, title, '-'.join(args.cases))
+            file = file.format(images_dir, this_filename[:-3], '-'.join(args.cases))
+            print('[{}] {}: {}'.format(this_filename[:-3], 'Saving figure', file))
             fig.savefig(file, dpi=600, bbox_inches='tight')
         if args.show:
             plt.show()

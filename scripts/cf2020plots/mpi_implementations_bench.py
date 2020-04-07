@@ -1,6 +1,7 @@
 import matplotlib.pyplot as plt
 import numpy as np
 import os
+import matplotlib.ticker
 import sys
 from plot.plotting_utilities import *
 import argparse
@@ -10,7 +11,7 @@ this_filename = sys.argv[0].split('/')[-1]
 
 project_dir = this_directory + '../../'
 
-parser = argparse.ArgumentParser(description='Generate the figure of the intermediate effect analysis.',
+parser = argparse.ArgumentParser(description='Generate the figure of the MPI libraries benchmark.',
                                  usage='python {} -i results/'.format(this_filename))
 
 parser.add_argument('-i', '--inputdir', type=str, default=os.path.join(project_dir, 'results'),
@@ -26,8 +27,7 @@ parser.add_argument('-s', '--show', action='store_true',
 args = parser.parse_args()
 
 res_dir = args.inputdir
-images_dir = res_dir + 'plots/'
-
+images_dir = os.path.join(res_dir, 'plots')
 
 if not os.path.exists(images_dir):
     os.makedirs(images_dir)
@@ -35,52 +35,51 @@ if not os.path.exists(images_dir):
 gconfig = {
     'markers': {
         'ex01': 'd',
-        'lhc': 'o',
-        'sps': 's',
-        'ps': 'x'
+                'lhc': 'o',
+                'sps': 's',
+                'ps': 'x'
     },
     'ls': {
         'ex01': '-:',
-        'lhc': '-',
-        'sps': ':',
-        'ps': '--'
+                'lhc': '-',
+                'sps': ':',
+                'ps': '--'
     },
     'approx': {
-        '0': '',
-        '1': 'SRP',
+        '0': 'exact',
+        '1': 'SMD',
         '2': 'RDS',
     },
-    'hatches': ['', '', 'xx', '', 'xx', '', 'xx'],
-    'colors': ['0.1', '0.45', '0.45', '0.7', '0.7', '0.95', '0.95'],
+    'hatches': ['', '', ''],
+    'colors': ['0.1', '0.5', '0.8'],
     'x_name': 'n',
-    'x_to_keep': [16],
+    'x_to_keep': [8],
     'omp_name': 'omp',
     'y_name': 'avg_time(sec)',
-    'xlabel': 'Nodes (x20 Cores)',
+    'xlabel': '',
     'ylabel': 'Norm. Runtime',
     'ylabel2': 'Efficiency',
     'title': {
-        's': '',
-        'fontsize': 10,
-        'y': 0.74,
-        # 'x': 0.55,
-        'fontweight': 'bold',
+                's': '',
+                'fontsize': 10,
+                'y': 0.74,
+                # 'x': 0.55,
+                'fontweight': 'bold',
     },
-    'figsize': [5, 2.1],
+    'figsize': [5, 2.],
     'annotate': {
         'fontsize': 9,
         'textcoords': 'data',
         'va': 'bottom',
         'ha': 'center'
     },
-    'xticks': {'fontsize': 10, 'rotation': '0', 'fontweight': 'bold'},
-    'ticks': {'fontsize': 10, 'rotation': '0'},
+    'ticks': {'fontsize': 10},
     'fontsize': 10,
     'legend': {
-        'loc': 'upper left', 'ncol': 7, 'handlelength': 1.1, 'fancybox': True,
-        'framealpha': 0., 'fontsize': 9, 'labelspacing': 0, 'borderpad': 0.5,
-        'handletextpad': 0.2, 'borderaxespad': 0.1, 'columnspacing': 0.3,
-        'bbox_to_anchor': (-0.01, 1.12)
+        'loc': 'upper left', 'ncol': 3, 'handlelength': 1.5, 'fancybox': True,
+        'framealpha': 0., 'fontsize': 10, 'labelspacing': 0, 'borderpad': 0.5,
+        'handletextpad': 0.5, 'borderaxespad': 0.1, 'columnspacing': 0.8,
+        # 'bbox_to_anchor': (0, 1.25)
     },
     'subplots_adjust': {
         'wspace': 0.0, 'hspace': 0.1, 'top': 0.93
@@ -90,25 +89,19 @@ gconfig = {
         'direction': 'out', 'length': 3, 'width': 1,
     },
     'fontname': 'DejaVu Sans Mono',
-    'ylim': [0.45, 1.02],
-    # 'ylim2': [10, 90],
-    'yticks': [0.5, 0.6, 0.7, .8, .9, 1.],
-    # 'yticks2': [0, 20, 40, 60, 80, 100],
+    'ylim': [.9, 1.4],
+    'yticks': [.9, 1., 1.1, 1.2, 1.3, 1.4],
     'outfiles': ['{}/{}-{}.png']
 }
 
 
 lconfig = {
     'figures': {
-        'interm': {
+        'plot': {
             'files': [
-                '{}/mpi/{}/approx0-mvapich2-interm/comm-comp-report.csv',
-                '{}/mpi/{}/approx2-mvapich2-interm/comm-comp-report.csv',
-                '{}/mpi/{}/approx1-mvapich2-interm/comm-comp-report.csv',
-                '{}/mpi/{}/tp-approx0-mvapich2-interm/comm-comp-report.csv',
-                '{}/mpi/{}/lb-tp-approx0-mvapich2-interm/comm-comp-report.csv',
-                '{}/mpi/{}/lb-tp-approx2-mvapich2-interm/comm-comp-report.csv',
-                '{}/mpi/{}/lb-tp-approx1-mvapich2-interm/comm-comp-report.csv',
+                '{}/mpi/{}/approx0-mvapich2-impl/comm-comp-report.csv',
+                '{}/mpi/{}/approx0-mpich3-impl/comm-comp-report.csv',
+                '{}/mpi/{}/approx0-openmpi3-impl/comm-comp-report.csv',
             ],
             'lines': {
                 'mpi': ['mpich3', 'mvapich2', 'openmpi3'],
@@ -134,16 +127,20 @@ if __name__ == '__main__':
                                sharex=True, sharey=True,
                                figsize=gconfig['figsize'])
         plt.sca(ax)
-        plt.ylabel(gconfig['ylabel'], labelpad=3,
+        plt.ylabel(gconfig['ylabel'], labelpad=3, color='xkcd:black',
                    fontweight='bold',
                    fontsize=gconfig['fontsize'])
+
         pos = 0
         step = 1.
+        colors1 = ['0.2', '0.5', '0.8']
         labels = set()
         avg = {}
-        xticks = []
-        xtickspos = []
+
         for col, case in enumerate(args.cases):
+            print('[{}] tc: {}: {}'.format(this_filename[:-3], case, 'Reading data'))
+
+            # ax2 = ax.twinx()
             plots_dir = {}
             for file in figconf['files']:
                 file = file.format(res_dir, case.upper())
@@ -154,22 +151,17 @@ if __name__ == '__main__':
                                  exclude=figconf.get('exclude', []),
                                  prefix=True)
                 for key in temp.keys():
-                    if 'tp-approx' in file:
-                        plots_dir['_{}_tp1'.format(key)] = temp[key].copy()
-                    else:
-                        plots_dir['_{}_tp0'.format(key)] = temp[key].copy()
-            width = .95*step / (len(plots_dir.keys()))
+                    plots_dir['_{}_'.format(key)] = temp[key].copy()
 
             # First the reference value
             keyref = ''
             for k in plots_dir.keys():
-                if 'approx0' in k and 'tp0' in k and 'lbreportonly' in k:
+                if 'mvapich2' in k:
                     keyref = k
                     break
             if keyref == '':
-                print('ERROR: reference key not found')
+                print('ERROR: mvapich2 not found')
                 exit(-1)
-
             refvals = plots_dir[keyref]
 
             x = get_values(refvals, header, gconfig['x_name'])
@@ -180,29 +172,38 @@ if __name__ == '__main__':
             turns = get_values(refvals, header, 't')
             yref = parts * bunches * turns / y
 
+            width = 0.9 * step / (len(plots_dir.keys()))
+            print('[{}] tc: {}: {}'.format(this_filename[:-3], case, 'Plotting data'))
+
             for idx, k in enumerate(plots_dir.keys()):
                 values = plots_dir[k]
                 mpiv = k.split('_mpi')[1].split('_')[0]
                 lb = k.split('lb')[1].split('_')[0]
                 lba = k.split('lba')[1].split('_')[0]
                 approx = k.split('approx')[1].split('_')[0]
-                tp = k.split('_')[-1]
+                if 'tp' in k:
+                    tp = '1'
+                else:
+                    tp = '0'
                 experiment = k.split('_')[-1]
+                # tp = k.split('tp')[1].split('_')[0]
                 if lb == 'interval':
-                    lb = 'LB-'
+                    lb = 'LB'
                 elif lb == 'reportonly':
-                    lb = ''
-                if tp == 'tp1':
-                    tp = 'TP-'
-                elif tp == 'tp0':
-                    tp = ''
-                approx = gconfig['approx'][approx]
-
-                label = '{}{}{}'.format(lb, tp, approx)
-                if label == '':
-                    label = 'base'
-                if label[-1] == '-':
-                    label = label[:-1]
+                    lb = 'NoLB'
+                if tp == '1':
+                    tp = 'TP'
+                elif tp == '0':
+                    tp = 'NoTP'
+                if approx == '2':
+                    approx = 'AC'
+                else:
+                    approx = 'NoAC'
+                label = '{}'.format(mpiv)
+                if label in labels:
+                    label = None
+                else:
+                    labels.add(label)
 
                 x = get_values(values, header, gconfig['x_name'])
                 omp = get_values(values, header, gconfig['omp_name'])
@@ -214,67 +215,53 @@ if __name__ == '__main__':
                 # This is the throughput
                 y = parts * bunches * turns / y
 
-                speedup = yref / y
+                normtime = yref / y
                 x_new = []
                 sp_new = []
                 for i, xi in enumerate(gconfig['x_to_keep']):
-                    x_new.append(xi)
                     if xi in x:
-                        sp_new.append(speedup[list(x).index(xi)])
-                    else:
-                        sp_new.append(0)
+                        x_new.append(xi)
+                        sp_new.append(normtime[list(x).index(xi)])
+                    # else:
+                        # sp_new.append(0)
                 x = np.array(x_new)
-                speedup = np.array(sp_new)
-                # efficiency = 100 * speedup / (x * omp[0] / ompref)
+                normtime = np.array(sp_new)
                 x = x * omp[0]
 
-                # width = .9 * step / (len(x))
-                if label not in avg:
-                    avg[label] = []
-                avg[label].append(speedup)
+                if mpiv not in avg:
+                    avg[mpiv] = []
+                avg[mpiv].append(normtime)
+
                 # efficiency = 100 * speedup / x
-                if label in labels:
-                    label = None
-                else:
-                    labels.add(label)
-                plt.bar(pos + idx*width, speedup, width=0.9*width,
+                plt.bar(pos + width * idx, normtime, width=0.9*width,
                         edgecolor='0.', label=label, hatch=gconfig['hatches'][idx],
                         color=gconfig['colors'][idx])
             pos += step
+        # I plot the averages here
 
-        # vals = np.mean(avg, axis=0)
         for idx, key in enumerate(avg.keys()):
-            vals = avg[key]
-            val = np.mean(vals)
+            val = np.mean(avg[key])
             plt.bar(pos + idx*width, val, width=0.9*width,
                     edgecolor='0.', label=None, hatch=gconfig['hatches'][idx],
                     color=gconfig['colors'][idx])
-            text = '{:.2f}'.format(val)
-            if idx == 0:
-                text = ''
-            else:
-                text = text[:]
-            ax.annotate(text, xy=(pos + idx*width, 0.01 + val),
-                        rotation='90',
+            ax.annotate('{:.2f}'.format(val), xy=(pos + idx*width, val),
                         **gconfig['annotate'])
         pos += step
 
-        plt.ylim(gconfig['ylim'])
-        handles, labels = ax.get_legend_handles_labels()
-        print(labels)
+        plt.xticks(np.arange(pos) + width, [c.upper()
+                                            for c in args.cases] + ['AVG'])
 
-        plt.legend(handles=handles, labels=labels, **gconfig['legend'])
-        plt.xlim(0-1.3*width/2, pos-1.4*width/2)
+        plt.ylim(gconfig['ylim'])
+        plt.legend(**gconfig['legend'])
+        ax.tick_params(**gconfig['tick_params'])
+        plt.xticks(**gconfig['ticks'], fontweight='bold')
         plt.yticks(gconfig['yticks'], **gconfig['ticks'])
 
-        plt.xticks(np.arange(pos) + step/2,
-                   [c.upper() for c in args.cases] + ['AVG'], **gconfig['xticks'])
-
-        ax.tick_params(**gconfig['tick_params'])
         plt.tight_layout()
         plt.subplots_adjust(**gconfig['subplots_adjust'])
         for file in gconfig['outfiles']:
-            file = file.format(images_dir, title, '-'.join(args.cases))
+            file = file.format(images_dir, this_filename[:-3], '-'.join(args.cases))
+            print('[{}] {}: {}'.format(this_filename[:-3], 'Saving figure', file))
             fig.savefig(file, dpi=600, bbox_inches='tight')
         if args.show:
             plt.show()
