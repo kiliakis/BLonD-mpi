@@ -93,11 +93,11 @@ seed = seed if args['seed'] == None else args['seed']
 approx = args['approx']
 timing.mode = args['time']
 os.environ['OMP_NUM_THREADS'] = str(args['omp'])
-withtp = args['withtp']
+withtp = bool(args['withtp'])
 
 
-worker.initLog(args['log'], args['logdir'])
-worker.initTrace(args['trace'], args['tracefile'])
+worker.initLog(bool(args['log']), args['logdir'])
+worker.initTrace(bool(args['trace']), args['tracefile'])
 worker.taskparallelism = withtp
 
 mpiprint(args)

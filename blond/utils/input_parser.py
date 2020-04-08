@@ -1,6 +1,6 @@
 import argparse
 
-parser = argparse.ArgumentParser(description='BLonD simulation mainfile.')
+parser = argparse.ArgumentParser(description='HBLonD simulation mainfile.')
 
 parser.add_argument('-p', '--particles', type=int,
                     help='Number of macro-particles.')
@@ -26,16 +26,16 @@ parser.add_argument('-beginafter', '--beginafter', type=int,
 parser.add_argument('-approx', '--approx', type=int, choices=[0, 1, 2], default=0,
                     help='Which approximation to use: 0 (No approx), 1 (global reduce), 2 (scale histo).')
 
-parser.add_argument('-withtp', '--withtp', action='store_true',
-                    help='Use task-parallelism.')
+parser.add_argument('-withtp', '--withtp', type=int, default=0, choices=[0, 1],
+                    help='Use task-parallelism. Default: 0')
 
 parser.add_argument('-o', '--omp', type=int, default=1,
                     help='Number of openmp threads to use.'
                     '\nDefault: 1')
 
-parser.add_argument('-l', '--log', action='store_true',
-                    help='Log debug messages or not.'
-                    '\nDefault: Do not log.')
+parser.add_argument('-l', '--log', type=int, choices=[0,1],
+                    help='Log debug messages (1) or not (0).'
+                    '\nDefault: Do not log (0).')
 
 parser.add_argument('-logdir', '--logdir', type=str, default='./logs/',
                     help='Directory to store the log files.'
@@ -50,7 +50,7 @@ parser.add_argument('-timedir', '--timedir', type=str, default='./timings/',
                     help='Directory to store the timing reports.'
                     '\nDefault: ./timings')
 
-parser.add_argument('-m', '--monitor', type=int, default=0,
+parser.add_argument('-m', '--monitor', type=int, default=0, choices=[0,1],
                     help='Monitoring interval (0: no monitor).'
                     '\nDefault: 0')
 
@@ -62,7 +62,7 @@ parser.add_argument('-seed', '--seed', type=int, default=0,
                     help='Seed value for the particle distribution generation.'
                     '\nDefault: None')
 
-parser.add_argument('-trace', '--trace', action='store_true',
+parser.add_argument('-trace', '--trace', type=int, default=0, choices=[0,1],
                     help='Trace the specified regions of interest (MPE).'
                     '\nDefault: No tracing.')
 
@@ -74,6 +74,7 @@ parser.add_argument('-lb', '--loadbalance', type=str, choices=['off', 'times', '
                     default=0,
                     help='Load balance policy: off, times, interval, reportonly.'
                     '\nDefault: off ')
+
 parser.add_argument('-lba', '--loadbalancearg', type=int, default=0,
                     help='Additional Load balance argument, used only if lb is times or interval.'
                     '\nDefault: 0 --> 10 times per run or every 1k turns.')
