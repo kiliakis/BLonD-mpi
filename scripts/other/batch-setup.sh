@@ -1,6 +1,6 @@
 #!/bin/bash
 #SBATCH --time=2
-#SBATCH --partition=be-short
+#SBATCH --partition=inf-short
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
 #SBATCH --output=setup-job.txt

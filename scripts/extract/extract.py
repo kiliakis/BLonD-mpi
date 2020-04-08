@@ -97,7 +97,6 @@ parser.add_argument('-d', '--delta', action='store_true',
 
 def generate_reports(input, report_script):
     print('\n--------Generating reports-------\n')
-    records = []
     for dirs, subdirs, files in os.walk(input):
         if 'report' not in subdirs:
             continue
