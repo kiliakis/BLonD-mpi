@@ -10,7 +10,7 @@ this_filename = sys.argv[0].split('/')[-1]
 
 project_dir = this_directory + '../../'
 
-parser = argparse.ArgumentParser(description='Generate the figure with of the strong scaling experiment.',
+parser = argparse.ArgumentParser(description='Generate the figure of the weak scaling experiment.',
                                  usage='python {} -i results/'.format(this_filename))
 
 parser.add_argument('-i', '--inputdir', type=str, default=os.path.join(project_dir, 'results'),
@@ -22,8 +22,7 @@ parser.add_argument('-c', '--cases', type=str, nargs='+', default=['lhc','sps','
 
 parser.add_argument('-s', '--show', action='store_true',
                     help='Show the plots.')
-
-parser.add_argument('-ne', '--no-errorbars', action='store_true',
+parser.add_argument('-e', '--errorbars', action='store_true',
                     help='Add errorbars.')
 
 
@@ -46,20 +45,18 @@ gconfig = {
     'colors': ['xkcd:red', 'xkcd:green', 'xkcd:blue'],
     'x_name': 'n',
     'x_to_keep': [4, 8, 16, 32, 64],
-    # 'x_to_keep': [8, 16],
     'omp_name': 'omp',
     'y_name': 'avg_time(sec)',
-    # 'y_err_name': 'std',
     'xlabel': 'Nodes (x20 Cores)',
-    'ylabel': 'Speedup',
+    'ylabel': 'Norm. Throughput',
     'title': {
                 # 's': '{}'.format(case.upper()),
                 'fontsize': 10,
-                'y': .85,
+                'y': 0.83,
                 # 'x': 0.55,
                 'fontweight': 'bold',
     },
-    'figsize': [5, 2.2],
+    'figsize': [5, 2.],
     'annotate': {
         'fontsize': 9,
         'textcoords': 'data',
@@ -69,10 +66,10 @@ gconfig = {
     'ticks': {'fontsize': 10},
     'fontsize': 10,
     'legend': {
-        'loc': 'upper left', 'ncol': 1, 'handlelength': 1.5, 'fancybox': False,
-        'framealpha': .7, 'fontsize': 10, 'labelspacing': 0, 'borderpad': 0.5,
+        'loc': 'lower left', 'ncol': 1, 'handlelength': 1., 'fancybox': True,
+        'framealpha': 0., 'fontsize': 10, 'labelspacing': 0, 'borderpad': 0.5,
         'handletextpad': 0.5, 'borderaxespad': 0.1, 'columnspacing': 0.8,
-        'bbox_to_anchor': (0., 0.85)
+        # 'bbox_to_anchor': (0, 1.25)
     },
     'subplots_adjust': {
         'wspace': 0.0, 'hspace': 0.1, 'top': 0.93
@@ -86,41 +83,33 @@ gconfig = {
         'direction': 'out', 'length': 3, 'width': 1,
     },
     'fontname': 'DejaVu Sans Mono',
-    'ylim': [0, 36],
-    'xlim': [1.6, 36],
-    'yticks': [4, 8, 12, 16, 20, 24, 28, 32],
+
+    'ylim': [0., 1.1],
+    # 'ylim2': [0, 110],
+    'yticks': [0, 0.2, 0.4, 0.6, 0.8, 1.0],
+    # 'yticks2': [0, 20, 40, 60, 80, 100],
     'outfiles': ['{}/{}-{}.png'],
-    'errorfile': 'comm-comp-std-report.csv',
-    'datafile': 'comm-comp-report.csv',
     'files': [
-        '{}/cluster/{}/lb-tp-approx0-strong-scaling/{}',
-        '{}/cluster/{}/lb-tp-approx2-strong-scaling/{}',
-        '{}/cluster/{}/lb-tp-approx1-strong-scaling/{}',
+        '{}/{}/lb-tp-approx0-weak-scaling/comm-comp-report.csv',
+        '{}/{}/lb-tp-approx2-weak-scaling/comm-comp-report.csv',
+        '{}/{}/lb-tp-approx1-weak-scaling/comm-comp-report.csv',
     ],
     'lines': {
         'mpi': ['mpich3', 'mvapich2', 'openmpi3'],
         'lb': ['interval', 'reportonly'],
         'approx': ['0', '1', '2'],
         'lba': ['500'],
-        'b': ['6', '12', '24', '96', '192',
-              '48', '21', '9', '18', '36',
-              '72', '144', '288'],
+        # 'b': ['6', '12', '24', '96', '192',
+        #       '48', '21', '9', '18', '36',
+        #       '72', '144', '288'],
         't': ['5000'],
         'type': ['total'],
-    },
-    'reference': {
-        'file': '{}/single-node/{}/strong-scaling/comm-comp-report.csv',
-        'lines': {
-            'b': ['192', '21', '288'],
-            'ppb': ['4000000', '16000000'],
-            't': ['5000'],
-            'type': ['total'],
-        },
     }
 }
 
 plt.rcParams['font.family'] = gconfig['fontname']
 # plt.rcParams['text.usetex'] = True
+
 
 if __name__ == '__main__':
     fig, ax_arr = plt.subplots(ncols=len(args.cases), nrows=1,
@@ -132,15 +121,13 @@ if __name__ == '__main__':
         print('[{}] tc: {}: {}'.format(this_filename[:-3], case, 'Reading data'))
 
         ax = ax_arr[col]
+        # ax2 = ax.twinx()
         plt.sca(ax)
-        ax.set_xscale('log', basex=2)
         plots_dir = {}
-        errors_dir = {}
-
         for file in gconfig['files']:
+            file = file.format(res_dir, case.upper())
             # print(file)
-            data = np.genfromtxt(file.format(res_dir, case.upper(), gconfig['datafile']),
-                                 delimiter='\t', dtype=str)
+            data = np.genfromtxt(file, delimiter='\t', dtype=str)
             header, data = list(data[0]), data[1:]
             temp = get_plots(header, data, gconfig['lines'],
                              exclude=gconfig.get('exclude', []),
@@ -148,28 +135,7 @@ if __name__ == '__main__':
             for key in temp.keys():
                 plots_dir['_{}_'.format(key)] = temp[key].copy()
 
-            if not args.no_errorbars:
-                data = np.genfromtxt(file.format(res_dir, case.upper(), gconfig['errorfile']),
-                                     delimiter='\t', dtype=str)
-                header, data = list(data[0]), data[1:]
-                temp = get_plots(header, data, gconfig['lines'],
-                                 exclude=gconfig.get('exclude', []),
-                                 prefix=True)
-                for key in temp.keys():
-                    errors_dir['_{}_'.format(key)] = temp[key].copy()
-        ref_dir = {}
-        data = np.genfromtxt(gconfig['reference']['file'].format(res_dir, case.upper()),
-                             delimiter='\t', dtype=str)
-        header, data = list(data[0]), data[1:]
-        temp = get_plots(header, data, gconfig['reference']['lines'],
-                         exclude=gconfig.get('exclude', []),
-                         prefix=True)
-        for key in temp.keys():
-            ref_dir[case] = temp[key].copy()
-
-
-        plt.grid(True, which='both', axis='y', alpha=0.5)
-        # plt.grid(True, which='minor', alpha=0.5, zorder=1)
+        plt.grid(True, which='major', alpha=0.5)
         plt.grid(False, which='major', axis='x')
         plt.title('{}'.format(case.upper()), **gconfig['title'])
         if col == 1:
@@ -181,10 +147,29 @@ if __name__ == '__main__':
                        fontweight='bold',
                        fontsize=gconfig['fontsize'])
 
+        keyref = ''
+        for k in plots_dir.keys():
+            if 'approx0' in k:
+                keyref = k
+                break
+        if keyref == '':
+            print('ERROR: reference key not found')
+            exit(-1)
+        refvals = plots_dir[keyref]
+        x = get_values(refvals, header, gconfig['x_name'])
+        omp = get_values(refvals, header, gconfig['omp_name'])
+        y = get_values(refvals, header, gconfig['y_name'])
+        parts = get_values(refvals, header, 'ppb')
+        bunches = get_values(refvals, header, 'b')
+        turns = get_values(refvals, header, 't')
+        # This the reference throughput per node
+        yref = parts * bunches * turns / y
+        yref /= (x * omp // 20)
+        yref = yref[list(x).index(4)]
+
         pos = 0
         step = 0.1
         width = 1. / (1*len(plots_dir.keys())+0.4)
-
         print('[{}] tc: {}: {}'.format(this_filename[:-3], case, 'Plotting data'))
 
         for idx, k in enumerate(plots_dir.keys()):
@@ -208,7 +193,6 @@ if __name__ == '__main__':
             elif tp == '0':
                 tp = 'NoTP'
             approx = gconfig['approx'][approx]
-
             label = '{}'.format(approx)
 
             x = get_values(values, header, gconfig['x_name'])
@@ -217,82 +201,51 @@ if __name__ == '__main__':
             parts = get_values(values, header, 'ppb')
             bunches = get_values(values, header, 'b')
             turns = get_values(values, header, 't')
-            if not args.no_errorbars:
-                # yerr is normalized to y
-                yerr = get_values(errors_dir[k], header, gconfig['y_name'])
-                yerr = yerr/y
-            else:
-                yerr = np.zeros(len(y))
 
-            # This is the throughput
+            # This is the throughput per node
             y = parts * bunches * turns / y
+            y /= (x * omp//20)
 
-            # Now the reference, 1thread
-            yref = get_values(ref_dir[case], header, gconfig['y_name'])
-            partsref = get_values(ref_dir[case], header, 'ppb')
-            bunchesref = get_values(ref_dir[case], header, 'b')
-            turnsref = get_values(ref_dir[case], header, 't')
-            ompref = get_values(ref_dir[case], header, gconfig['omp_name'])
-            yref = partsref * bunchesref * turnsref / yref
-
-            speedup = y / yref
-
+            speedup = y
             x_new = []
             sp_new = []
-            yerr_new = []
             for i, xi in enumerate(gconfig['x_to_keep']):
+                x_new.append(xi)
                 if xi in x:
-                    x_new.append(xi)
                     sp_new.append(speedup[list(x).index(xi)])
-                    yerr_new.append(yerr[list(x).index(xi)])
-                # else:
-                #     sp_new.append(0)
+                else:
+                    sp_new.append(0)
             x = np.array(x_new)
             speedup = np.array(sp_new)
-            yerr = np.array(yerr_new)
-            # yerr is denormalized again
-            yerr = yerr * speedup
             # efficiency = 100 * speedup / (x * omp[0] / ompref)
             x = x * omp[0]
+            # speedup = speedup / yref
+            speedup = speedup / speedup[0]
 
-            plt.errorbar(x//20, speedup,
-                         label=label, marker=gconfig['markers'][idx],
-                         color=gconfig['colors'][idx],
-                         yerr=yerr,
-                         capsize=2)
-            # print("{}:{}:".format(case, label), end='\t')
-            # for xi, yi, yeri in zip(x//20, speedup, yerr):
-            #     print('N:{:.0f} {:.2f}±{:.2f}'.format(
-            #         xi, yi, yeri), end=' ')
-            # print('')
+            plt.plot(np.arange(len(x)), speedup,
+                     label=label, marker=gconfig['markers'][idx],
+                     color=gconfig['colors'][idx])
             # print("{}:{}:".format(case, label), speedup)
             pos += 1 * width
         # pos += width * step
         plt.ylim(gconfig['ylim'])
-        # plt.xticks(np.arange(len(x)), np.array(x, int)//20)
-        plt.xlim(gconfig['xlim'])
-        plt.xticks(x//20, np.array(x, int)//20, **gconfig['ticks'])
-
+        plt.xlim(0-.8*width, len(x)-1.5*width)
+        plt.xticks(np.arange(len(x)), np.array(x, int)//20)
         if col == 0:
             ax.tick_params(**gconfig['tick_params_left'])
         else:
             ax.tick_params(**gconfig['tick_params_center_right'])
 
-        # if col == 0:
-            # handles, labels = ax.get_legend_handles_labels()
-            # print(labels)
-        ax.legend(**gconfig['legend'])
+        plt.legend(**gconfig['legend'])
 
         plt.xticks(**gconfig['ticks'])
-        plt.yticks(gconfig['yticks'], gconfig['yticks'], **gconfig['ticks'])
+        plt.yticks(gconfig['yticks'], **gconfig['ticks'])
 
-    # plt.legend(**gconfig['legend'])
     plt.tight_layout()
     plt.subplots_adjust(**gconfig['subplots_adjust'])
     for file in gconfig['outfiles']:
         file = file.format(images_dir, this_filename[:-3], '-'.join(args.cases))
         print('[{}] {}: {}'.format(this_filename[:-3], 'Saving figure', file))
-
         fig.savefig(file, dpi=600, bbox_inches='tight')
     if args.show:
         plt.show()

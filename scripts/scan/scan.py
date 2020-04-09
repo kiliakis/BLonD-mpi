@@ -21,8 +21,8 @@ parser.add_argument('-experiment', '--experiment', type=str, default='local', ch
 parser.add_argument('-t', '--testcases', type=str, default=['lhc', 'sps', 'ps'], choices=['lhc', 'sps', 'ps'],
                     help='Which testcases to run. Default: all')
 
-parser.add_argument('-o', '--output', type=str, default='./results/raw/local',
-                    help='Output directory to store the output data. Default: ./results/raw')
+parser.add_argument('-o', '--output', type=str, default='./results/local',
+                    help='Output directory to store the output data. Default: ./results/local')
 
 
 if __name__ == '__main__':

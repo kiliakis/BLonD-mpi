@@ -13,8 +13,6 @@ parser = argparse.ArgumentParser(description='Run all the CF2020 figure scripts.
 parser.add_argument('-i', '--inputdir', type=str, default=os.path.join(project_dir, 'reference_results'),
                     help='The directory with the results.')
 
-parser.add_argument('-p', '--plotdir', type=str, default=os.path.join(project_dir, 'scripts/cf2020plots'),
-                    help='The directory with the plotting scripts.')
 
 parser.add_argument('-c', '--cases', type=str, nargs='+', default=['lhc', 'sps', 'ps'],
                     choices=['lhc', 'sps', 'ps', 'ex01'],
@@ -30,7 +28,7 @@ if __name__ == '__main__':
                     'time_breakdown_strong_scaling.py',
                     'mpi_implementations_bench.py',
                     'weak_scaling_experiment.py']
-    plot_scripts = [os.path.join(args.plotdir, ps) for ps in plot_scripts]
+    plot_scripts = [os.path.join(this_directory, ps) for ps in plot_scripts]
 
     for ps in plot_scripts:
         print('Calling script: ', ps)

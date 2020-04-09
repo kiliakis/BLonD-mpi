@@ -94,7 +94,7 @@ gconfig = {
     'deltafile': 'delta-report.csv',
     'datafile': 'avg-report.csv',
     'files': [
-        '{}/cluster/{}/approx0-spread/{}',
+        '{}/{}/approx0-spread/{}',
     ],
     'lines': {
         'mpi': ['mpich3', 'mvapich2', 'openmpi3'],

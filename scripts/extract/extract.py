@@ -131,6 +131,10 @@ def write_avg(files, outfile, outfile_std):
     data_dic = {}
     for f in files:
         data = np.genfromtxt(f, dtype=str, delimiter='\t')
+        if len(data) == 0:
+            print('Empty file: ', indir+'/'+f)
+            continue
+
         header, data = data[0], data[1:]
         funcs, data = data[:, 0], np.array(data[:, 1:], float)
 
@@ -144,6 +148,9 @@ def write_avg(files, outfile, outfile_std):
             if f not in data_dic:
                 data_dic[f] = []
             data_dic[f].append(data[i])
+
+    if len(data_dic) == 0:
+        return
 
     acc_data = [default_header]
     acc_data_std = [default_header]
@@ -195,7 +202,7 @@ def collect_reports(input, outfile, filename):
         if filename not in files:
             continue
 
-        print(dirs)
+        # print(dirs)
         try:
             config = dirs.split('/')[-1]
             ts = config.split('_t')[1].split('_')[0]
@@ -212,14 +219,17 @@ def collect_reports(input, outfile, filename):
             mpiv = config.split('_mpi')[1].split('_')[0]
             lb = config.split('_lb')[1].split('_')[0]
             lba = config.split('_lba')[1].split('_')[0]
+            tp = config.split('_tp')[1].split('_')[0]
 
             data = np.genfromtxt(os.path.join(dirs, filename),
                                  dtype=str, delimiter='\t')
-
+            if len(data) == 0:
+                print('Problem collecting data directory: ', dirs)
+                continue
             data_head, data = data[0], data[1:]
             for r in data:
                 records.append([ps, bs, ss, ts, ws, Ns, oss, rs,
-                                mtw, seed, approx, mpiv, lb, lba] + list(r))
+                                mtw, seed, approx, mpiv, lb, lba, tp] + list(r))
         except:
             print('[Error] dir ', dirs)
             continue
@@ -227,7 +237,7 @@ def collect_reports(input, outfile, filename):
                                 int(a[9]), a[11]))
     writer = csv.writer(outfile, delimiter='\t')
     header = ['ppb', 'b', 's', 't', 'n', 'N', 'omp',
-              'red', 'mtw', 'seed', 'approx', 'mpi', 'lb', 'lba'] + list(data_head)
+              'red', 'mtw', 'seed', 'approx', 'mpi', 'lb', 'lba', 'tp'] + list(data_head)
     writer.writerow(header)
     writer.writerows(records)
     if records:
@@ -251,19 +261,19 @@ if __name__ == '__main__':
                 collect_reports(indir, sys.stdout, comm_comp_fname)
             elif args.outfile == 'file':
                 errorcode = 0
-                errorcode |= collect_reports(indir,
+                errorcode = errorcode or collect_reports(indir,
                                 open(os.path.join(indir, avg_std_report), 'w'),
                                 average_std_fname)
-                errorcode |= collect_reports(indir,
+                errorcode = errorcode or collect_reports(indir,
                                 open(os.path.join(indir, avg_report), 'w'),
                                 average_fname)
-                errorcode |= collect_reports(indir,
+                errorcode = errorcode or collect_reports(indir,
                                 open(os.path.join(indir, avg_std_avg_report), 'w'),
                                 average_std_avg_fname)
-                errorcode |= collect_reports(indir,
+                errorcode = errorcode or collect_reports(indir,
                                 open(os.path.join(indir, comm_comp_report), 'w'),
                                 comm_comp_fname)
-                errorcode |= collect_reports(indir,
+                errorcode = errorcode or collect_reports(indir,
                                 open(os.path.join(indir, comm_comp_std_report), 'w'),
                                 comm_comp_std_fname)
                 # For plot_all.py

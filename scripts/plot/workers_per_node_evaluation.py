@@ -13,7 +13,7 @@ project_dir = this_directory + '../../'
 parser = argparse.ArgumentParser(description='Generate the figure of the MPI workers per node evaluation.',
                                  usage='python {} -i results/'.format(this_filename))
 
-parser.add_argument('-i', '--inputdir', type=str, default=os.path.join(project_dir, 'results'),
+parser.add_argument('-i', '--inputdir', type=str, default=os.path.join(project_dir, 'results/local'),
                     help='The directory with the results.')
 
 parser.add_argument('-c', '--cases', type=str, nargs='+', default=['lhc', 'sps', 'ps'],
@@ -84,7 +84,7 @@ gconfig = {
     'yticks': [.5, .6, .7, .8, .9, 1.],
     'outfiles': ['{}/{}-{}.png'],
     'files': [
-        '{}/cluster/{}/approx0-workers/comm-comp-report.csv',
+        '{}/{}/approx0-workers/comm-comp-report.csv',
     ],
     'lines': {
         'mpi': ['mpich3', 'mvapich2', 'openmpi3'],
