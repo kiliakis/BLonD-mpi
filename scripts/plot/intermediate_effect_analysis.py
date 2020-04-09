@@ -16,9 +16,8 @@ parser = argparse.ArgumentParser(description='Generate the figure of the interme
 parser.add_argument('-i', '--inputdir', type=str, default=os.path.join(project_dir, 'results'),
                     help='The directory with the results.')
 
-parser.add_argument('-c', '--cases', type=str, nargs='+', default=['lhc', 'sps', 'ps'],
-                    choices=['lhc', 'sps', 'ps', 'ex01'],
-                    help='The test-case to plot.')
+parser.add_argument('-c', '--cases', type=str, default=['lhc,sps,ps'],
+                    help='A comma separated list of the testcases to run. Default: lhc,sps,ps')
 
 parser.add_argument('-s', '--show', action='store_true',
                     help='Show the plots.')
@@ -122,7 +121,7 @@ if __name__ == '__main__':
     avg = {}
     xticks = []
     xtickspos = []
-    for col, case in enumerate(args.cases):
+    for col, case in enumerate(args.cases.split(',')):
         print('[{}] tc: {}: {}'.format(
             this_filename[:-3], case, 'Reading data'))
         plots_dir = {}
@@ -252,14 +251,14 @@ if __name__ == '__main__':
     plt.yticks(gconfig['yticks'], **gconfig['ticks'])
 
     plt.xticks(np.arange(pos) + step/2,
-               [c.upper() for c in args.cases] + ['AVG'], **gconfig['xticks'])
+               [args.cases.upper()] + ['AVG'], **gconfig['xticks'])
 
     ax.tick_params(**gconfig['tick_params'])
     plt.tight_layout()
     plt.subplots_adjust(**gconfig['subplots_adjust'])
     for file in gconfig['outfiles']:
         file = file.format(
-            images_dir, this_filename[:-3], '-'.join(args.cases))
+            images_dir, this_filename[:-3], (args.cases))
         print('[{}] {}: {}'.format(this_filename[:-3], 'Saving figure', file))
         fig.savefig(file, dpi=600, bbox_inches='tight')
     if args.show:

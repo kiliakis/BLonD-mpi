@@ -16,9 +16,8 @@ parser = argparse.ArgumentParser(description='Generate the figure of the MPI wor
 parser.add_argument('-i', '--inputdir', type=str, default=os.path.join(project_dir, 'results/local'),
                     help='The directory with the results.')
 
-parser.add_argument('-c', '--cases', type=str, nargs='+', default=['lhc', 'sps', 'ps'],
-                    choices=['lhc', 'sps', 'ps', 'ex01'],
-                    help='The test-case to plot.')
+parser.add_argument('-c', '--cases', type=str, default=['lhc,sps,ps'],
+                    help='A comma separated list of the testcases to run. Default: lhc,sps,ps')
 
 parser.add_argument('-s', '--show', action='store_true',
                     help='Show the plots.')
@@ -27,6 +26,7 @@ parser.add_argument('-e', '--errorbars', action='store_true',
 
 
 args = parser.parse_args()
+args.cases = args.cases.split(',')
 
 res_dir = args.inputdir
 images_dir = os.path.join(res_dir, 'plots')

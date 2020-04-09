@@ -15,7 +15,7 @@ this_filename = sys.argv[0].split('/')[-1]
 parser = argparse.ArgumentParser(description='Run locally the MPI experiments.',
                                  usage='python {} -t lhc sps ps'.format(this_filename[:-3]))
 
-parser.add_argument('-experiment', '--experiment', type=str, default='local', choices=['local', 'cluster'],
+parser.add_argument('-environment', '--environment', type=str, default='local', choices=['local', 'cluster'],
                     help='The environment to run the scan.')
 
 parser.add_argument('-t', '--testcases', type=str, default=['lhc', 'sps', 'ps'], choices=['lhc', 'sps', 'ps'],

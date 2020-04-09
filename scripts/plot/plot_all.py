@@ -14,8 +14,8 @@ parser = argparse.ArgumentParser(description='Plot all the extracted results.',
 parser.add_argument('-i', '--indir', type=str, default='./results/local/',
                     help='The directory with the raw data. Default: ./results/local/')
 
-parser.add_argument('-t', '--testcases', type=str, default=['lhc', 'sps', 'ps'], choices=['lhc', 'sps', 'ps'],
-                    help='Which testcases to run. Default: all')
+parser.add_argument('-t', '--testcases', type=str, default='lhc,sps,ps',
+                    help='A comma separated list of the testcases to run. Default: lhc,sps,ps')
 
 
 
@@ -40,12 +40,12 @@ plot_scripts = {
 
 if __name__ == '__main__':
     args = parser.parse_args()
+
     failed_plots = []
     not_ready_plots = []
     for plot, requirements in plot_scripts.items():
-        # I need to make sure all the requirements exist for every testcase
         isReady = True
-        for case in args.testcases:
+        for case in args.testcases.split(','):
             for req in requirements:
                 directory = os.path.join(args.indir, case, req)
                 if os.path.isdir(directory) and len(glob.glob(directory + '/.extracted')) > 0:
@@ -56,7 +56,7 @@ if __name__ == '__main__':
         if isReady:
             cmd = ['python', os.path.join(this_directory, plot),
                    '-i', args.indir,
-                   '-c'] + args.testcases
+                   '-c', args.testcases]
             output = subprocess.run(cmd, stdout=sys.stdout,
                                     stderr=subprocess.STDOUT, env=os.environ.copy())
             if output.returncode != 0:
