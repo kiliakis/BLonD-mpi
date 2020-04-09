@@ -23,8 +23,13 @@ parser.add_argument('-c', '--cases', type=str, nargs='+', default=['lhc', 'sps',
 
 if __name__ == '__main__':
     args = parser.parse_args()
-
-    plot_scripts = os.listdir(args.plotdir)
+    plot_scripts = ['intermediate_effect_analysis.py',
+                    'strong_scaling_experiment.py',
+                    'workers_per_node_evaluation.py',
+                    'load_imbalance_spread.py',
+                    'time_breakdown_strong_scaling.py',
+                    'mpi_implementations_bench.py',
+                    'weak_scaling_experiment.py']
     plot_scripts = [os.path.join(args.plotdir, ps) for ps in plot_scripts]
 
     for ps in plot_scripts:

@@ -90,9 +90,9 @@ gconfig = {
     # 'yticks2': [0, 20, 40, 60, 80, 100],
     'outfiles': ['{}/{}-{}.png'],
     'files': [
-        '{}/mpi/{}/lb-tp-approx0-mvapich2-weak-scaling/comm-comp-report.csv',
-        '{}/mpi/{}/lb-tp-approx2-mvapich2-weak-scaling/comm-comp-report.csv',
-        '{}/mpi/{}/lb-tp-approx1-mvapich2-weak-scaling/comm-comp-report.csv',
+        '{}/cluster/{}/lb-tp-approx0-weak-scaling/comm-comp-report.csv',
+        '{}/cluster/{}/lb-tp-approx2-weak-scaling/comm-comp-report.csv',
+        '{}/cluster/{}/lb-tp-approx1-weak-scaling/comm-comp-report.csv',
     ],
     'lines': {
         'mpi': ['mpich3', 'mvapich2', 'openmpi3'],

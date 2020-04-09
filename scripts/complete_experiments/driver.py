@@ -55,7 +55,7 @@ if __name__ == '__main__':
 
     elif args.action == 'plot':
         print('Running: {} action: {}'.format(args.action))
-        cmd = ['python', scripts['plot'], '-environment', environment, '-i',
+        cmd = ['python', scripts['plot'], '-i',
                os.path.join(outdir, 'raw', environment), '-t'] + args.testcases
         subprocess.run(cmd, stdout=sys.stdout,
                        stderr=subprocess.STDOUT, env=os.environ.copy())

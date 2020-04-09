@@ -93,9 +93,9 @@ gconfig = {
     'errorfile': 'comm-comp-std-report.csv',
     'datafile': 'comm-comp-report.csv',
     'files': [
-        '{}/mpi/{}/lb-tp-approx0-mvapich2-strong-scaling/{}',
-        '{}/mpi/{}/lb-tp-approx2-mvapich2-strong-scaling/{}',
-        '{}/mpi/{}/lb-tp-approx1-mvapich2-strong-scaling/{}',
+        '{}/cluster/{}/lb-tp-approx0-strong-scaling/{}',
+        '{}/cluster/{}/lb-tp-approx2-strong-scaling/{}',
+        '{}/cluster/{}/lb-tp-approx1-strong-scaling/{}',
     ],
     'lines': {
         'mpi': ['mpich3', 'mvapich2', 'openmpi3'],

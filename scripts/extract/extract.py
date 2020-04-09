@@ -230,6 +230,8 @@ def collect_reports(input, outfile, filename):
               'red', 'mtw', 'seed', 'approx', 'mpi', 'lb', 'lba'] + list(data_head)
     writer.writerow(header)
     writer.writerows(records)
+    if records:
+        return 0
 
 
 if __name__ == '__main__':
@@ -248,21 +250,26 @@ if __name__ == '__main__':
                 collect_reports(indir, sys.stdout, average_fname)
                 collect_reports(indir, sys.stdout, comm_comp_fname)
             elif args.outfile == 'file':
-                collect_reports(indir,
+                errorcode = 0
+                errorcode |= collect_reports(indir,
                                 open(os.path.join(indir, avg_std_report), 'w'),
                                 average_std_fname)
-                collect_reports(indir,
+                errorcode |= collect_reports(indir,
                                 open(os.path.join(indir, avg_report), 'w'),
                                 average_fname)
-                collect_reports(indir,
+                errorcode |= collect_reports(indir,
                                 open(os.path.join(indir, avg_std_avg_report), 'w'),
                                 average_std_avg_fname)
-                collect_reports(indir,
+                errorcode |= collect_reports(indir,
                                 open(os.path.join(indir, comm_comp_report), 'w'),
                                 comm_comp_fname)
-                collect_reports(indir,
+                errorcode |= collect_reports(indir,
                                 open(os.path.join(indir, comm_comp_std_report), 'w'),
                                 comm_comp_std_fname)
+                # For plot_all.py
+                if errorcode == 0:
+                    open(os.path.join(indir, '.extracted'), 'a').close()
+                    
                 if args.delta:
                     collect_reports(indir,
                                     open(os.path.join(indir, delta_std_report), 'w'),

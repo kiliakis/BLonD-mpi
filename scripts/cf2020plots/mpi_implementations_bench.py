@@ -80,9 +80,9 @@ gconfig = {
     'yticks': [.9, 1., 1.1, 1.2, 1.3, 1.4],
     'outfiles': ['{}/{}-{}.png'],
     'files': [
-        '{}/mpi/{}/approx0-mvapich2-impl/comm-comp-report.csv',
-        '{}/mpi/{}/approx0-mpich3-impl/comm-comp-report.csv',
-        '{}/mpi/{}/approx0-openmpi3-impl/comm-comp-report.csv',
+        '{}/cluster/{}/approx0-impl/comm-comp-report.csv',
+        # '{}/cluster/{}/approx0-mpich3-impl/comm-comp-report.csv',
+        # '{}/cluster/{}/approx0-openmpi3-impl/comm-comp-report.csv',
     ],
     'lines': {
         'mpi': ['mpich3', 'mvapich2', 'openmpi3'],
