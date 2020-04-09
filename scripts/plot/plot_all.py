@@ -42,7 +42,7 @@ if __name__ == '__main__':
     args = parser.parse_args()
     failed_plots = []
     not_ready_plots = []
-    for plot, requirements in plot_scripts:
+    for plot, requirements in plot_scripts.items():
         # I need to make sure all the requirements exist for every testcase
         isReady = True
         for case in args.testcases:
@@ -56,7 +56,7 @@ if __name__ == '__main__':
         if isReady:
             cmd = ['python', os.path.join(this_directory, plot),
                    '-i', args.indir,
-                   '-t'] + args.testcases
+                   '-c'] + args.testcases
             output = subprocess.run(cmd, stdout=sys.stdout,
                                     stderr=subprocess.STDOUT, env=os.environ.copy())
             if output.returncode != 0:

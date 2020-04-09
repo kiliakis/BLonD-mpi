@@ -83,7 +83,7 @@ gconfig = {
         '{}/{}/approx0-impl/comm-comp-report.csv',
     ],
     'lines': {
-        'mpi': ['mpich3', 'mvapich2', 'openmpi3'],
+        'mpi': ['mvapich2', 'mpich3', 'openmpi3'],
         'lb': ['interval', 'reportonly'],
         'approx': ['0', '1', '2'],
         'lba': ['500'],
@@ -120,7 +120,7 @@ if __name__ == '__main__':
         # ax2 = ax.twinx()
         plots_dir = {}
         for file in gconfig['files']:
-            file = file.format(res_dir, case.upper())
+            file = file.format(res_dir, case)
             # print(file)
             data = np.genfromtxt(file, delimiter='\t', dtype=str)
             header, data = list(data[0]), data[1:]

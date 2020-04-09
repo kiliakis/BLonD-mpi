@@ -26,9 +26,9 @@ parser.add_argument('-o', '--output', type=str, default='./results',
 
 
 scripts = {
-    'scan': os.path.join(this_directory, '../scan/scan.py'),
-    'extract': os.path.join(this_directory, '../extract/extract_all.py'),
-    'plot': os.path.join(this_directory, '../plot/plot_all.py'),
+    'scan': os.path.join(this_directory, 'scan/scan.py'),
+    'extract': os.path.join(this_directory, 'extract/extract_all.py'),
+    'plot': os.path.join(this_directory, 'plot/plot_all.py'),
 }
 
 

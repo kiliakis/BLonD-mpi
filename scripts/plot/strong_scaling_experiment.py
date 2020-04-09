@@ -109,7 +109,7 @@ gconfig = {
         'type': ['total'],
     },
     'reference': {
-        'file': '{}/single-node/{}/strong-scaling/comm-comp-report.csv',
+        'file': '{}/baseline/{}/strong-scaling/comm-comp-report.csv',
         'lines': {
             'b': ['192', '21', '288'],
             'ppb': ['4000000', '16000000'],
@@ -139,7 +139,7 @@ if __name__ == '__main__':
 
         for file in gconfig['files']:
             # print(file)
-            data = np.genfromtxt(file.format(res_dir, case.upper(), gconfig['datafile']),
+            data = np.genfromtxt(file.format(res_dir, case, gconfig['datafile']),
                                  delimiter='\t', dtype=str)
             header, data = list(data[0]), data[1:]
             temp = get_plots(header, data, gconfig['lines'],
@@ -149,7 +149,7 @@ if __name__ == '__main__':
                 plots_dir['_{}_'.format(key)] = temp[key].copy()
 
             if not args.no_errorbars:
-                data = np.genfromtxt(file.format(res_dir, case.upper(), gconfig['errorfile']),
+                data = np.genfromtxt(file.format(res_dir, case, gconfig['errorfile']),
                                      delimiter='\t', dtype=str)
                 header, data = list(data[0]), data[1:]
                 temp = get_plots(header, data, gconfig['lines'],
@@ -158,7 +158,7 @@ if __name__ == '__main__':
                 for key in temp.keys():
                     errors_dir['_{}_'.format(key)] = temp[key].copy()
         ref_dir = {}
-        data = np.genfromtxt(gconfig['reference']['file'].format(res_dir, case.upper()),
+        data = np.genfromtxt(gconfig['reference']['file'].format(res_dir, case),
                              delimiter='\t', dtype=str)
         header, data = list(data[0]), data[1:]
         temp = get_plots(header, data, gconfig['reference']['lines'],

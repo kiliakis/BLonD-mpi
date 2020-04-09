@@ -123,7 +123,7 @@ if __name__ == '__main__':
         plt.sca(ax)
         plots_dir = {}
         for file in gconfig['files']:
-            file = file.format(res_dir, case.upper())
+            file = file.format(res_dir, case)
             # print(file)
             data = np.genfromtxt(file, delimiter='\t', dtype=str)
             header, data = list(data[0]), data[1:]

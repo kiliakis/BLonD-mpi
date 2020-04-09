@@ -142,7 +142,7 @@ if __name__ == '__main__':
         for file in gconfig['files']:
             # print(file)
             # Here I get the overall time
-            data = np.genfromtxt(file.format(res_dir, case.upper(), gconfig['datafile']),
+            data = np.genfromtxt(file.format(res_dir, case, gconfig['datafile']),
                                  delimiter='\t', dtype=str)
             header, data = list(data[0]), data[1:]
             temp = get_plots(header, data, gconfig['lines'],
@@ -152,7 +152,7 @@ if __name__ == '__main__':
                 plots_dir['_{}'.format(key)] = temp[key].copy()
 
             # Here I extract the delta
-            data = np.genfromtxt(file.format(res_dir, case.upper(), gconfig['deltafile']),
+            data = np.genfromtxt(file.format(res_dir, case, gconfig['deltafile']),
                                  delimiter='\t', dtype=str)
             header, data = list(data[0]), data[1:]
             temp = get_plots(header, data, gconfig['lines'],
@@ -162,7 +162,7 @@ if __name__ == '__main__':
                 deltas_dir['_{}'.format(key)] = temp[key].copy()
 
             # And here the std delta
-            data = np.genfromtxt(file.format(res_dir, case.upper(), gconfig['errorfile']),
+            data = np.genfromtxt(file.format(res_dir, case, gconfig['errorfile']),
                                  delimiter='\t', dtype=str)
             header, data = list(data[0]), data[1:]
             temp = get_plots(header, data, gconfig['lines'],
