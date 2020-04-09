@@ -101,7 +101,7 @@ def generate_reports(input, report_script):
         if 'report' not in subdirs:
             continue
         ps = []
-        print(dirs)
+        # print(dirs)
         report_dir = os.path.join(dirs, 'report')
         outfile1 = os.path.join(dirs, comm_comp_worker_fname)
         outfile2 = os.path.join(dirs, average_worker_fname)
@@ -130,8 +130,8 @@ def write_avg(files, outfile, outfile_std):
     default_header = []
     data_dic = {}
     for f in files:
-        data = np.genfromtxt(f, dtype=str, delimiter='\t')
-        if len(data) == 0:
+        data = np.genfromtxt(f, dtype=str, delimiter='\t', )
+        if len(data) <= 1 or len(data.shape) == 1:
             print('Empty file: ', indir+'/'+f)
             continue
 
@@ -175,7 +175,7 @@ def aggregate_reports(input):
         sdirs = fnmatch.filter(subdirs, date_pattern)
         if len(sdirs) == 0:
             continue
-        print(dirs)
+        # print(dirs)
 
         files = [os.path.join(dirs, s, comm_comp_worker_fname) for s in sdirs]
         write_avg(files, open(os.path.join(dirs, comm_comp_fname), 'w'),
