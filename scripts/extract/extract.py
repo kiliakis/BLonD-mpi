@@ -68,7 +68,7 @@ comm_comp_std_report = 'comm-comp-std-report.csv'
 
 
 parser = argparse.ArgumentParser(description='Generate a csv report from the input raw data.',
-                                 usage='python extract.py -i [indir] -o [outfile]')
+                                 usage='python extract.py -i [indir]')
 
 parser.add_argument('-o', '--outfile', type=str, default='file',
                     choices=['sys.stdout', 'file'],
