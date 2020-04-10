@@ -3,7 +3,7 @@ import os
 this_directory = os.path.dirname(os.path.realpath(__file__)) + "/"
 
 blond_home = os.path.abspath(os.path.join(this_directory, '../../'))
-exe_home = os.path.join(blond_home, '__EXAMPLES/main_files')
+exe_home = os.path.join(blond_home, 'examples/main_files')
 batch_script = os.path.join(blond_home, 'scripts/other/batch-simple.sh')
 
 mpirun = 'mpirun'

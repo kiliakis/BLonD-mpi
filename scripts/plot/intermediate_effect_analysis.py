@@ -16,13 +16,14 @@ parser = argparse.ArgumentParser(description='Generate the figure of the interme
 parser.add_argument('-i', '--inputdir', type=str, default=os.path.join(project_dir, 'results'),
                     help='The directory with the results.')
 
-parser.add_argument('-c', '--cases', type=str, default=['lhc,sps,ps'],
+parser.add_argument('-c', '--cases', type=str, default='lhc,sps,ps',
                     help='A comma separated list of the testcases to run. Default: lhc,sps,ps')
 
 parser.add_argument('-s', '--show', action='store_true',
                     help='Show the plots.')
 
 args = parser.parse_args()
+args.cases = args.cases.split(',')
 
 res_dir = args.inputdir
 images_dir = os.path.join(res_dir, 'plots')
@@ -40,7 +41,7 @@ gconfig = {
     'hatches': ['', '', 'xx', '', 'xx', '', 'xx'],
     'colors': ['0.1', '0.45', '0.45', '0.7', '0.7', '0.95', '0.95'],
     'x_name': 'n',
-    'x_to_keep': [16],
+    # 'x_to_keep': [16],
     'omp_name': 'omp',
     'y_name': 'avg_time(sec)',
     'xlabel': 'Nodes (x20 Cores)',
@@ -91,12 +92,12 @@ gconfig = {
         '{}/{}/lb-tp-approx1-interm/comm-comp-report.csv',
     ],
     'lines': {
-        'mpi': ['mpich3', 'mvapich2', 'openmpi3'],
+        # 'mpi': ['mpich3', 'mvapich2', 'openmpi3'],
         'lb': ['interval', 'reportonly'],
         'approx': ['0', '1', '2'],
-        'lba': ['500'],
-        'b': ['96', '48', '72', '21'],
-        't': ['5000'],
+        # 'lba': ['500'],
+        # 'b': ['96', '48', '72', '21'],
+        # 't': ['5000'],
         'type': ['total'],
     }
 
@@ -121,7 +122,7 @@ if __name__ == '__main__':
     avg = {}
     xticks = []
     xtickspos = []
-    for col, case in enumerate(args.cases.split(',')):
+    for col, case in enumerate(args.cases):
         print('[{}] tc: {}: {}'.format(
             this_filename[:-3], case, 'Reading data'))
         plots_dir = {}
@@ -165,9 +166,8 @@ if __name__ == '__main__':
 
         for idx, k in enumerate(plots_dir.keys()):
             values = plots_dir[k]
-            mpiv = k.split('_mpi')[1].split('_')[0]
+            # mpiv = k.split('_mpi')[1].split('_')[0]
             lb = k.split('lb')[1].split('_')[0]
-            lba = k.split('lba')[1].split('_')[0]
             approx = k.split('approx')[1].split('_')[0]
             tp = k.split('_')[-1]
             experiment = k.split('_')[-1]
@@ -198,16 +198,16 @@ if __name__ == '__main__':
             y = parts * bunches * turns / y
 
             speedup = yref / y
-            x_new = []
-            sp_new = []
-            for i, xi in enumerate(gconfig['x_to_keep']):
-                x_new.append(xi)
-                if xi in x:
-                    sp_new.append(speedup[list(x).index(xi)])
-                else:
-                    sp_new.append(0)
-            x = np.array(x_new)
-            speedup = np.array(sp_new)
+            # x_new = []
+            # sp_new = []
+            # for i, xi in enumerate(gconfig['x_to_keep']):
+            #     x_new.append(xi)
+            #     if xi in x:
+            #         sp_new.append(speedup[list(x).index(xi)])
+            #     else:
+            #         sp_new.append(0)
+            # x = np.array(x_new)
+            # speedup = np.array(sp_new)
             # efficiency = 100 * speedup / (x * omp[0] / ompref)
             x = x * omp[0]
 
@@ -251,14 +251,14 @@ if __name__ == '__main__':
     plt.yticks(gconfig['yticks'], **gconfig['ticks'])
 
     plt.xticks(np.arange(pos) + step/2,
-               [args.cases.upper()] + ['AVG'], **gconfig['xticks'])
+               [c.upper() for c in args.cases] + ['AVG'], **gconfig['xticks'])
 
     ax.tick_params(**gconfig['tick_params'])
     plt.tight_layout()
     plt.subplots_adjust(**gconfig['subplots_adjust'])
     for file in gconfig['outfiles']:
         file = file.format(
-            images_dir, this_filename[:-3], (args.cases))
+            images_dir, this_filename[:-3], '-'.join(args.cases))
         print('[{}] {}: {}'.format(this_filename[:-3], 'Saving figure', file))
         fig.savefig(file, dpi=600, bbox_inches='tight')
     if args.show:

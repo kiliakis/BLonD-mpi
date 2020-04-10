@@ -17,7 +17,7 @@ parser = argparse.ArgumentParser(description='Generate the figure of the run tim
 parser.add_argument('-i', '--inputdir', type=str, default=os.path.join(project_dir, 'results'),
                     help='The directory with the results.')
 
-parser.add_argument('-c', '--cases', type=str, default=['lhc,sps,ps'],
+parser.add_argument('-c', '--cases', type=str, default='lhc,sps,ps',
                     help='A comma separated list of the testcases to run. Default: lhc,sps,ps')
 
 parser.add_argument('-s', '--show', action='store_true',
@@ -46,7 +46,7 @@ gconfig = {
     'colors': ['0.85', '0.4'],
     'edgecolors': ['xkcd:red', 'xkcd:blue'],
     'x_name': 'n',
-    'x_to_keep': [4, 8, 16, 32, 64],
+    # 'x_to_keep': [4, 8, 16, 32, 64],
     'omp_name': 'omp',
     'y_name': 'percent',
     'xlabel': 'Nodes (x20 Cores)',
@@ -95,14 +95,8 @@ gconfig = {
         '{}/{}/lb-tp-approx1-strong-scaling/comm-comp-report.csv',
     ],
     'lines': {
-        'mpi': ['mpich3', 'mvapich2', 'openmpi3'],
-        'lb': ['interval', 'reportonly'],
+        # 'mpi': ['mpich3', 'mvapich2', 'openmpi3'],
         'approx': ['0', '1', '2'],
-        'lba': ['500'],
-        'b': ['6', '12', '24', '96', '192',
-              '48', '21', '9', '18', '36',
-              '72', '144', '288'],
-        't': ['5000'],
         'type': ['comm', 'comp', 'serial', 'other'],
     }
 
@@ -160,9 +154,6 @@ if __name__ == '__main__':
         print('[{}] tc: {}: {}'.format(this_filename[:-3], case, 'Plotting data'))
 
         for idx, k in enumerate(final_dir.keys()):
-            mpiv = k.split('_mpi')[1].split('_')[0]
-            lb = k.split('lb')[1].split('_')[0]
-            lba = k.split('lba')[1].split('_')[0]
             approx = k.split('approx')[1].split('_')[0]
             approx = gconfig['approx'][approx]
             label = '{}'.format(approx)
@@ -181,14 +172,14 @@ if __name__ == '__main__':
                     y += get_values(final_dir[k]['other'],
                                     header, gconfig['y_name'])
 
-                x_new = []
-                y_new = []
-                for i, xi in enumerate(gconfig['x_to_keep']):
-                    # if xi in x:
-                    x_new.append(xi)
-                    y_new.append(y[list(x).index(xi)])
-                x = np.array(x_new)
-                y = np.array(y_new)
+                # x_new = []
+                # y_new = []
+                # for i, xi in enumerate(gconfig['x_to_keep']):
+                #     # if xi in x:
+                #     x_new.append(xi)
+                #     y_new.append(y[list(x).index(xi)])
+                # x = np.array(x_new)
+                # y = np.array(y_new)
                 x = x * omp[0] // 20
                 if len(bottom) == 0:
                     bottom = np.zeros(len(y))

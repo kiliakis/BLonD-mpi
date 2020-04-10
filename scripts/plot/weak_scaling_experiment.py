@@ -16,7 +16,7 @@ parser = argparse.ArgumentParser(description='Generate the figure of the weak sc
 parser.add_argument('-i', '--inputdir', type=str, default=os.path.join(project_dir, 'results'),
                     help='The directory with the results.')
 
-parser.add_argument('-c', '--cases', type=str, default=['lhc,sps,ps'],
+parser.add_argument('-c', '--cases', type=str, default='lhc,sps,ps',
                     help='A comma separated list of the testcases to run. Default: lhc,sps,ps')
 
 parser.add_argument('-s', '--show', action='store_true',
@@ -44,7 +44,7 @@ gconfig = {
     'markers': ['x', 'o', '^'],
     'colors': ['xkcd:red', 'xkcd:green', 'xkcd:blue'],
     'x_name': 'n',
-    'x_to_keep': [4, 8, 16, 32, 64],
+    # 'x_to_keep': [4, 8, 16, 32, 64],
     'omp_name': 'omp',
     'y_name': 'avg_time(sec)',
     'xlabel': 'Nodes (x20 Cores)',
@@ -95,14 +95,14 @@ gconfig = {
         '{}/{}/lb-tp-approx1-weak-scaling/comm-comp-report.csv',
     ],
     'lines': {
-        'mpi': ['mpich3', 'mvapich2', 'openmpi3'],
-        'lb': ['interval', 'reportonly'],
+        # 'mpi': ['mpich3', 'mvapich2', 'openmpi3'],
+        # 'lb': ['interval', 'reportonly'],
         'approx': ['0', '1', '2'],
-        'lba': ['500'],
+        # 'lba': ['500'],
         # 'b': ['6', '12', '24', '96', '192',
         #       '48', '21', '9', '18', '36',
         #       '72', '144', '288'],
-        't': ['5000'],
+        # 't': ['5000'],
         'type': ['total'],
     }
 }
@@ -174,24 +174,7 @@ if __name__ == '__main__':
 
         for idx, k in enumerate(plots_dir.keys()):
             values = plots_dir[k]
-            mpiv = k.split('_mpi')[1].split('_')[0]
-            lb = k.split('lb')[1].split('_')[0]
-            lba = k.split('lba')[1].split('_')[0]
             approx = k.split('approx')[1].split('_')[0]
-            if 'tp' in k:
-                tp = '1'
-            else:
-                tp = '0'
-            experiment = k.split('_')[-1]
-            # tp = k.split('tp')[1].split('_')[0]
-            if lb == 'interval':
-                lb = 'LB'
-            elif lb == 'reportonly':
-                lb = 'NoLB'
-            if tp == '1':
-                tp = 'TP'
-            elif tp == '0':
-                tp = 'NoTP'
             approx = gconfig['approx'][approx]
             label = '{}'.format(approx)
 
@@ -207,16 +190,16 @@ if __name__ == '__main__':
             y /= (x * omp//20)
 
             speedup = y
-            x_new = []
-            sp_new = []
-            for i, xi in enumerate(gconfig['x_to_keep']):
-                x_new.append(xi)
-                if xi in x:
-                    sp_new.append(speedup[list(x).index(xi)])
-                else:
-                    sp_new.append(0)
-            x = np.array(x_new)
-            speedup = np.array(sp_new)
+            # x_new = []
+            # sp_new = []
+            # for i, xi in enumerate(gconfig['x_to_keep']):
+            #     x_new.append(xi)
+            #     if xi in x:
+            #         sp_new.append(speedup[list(x).index(xi)])
+            #     else:
+            #         sp_new.append(0)
+            # x = np.array(x_new)
+            # speedup = np.array(sp_new)
             # efficiency = 100 * speedup / (x * omp[0] / ompref)
             x = x * omp[0]
             # speedup = speedup / yref

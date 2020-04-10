@@ -17,7 +17,7 @@ parser = argparse.ArgumentParser(description='Generate the figure of the MPI lib
 parser.add_argument('-i', '--inputdir', type=str, default=os.path.join(project_dir, 'results'),
                     help='The directory with the results.')
 
-parser.add_argument('-c', '--cases', type=str, default=['lhc,sps,ps'],
+parser.add_argument('-c', '--cases', type=str, default='lhc,sps,ps',
                     help='A comma separated list of the testcases to run. Default: lhc,sps,ps')
 
 parser.add_argument('-s', '--show', action='store_true',
@@ -84,11 +84,6 @@ gconfig = {
     ],
     'lines': {
         'mpi': ['mvapich2', 'mpich3', 'openmpi3'],
-        'lb': ['interval', 'reportonly'],
-        'approx': ['0', '1', '2'],
-        'lba': ['500'],
-        'b': ['96', '48', '72', '21'],
-        't': ['5000'],
         'type': ['total'],
     }
 
@@ -156,27 +151,7 @@ if __name__ == '__main__':
         for idx, k in enumerate(plots_dir.keys()):
             values = plots_dir[k]
             mpiv = k.split('_mpi')[1].split('_')[0]
-            lb = k.split('lb')[1].split('_')[0]
-            lba = k.split('lba')[1].split('_')[0]
-            approx = k.split('approx')[1].split('_')[0]
-            if 'tp' in k:
-                tp = '1'
-            else:
-                tp = '0'
             experiment = k.split('_')[-1]
-            # tp = k.split('tp')[1].split('_')[0]
-            if lb == 'interval':
-                lb = 'LB'
-            elif lb == 'reportonly':
-                lb = 'NoLB'
-            if tp == '1':
-                tp = 'TP'
-            elif tp == '0':
-                tp = 'NoTP'
-            if approx == '2':
-                approx = 'AC'
-            else:
-                approx = 'NoAC'
             label = '{}'.format(mpiv)
             if label in labels:
                 label = None
@@ -194,16 +169,18 @@ if __name__ == '__main__':
             y = parts * bunches * turns / y
 
             normtime = yref / y
-            x_new = []
-            sp_new = []
-            for i, xi in enumerate(gconfig['x_to_keep']):
-                if xi in x:
-                    x_new.append(xi)
-                    sp_new.append(normtime[list(x).index(xi)])
-                # else:
-                    # sp_new.append(0)
-            x = np.array(x_new)
-            normtime = np.array(sp_new)
+            if len(x) > 1:
+                x_new = []
+                sp_new = []
+
+                for i, xi in enumerate(gconfig['x_to_keep']):
+                    if xi in x:
+                        x_new.append(xi)
+                        sp_new.append(normtime[list(x).index(xi)])
+                    # else:
+                        # sp_new.append(0)
+                x = np.array(x_new)
+                normtime = np.array(sp_new)
             x = x * omp[0]
 
             if mpiv not in avg:

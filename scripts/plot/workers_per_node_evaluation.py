@@ -16,7 +16,7 @@ parser = argparse.ArgumentParser(description='Generate the figure of the MPI wor
 parser.add_argument('-i', '--inputdir', type=str, default=os.path.join(project_dir, 'results/local'),
                     help='The directory with the results.')
 
-parser.add_argument('-c', '--cases', type=str, default=['lhc,sps,ps'],
+parser.add_argument('-c', '--cases', type=str, default='lhc,sps,ps',
                     help='A comma separated list of the testcases to run. Default: lhc,sps,ps')
 
 parser.add_argument('-s', '--show', action='store_true',
@@ -38,7 +38,7 @@ gconfig = {
     'hatches': ['', '', 'xx', '', 'xx'],
     'colors': ['0.3', '0.6', '0.6', '0.9', '0.9'],
     'x_name': 'omp',
-    'x_to_keep': [2, 5, 10, 20],
+    # 'x_to_keep': [2, 5, 10, 20],
     # 'x_to_keep': [8, 16],
     'omp_name': 'n',
     'y_name': 'avg_time(sec)',
@@ -88,11 +88,6 @@ gconfig = {
     ],
     'lines': {
         'mpi': ['mpich3', 'mvapich2', 'openmpi3'],
-        'lb': ['interval', 'reportonly'],
-        'approx': ['0', '1', '2'],
-        'lba': ['500'],
-        'b': ['96', '48', '72', '21'],
-        't': ['5000'],
         'type': ['total'],
     }
 
@@ -151,52 +146,35 @@ if __name__ == '__main__':
 
         for idx, k in enumerate(plots_dir.keys()):
             values = plots_dir[k]
-            mpiv = k.split('_mpi')[1].split('_')[0]
-            lb = k.split('lb')[1].split('_')[0]
-            lba = k.split('lba')[1].split('_')[0]
-            approx = k.split('approx')[1].split('_')[0]
-            if 'tp' in k:
-                tp = '1'
-            else:
-                tp = '0'
-            experiment = k.split('_')[-1]
-            if lb == 'interval':
-                lb = 'LB'
-            elif lb == 'reportonly':
-                lb = 'NoLB'
-            if tp == '1':
-                tp = 'TP'
-            elif tp == '0':
-                tp = 'NoTP'
-            if approx == '2':
-                approx = 'AC'
-            else:
-                approx = 'NoAC'
 
             x = get_values(values, header, gconfig['x_name'])
-            omp = get_values(values, header, gconfig['omp_name'])
-            y = get_values(values, header, gconfig['y_name'])
-            parts = get_values(values, header, 'ppb')
-            bunches = get_values(values, header, 'b')
-            turns = get_values(values, header, 't')
+            x = np.array(x, int)
+            sortidx = np.argsort(x)
+            x = x[sortidx]
+            omp = get_values(values, header, gconfig['omp_name'])[sortidx]
+            y = get_values(values, header, gconfig['y_name'])[sortidx]
+            parts = get_values(values, header, 'ppb')[sortidx]
+            bunches = get_values(values, header, 'b')[sortidx]
+            turns = get_values(values, header, 't')[sortidx]
+
 
             # This is the throughput
             y = parts * bunches * turns / y
             speedup = y
-            x_new = []
-            sp_new = []
-            omp_new = []
-            for i, xi in enumerate(gconfig['x_to_keep']):
-                x_new.append(xi)
-                if xi in x:
-                    sp_new.append(speedup[list(x).index(xi)])
-                    omp_new.append(omp[list(x).index(xi)])
-                else:
-                    sp_new.append(0)
-                    omp_new.append(0)
-            x = np.array(x_new)
-            omp = np.array(omp_new)
-            speedup = np.array(sp_new)
+            # x_new = []
+            # sp_new = []
+            # omp_new = []
+            # for i, xi in enumerate(gconfig['x_to_keep']):
+            #     x_new.append(xi)
+            #     if xi in x:
+            #         sp_new.append(speedup[list(x).index(xi)])
+            #         omp_new.append(omp[list(x).index(xi)])
+            #     else:
+            #         sp_new.append(0)
+            #         omp_new.append(0)
+            # x = np.array(x_new)
+            # omp = np.array(omp_new)
+            # speedup = np.array(sp_new)
 
             # efficiency = 100 * speedup / (x * omp / ompref)
             # x = x * omp
@@ -215,7 +193,7 @@ if __name__ == '__main__':
     vals = np.mean(avg, axis=0)
     for idx, val in enumerate(vals):
         plt.bar(pos + idx*width, val, width=0.9*width,
-                edgecolor='0.', label=str(20//x[idx]), hatch=gconfig['hatches'][idx],
+                edgecolor='0.', label=str(int(20//x[idx])), hatch=gconfig['hatches'][idx],
                 color=gconfig['colors'][idx])
         text = '{:.2f}'.format(val)
         if idx == 0:

@@ -17,7 +17,7 @@ parser = argparse.ArgumentParser(description='Generate the figure of the load im
 parser.add_argument('-i', '--inputdir', type=str, default=os.path.join(project_dir, 'results'),
                     help='The directory with the results.')
 
-parser.add_argument('-c', '--cases', type=str, default=['lhc,sps,ps'],
+parser.add_argument('-c', '--cases', type=str, default='lhc,sps,ps',
                     help='A comma separated list of the testcases to run. Default: lhc,sps,ps')
 
 parser.add_argument('-s', '--show', action='store_true',
@@ -44,7 +44,7 @@ gconfig = {
     'ecolor': 'xkcd:red',
     'capsize': 4,
     'x_name': 'n',
-    'x_to_keep': [4, 8, 16, 32],
+    # 'x_to_keep': [4, 8, 16, 32],
     'omp_name': 'omp',
     'y_name': 'total_time(sec)',
     'percent_name': 'global_percentage',
@@ -97,14 +97,14 @@ gconfig = {
         '{}/{}/approx0-spread/{}',
     ],
     'lines': {
-        'mpi': ['mpich3', 'mvapich2', 'openmpi3'],
-        'lb': ['interval', 'reportonly'],
-        'approx': ['0', '1', '2'],
-        'lba': ['500'],
+        # 'mpi': ['mpich3', 'mvapich2', 'openmpi3'],
+        # 'lb': ['interval', 'reportonly'],
+        # 'approx': ['0', '1', '2'],
+        # 'lba': ['500'],
         # 'b': ['6', '12', '24', '96', '192',
         #       '48', '21', '9', '18', '36',
         #       '72', '144', '288'],
-        't': ['5000'],
+        # 't': ['5000'],
         'function': ['serial:sync'],
     }
 
@@ -177,10 +177,10 @@ if __name__ == '__main__':
         for _, k in enumerate(plots_dir.keys()):
             values = plots_dir[k]
 
-            approx = k.split('approx')[1].split('_')[0]
-            approx = gconfig['approx'][approx]
+            # approx = k.split('approx')[1].split('_')[0]
+            # approx = gconfig['approx'][approx]
 
-            label = '{}'.format(approx)
+            # label = '{}'.format(approx)
 
             x = get_values(values, header, gconfig['x_name'])
             omp = get_values(values, header, gconfig['omp_name'])
@@ -197,17 +197,17 @@ if __name__ == '__main__':
             # The results is %
             ydelta = (ydelta / y) * ypercent
 
-            x_new = []
-            y_new = []
-            yerr_new = []
-            for i, xi in enumerate(gconfig['x_to_keep']):
-                if xi in x:
-                    x_new.append(xi)
-                    y_new.append(ydelta[list(x).index(xi)])
-                    yerr_new.append(yerr[list(x).index(xi)])
-            x = np.array(x_new)
-            ydelta = np.array(y_new)
-            yerr = np.array(yerr_new)
+            # x_new = []
+            # y_new = []
+            # yerr_new = []
+            # for i, xi in enumerate(gconfig['x_to_keep']):
+            #     if xi in x:
+            #         x_new.append(xi)
+            #         y_new.append(ydelta[list(x).index(xi)])
+            #         yerr_new.append(yerr[list(x).index(xi)])
+            # x = np.array(x_new)
+            # ydelta = np.array(y_new)
+            # yerr = np.array(yerr_new)
 
             # yerr is now denormalised
             yerr = yerr * ydelta
