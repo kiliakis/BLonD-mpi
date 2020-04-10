@@ -13,11 +13,140 @@ local:
         # Optimal num of workers per node
         - 'approx0-workers'
 
+        # Strong scaling
+        - 'lb-tp-approx0-strong-scaling'
+        - 'lb-tp-approx1-strong-scaling'
+        
+        # Weak Scaling
+        - 'lb-tp-approx0-weak-scaling'
+        - 'lb-tp-approx1-weak-scaling'
+        - 'lb-tp-approx2-weak-scaling'
+
+
     configs: {
+        # Strong scaling
+        'lb-tp-approx0-strong-scaling': {
+            'exe': ['PS_main.py', 'PS_main.py', 'PS_main.py', 'PS_main.py'],
+            'particles': [200000, 200000, 200000, 200000],
+            'bunches': [21, 21, 21, 21],  # 192
+            'slices': [256, 256, 256, 256],
+            'turns': [5000, 5000, 5000, 5000],
+            'monitor': [0, 0, 0, 0],
+            'seed': [0, 0, 0, 0],
+            'mtw': [50, 50, 50, 50],
+            'withtp': [1, 1, 1, 1],
+            'reduce': [2, 2, 2, 2],
+            'approx': [0, 0, 0, 0],
+            'log': [1, 1, 1, 1],
+            'loadbalance': ['interval', 'interval', 'interval', 'interval'],
+            'loadbalancearg': [500, 500, 500, 500],
+            'timing': ['timing', 'timing', 'timing', 'timing'],
+            'workers': [1, 2, 3, 4],
+            'omp': [1, 1, 1, 1],
+            'mpi': ['mpich3', 'mpich3', 'mpich3', 'mpich3'],
+            'time': [180, 180, 180, 180],
+            'repeats': 5
+        },
+
+        'lb-tp-approx1-strong-scaling': {
+            'exe': ['PS_main.py', 'PS_main.py', 'PS_main.py', 'PS_main.py'],
+            'particles': [200000, 200000, 200000, 200000],
+            'bunches': [21, 21, 21, 21],  # 192
+            'slices': [256, 256, 256, 256],
+            'turns': [5000, 5000, 5000, 5000],
+            'monitor': [0, 0, 0, 0],
+            'seed': [0, 0, 0, 0],
+            'mtw': [50, 50, 50, 50],
+            'withtp': [1, 1, 1, 1],
+            'reduce': [2, 2, 2, 2],
+            'approx': [1, 1, 1, 1],
+            'log': [1, 1, 1, 1],
+            'loadbalance': ['interval', 'interval', 'interval', 'interval'],
+            'loadbalancearg': [500, 500, 500, 500],
+            'timing': ['timing', 'timing', 'timing', 'timing'],
+            'workers': [1, 2, 3, 4],
+            'omp': [10, 10, 10, 10],
+            'mpi': ['mpich3', 'mpich3', 'mpich3', 'mpich3'],
+            'time': [180, 180, 180, 180],
+            'repeats': 5
+        },
+
+
+        # Weak scaling
+        'lb-tp-approx0-weak-scaling': {
+            'exe': ['PS_main.py', 'PS_main.py', 'PS_main.py', 'PS_main.py'],
+            'particles': [25000, 50000, 100000, 200000],
+            'bunches': [21, 21, 21, 21],  # 96
+            'slices': [256, 256, 256, 256],
+            'turns': [5000, 5000, 5000, 5000],
+            'monitor': [0, 0, 0, 0],
+            'seed': [0, 0, 0, 0],
+            'mtw': [50, 50, 50, 50],
+            'withtp': [1, 1, 1, 1],
+            'reduce': [2, 2, 2, 2],
+            'approx': [0, 0, 0, 0],
+            'log': [1, 1, 1, 1],
+            'loadbalance': ['interval', 'interval', 'interval', 'interval'],
+            'loadbalancearg': [500, 500, 500, 500],
+            'timing': ['timing', 'timing', 'timing', 'timing'],
+            'workers': [1, 2, 3, 4],
+            'omp': [10, 10, 10, 10],
+            'mpi': ['mpich3', 'mpich3', 'mpich3', 'mpich3'],
+            'time': [180, 180, 180, 180],
+            'repeats': 5
+        },
+
+        'lb-tp-approx1-weak-scaling': {
+            'exe': ['PS_main.py', 'PS_main.py', 'PS_main.py', 'PS_main.py'],
+            'particles': [25000, 50000, 100000, 200000],
+            'bunches': [21, 21, 21, 21],  # 96
+            'slices': [256, 256, 256, 256],
+            'turns': [5000, 5000, 5000, 5000],
+            'monitor': [0, 0, 0, 0],
+            'seed': [0, 0, 0, 0],
+            'mtw': [50, 50, 50, 50],
+            'withtp': [1, 1, 1, 1],
+            'reduce': [2, 2, 2, 2],
+            'approx': [1, 1, 1, 1],
+            'log': [1, 1, 1, 1],
+            'loadbalance': ['interval', 'interval', 'interval', 'interval'],
+            'loadbalancearg': [500, 500, 500, 500],
+            'timing': ['timing', 'timing', 'timing', 'timing'],
+            'workers': [1, 2, 3, 4],
+            'omp': [10, 10, 10, 10],
+            'mpi': ['mpich3', 'mpich3', 'mpich3', 'mpich3'],
+            'time': [180, 180, 180, 180],
+            'repeats': 5
+        },
+
+        'lb-tp-approx2-weak-scaling': {
+            'exe': ['PS_main.py', 'PS_main.py', 'PS_main.py', 'PS_main.py'],
+            'particles': [25000, 50000, 100000, 200000],
+            'bunches': [21, 21, 21, 21],  # 96
+            'slices': [256, 256, 256, 256],
+            'turns': [5000, 5000, 5000, 5000],
+            'monitor': [0, 0, 0, 0],
+            'seed': [0, 0, 0, 0],
+            'mtw': [50, 50, 50, 50],
+            'withtp': [1, 1, 1, 1],
+            'reduce': [2, 2, 2, 2],
+            'approx': [2, 2, 2, 2],
+            'log': [1, 1, 1, 1],
+            'loadbalance': ['interval', 'interval', 'interval', 'interval'],
+            'loadbalancearg': [500, 500, 500, 500],
+            'timing': ['timing', 'timing', 'timing', 'timing'],
+            'workers': [1, 2, 3, 4],
+            'omp': [10, 10, 10, 10],
+            'mpi': ['mpich3', 'mpich3', 'mpich3', 'mpich3'],
+            'time': [180, 180, 180, 180],
+            'repeats': 5
+        },
+
+
         # Intermediate effect analysis
         'approx0-interm': {
             'exe': ['PS_main.py'],
-            'particles': [8000000],
+            'particles': [200000],
             'bunches': [21],  # 96
             'slices': [256],
             'turns': [5000],
@@ -40,7 +169,7 @@ local:
 
         'approx1-interm': {
             'exe': ['PS_main.py'],
-            'particles': [8000000],
+            'particles': [200000],
             'bunches': [21],  # 96
             'slices': [256],
             'turns': [5000],
@@ -63,7 +192,7 @@ local:
 
         'approx2-interm': {
             'exe': ['PS_main.py'],
-            'particles': [8000000],
+            'particles': [200000],
             'bunches': [21],  # 96
             'slices': [256],
             'turns': [5000],
@@ -86,7 +215,7 @@ local:
 
         'tp-approx0-interm': {
             'exe': ['PS_main.py'],
-            'particles': [8000000],
+            'particles': [200000],
             'bunches': [21],  # 96
             'slices': [256],
             'turns': [5000],
@@ -109,7 +238,7 @@ local:
 
         'lb-tp-approx0-interm': {
             'exe': ['PS_main.py'],
-            'particles': [8000000],
+            'particles': [200000],
             'bunches': [21],  # 96
             'slices': [256],
             'turns': [5000],
@@ -132,7 +261,7 @@ local:
 
         'lb-tp-approx1-interm': {
             'exe': ['PS_main.py'],
-            'particles': [8000000],
+            'particles': [200000],
             'bunches': [21],  # 96
             'slices': [256],
             'turns': [5000],
@@ -155,7 +284,7 @@ local:
 
         'lb-tp-approx2-interm': {
             'exe': ['PS_main.py'],
-            'particles': [8000000],
+            'particles': [200000],
             'bunches': [21],  # 96
             'slices': [256],
             'turns': [5000],
@@ -179,7 +308,7 @@ local:
         # Workers per node
         'approx0-workers': {
             'exe': ['PS_main.py', 'PS_main.py', 'PS_main.py'],
-            'particles': [8000000, 8000000, 8000000],
+            'particles': [200000, 200000, 200000],
             'bunches': [21, 21,  21],  # 96
             'slices': [256, 256, 256],
             'turns': [5000, 5000, 5000],
@@ -237,8 +366,8 @@ cluster:
         # Strong scaling
         'lb-tp-approx0-strong-scaling': {
             'exe': ['PS_main.py', 'PS_main.py', 'PS_main.py', 'PS_main.py'],
-            'particles': [8000000, 8000000, 8000000, 8000000],
-            'bunches': [4, 4, 4, 4],  # 192
+            'particles': [400000, 400000, 400000, 400000],
+            'bunches': [21, 21, 21, 21],  # 192
             'slices': [256, 256, 256, 256],
             'turns': [5000, 5000, 5000, 5000],
             'monitor': [0, 0, 0, 0],
@@ -260,8 +389,8 @@ cluster:
 
         'lb-tp-approx1-strong-scaling': {
             'exe': ['PS_main.py', 'PS_main.py', 'PS_main.py', 'PS_main.py'],
-            'particles': [8000000, 8000000, 8000000, 8000000],
-            'bunches': [4, 4, 4, 4],  # 192
+            'particles': [400000, 400000, 400000, 400000],
+            'bunches': [21, 21, 21, 21],  # 192
             'slices': [256, 256, 256, 256],
             'turns': [5000, 5000, 5000, 5000],
             'monitor': [0, 0, 0, 0],
@@ -283,8 +412,8 @@ cluster:
 
         'lb-tp-approx2-strong-scaling': {
             'exe': ['PS_main.py', 'PS_main.py', 'PS_main.py', 'PS_main.py'],
-            'particles': [8000000, 8000000, 8000000, 8000000],
-            'bunches': [4, 4, 4, 4],  # 192
+            'particles': [400000, 400000, 400000, 400000],
+            'bunches': [21, 21, 21, 21],  # 192
             'slices': [256, 256, 256, 256],
             'turns': [5000, 5000, 5000, 5000],
             'monitor': [0, 0, 0, 0],
@@ -307,8 +436,8 @@ cluster:
         # Weak scaling
         'lb-tp-approx0-weak-scaling': {
             'exe': ['PS_main.py', 'PS_main.py', 'PS_main.py', 'PS_main.py'],
-            'particles': [500000, 1000000, 1000000, 8000000],
-            'bunches': [2, 2, 4, 4],  # 96
+            'particles': [50000, 100000, 200000, 400000],
+            'bunches': [21, 21, 21, 21],  # 96
             'slices': [256, 256, 256, 256],
             'turns': [5000, 5000, 5000, 5000],
             'monitor': [0, 0, 0, 0],
@@ -330,8 +459,8 @@ cluster:
 
         'lb-tp-approx1-weak-scaling': {
             'exe': ['PS_main.py', 'PS_main.py', 'PS_main.py', 'PS_main.py'],
-            'particles': [500000, 1000000, 1000000, 8000000],
-            'bunches': [2, 2, 4, 4],  # 96
+            'particles': [50000, 100000, 200000, 400000],
+            'bunches': [21, 21, 21, 21],  # 96
             'slices': [256, 256, 256, 256],
             'turns': [5000, 5000, 5000, 5000],
             'monitor': [0, 0, 0, 0],
@@ -353,8 +482,8 @@ cluster:
 
         'lb-tp-approx2-weak-scaling': {
             'exe': ['PS_main.py', 'PS_main.py', 'PS_main.py', 'PS_main.py'],
-            'particles': [500000, 1000000, 1000000, 8000000],
-            'bunches': [2, 2, 4, 4],  # 96
+            'particles': [50000, 100000, 200000, 400000],
+            'bunches': [21, 21, 21, 21],  # 96
             'slices': [256, 256, 256, 256],
             'turns': [5000, 5000, 5000, 5000],
             'monitor': [0, 0, 0, 0],
@@ -378,7 +507,7 @@ cluster:
         # Intermediate effect analysis
         'approx0-interm': {
             'exe': ['PS_main.py'],
-            'particles': [8000000],
+            'particles': [400000],
             'bunches': [21],  # 96
             'slices': [256],
             'turns': [5000],
@@ -401,7 +530,7 @@ cluster:
 
         'approx1-interm': {
             'exe': ['PS_main.py'],
-            'particles': [8000000],
+            'particles': [400000],
             'bunches': [21],  # 96
             'slices': [256],
             'turns': [5000],
@@ -424,7 +553,7 @@ cluster:
 
         'approx2-interm': {
             'exe': ['PS_main.py'],
-            'particles': [8000000],
+            'particles': [400000],
             'bunches': [21],  # 96
             'slices': [256],
             'turns': [5000],
@@ -447,7 +576,7 @@ cluster:
 
         'tp-approx0-interm': {
             'exe': ['PS_main.py'],
-            'particles': [8000000],
+            'particles': [400000],
             'bunches': [21],  # 96
             'slices': [256],
             'turns': [5000],
@@ -470,7 +599,7 @@ cluster:
 
         'lb-tp-approx0-interm': {
             'exe': ['PS_main.py'],
-            'particles': [8000000],
+            'particles': [400000],
             'bunches': [21],  # 96
             'slices': [256],
             'turns': [5000],
@@ -493,7 +622,7 @@ cluster:
 
         'lb-tp-approx1-interm': {
             'exe': ['PS_main.py'],
-            'particles': [8000000],
+            'particles': [400000],
             'bunches': [21],  # 96
             'slices': [256],
             'turns': [5000],
@@ -516,7 +645,7 @@ cluster:
 
         'lb-tp-approx2-interm': {
             'exe': ['PS_main.py'],
-            'particles': [8000000],
+            'particles': [400000],
             'bunches': [21],  # 96
             'slices': [256],
             'turns': [5000],
@@ -540,7 +669,7 @@ cluster:
         # Workers per node
         'approx0-workers': {
             'exe': ['PS_main.py', 'PS_main.py', 'PS_main.py', 'PS_main.py'],
-            'particles': [8000000, 8000000, 8000000, 8000000],
+            'particles': [400000, 400000, 400000, 400000],
             'bunches': [21, 21, 21, 21],  # 96
             'slices': [256, 256, 256, 256],
             'turns': [5000, 5000, 5000, 5000],
