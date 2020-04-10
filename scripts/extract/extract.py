@@ -233,15 +233,19 @@ def collect_reports(input, outfile, filename):
         except:
             print('[Error] dir ', dirs)
             continue
-    records.sort(key=lambda a: (float(a[0]), int(a[1]), int(a[2]), int(a[4]),
-                                int(a[9]), a[11]))
-    writer = csv.writer(outfile, delimiter='\t')
-    header = ['ppb', 'b', 's', 't', 'n', 'N', 'omp',
-              'red', 'mtw', 'seed', 'approx', 'mpi', 'lb', 'lba', 'tp'] + list(data_head)
-    writer.writerow(header)
-    writer.writerows(records)
-    if records:
-        return 0
+    try:
+        records.sort(key=lambda a: (float(a[0]), int(a[1]), int(a[2]), int(a[4]),
+                                    int(a[9]), a[11]))
+        writer = csv.writer(outfile, delimiter='\t')
+        header = ['ppb', 'b', 's', 't', 'n', 'N', 'omp',
+                  'red', 'mtw', 'seed', 'approx', 'mpi', 'lb', 'lba', 'tp'] + list(data_head)
+        writer.writerow(header)
+        writer.writerows(records)
+        if records:
+            return 0
+    except Exception as e:
+        print(e)
+        return -1
 
 
 if __name__ == '__main__':
