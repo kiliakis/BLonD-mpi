@@ -47,6 +47,7 @@ inputDir = os.path.join(this_directory, '../input_files/LHC/')
 worker.greet()
 if worker.isMaster:
     worker.print_version()
+os.sytem("gcc --version")
 
 # Simulation parameters --------------------------------------------------------
 # Bunch parameters
@@ -265,6 +266,9 @@ worker.finalize()
 
 mpiprint('dE mean: ', np.mean(beam.dE))
 mpiprint('dE std: ', np.std(beam.dE))
+mpiprint('dt mean: ', np.mean(beam.dt))
+mpiprint('dt std: ', np.std(beam.dt))
+
 # mpiprint('dt mean, 1st bunch: ', np.mean(beam.dt[:n_particles]))
 # mpiprint('shift ', rf.phi_rf[0, turn]/rf.omega_rf[0, turn])
 
