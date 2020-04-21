@@ -47,7 +47,7 @@ inputDir = os.path.join(this_directory, '../input_files/LHC/')
 worker.greet()
 if worker.isMaster:
     worker.print_version()
-os.sytem("gcc --version")
+os.system("gcc --version")
 
 # Simulation parameters --------------------------------------------------------
 # Bunch parameters
