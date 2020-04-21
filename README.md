@@ -1,3 +1,4 @@
+
 # Setup and run instructions for the HBLonD CF2020 artifact
 
 ## Paper information
@@ -14,54 +15,56 @@ We assume that you have downloaded and extracted the artifact, let us call it `h
 
 1. These instructions target unix based systems (Linux & MacOS). However, docker is a cross-platform software that supports Windows too.  
 
-2. Install the docker software: [https://docs.docker.com/install/](https://docs.docker.com/install/) . We recommend installing the Docker Community Edition. 
+1. Install the docker software: [https://docs.docker.com/install/](https://docs.docker.com/install/) . We recommend installing the Docker Community Edition. 
 
-3. Optionally, you can add your user to the docker group to avoid having to run every docker command with root privileges: 
+1. Optionally, you can add your user to the docker group to avoid having to run every docker command with root privileges: 
 `sudo usermod -aG docker $USER` 
 
-4. Change your working directory to the extracted artifact folder.
+1. Change your working directory to the extracted artifact folder.
 `cd hblond-cf2020-ae`
 
-5. At first, build the docker image running the command:
+1. At first, build the docker image running the command:
 `docker build -t hblond:1.0 -f ./Dockerfile ./`
 This could take a few minutes to complete. 
 
-6. Then to run the image, execute the command:
+1. Then to run the image, execute the command:
 `docker run -it --rm --cpus=4 hblond:1.0`
 
-6. You can test that everything is correctly set-up by running a test experiment:
-	- `python __EXAMPLES/main_files/EX_01_Acceleration.py --turns 100`
+1. You can test that everything is correctly set-up by running a test experiment:
+	- `python examples/main_files/EX_01_Acceleration.py --turns 100`
 
-6. A summary of all the command line options can be printed with the --help option:
-	- `python __EXAMPLES/main_files/EX_01_Acceleration.py --help`
+1. A summary of all the command line options can be printed with the --help option:
+	- `python examples/main_files/EX_01_Acceleration.py --help`
 
-6. The following three real-world simulation scenarios are provided in the `__EXAMPLES/main_files` directory:
+1. The following three real-world simulation scenarios are provided in the `examples/main_files` directory:
 	- `LHC_main.py` (LHC testcase)
 	- `SPS_main.py` (SPS testcase)
 	- `PS_main.py` (PS testcase)
-7. There, you can generate the figures found in the CF2020 paper from the reference data by 
-running: 
-`python scipts/drivers/all_cf2020_experiments.py`
 
-8. You can run some predefined experiments with:
+1. You can generate the figures found in the CF2020 paper from the reference data by running: 
 	```bash
-	python scripts/drivers/driver.py --environment=local --action=scan --testcases lhc sps ps --output ./results
+	python scipts/driver.py --action plot --dir reference_results/cluster
 	```
 
-9. Then extract the saved results with:
+1. You can run some predefined experiments with:
 	```bash
-	python scripts/drivers/driver.py --environment=local --action=extract --testcases lhc sps ps --output ./results
+	python scripts/driver.py --environment=local --action=scan --testcases lhc,sps,ps --dir ./results
 	```
 
-10. Finally plot the data with:
+1. Then extract the saved results with:
 	```bash
-	python scripts/drivers/driver.py --environment=local --action=plot --testcases lhc sps ps --output ./results
+	python scripts/driver.py --action=extract --testcases lhc,sps,ps --dir ./results/local
 	```
 
-11. You can customize the configuration files in `scripts/scan/{lhc,sps,ps}_configs.yml` and repeat the three previous steps.
+1. Finally plot the data with:
+	```bash
+	python scripts/driver.py --action=plot --testcases lhc,sps,ps --dir ./results/local
+	```
 
-12. Or you can test interactively  the test-cases found in `__EXAMPLES/main_files` with:
-`mpirun -n 4 python __EXAMPLES/main_files/LHC_main.py --turns 1000 --particles 1000000 --bunches 12`
+1. You can customize the configuration files in `scripts/scan/{lhc,sps,ps}_configs.yml` and repeat the three previous steps.
+
+1. Or you can test interactively the test-cases found in `examples/main_files` with:
+`mpirun -n 4 python examples/main_files/LHC_main.py --turns 1000 --particles 1000000 --bunches 12`
 
 ## Cluster environment
 
@@ -73,7 +76,7 @@ Since every cluster has its own configuration, installed libraries, user permiss
 	```bash
 	export ARTIFACT_DIR = "$HOME/path/to/hblond-cf2020-ae/"
 	export INSTALL_DIR = "$ARTIFACT_DIR/install"
-	export BUILD_DIR = "$ARTIFACT_DIR/HBLonD"
+	export BUILD_DIR = "$ARTIFACT_DIR/hblond"
 	export PYTHONPATH = "$ARTIFACT_DIR/pymodules:$BUILD_DIR:$PYTHONPATH"
 	```
 1. Make sure the necessary software is installed: 
@@ -104,32 +107,34 @@ Since every cluster has its own configuration, installed libraries, user permiss
 1. If the login node is a different CPU type than the execution node, you will have to compile the library in the execution node, by modifying the script `scripts/other/batch-setup.sh` appropriately. 
 
 1. Then you can test that everything is correctly set-up by running a test experiment:
-	- `python __EXAMPLES/main_files/EX_01_Acceleration.py --turns 100`
+	- `python examples/main_files/EX_01_Acceleration.py --turns 100`
 1. A summary of all the command line options can be printed with the --help option:
-	- `python __EXAMPLES/main_files/EX_01_Acceleration.py --help`
-1. The following three real-world simulation scenarios are provided in the `__EXAMPLES/main_files` directory:
+	- `python examples/main_files/EX_01_Acceleration.py --help`
+1. The following three real-world simulation scenarios are provided in the `examples/main_files` directory:
 	- `LHC_main.py` (LHC testcase)
 	- `SPS_main.py` (SPS testcase)
 	- `PS_main.py` (PS testcase)
-1. Our scripts assume a `slurm` scheduler. If the cluster you are using has a different scheduling system, you need to edit accordingly the file: 
 
-1. There, you can generate the figures found in the CF2020 paper from the reference data by 
-running: 
-`python scipts/drivers/all_cf2020_experiments.py`
+1. Our scripts assume a `slurm` scheduler. If the cluster you are using has a different scheduling system, you need to edit accordingly the file: `scripts/scan/common.py` 
+
+1. You can generate the figures found in the CF2020 paper from the reference data by running: 
+	```bash
+	python scipts/driver.py --action plot --dir reference_results/cluster
+	```
 
 1. You can run some predefined experiments with:
 	```bash
-	python scripts/drivers/driver.py --environment=cluster --action=scan --testcases lhc sps ps --output ./results
+	python scripts/driver.py --environment=local --action=scan --testcases lhc,sps,ps --dir ./results
 	```
 
 1. Then extract the saved results with:
 	```bash
-	python scripts/drivers/driver.py --environment=cluster --action=extract --testcases lhc sps ps --output ./results
+	python scripts/driver.py --action=extract --testcases lhc,sps,ps --dir ./results/local
 	```
 
 1. Finally plot the data with:
 	```bash
-	python scripts/drivers/driver.py --environment=cluster --action=plot --testcases lhc sps ps --output ./results
+	python scripts/driver.py --action=plot --testcases lhc,sps,ps --dir ./results/local
 	```
 
 1. You can customize the configuration files in `scripts/scan/{lhc,sps,ps}_configs.yml` and repeat the three previous steps.
@@ -140,3 +145,13 @@ Don't hesitate to contact us should you need further support:
 - Helga Timko (helga (dot) timko (at) cern (dot) ch)
 - Sotirios Xydis (sxydis (at) hua (dot) gr)
 - Dimitrios Soudris (dsoudris (at) microlab (dot) ntua (dot) gr)
+
+## Useful Links
+- Repository: https://github.com/kiliakis/hblond-cf2020-ae
+- Documentation: http://blond-admin.github.io/BLonD/
+- Project website: http://blond.web.cern.ch
+- Artifact DOI: https://doi.org/10.5281/zenodo.3747710
+
+## Copyright Notice
+ Copyright 2019 CERN. This software is distributed under the terms of the GNU General Public Licence version 3 (GPLVersion 3), copied verbatim in the file LICENCE.txt. In applying this licence, CERN does not waive the privileges and immunities granted to it by virtue of its status as an Intergovernmental Organization or submit itself to any jurisdiction.
+
