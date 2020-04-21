@@ -22,9 +22,7 @@ C++ Math library
 #include <functional>
 #include "blondmath.h"
 #include <iostream>
-#ifdef PARALLEL
-#include <omp.h>
-#endif
+#include "openmp.h"
 
 using namespace std;
 

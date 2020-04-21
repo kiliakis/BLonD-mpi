@@ -11,6 +11,11 @@ from ..utils import bphysics_wrap
 
 # dictionary storing the CPU versions of the desired functions #
 _CPU_func_dict = {
+    'rfft': np.fft.rfft,
+    'irfft': np.fft.irfft,
+    'rfftfreq': np.fft.rfftfreq,
+    'irfft_packed': butils_wrap.irfft_packed,
+
     'sin': butils_wrap.sin,
     'cos': butils_wrap.cos,
     'exp': butils_wrap.exp,
@@ -28,9 +33,6 @@ _CPU_func_dict = {
     'arange': butils_wrap.arange,
     'sum': butils_wrap.sum,
     'sort': butils_wrap.sort,
-    'rfft': butils_wrap.rfft,
-    'irfft': butils_wrap.irfft,
-    'irfft_packed': butils_wrap.irfft_packed,
     'add': butils_wrap.add,
     'mul': butils_wrap.mul,
     'beam_phase': bphysics_wrap.beam_phase,
@@ -54,6 +56,19 @@ _CPU_func_dict = {
     'device': 'CPU'
 }
 
+_FFTW_func_dict = {
+    'rfft': butils_wrap.rfft,
+    'irfft': butils_wrap.irfft,
+    'rfftfreq': butils_wrap.rfftfreq
+}
+
+
+def use_fftw():
+    '''
+    Replace the existing rfft and irfft implementations
+    with the ones coming from butils_wrap.
+    '''
+    globals().update(_FFTW_func_dict)
 
 def update_active_dict(new_dict):
     '''

@@ -20,6 +20,7 @@ import numpy as np
 from scipy.integrate import cumtrapz
 import ctypes
 import logging
+import warnings
 
 from ..utils import bmath as bm
 
@@ -236,8 +237,8 @@ class RingAndRFTracker(object):
                  interpolation=False, Profile=None, TotalInducedVoltage=None):
 
         # Set up logging
-        self.logger = logging.getLogger(__class__.__name__)
-        self.logger.info("Class initialized")
+        # self.logger = logging.getLogger(__class__.__name__)
+        # self.logger.info("Class initialized")
 
         # Imports from RF parameters
         self.rf_params = RFStation
@@ -251,22 +252,27 @@ class RingAndRFTracker(object):
         self.harmonic = RFStation.harmonic
         self.voltage = RFStation.voltage
         self.phi_noise = RFStation.phi_noise
+        self.phi_modulation = RFStation.phi_modulation
         self.phi_rf = RFStation.phi_rf
         self.phi_s = RFStation.phi_s
         self.omega_rf = RFStation.omega_rf
+        self.alpha_0 = RFStation.alpha_0
+        self.alpha_1 = RFStation.alpha_1
+        self.alpha_2 = RFStation.alpha_2
         self.eta_0 = RFStation.eta_0
         self.eta_1 = RFStation.eta_1
         self.eta_2 = RFStation.eta_2
         self.alpha_order = RFStation.alpha_order
         self.acceleration_kick = - RFStation.delta_E
+
         # Other imports
         self.beam = Beam
         self.solver = str(solver)
-        if self.solver not in ['simple', 'exact']:
+        if self.solver not in ['simple', 'exact', 'legacy']:
             # SolverError
             raise RuntimeError("ERROR in RingAndRFTracker: Choice of" +
                                " longitudinal solver not recognised!")
-        if self.alpha_order > 1:  # Set exact solver for higher orders of eta
+        if self.alpha_order > 1:  # Force exact solver for higher orders of eta
             self.solver = 'exact'
         self.solver = self.solver.encode(encoding='utf_8')
 
@@ -287,9 +293,6 @@ class RingAndRFTracker(object):
             raise RuntimeError("ERROR in RingAndRFTracker: Choice of" +
                                " interpolation not recognised!")
         self.profile = Profile
-        if self.profile is not None:
-            self.rf_voltage = np.zeros(self.profile.n_slices)
-
         self.totalInducedVoltage = TotalInducedVoltage
         if (self.interpolation is True) and (self.profile is None):
             # ProfileError
@@ -305,7 +308,8 @@ class RingAndRFTracker(object):
                                " with periodicity not yet implemented!")
         if (self.cavityFB is not None) and (self.interpolation is False):
             self.interpolation = True
-            self.logger.warning("Setting interpolation to TRUE")
+            warnings.warn('Setting interpolation to TRUE')
+            # self.logger.warning("Setting interpolation to TRUE")
 
     @timing.timeit(key='comp:kick')
     @mpiprof.traceit(key='comp:kick')
@@ -323,10 +327,9 @@ class RingAndRFTracker(object):
 
         """
 
-        voltage_kick = np.ascontiguousarray(self.charge*self.voltage[:, index])
-        omegarf_kick = np.ascontiguousarray(self.omega_rf[:, index])
-        phirf_kick = np.ascontiguousarray(self.phi_rf[:, index])
-        bm.kick(self, beam_dt, beam_dE, index)
+        bm.kick(beam_dt, beam_dE, self.voltage[:, index],
+                self.omega_rf[:, index], self.phi_rf[:, index],
+                self.charge, self.n_rf, self.acceleration_kick[index])
 
     @timing.timeit(key='comp:drift')
     @mpiprof.traceit(key='comp:drift')
@@ -345,7 +348,11 @@ class RingAndRFTracker(object):
             \\Delta t^{n+1} = \\Delta t^{n} + \\frac{L}{C} T_0^{n+1}\\eta_0\\delta^{n+1} \quad \\text{(simple)}
 
         """
-        bm.drift(self, beam_dt, beam_dE, index)
+        bm.drift(beam_dt, beam_dE, self.solver, self.t_rev[index],
+                 self.length_ratio, self.alpha_order, self.eta_0[index],
+                 self.eta_1[index], self.eta_2[index], self.alpha_0[index],
+                 self.alpha_1[index], self.alpha_2[index],
+                 self.rf_params.beta[index], self.rf_params.energy[index])
 
     @timing.timeit(key='serial:RFVCalc')
     @mpiprof.traceit(key='serial:RFVCalc')
@@ -362,9 +369,11 @@ class RingAndRFTracker(object):
             self.rf_voltage = voltages[0] * self.cavityFB.V_corr * \
                 bm.sin(omega_rf[0]*self.profile.bin_centers +
                        phi_rf[0] + self.cavityFB.phi_corr) + \
-                bm.rf_volt_comp(voltages[1:], omega_rf[1:], phi_rf[1:], self)
+                bm.rf_volt_comp(voltages[1:], omega_rf[1:], phi_rf[1:],
+                                self.profile.bin_centers)
         else:
-            self.rf_voltage = bm.rf_volt_comp(voltages, omega_rf, phi_rf, self)
+            self.rf_voltage = bm.rf_volt_comp(voltages, omega_rf, phi_rf,
+                                              self.profile.bin_centers)
 
     def pre_track(self):
         """Tracking method for the section. Applies first the kick, then the 
@@ -402,21 +411,22 @@ class RingAndRFTracker(object):
         of the Beam class.
 
         """
+        turn = self.counter[0]
 
         if self.periodicity:
 
             # Distinguish the particles inside the frame from the particles on
             # the right-hand side of the frame.
             self.indices_right_outside = \
-                np.where(self.beam.dt > self.t_rev[self.counter[0] + 1])[0]
+                np.where(self.beam.dt > self.t_rev[turn + 1])[0]
             self.indices_inside_frame = \
-                np.where(self.beam.dt < self.t_rev[self.counter[0] + 1])[0]
+                np.where(self.beam.dt < self.t_rev[turn + 1])[0]
 
             if len(self.indices_right_outside) > 0:
                 # Change reference of all the particles on the right of the
                 # current frame; these particles skip one kick and drift
                 self.beam.dt[self.indices_right_outside] -= \
-                    self.t_rev[self.counter[0] + 1]
+                    self.t_rev[turn + 1]
                 # Synchronize the bunch with the particles that are on the
                 # RHS of the current frame applying kick and drift to the
                 # bunch
@@ -425,9 +435,9 @@ class RingAndRFTracker(object):
                     self.beam.dt[self.indices_inside_frame])
                 self.insiders_dE = np.ascontiguousarray(
                     self.beam.dE[self.indices_inside_frame])
-                self.kick(self.insiders_dt, self.insiders_dE, self.counter[0])
+                self.kick(self.insiders_dt, self.insiders_dE, turn)
                 self.drift(self.insiders_dt, self.insiders_dE,
-                           self.counter[0]+1)
+                           turn+1)
                 self.beam.dt[self.indices_inside_frame] = self.insiders_dt
                 self.beam.dE[self.indices_inside_frame] = self.insiders_dE
                 # Check all the particles on the left of the just updated
@@ -436,8 +446,8 @@ class RingAndRFTracker(object):
                 self.indices_left_outside = np.where(self.beam.dt < 0)[0]
 
             else:
-                self.kick(self.beam.dt, self.beam.dE, self.counter[0])
-                self.drift(self.beam.dt, self.beam.dE, self.counter[0] + 1)
+                self.kick(self.beam.dt, self.beam.dE, turn)
+                self.drift(self.beam.dt, self.beam.dE, turn + 1)
                 # Check all the particles on the left of the just updated
                 # frame and apply a second kick and drift to them with the
                 # previous wave after having changed reference.
@@ -448,11 +458,11 @@ class RingAndRFTracker(object):
                     self.beam.dt[self.indices_left_outside])
                 left_outsiders_dE = np.ascontiguousarray(
                     self.beam.dE[self.indices_left_outside])
-                left_outsiders_dt += self.t_rev[self.counter[0]+1]
+                left_outsiders_dt += self.t_rev[turn+1]
                 self.kick(left_outsiders_dt, left_outsiders_dE,
-                          self.counter[0])
+                          turn)
                 self.drift(left_outsiders_dt, left_outsiders_dE,
-                           self.counter[0]+1)
+                           turn+1)
                 self.beam.dt[self.indices_left_outside] = left_outsiders_dt
                 self.beam.dE[self.indices_left_outside] = left_outsiders_dE
 
@@ -468,35 +478,41 @@ class RingAndRFTracker(object):
 
                     with timing.timed_region('comp:LIKick'):
                         with mpiprof.traced_region('comp:LIKick'):
-                            turn = self.counter[0]
-                            bm.LIKick_n_drift(self.beam.dt,
-                                              self.beam.dE,
-                                              self.total_voltage,
-                                              self.profile.bin_centers,
-                                              self.beam.Particle.charge,
-                                              self.acceleration_kick[turn],
-                                              self.solver,
-                                              self.t_rev[turn],
-                                              self.length_ratio,
-                                              self.alpha_order,
-                                              self.eta_0[turn],
-                                              self.eta_1[turn],
-                                              self.eta_2[turn],
-                                              self.rf_params.beta[turn],
-                                              self.rf_params.energy[turn])
+                            bm.linear_interp_kick(dt=self.beam.dt, dE=self.beam.dE,
+                                                  voltage=self.total_voltage,
+                                                  bin_centers=self.profile.bin_centers,
+                                                  charge=self.beam.Particle.charge,
+                                                  acceleration_kick=self.acceleration_kick[turn])
+                            self.drift(self.beam.dt, self.beam.dE, turn + 1)
+
+                            # bm.LIKick_n_drift(self.beam.dt,
+                            #                   self.beam.dE,
+                            #                   self.total_voltage,
+                            #                   self.profile.bin_centers,
+                            #                   self.beam.Particle.charge,
+                            #                   self.acceleration_kick[turn],
+                            #                   self.solver,
+                            #                   self.t_rev[turn],
+                            #                   self.length_ratio,
+                            #                   self.alpha_order,
+                            #                   self.eta_0[turn],
+                            #                   self.eta_1[turn],
+                            #                   self.eta_2[turn],
+                            #                   self.rf_params.beta[turn],
+                            #                   self.rf_params.energy[turn])
                 else:
-                    self.kick(self.beam.dt, self.beam.dE, self.counter[0])
-                    self.drift(self.beam.dt, self.beam.dE, self.counter[0] + 1)
+                    self.kick(self.beam.dt, self.beam.dE, turn)
+                    self.drift(self.beam.dt, self.beam.dE, turn + 1)
+
+
+        # Updating the beam synchronous momentum etc.
+        self.beam.beta = self.rf_params.beta[turn+1]
+        self.beam.gamma = self.rf_params.gamma[turn+1]
+        self.beam.energy = self.rf_params.energy[turn+1]
+        self.beam.momentum = self.rf_params.momentum[turn+1]
 
         # Increment by one the turn counter
         self.counter[0] += 1
-
-        # Updating the beam synchronous momentum etc.
-        self.beam.beta = self.rf_params.beta[self.counter[0]]
-        self.beam.gamma = self.rf_params.gamma[self.counter[0]]
-        self.beam.energy = self.rf_params.energy[self.counter[0]]
-        self.beam.momentum = self.rf_params.momentum[self.counter[0]]
-
 
     def track(self):
         self.pre_track()
