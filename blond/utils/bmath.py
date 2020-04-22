@@ -8,7 +8,7 @@ BLonD math and physics core functions
 import numpy as np
 from ..utils import butils_wrap
 
-
+precision = butils_wrap.precision
 
 # dictionary storing the CPU versions of the desired functions #
 _CPU_func_dict = {
@@ -67,26 +67,12 @@ def use_fftw():
     '''
     globals().update(_FFTW_func_dict)
 
-class Precision:
-    def __init__(self, precision='double'):
-        self.str = precision
-        if precision in ['single', 's', '32', 'float32', 'float', 'f']:
-            self.real_t = np.float32
-            self.complex_t = np.complex64
-            self.num = 1
-        else precision == ['double', 'd', '64', 'float64']:
-            self.real_t = np.float64
-            self.complex_t = np.complex128
-            self.num = 2
-
-precision = Precision('double')
-
 
 # precision can be single or double
 def use_precision(_precision='double'):
     global precision
-    precision = Precision(_precision)
-
+    butils_wrap.precision = butils_wrap.Precision(_precision)
+    precision = butils_wrap.precision
 
 def update_active_dict(new_dict):
     '''

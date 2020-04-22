@@ -10,7 +10,7 @@ import numpy as np
 import copy
 import matplotlib.pyplot as plt
 from scipy.integrate import cumtrapz
-
+from ..utils import bmath as bm
 from ..beam.beam import Beam
 from ..beam.distributions import matched_from_distribution_function,\
                            matched_from_line_density, populate_bunch,\
@@ -205,9 +205,9 @@ def matched_from_distribution_density_multibunch(beam, Ring, FullRingAndRF, dist
                      TotalInducedVoltageIteration.induced_voltage)
             plt.show()
                 
-    beam.dt = beamIteration.dt
+    beam.dt = beamIteration.dt.astype(dtype=bm.precision.real_t, order='C')
 
-    beam.dE = beamIteration.dE
+    beam.dE = beamIteration.dE.astype(dtype=bm.precision.real_t, order='C')
     
     
 def matched_from_line_density_multibunch(beam, Ring,
@@ -366,8 +366,8 @@ def matched_from_line_density_multibunch(beam, Ring,
         plt.plot(TotalInducedVoltageIteration.profile.bin_centers, TotalInducedVoltageIteration.induced_voltage)
         plt.show()
                 
-    beam.dt = beamIteration.dt
-    beam.dE = beamIteration.dE
+    beam.dt = beamIteration.dt.astype(dtype=bm.precision.real_t, order='C')
+    beam.dE = beamIteration.dE.astype(dtype=bm.precision.real_t, order='C')
 
 
 def match_beam_from_distribution(beam, FullRingAndRF, GeneralParameters,
@@ -451,8 +451,8 @@ def match_beam_from_distribution(beam, FullRingAndRF, GeneralParameters,
                       potential_well, seed, distribution_options,
                       full_ring_and_RF=FullRingAndRF)
         if indexBunch==0:
-            beam.dt = temporary_beam.dt
-            beam.dE = temporary_beam.dE
+            beam.dt = temporary_beam.dt.astype(dtype=bm.precision.real_t, order='C')
+            beam.dE = temporary_beam.dE.astype(dtype=bm.precision.real_t, order='C')
         else:
             beam.dt = np.append(beam.dt, temporary_beam.dt +(indexBunch *bunch_spacing_buckets *bucket_size_tau))
             beam.dE = np.append(beam.dE, temporary_beam.dE)

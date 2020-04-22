@@ -8,9 +8,23 @@ BLonD math wrapper functions
 import ctypes as ct
 import numpy as np
 import os
-# from setup_cpp import libblondmath as __lib
 from .. import libblond as __lib
-import bmath as bm
+
+
+class Precision:
+    def __init__(self, precision='double'):
+        self.str = precision
+        if precision in ['single', 's', '32', 'float32', 'float', 'f']:
+            self.real_t = np.float32
+            self.complex_t = np.complex64
+            self.num = 1
+        elif precision in ['double', 'd', '64', 'float64']:
+            self.real_t = np.float64
+            self.complex_t = np.complex128
+            self.num = 2
+
+
+precision = Precision('double')
 
 
 def __getPointer(x):
@@ -22,9 +36,9 @@ def __getLen(x):
 
 
 def __c_real(x):
-    if bm.__precision == np.float64:
+    if precision.num == 1:
         return ct.c_float(x)
-    elif bm.__precions == np.float32:
+    else:
         return ct.c_double(x)
 
 
@@ -90,6 +104,13 @@ def add(a, b, result=None, inplace=False):
         else:
             __lib.add_double_vector(__getPointer(a), __getPointer(b),
                                     __getLen(a), __getPointer(result))
+    elif (a.dtype == 'float32'):
+        if inplace:
+            __lib.add_float_vector_inplace(__getPointer(a), __getPointer(b),
+                                           __getLen(a))
+        else:
+            __lib.add_float_vector(__getPointer(a), __getPointer(b),
+                                   __getLen(a), __getPointer(result))
 
     elif (a.dtype == 'uint16'):
         if inplace:
@@ -124,7 +145,7 @@ def mul(a, b, result=None):
             __lib.scalar_mul_int64(__getPointer(a), ct.c_int64(np.int64(b)),
                                    __getLen(a), __getPointer(result))
         elif (a.dtype == 'float32'):
-            __lib.scalar_mul_float64(__getPointer(a), ct.c_float(np.float32(b)),
+            __lib.scalar_mul_float32(__getPointer(a), ct.c_float(np.float32(b)),
                                      __getLen(a), __getPointer(result))
         elif (a.dtype == 'float64'):
             __lib.scalar_mul_float64(__getPointer(a), ct.c_double(np.float64(b)),
@@ -151,7 +172,7 @@ def mul(a, b, result=None):
             __lib.vector_mul_int64(__getPointer(a), __getPointer(b),
                                    __getLen(a), __getPointer(result))
         elif (a.dtype == 'float32'):
-            __lib.vector_mul_float64(__getPointer(a), __getPointer(b),
+            __lib.vector_mul_float32(__getPointer(a), __getPointer(b),
                                      __getLen(a), __getPointer(result))
         elif (a.dtype == 'float64'):
             __lib.vector_mul_float64(__getPointer(a), __getPointer(b),
@@ -321,21 +342,21 @@ def convolve(signal, kernel, mode='full', result=None):
 
 
 def rfft(a, n=0, result=None):
-    tempa = a.astype(dtype=bm.precision.real_t, order='C')
+    a = a.astype(dtype=precision.real_t, order='C')
     if (n == 0) and (result == None):
-        result = np.empty(len(tempa)//2 + 1, dtype=bm.precision.complex_t)
+        result = np.empty(len(a)//2 + 1, dtype=precision.complex_t)
     elif (n != 0) and (result == None):
-        result = np.empty(n//2 + 1, dtype=bm.precision.complex_t)
+        result = np.empty(n//2 + 1, dtype=precision.complex_t)
 
-    if bm.precision.num == 1:
-        __lib.rfftf(__getPointer(tempa),
-                    __getLen(tempa),
+    if precision.num == 1:
+        __lib.rfftf(__getPointer(a),
+                    __getLen(a),
                     __getPointer(result),
                     ct.c_int(int(n)),
                     ct.c_int(int(os.environ.get('OMP_NUM_THREADS', 1))))
     else:
-        __lib.rfft(__getPointer(tempa),
-                   __getLen(tempa),
+        __lib.rfft(__getPointer(a),
+                   __getLen(a),
                    __getPointer(result),
                    ct.c_int(int(n)),
                    ct.c_int(int(os.environ.get('OMP_NUM_THREADS', 1))))
@@ -344,22 +365,22 @@ def rfft(a, n=0, result=None):
 
 
 def irfft(a, n=0, result=None):
-    tempa = a.astype(dtype=bm.precision.complex_t, order='C')
+    a = a.astype(dtype=precision.complex_t, order='C')
 
     if (n == 0) and (result == None):
         result = np.empty(2*(len(a)-1), dtype=np.float64)
     elif (n != 0) and (result == None):
         result = np.empty(n, dtype=np.float64)
 
-    if bm.precision.num == 1:
-        __lib.irfftf(__getPointer(tempa),
-                     __getLen(tempa),
+    if precision.num == 1:
+        __lib.irfftf(__getPointer(a),
+                     __getLen(a),
                      __getPointer(result),
                      ct.c_int(int(n)),
                      ct.c_int(int(os.environ.get('OMP_NUM_THREADS', 1))))
     else:
-        __lib.irfft(__getPointer(tempa),
-                    __getLen(tempa),
+        __lib.irfft(__getPointer(a),
+                    __getLen(a),
                     __getPointer(result),
                     ct.c_int(int(n)),
                     ct.c_int(int(os.environ.get('OMP_NUM_THREADS', 1))))
@@ -371,9 +392,9 @@ def rfftfreq(n, d=1.0, result=None):
     if d == 0:
         raise ZeroDivisionError('d must be non-zero')
     if result is None:
-        result = np.empty(n//2 + 1, dtype=bm.precision.real_t)
+        result = np.empty(n//2 + 1, dtype=precision.real_t)
 
-    if bm.precision.num == 1:
+    if precision.num == 1:
         __lib.rfftfreqf(ct.c_int(n),
                         __getPointer(result),
                         __c_real(d))
@@ -391,14 +412,14 @@ def irfft_packed(signal, fftsize=0, result=None):
     howmany = len(signal)
 
     signal = np.ascontiguousarray(np.reshape(
-        signal, -1), dtype=bm.precision.complex_t)
+        signal, -1), dtype=precision.complex_t)
 
     if (fftsize == 0) and (result == None):
-        result = np.empty(howmany * 2*(n0-1), dtype=bm.precision.real_t)
+        result = np.empty(howmany * 2*(n0-1), dtype=precision.real_t)
     elif (fftsize != 0) and (result == None):
-        result = np.empty(howmany * fftsize, dtype=bm.precision.real_t)
+        result = np.empty(howmany * fftsize, dtype=precision.real_t)
 
-    if bm.precision.num == 1:
+    if precision.num == 1:
         __lib.irfft_packedf(__getPointer(signal),
                             ct.c_int(n0),
                             ct.c_int(howmany),
@@ -456,11 +477,11 @@ def beam_phase(beamFB, omegarf, phirf):
 
 def _beam_phase(bin_centers, profile, alpha, omegarf, phirf, bin_size):
     __lib.beam_phase.restype = __c_real
-    bin_centers = bin_centers.astype(dtype=bm.precision.real_t, order='C',
+    bin_centers = bin_centers.astype(dtype=precision.real_t, order='C',
                                      copy=False)
-    profile = profile.astype(dtype=bm.precision.real_t, order='C')
+    profile = profile.astype(dtype=precision.real_t, order='C')
 
-    if bm.precision.num == 1:
+    if precision.num == 1:
         coeff = __lib.beam_phasef(__getPointer(bin_centers),
                                   __getPointer(profile),
                                   __c_real(alpha),
@@ -483,14 +504,14 @@ def _beam_phase(bin_centers, profile, alpha, omegarf, phirf, bin_size):
 def rf_volt_comp(voltages, omega_rf, phi_rf, bin_centers):
 
     bin_centers = bin_centers.astype(
-        dtype=bm.precision.real_t, order='C', copy=False)
-    voltages = voltages.astype(dtype=bm.precision.real_t, order='C', copy=False)
-    omega_rf = omega_rf.astype(dtype=bm.precision.real_t, order='C', copy=False)
-    phi_rf = phi_rf.astype(dtype=bm.precision.real_t, order='C', copy=False)
+        dtype=precision.real_t, order='C', copy=False)
+    voltages = voltages.astype(dtype=precision.real_t, order='C', copy=False)
+    omega_rf = omega_rf.astype(dtype=precision.real_t, order='C', copy=False)
+    phi_rf = phi_rf.astype(dtype=precision.real_t, order='C', copy=False)
 
-    rf_voltage = np.zeros(len(bin_centers), dtype=bm.precision.real_t)
+    rf_voltage = np.zeros(len(bin_centers), dtype=precision.real_t, order='C')
 
-    if bm.precision.num == 1:
+    if precision.num == 1:
         __lib.rf_volt_compf(__getPointer(voltages),
                             __getPointer(omega_rf),
                             __getPointer(phi_rf),
@@ -511,18 +532,18 @@ def rf_volt_comp(voltages, omega_rf, phi_rf, bin_centers):
 
 
 def kick(dt, dE, voltage, omega_rf, phi_rf, charge, n_rf, acceleration_kick):
-    # voltage_kick = np.ascontiguousarray(charge*voltage)
-    # omegarf_kick = np.ascontiguousarray(omega_rf)
-    # phirf_kick = np.ascontiguousarray(phi_rf)
-    dt = dt.astype(dtype=bm.precision.real_t, order='C', copy=False)
-    dE = dE.astype(dtype=bm.precision.real_t, order='C', copy=False)
-    voltage_kick = charge * \
-        voltage.astype(dtype=bm.precision.real_t, order='C', copy=False)
-    omegarf_kick = omega_rf.astype(
-        dtype=bm.precision.real_t, order='C', copy=False)
-    phirf_kick = phi_rf.astype(dtype=bm.precision.real_t, order='C', copy=False)
+    assert isinstance(dt[0], precision.real_t)
+    assert isinstance(dE[0], precision.real_t)
 
-    if bm.precision.num == 1:
+    # dt = dt.astype(dtype=precision.real_t, order='C', copy=False)
+    # dE = dE.astype(dtype=precision.real_t, order='C', copy=False)
+    voltage_kick = charge * \
+        voltage.astype(dtype=precision.real_t, order='C', copy=False)
+    omegarf_kick = omega_rf.astype(
+        dtype=precision.real_t, order='C', copy=False)
+    phirf_kick = phi_rf.astype(dtype=precision.real_t, order='C', copy=False)
+
+    if precision.num == 1:
         __lib.kickf(__getPointer(dt),
                     __getPointer(dE),
                     ct.c_int(n_rf),
@@ -544,10 +565,12 @@ def kick(dt, dE, voltage, omega_rf, phi_rf, charge, n_rf, acceleration_kick):
 
 def drift(dt, dE, solver, t_rev, length_ratio, alpha_order, eta_0,
           eta_1, eta_2, alpha_0, alpha_1, alpha_2, beta, energy):
+    assert isinstance(dt[0], precision.real_t)
+    assert isinstance(dE[0], precision.real_t)
 
-    dt = dt.astype(dtype=bm.precision.real_t, order='C', copy=False)
-    dE = dE.astype(dtype=bm.precision.real_t, order='C', copy=False)
-    if bm.precision.num == 1:
+    # dt = dt.astype(dtype=precision.real_t, order='C', copy=False)
+    # dE = dE.astype(dtype=precision.real_t, order='C', copy=False)
+    if precision.num == 1:
         __lib.driftf(__getPointer(dt),
                      __getPointer(dE),
                      ct.c_char_p(solver),
@@ -584,13 +607,19 @@ def drift(dt, dE, solver, t_rev, length_ratio, alpha_order, eta_0,
 def linear_interp_kick(dt, dE, voltage,
                        bin_centers, charge,
                        acceleration_kick):
-    dt = dt.astype(dtype=bm.precision.real_t, order='C', copy=False)
-    dE = dE.astype(dtype=bm.precision.real_t, order='C', copy=False)
-    voltage = voltage.astype(dtype=bm.precision.real_t, order='C', copy=False)
-    bin_centers = bin_centers.astype(
-        dtype=bm.precision.real_t, order='C', copy=False)
 
-    if bm.precision.num == 1:
+    assert isinstance(dt[0], precision.real_t)
+    assert isinstance(dE[0], precision.real_t)
+    assert isinstance(voltage[0], precision.real_t)
+    assert isinstance(bin_centers[0], precision.real_t)
+
+    # dt = dt.astype(dtype=precision.real_t, order='C', copy=False)
+    # dE = dE.astype(dtype=precision.real_t, order='C', copy=False)
+    # voltage = voltage.astype(dtype=precision.real_t, order='C', copy=False)
+    # bin_centers = bin_centers.astype(
+        # dtype=precision.real_t, order='C', copy=False)
+
+    if precision.num == 1:
         __lib.linear_interp_kickf(__getPointer(dt),
                                   __getPointer(dE),
                                   __getPointer(voltage),
@@ -613,13 +642,18 @@ def linear_interp_kick(dt, dE, voltage,
 def linear_interp_kick_n_drift(dt, dE, total_voltage, bin_centers, charge, acc_kick,
                                solver, t_rev, length_ratio, alpha_order, eta_0, eta_1,
                                eta_2, beta, energy):
-    dt = dt.astype(dtype=bm.precision.real_t, order='C', copy=False)
-    dE = dE.astype(dtype=bm.precision.real_t, order='C', copy=False)
-    total_voltage = total_voltage.astype(
-        dtype=bm.precision.real_t, order='C', copy=False)
-    bin_centers = bin_centers.astype(
-        dtype=bm.precision.real_t, order='C', copy=False)
-    if bm.precision.num == 1:
+    assert isinstance(dt[0], precision.real_t)
+    assert isinstance(dE[0], precision.real_t)
+    assert isinstance(voltage[0], precision.real_t)
+    assert isinstance(bin_centers[0], precision.real_t)
+
+    # dt = dt.astype(dtype=precision.real_t, order='C', copy=False)
+    # dE = dE.astype(dtype=precision.real_t, order='C', copy=False)
+    # total_voltage = total_voltage.astype(
+    #     dtype=precision.real_t, order='C', copy=False)
+    # bin_centers = bin_centers.astype(
+    #     dtype=precision.real_t, order='C', copy=False)
+    if precision.num == 1:
         __lib.linear_interp_kick_n_driftf(__getPointer(dt),
                                           __getPointer(dE),
                                           __getPointer(total_voltage),
@@ -658,10 +692,13 @@ def linear_interp_kick_n_drift(dt, dE, total_voltage, bin_centers, charge, acc_k
 
 
 def slice(dt, profile, cut_left, cut_right):
-    dt = dt.astype(dtype=bm.precision.real_t, order='C', copy=False)
-    profile = profile.astype(dtype=bm.precision.real_t, order='C', copy=False)
+    assert isinstance(dt[0], precision.real_t)
+    assert isinstance(profile[0], precision.real_t)
 
-    if bm.precision.num == 1:
+    # dt = dt.astype(dtype=precision.real_t, order='C', copy=False)
+    # profile = profile.astype(dtype=precision.real_t, order='C', copy=False)
+
+    if precision.num == 1:
         __lib.histogramf(__getPointer(dt),
                          __getPointer(profile),
                          __c_real(cut_left),
@@ -678,10 +715,13 @@ def slice(dt, profile, cut_left, cut_right):
 
 
 def slice_smooth(dt, profile, cut_left, cut_right):
-    dt = dt.astype(dtype=bm.precision.real_t, order='C', copy=False)
-    profile = profile.astype(dtype=bm.precision.real_t, order='C', copy=False)
+    assert isinstance(dt[0], precision.real_t)
+    assert isinstance(profile[0], precision.real_t)
 
-    if bm.precision.num == 1:
+    # dt = dt.astype(dtype=precision.real_t, order='C', copy=False)
+    # profile = profile.astype(dtype=precision.real_t, order='C', copy=False)
+
+    if precision.num == 1:
         __lib.smooth_histogramf(__getPointer(dt),
                                 __getPointer(profile),
                                 __c_real(cut_left),
@@ -698,16 +738,21 @@ def slice_smooth(dt, profile, cut_left, cut_right):
 
 
 def music_track(music):
-    music.beam.dt = music.beam.dt.astype(
-        dtype=bm.precision.real_t, order='C', copy=False)
-    music.beam.dE = music.beam.dE.astype(
-        dtype=bm.precision.real_t, order='C', copy=False)
-    music.induced_voltage = music.induced_voltage.astype(
-        dtype=bm.precision.real_t, order='C', copy=False)
-    music.array_parameters = music.array_parameters.astype(
-        dtype=bm.precision.real_t, order='C', copy=False)
+    assert isinstance(music.beam.dt[0], precision.real_t)
+    assert isinstance(music.beam.dE[0], precision.real_t)
+    assert isinstance(music.induced_voltage[0], precision.real_t)
+    assert isinstance(music.array_parameters[0], precision.real_t)
 
-    if bm.precision.num == 1:
+    # music.beam.dt = music.beam.dt.astype(
+    #     dtype=precision.real_t, order='C', copy=False)
+    # music.beam.dE = music.beam.dE.astype(
+    #     dtype=precision.real_t, order='C', copy=False)
+    # music.induced_voltage = music.induced_voltage.astype(
+    #     dtype=precision.real_t, order='C', copy=False)
+    # music.array_parameters = music.array_parameters.astype(
+    #     dtype=precision.real_t, order='C', copy=False)
+
+    if precision.num == 1:
         __lib.music_trackf(__getPointer(music.beam.dt),
                            __getPointer(music.beam.dE),
                            __getPointer(music.induced_voltage),
@@ -736,16 +781,21 @@ def music_track(music):
 
 
 def music_track_multiturn(music):
-    music.beam.dt = music.beam.dt.astype(
-        dtype=bm.precision.real_t, order='C', copy=False)
-    music.beam.dE = music.beam.dE.astype(
-        dtype=bm.precision.real_t, order='C', copy=False)
-    music.induced_voltage = music.induced_voltage.astype(
-        dtype=bm.precision.real_t, order='C', copy=False)
-    music.array_parameters = music.array_parameters.astype(
-        dtype=bm.precision.real_t, order='C', copy=False)
+    assert isinstance(music.beam.dt[0], precision.real_t)
+    assert isinstance(music.beam.dE[0], precision.real_t)
+    assert isinstance(music.induced_voltage[0], precision.real_t)
+    assert isinstance(music.array_parameters[0], precision.real_t)
 
-    if bm.precision.num == 1:
+    # music.beam.dt = music.beam.dt.astype(
+    #     dtype=precision.real_t, order='C', copy=False)
+    # music.beam.dE = music.beam.dE.astype(
+    #     dtype=precision.real_t, order='C', copy=False)
+    # music.induced_voltage = music.induced_voltage.astype(
+    #     dtype=precision.real_t, order='C', copy=False)
+    # music.array_parameters = music.array_parameters.astype(
+    #     dtype=precision.real_t, order='C', copy=False)
+
+    if precision.num == 1:
         __lib.music_track_multiturnf(__getPointer(music.beam.dt),
                                      __getPointer(music.beam.dE),
                                      __getPointer(music.induced_voltage),
@@ -774,9 +824,10 @@ def music_track_multiturn(music):
 
 
 def synchrotron_radiation(dE, U0, n_kicks, tau_z):
-    dE = dE.astype(dtype=bm.precision.real_t, order='C', copy=False)
+    assert isinstance(dE[0], precision.real_t)
+    # dE = dE.astype(dtype=precision.real_t, order='C', copy=False)
 
-    if bm.precision.num == 1:
+    if precision.num == 1:
         __lib.synchrotron_radiationf(
             __getPointer(dE),
             __c_real(U0 / n_kicks),
@@ -793,10 +844,11 @@ def synchrotron_radiation(dE, U0, n_kicks, tau_z):
 
 
 def synchrotron_radiation_full(dE, U0, n_kicks, tau_z, sigma_dE, energy):
+    assert isinstance(dE[0], precision.real_t)
 
-    dE = dE.astype(dtype=bm.precision.real_t, order='C', copy=False)
+    # dE = dE.astype(dtype=precision.real_t, order='C', copy=False)
 
-    if bm.precision.num == 1:
+    if precision.num == 1:
         __lib.synchrotron_radiation_fullf(
             __getPointer(dE),
             __c_real(U0 / n_kicks),
@@ -821,15 +873,17 @@ def set_random_seed(seed):
 
 
 def fast_resonator(R_S, Q, frequency_array, frequency_R, impedance=None):
-    R_S = R_S.astype(dtype=bm.precision.real_t, order='C', copy=False)
-    Q = Q.astype(dtype=bm.precision.real_t, order='C', copy=False)
-    frequency_array = frequency_array.astype(dtype=bm.precision.real_t, order='C', copy=False)
-    frequency_R = frequency_R.astype(dtype=bm.precision.real_t, order='C', copy=False)
-    
-    realImp = np.zeros(len(frequency_array), dtype=bm.precision.real_t)
-    imagImp = np.zeros(len(frequency_array), dtype=bm.precision.real_t)
+    R_S = R_S.astype(dtype=precision.real_t, order='C', copy=False)
+    Q = Q.astype(dtype=precision.real_t, order='C', copy=False)
+    frequency_array = frequency_array.astype(
+        dtype=precision.real_t, order='C', copy=False)
+    frequency_R = frequency_R.astype(
+        dtype=precision.real_t, order='C', copy=False)
 
-    if bm.precision.num == 1:
+    realImp = np.zeros(len(frequency_array), dtype=precision.real_t)
+    imagImp = np.zeros(len(frequency_array), dtype=precision.real_t)
+
+    if precision.num == 1:
         __lib.fast_resonator_real_imagf(
             __getPointer(realImp),
             __getPointer(imagImp),

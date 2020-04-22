@@ -27,10 +27,19 @@ extern "C" void histogram(const double *__restrict__ input,
     const double inv_bin_width = n_slices / (cut_right - cut_left);
 
     // allocate memory for the thread_private histogram
-    double **histo = (double **) malloc(omp_get_max_threads() * sizeof(double *));
-    histo[0] = (double *) malloc (omp_get_max_threads() * n_slices * sizeof(double));
-    for (int i = 0; i < omp_get_max_threads(); i++)
-        histo[i] = (*histo + n_slices * i);
+    // double **histo = (double **) malloc(omp_get_max_threads() * sizeof(double *));
+    // histo[0] = (double *) malloc (omp_get_max_threads() * n_slices * sizeof(double));
+    // for (int i = 0; i < omp_get_max_threads(); i++)
+    //     histo[i] = (*histo + n_slices * i);
+
+    static double **histo = nullptr;
+
+    if (!histo) {
+        histo = (double **) malloc(omp_get_max_threads() * sizeof(double *));
+        histo[0] = (double *) malloc (omp_get_max_threads() * n_slices * sizeof(double));
+        for (int i = 0; i < omp_get_max_threads(); i++)
+            histo[i] = (*histo + n_slices * i);
+    }
 
     #pragma omp parallel
     {
@@ -66,8 +75,8 @@ extern "C" void histogram(const double *__restrict__ input,
     }
 
     // free memory
-    free(histo[0]);
-    free(histo);
+    // free(histo[0]);
+    // free(histo);
 }
 
 extern "C" void smooth_histogram(const double *__restrict__ input,
@@ -124,10 +133,14 @@ extern "C" void histogramf(const float *__restrict__ input,
     const float inv_bin_width = n_slices / (cut_right - cut_left);
 
     // allocate memory for the thread_private histogram
-    float **histo = (float **) malloc(omp_get_max_threads() * sizeof(float *));
-    histo[0] = (float *) malloc (omp_get_max_threads() * n_slices * sizeof(float));
-    for (int i = 0; i < omp_get_max_threads(); i++)
-        histo[i] = (*histo + n_slices * i);
+    static float **histo = nullptr;
+
+    if (!histo) {
+        histo = (float **) malloc(omp_get_max_threads() * sizeof(float *));
+        histo[0] = (float *) malloc (omp_get_max_threads() * n_slices * sizeof(float));
+        for (int i = 0; i < omp_get_max_threads(); i++)
+            histo[i] = (*histo + n_slices * i);
+    }
 
     #pragma omp parallel
     {
@@ -163,8 +176,8 @@ extern "C" void histogramf(const float *__restrict__ input,
     }
 
     // free memory
-    free(histo[0]);
-    free(histo);
+    // free(histo[0]);
+    // free(histo);
 }
 
 extern "C" void smooth_histogramf(const float *__restrict__ input,

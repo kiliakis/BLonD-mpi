@@ -19,7 +19,7 @@ from builtins import object
 import numpy as np
 from scipy.constants import m_p, m_e, e, c
 from ..trackers.utilities import is_in_separatrix
-
+from ..utils import bmath as bm
 
 class Particle(object):
 
@@ -136,8 +136,8 @@ class Beam(object):
         self.gamma = Ring.gamma[0][0]
         self.energy = Ring.energy[0][0]
         self.momentum = Ring.momentum[0][0]
-        self.dt = np.zeros([int(n_macroparticles)])
-        self.dE = np.zeros([int(n_macroparticles)])
+        self.dt = np.zeros([int(n_macroparticles)], dtype=bm.precision.real_t)
+        self.dE = np.zeros([int(n_macroparticles)], dtype=bm.precision.real_t)
         self.mean_dt = 0.
         self.mean_dE = 0.
         self.sigma_dt = 0.
@@ -180,8 +180,8 @@ class Beam(object):
 
         indexalive = np.where(self.id == 0)[0]
         if len(indexalive) < self.n_macroparticles:
-            self.dt = np.ascontiguousarray(self.beam.dt[indexalive])
-            self.dE = np.ascontiguousarray(self.beam.dE[indexalive])
+            self.dt = np.ascontiguousarray(self.beam.dt[indexalive], dtype=bm.precision.real_t, order='C')
+            self.dE = np.ascontiguousarray(self.beam.dE[indexalive], dtype=bm.precision.real_t, order='C')
             self.n_macroparticles = len(self.beam.dt)
         else:
             # AllParticlesLost
@@ -321,9 +321,9 @@ class Beam(object):
         ids = np.arange(self.n_macroparticles)
         random.shuffle(ids)
         ids = worker.scatter(ids, self.n_macroparticles)
-        self.dt = np.ascontiguousarray(self.dt[ids])
-        self.dE = np.ascontiguousarray(self.dE[ids])
-        self.id = np.ascontiguousarray(self.id[ids])
+        self.dt = np.ascontiguousarray(self.dt[ids], dtype=bm.precision.real_t, order='C')
+        self.dE = np.ascontiguousarray(self.dE[ids], dtype=bm.precision.real_t, order='C')
+        self.id = np.ascontiguousarray(self.id[ids], dtype=bm.precision.real_t, order='C')
         size = len(self.dt)
         worker.indices['beam'] = {'start': 0,
                                   'stride': 0,

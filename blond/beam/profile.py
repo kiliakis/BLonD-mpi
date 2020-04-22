@@ -120,8 +120,8 @@ class CutOptions(object):
             # CutError
             raise RuntimeError('cuts_unit should be "s" or "rad"')
 
-        self.edges = np.zeros(n_slices + 1, dtype=float)
-        self.bin_centers = np.zeros(n_slices, dtype=float)
+        self.edges = np.zeros(n_slices + 1, dtype=bm.precision.real_t, order='C')
+        self.bin_centers = np.zeros(n_slices, dtype=bm.precision.real_t, order='C')
 
     def set_cuts(self, Beam=None):
         """
@@ -154,7 +154,7 @@ class CutOptions(object):
                                                       self.cuts_unit)
 
         self.edges = np.linspace(self.cut_left, self.cut_right,
-                                 self.n_slices + 1)
+                                 self.n_slices + 1).astype(dtype=bm.precision.real_t, order='C')
         self.bin_centers = (self.edges[:-1] + self.edges[1:])/2
         self.bin_size = (self.cut_right - self.cut_left) / self.n_slices
 
@@ -393,11 +393,11 @@ class Profile(object):
         self.set_slices_parameters()
 
         # Initialize profile array as zero array
-        self.n_macroparticles = np.zeros(self.n_slices, dtype=float)
+        self.n_macroparticles = np.zeros(self.n_slices, dtype=bm.precision.real_t, order='C')
 
         # Initialize beam_spectrum and beam_spectrum_freq as empty arrays
-        self.beam_spectrum = np.array([], dtype=float)
-        self.beam_spectrum_freq = np.array([], dtype=float)
+        self.beam_spectrum = np.array([], dtype=bm.precision.real_t, order='C')
+        self.beam_spectrum_freq = np.array([], dtype=bm.precision.real_t, order='C')
 
         if OtherSlicesOptions.smooth:
             self.operations = [self._slice_smooth]
@@ -441,7 +441,8 @@ class Profile(object):
         """
         Constant space slicing with a constant frame. 
         """
-        bm.slice(self.Beam.dt, self.n_macroparticles, self.cut_left, self.cut_right)
+        bm.slice(self.Beam.dt, self.n_macroparticles,
+                 self.cut_left, self.cut_right)
 
     def reduce_histo(self):
         from ..utils.mpi_config import worker
@@ -455,8 +456,7 @@ class Profile(object):
 
         with timing.timed_region('serial:conversion'):
             with mpiprof.traced_region('serial:conversion'):
-                self.n_macroparticles = self.n_macroparticles.astype(
-                    np.float64, order='C')
+                self.n_macroparticles = self.n_macroparticles.astype(dtype=bm.precision.real_t, order='C')
 
     @timing.timeit(key='serial:scale_histo')
     @mpiprof.traceit(key='serial:scale_histo')
@@ -470,7 +470,8 @@ class Profile(object):
         """
         At the moment 4x slower than _slice but smoother (filtered).
         """
-        bm.slice_smooth(self.Beam.dt, self.n_macroparticles, self.cut_left, self.cut_right)
+        bm.slice_smooth(self.Beam.dt, self.n_macroparticles,
+                        self.cut_left, self.cut_right)
 
     def apply_fit(self):
         """
@@ -526,7 +527,7 @@ class Profile(object):
             shiftX=shiftX)
 
     def fwhm_multibunch(self, n_bunches, bunch_spacing_buckets,
-                        bucket_size_tau, bucket_tolerance=0.40, 
+                        bucket_size_tau, bucket_tolerance=0.40,
                         shift=0, shiftX=0):
         """
         Computation of the bunch length and position from the FWHM
@@ -535,7 +536,7 @@ class Profile(object):
 
         self.bunchPosition, self.bunchLength = ffroutines.fwhm_multibunch(
             self.n_macroparticles, self.bin_centers, n_bunches,
-            bunch_spacing_buckets, bucket_size_tau, bucket_tolerance, 
+            bunch_spacing_buckets, bucket_size_tau, bucket_tolerance,
             shift=shift, shiftX=shiftX)
 
     def beam_spectrum_freq_generation(self, n_sampling_fft):

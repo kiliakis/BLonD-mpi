@@ -121,7 +121,8 @@ profile = Profile(beam, CutOptions(n_slices=n_slices))
 
 long_tracker = RingAndRFTracker(rf, beam)
 
-beam.split_random()
+# beam.split_random()
+beam.split()
 
 
 # Accelerator map
