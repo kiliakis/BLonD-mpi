@@ -49,18 +49,18 @@ extern "C" float beam_phasef(const float * __restrict__ bin_centers,
 
     #pragma omp parallel for
     for (int i = 0; i < n_bins; ++i) {
-        base[i] = fast_exp(alpha * bin_centers[i]) * profile[i];
+        base[i] = fast_expf(alpha * bin_centers[i]) * profile[i];
     }
 
     #pragma omp parallel for
     for (int i = 0; i < n_bins; ++i) {
         const float a = omega_rf * bin_centers[i] + phi_rf;
-        array1[i] = base[i] * fast_sin(a);
-        array2[i] = base[i] * fast_cos(a);
+        array1[i] = base[i] * fast_sinf(a);
+        array2[i] = base[i] * fast_cosf(a);
     }
 
-    float scoeff = trapz_const_delta(array1, bin_size, n_bins);
-    float ccoeff = trapz_const_delta(array2, bin_size, n_bins);
+    float scoeff = trapz_const_deltaf(array1, bin_size, n_bins);
+    float ccoeff = trapz_const_deltaf(array2, bin_size, n_bins);
 
     delete[] base;
     delete[] array1;

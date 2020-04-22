@@ -17,7 +17,7 @@ Project website: http://blond.web.cern.ch/
 #include <random>
 #include <thread>
 #include <chrono>
-#include "../cpp_routines/openmp.h"
+#include "../cpp_routines/common.h"
 
 #ifdef BOOST
 #include <boost/random.hpp>

@@ -31,26 +31,26 @@ extern "C" {
 
 
     int where(const double *__restrict__ dt, const int n_macroparticles,
-                         const double constant1, const double constant2)
+              const double constant1, const double constant2)
     {
-       int s = 0;
-       #pragma omp parallel for reduction(+:s)
-       for (int i = 0; i < n_macroparticles; i++) {
-          s += (dt[i] < constant2 && dt[i] > constant1) ? 1 : 0;
-       }
-       return s;
+        int s = 0;
+        #pragma omp parallel for reduction(+:s)
+        for (int i = 0; i < n_macroparticles; i++) {
+            s += (dt[i] < constant2 && dt[i] > constant1) ? 1 : 0;
+        }
+        return s;
     }
 
 
     int wheref(const float *__restrict__ dt, const int n_macroparticles,
-                         const float constant1, const float constant2)
+               const float constant1, const float constant2)
     {
-       int s = 0;
-       #pragma omp parallel for reduction(+:s)
-       for (int i = 0; i < n_macroparticles; i++) {
-          s += (dt[i] < constant2 && dt[i] > constant1) ? 1 : 0;
-       }
-       return s;
+        int s = 0;
+        #pragma omp parallel for reduction(+:s)
+        for (int i = 0; i < n_macroparticles; i++) {
+            s += (dt[i] < constant2 && dt[i] > constant1) ? 1 : 0;
+        }
+        return s;
     }
 
 
@@ -267,7 +267,7 @@ extern "C" {
     float stdevf(const float * __restrict__ data,
                  const int n)
     {
-        const float m = mean(data, n);
+        const float m = meanf(data, n);
         float sum_deviation = 0.0;
 
         #pragma omp parallel for reduction(+:sum_deviation)

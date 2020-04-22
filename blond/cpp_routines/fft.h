@@ -13,8 +13,8 @@
 #include "common.h"
 
 
-typedef std::complex<double> complex64_t;
-typedef std::complex<float> complex128_t;
+typedef std::complex<float> complex64_t;
+typedef std::complex<double> complex128_t;
 enum fft_type_t { FFT, IFFT, RFFT, IRFFT };
 
 struct fft_plan_t {
@@ -27,6 +27,16 @@ struct fft_plan_t {
     void *out;
 };
 
+
+struct fftf_plan_t {
+    fftwf_plan p;      // fftw_plan
+    int inSize;       // input size
+    int fftSize;      // fft size
+    int howmany = 1;  // for packed ffts
+    fft_type_t type;
+    void *in;
+    void *out;
+};
 
 
 

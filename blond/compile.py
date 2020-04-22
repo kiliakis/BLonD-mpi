@@ -126,13 +126,13 @@ if (__name__ == "__main__"):
         if 'win' in sys.platform:
             libs += ['-lfftw3-3']
         else:
-            libs += ['-lfftw3']
+            libs += ['-lfftw3', '-lfftw3f']
             if args.with_fftw_omp:
                 cflags += ['-DFFTW3PARALLEL']
-                libs += ['-lfftw3_omp']
+                libs += ['-lfftw3_omp', '-lfftw3f_omp']
             elif args.with_fftw_threads:
                 cflags += ['-DFFTW3PARALLEL']
-                libs += ['-lfftw3_threads']
+                libs += ['-lfftw3_threads', '-lfftw3f_threads']
 
     if ('posix' in os.name):
         cflags += ['-fPIC']

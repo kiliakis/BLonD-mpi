@@ -33,6 +33,7 @@
 // Can be combined with all the above
 
 static std::vector<fft_plan_t> planV;
+static std::vector<fftf_plan_t> planVf;
 static bool hasBeenInit = false;
 const unsigned FFTW_FLAGS = FFTW_MEASURE | FFTW_DESTROY_INPUT;
 
@@ -135,9 +136,9 @@ extern "C" {
         // return fftw_plan_dft_c2r_2d(n, n1, b, out, flag);
     }
 
-    void run_fft(const fftw_plan &p) { fftw_execute(p);}
+    // void run_fft(const fftw_plan &p) { fftw_execute(p);}
 
-    void destroy_fft(fftw_plan &p) { fftw_destroy_plan(p); }
+    // void destroy_fft(fftw_plan &p) { fftw_destroy_plan(p); }
 
 
 
@@ -267,6 +268,14 @@ extern "C" {
             fftw_free(i.out);
         }
         planV.clear();
+
+        for (auto &i : planVf) {
+            fftwf_destroy_plan(i.p);
+            fftwf_free(i.in);
+            fftwf_free(i.out);
+        }
+        planVf.clear();
+
     }
 
     // rfft
@@ -292,7 +301,7 @@ extern "C" {
             fill(from + inSize, from + n, 0.0);
         }
 
-        run_fft(plan.p);
+        fftw_execute(plan.p);
         copy(to, to + outSize, out);
     }
 
@@ -321,7 +330,7 @@ extern "C" {
         //     cout << from[i] << "\t";
         // cout << "\n";
 
-        run_fft(plan.p);
+        fftw_execute(plan.p);
 
         transform(to, to + outSize, out,
                   bind2nd(divides<double>(), outSize));
@@ -352,7 +361,7 @@ extern "C" {
             copy(in, in + howmany * n0, (complex128_t *) from);
             fill((complex128_t *) from + howmany * n0, (complex128_t *) from + howmany * n, 0.0);
         }
-        run_fft(plan.p);
+        fftw_execute(plan.p);
 
         transform(to, to + howmany * outSize, out,
                   bind2nd(divides<double>(), outSize));
@@ -382,7 +391,7 @@ extern "C" {
             fill(from + inSize, from + fftSize, 0.0);
         }
 
-        run_fft(plan.p);
+        fftw_execute(plan.p);
 
         transform(&to[0], &to[fftSize], out,
                   bind2nd(divides<complex128_t>(), fftSize));
@@ -410,7 +419,7 @@ extern "C" {
             copy(in, in + inSize, from);
             fill(from + inSize, from + fftSize, 0.0);
         }
-        run_fft(plan.p);
+        fftw_execute(plan.p);
 
         copy(&to[0], &to[fftSize], out);
     }
@@ -453,6 +462,215 @@ extern "C" {
 
 
 
+    fftwf_plan init_fftf(const int n,  complex64_t *in, complex64_t *out,
+                         const int sign = FFTW_FORWARD,
+                         const unsigned flag = FFTW_ESTIMATE,
+                         const int threads = 1)
+    {
+#ifdef FFTW3PARALLEL
+        if (threads > 1) {
+            if (!hasBeenInit) {
+                if (fftwf_init_threads() == 0)
+                    cout << "[fft.cpp:init_rfft] Thread initialisation error\n";
+                hasBeenInit = true;
+                fftwf_plan_with_nthreads(threads);
+            }
+        }
+#endif
+        // cout << "Threads: " << threads << "\n";
+
+        fftwf_complex *a = reinterpret_cast<fftwf_complex *>(in);
+        fftwf_complex *b = reinterpret_cast<fftwf_complex *>(out);
+        return fftwf_plan_dft_1d(n, a, b, sign, flag);
+    }
+
+    fftwf_plan init_rfftf(const int n, float *in, complex64_t *out,
+                          const unsigned flag = FFTW_ESTIMATE,
+                          const int threads = 1)
+
+    {
+#ifdef FFTW3PARALLEL
+        if (threads > 1) {
+            if (!hasBeenInit) {
+                if (fftwf_init_threads() == 0)
+                    cout << "[fft.cpp:init_rfft] Thread initialisation error\n";
+                hasBeenInit = true;
+                fftwf_plan_with_nthreads(threads);
+            }
+        }
+#endif
+        // cout << "Threads: " << threads << "\n";
+        fftwf_complex *b = reinterpret_cast<fftwf_complex *>(out);
+        return fftwf_plan_dft_r2c_1d(n, in, b, flag);
+    }
+
+    fftwf_plan init_irfftf(const int n, complex64_t *in, float *out,
+                           const unsigned flag = FFTW_ESTIMATE,
+                           const int threads = 1)
+    {
+#ifdef FFTW3PARALLEL
+        if (threads > 1) {
+            if (!hasBeenInit) {
+                if (fftwf_init_threads() == 0)
+                    cout << "[fft.cpp:init_rfft] Thread initialisation error\n";
+                hasBeenInit = true;
+                fftwf_plan_with_nthreads(threads);
+            }
+        }
+#endif
+
+        // cout << "Threads: " << threads << "\n";
+
+        fftwf_complex *b = reinterpret_cast<fftwf_complex *>(in);
+        return fftwf_plan_dft_c2r_1d(n, b, out, flag);
+    }
+
+
+    fftwf_plan init_irfft_packedf(const int n, const int howmany, complex64_t *in, float *out,
+                                  const unsigned flag = FFTW_ESTIMATE,
+                                  const int threads = 1)
+    {
+#ifdef FFTW3PARALLEL
+        if (threads > 1) {
+            if (!hasBeenInit) {
+                if (fftwf_init_threads() == 0)
+                    cout << "[fft.cpp:init_rfft] Thread initialisation error\n";
+                hasBeenInit = true;
+                fftwf_plan_with_nthreads(threads);
+            }
+        }
+#endif
+        // cout << "Threads: " << threads << "\n";
+
+        fftwf_complex *b = reinterpret_cast<fftwf_complex *>(in);
+
+        return fftwf_plan_many_dft_c2r(1, &n, howmany,
+                                       b, NULL,
+                                       1, n / 2 + 1,
+                                       out, NULL,
+                                       1, n,
+                                       flag);
+        // return fftwf_plan_dft_c2r_2d(n, n1, b, out, flag);
+    }
+
+
+    fftf_plan_t find_planf(int fftSize, int inSize, fft_type_t type, int threads,
+                           vector<fftf_plan_t> &v)
+    {
+        // const uint flag = FFTW_FLAGS;
+        auto it =
+        find_if(v.begin(), v.end(), [inSize, fftSize, type](const fftf_plan_t &s) {
+            return ((s.inSize == inSize) && (s.fftSize == fftSize) && (s.type == type)
+                    && (s.howmany == 1));
+        });
+
+        if (it == v.end()) {
+            fftf_plan_t plan;
+            plan.inSize = inSize;
+            plan.fftSize = fftSize;
+            plan.type = type;
+
+            if (type == FFT) {
+                fftwf_complex *in =
+                    (fftwf_complex *)fftwf_malloc(sizeof(fftwf_complex) * fftSize);
+                fftwf_complex *out =
+                    (fftwf_complex *)fftwf_malloc(sizeof(fftwf_complex) * fftSize);
+
+                auto p = init_fftf(fftSize, reinterpret_cast<complex64_t *>(in),
+                                   reinterpret_cast<complex64_t *>(out),
+                                   FFTW_FORWARD, FFTW_FLAGS, threads);
+                plan.p = p;
+                plan.in = in;
+                plan.out = out;
+            } else if (type == IFFT) {
+
+                fftwf_complex *in =
+                    (fftwf_complex *)fftwf_malloc(sizeof(fftwf_complex) * fftSize);
+                fftwf_complex *out =
+                    (fftwf_complex *)fftwf_malloc(sizeof(fftwf_complex) * fftSize);
+                auto p = init_fftf(fftSize, reinterpret_cast<complex64_t *>(in),
+                                   reinterpret_cast<complex64_t *>(out),
+                                   FFTW_BACKWARD, FFTW_FLAGS, threads);
+                plan.p = p;
+                plan.in = in;
+                plan.out = out;
+
+            } else if (type == RFFT) {
+                float *in = (float *)fftwf_malloc(sizeof(float) * inSize);
+                fftwf_complex *out = (fftwf_complex *)fftwf_malloc(
+                                         sizeof(fftwf_complex) * fftSize);
+                auto p = init_rfftf(inSize, in, reinterpret_cast<complex64_t *>(out),
+                                    FFTW_FLAGS, threads);
+                plan.p = p;
+                plan.in = in;
+                plan.out = out;
+
+            } else if (type == IRFFT) {
+                fftwf_complex *in = (fftwf_complex *)fftwf_malloc(
+                                        sizeof(fftwf_complex) * inSize);
+                float *out = (float *)fftwf_malloc(sizeof(float) * fftSize);
+                auto p = init_irfftf(fftSize, reinterpret_cast<complex64_t *>(in), out,
+                                     FFTW_FLAGS, threads);
+                plan.p = p;
+                plan.in = in;
+                plan.out = out;
+
+            } else {
+                printf("[fft::find_plan]: ERROR Wrong fft type!\n");
+                exit(-1);
+            }
+
+            v.push_back(plan);
+            return plan;
+        } else {
+            return *it;
+        }
+    }
+
+
+
+    fftf_plan_t find_plan_packedf(int fftSize, int howmany, int inSize, fft_type_t type, int threads,
+                                  vector<fftf_plan_t> &v)
+    {
+        // const uint flag = FFTW_FLAGS;
+        auto it =
+        find_if(v.begin(), v.end(), [inSize, fftSize, howmany, type](const fftf_plan_t &s) {
+            return ((s.inSize == inSize) && (s.fftSize == fftSize) && (s.type == type)
+                    && (s.howmany == howmany));
+        });
+
+        if (it == v.end()) {
+            fftf_plan_t plan;
+            plan.inSize = inSize;
+            plan.fftSize = fftSize;
+            plan.howmany = howmany;
+            plan.type = type;
+
+            if (type == IRFFT) {
+                fftwf_complex *in = (fftwf_complex *)fftwf_malloc(
+                                        sizeof(fftwf_complex) * inSize * howmany);
+                float *out = (float *)fftwf_malloc(sizeof(float) * fftSize * howmany);
+
+                auto p = init_irfft_packedf(fftSize, howmany, reinterpret_cast<complex64_t *>(in), out,
+                                            FFTW_FLAGS, threads);
+                plan.p = p;
+                plan.in = in;
+                plan.out = out;
+
+            } else {
+                printf("[fft::find_plan]: ERROR Wrong fft type!\n");
+                exit(-1);
+            }
+
+            v.push_back(plan);
+            return plan;
+        } else {
+            return *it;
+        }
+    }
+
+
+
     // rfft
     // @in: input vector which must be the result of a rfft
     // @out: irfft of input, always real
@@ -465,7 +683,7 @@ extern "C" {
         n = n == 0 ? n = inSize : n;
         const int outSize = n / 2 + 1;
 
-        auto plan = find_plan(outSize, n, RFFT, threads, planV);
+        auto plan = find_planf(outSize, n, RFFT, threads, planVf);
         auto from = (float *)plan.in;
         auto to = (complex64_t *)plan.out;
 
@@ -476,7 +694,7 @@ extern "C" {
             fill(from + inSize, from + n, 0.0);
         }
 
-        run_fft(plan.p);
+        fftwf_execute(plan.p);
         copy(to, to + outSize, out);
     }
 
@@ -491,7 +709,7 @@ extern "C" {
         outSize = outSize == 0 ? outSize = 2 * (inSize - 1) : outSize;
         const int n = outSize / 2 + 1;
 
-        auto plan = find_plan(outSize, n, IRFFT, threads, planV);
+        auto plan = find_planf(outSize, n, IRFFT, threads, planVf);
         auto from = (complex64_t *)plan.in;
         auto to = (float *)plan.out;
 
@@ -505,7 +723,7 @@ extern "C" {
         //     cout << from[i] << "\t";
         // cout << "\n";
 
-        run_fft(plan.p);
+        fftwf_execute(plan.p);
 
         transform(to, to + outSize, out,
                   bind2nd(divides<float>(), outSize));
@@ -524,7 +742,7 @@ extern "C" {
 
         const int n = outSize / 2 + 1;
 
-        auto plan = find_plan_packed(outSize, howmany, n, IRFFT, threads, planV);
+        auto plan = find_plan_packedf(outSize, howmany, n, IRFFT, threads, planVf);
 
         auto from = (complex64_t *) plan.in;
         auto to = (float *) plan.out;
@@ -536,7 +754,7 @@ extern "C" {
             copy(in, in + howmany * n0, (complex64_t *) from);
             fill((complex64_t *) from + howmany * n0, (complex64_t *) from + howmany * n, 0.0);
         }
-        run_fft(plan.p);
+        fftwf_execute(plan.p);
 
         transform(to, to + howmany * outSize, out,
                   bind2nd(divides<float>(), outSize));
@@ -556,7 +774,7 @@ extern "C" {
     {
         if (fftSize == 0) fftSize = inSize;
 
-        auto plan = find_plan(fftSize, inSize, IFFT, threads, planV);
+        auto plan = find_planf(fftSize, inSize, IFFT, threads, planVf);
         auto from = (complex64_t *)plan.in;
         auto to = (complex64_t *)plan.out;
         if (fftSize <= inSize)
@@ -566,7 +784,7 @@ extern "C" {
             fill(from + inSize, from + fftSize, 0.0);
         }
 
-        run_fft(plan.p);
+        fftwf_execute(plan.p);
 
         transform(&to[0], &to[fftSize], out,
                   bind2nd(divides<complex64_t>(), fftSize));
@@ -584,7 +802,7 @@ extern "C" {
     {
         if (fftSize == 0) fftSize = inSize;
 
-        auto plan = find_plan(fftSize, inSize, FFT, threads, planV);
+        auto plan = find_planf(fftSize, inSize, FFT, threads, planVf);
         auto from = (complex64_t *)plan.in;
         auto to = (complex64_t *)plan.out;
 
@@ -594,7 +812,7 @@ extern "C" {
             copy(in, in + inSize, from);
             fill(from + inSize, from + fftSize, 0.0);
         }
-        run_fft(plan.p);
+        fftwf_execute(plan.p);
 
         copy(&to[0], &to[fftSize], out);
     }
@@ -621,18 +839,18 @@ extern "C" {
     {
         const size_t realSize = signalLen + kernelLen - 1;
         const size_t complexSize = realSize / 2 + 1;
-        complex64_t *z1 = (complex64_t *) fftw_alloc_complex (2 * complexSize);
+        complex64_t *z1 = (complex64_t *) fftwf_alloc_complex (2 * complexSize);
         complex64_t *z2 = z1 + complexSize;
 
-        rfft(signal, signalLen, z1, realSize, threads);
-        rfft(kernel, kernelLen, z2, realSize, threads);
+        rfftf(signal, signalLen, z1, realSize, threads);
+        rfftf(kernel, kernelLen, z2, realSize, threads);
 
         transform(z1, z1 + complexSize, z2, z1,
                   multiplies<complex64_t>());
 
-        irfft(z1, complexSize, res, realSize, threads);
+        irfftf( z1, complexSize, res, realSize, threads);
 
-        fftw_free(z1);
+        fftwf_free(z1);
     }
 
 
