@@ -36,8 +36,9 @@ from blond.beam.profile import CutOptions, FitOptions, Profile
 from blond.monitors.monitors import BunchMonitor
 from blond.plots.plot import Plot
 from blond.utils.input_parser import parse
-
+from blond.utils import bmath as bm
 from blond.utils.mpi_config import worker, mpiprint
+
 
 this_directory = os.path.dirname(os.path.realpath(__file__)) + '/'
 
@@ -85,6 +86,8 @@ os.environ['OMP_NUM_THREADS'] = str(args['omp'])
 withtp = bool(args['withtp'])
 seed = seed if args['seed'] == None else args['seed']
 approx = args['approx']
+precision = args['precision']
+bm.use_precision(precision)
 
 worker.initLog(bool(args['log']), args['logdir'])
 worker.initTrace(bool(args['trace']), args['tracefile'])

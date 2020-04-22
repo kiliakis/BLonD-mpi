@@ -23,6 +23,10 @@ parser.add_argument('-mtw', '--mtw', type=int,
 parser.add_argument('-beginafter', '--beginafter', type=int,
                     help='Start the approximation after so many turns.')
 
+parser.add_argument('-precision', '--precision', type=str, choices=['single', 'double'],
+                    default='double',
+                    help='Floating point precision.')
+
 parser.add_argument('-approx', '--approx', type=int, choices=[0, 1, 2], default=0,
                     help='Which approximation to use: 0 (No approx), 1 (global reduce), 2 (scale histo).')
 
@@ -33,7 +37,7 @@ parser.add_argument('-o', '--omp', type=int, default=1,
                     help='Number of openmp threads to use.'
                     '\nDefault: 1')
 
-parser.add_argument('-l', '--log', type=int, choices=[0,1],
+parser.add_argument('-l', '--log', type=int, choices=[0, 1],
                     help='Log debug messages (1) or not (0).'
                     '\nDefault: Do not log (0).')
 
@@ -50,7 +54,7 @@ parser.add_argument('-timedir', '--timedir', type=str, default='./timings/',
                     help='Directory to store the timing reports.'
                     '\nDefault: ./timings')
 
-parser.add_argument('-m', '--monitor', type=int, default=0, choices=[0,1],
+parser.add_argument('-m', '--monitor', type=int, default=0, choices=[0, 1],
                     help='Monitoring interval (0: no monitor).'
                     '\nDefault: 0')
 
@@ -62,7 +66,7 @@ parser.add_argument('-seed', '--seed', type=int, default=0,
                     help='Seed value for the particle distribution generation.'
                     '\nDefault: None')
 
-parser.add_argument('-trace', '--trace', type=int, default=0, choices=[0,1],
+parser.add_argument('-trace', '--trace', type=int, default=0, choices=[0, 1],
                     help='Trace the specified regions of interest (MPE).'
                     '\nDefault: No tracing.')
 

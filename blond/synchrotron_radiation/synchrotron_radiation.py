@@ -162,18 +162,12 @@ class SynchrotronRadiation(object):
     def track_SR_C(self):
         i_turn = self.rf_params.counter[0]
         # Recalculate SR parameters if energy changes
-        if (i_turn != 0 and self.general_params.energy[0,i_turn] !=
-                self.general_params.energy[0,i_turn-1]):
+        if (i_turn != 0 and self.ring.energy[0, i_turn] !=
+                self.ring.energy[0, i_turn-1]):
             self.calculate_SR_params()
-        
-        bm.synchrotron_radiation(self, i_turn)
 
-#          libsrqe.synchrotron_radiation(
-            #  self.beam.dE.ctypes.data_as(ctypes.c_void_p), 
-            #  ctypes.c_double(self.U0 / self.n_kicks),
-            #  ctypes.c_int(self.beam.n_macroparticles), 
-            #  ctypes.c_double(self.tau_z * self.n_kicks),
-            #  ctypes.c_int(self.n_kicks))
+        bm.synchrotron_radiation(self.beam.dE, self.U0,
+                                 self.n_kicks, self.tau_z)
 #      
     # Track particles with SR and quantum excitation. C implementation
     @timing.timeit(key='comp:SR_full_C')
@@ -181,18 +175,11 @@ class SynchrotronRadiation(object):
     def track_full_C(self):
         i_turn = self.rf_params.counter[0]
         # Recalculate SR parameters if energy changes
-        if (i_turn != 0 and self.general_params.energy[0,i_turn] !=
-                self.general_params.energy[0,i_turn-1]):
+        if (i_turn != 0 and self.ring.energy[0, i_turn] !=
+                self.ring.energy[0, i_turn-1]):
             self.calculate_SR_params()
 
-        bm.synchrotron_radiation_full(self, i_turn)
-
-#          libsrqe.synchrotron_radiation_full(
-            #  self.beam.dE.ctypes.data_as(ctypes.c_void_p), 
-            #  ctypes.c_double(self.U0 / self.n_kicks),
-            #  ctypes.c_int(self.beam.n_macroparticles), 
-            #  ctypes.c_double(self.sigma_dE), 
-            #  ctypes.c_double(self.tau_z * self.n_kicks), 
-            #  ctypes.c_double(self.general_params.energy[0,i_turn]),
-            #  self.random_array.ctypes.data_as(ctypes.c_void_p),
-#              ctypes.c_int(self.n_kicks))
+        bm.synchrotron_radiation_full(self.beam.dE, self.U0, self.n_kicks,
+                                      self.tau_z, self.sigma_dE,
+                                      self.ring.energy[0, i_turn])
+                                      # self.random_array)

@@ -7,7 +7,8 @@ BLonD math and physics core functions
 # from functools import wraps
 import numpy as np
 from ..utils import butils_wrap
-from ..utils import bphysics_wrap
+
+
 
 # dictionary storing the CPU versions of the desired functions #
 _CPU_func_dict = {
@@ -35,24 +36,20 @@ _CPU_func_dict = {
     'sort': butils_wrap.sort,
     'add': butils_wrap.add,
     'mul': butils_wrap.mul,
-    'beam_phase': bphysics_wrap.beam_phase,
-    'kick': bphysics_wrap.kick,
-    'rf_volt_comp': bphysics_wrap.rf_volt_comp,
-    'drift': bphysics_wrap.drift,
-    'linear_interp_kick': bphysics_wrap.linear_interp_kick,
-    'LIKick_n_drift': bphysics_wrap.linear_interp_kick_n_drift,
-    'synchrotron_radiation': bphysics_wrap.synchrotron_radiation,
-    'synchrotron_radiation_full': bphysics_wrap.synchrotron_radiation_full,
-    # 'linear_interp_time_translation': bphysics_wrap.linear_interp_time_translation,
-    'slice': bphysics_wrap.slice,
-    'slice_smooth': bphysics_wrap.slice_smooth,
-    'music_track': bphysics_wrap.music_track,
-    'music_track_multiturn': bphysics_wrap.music_track_multiturn,
-    'diff': np.diff,
-    'cumsum': np.cumsum,
-    'cumprod': np.cumprod,
-    'gradient': np.gradient,
-    'sqrt': np.sqrt,
+    'beam_phase': butils_wrap.beam_phase,
+    'kick': butils_wrap.kick,
+    'rf_volt_comp': butils_wrap.rf_volt_comp,
+    'drift': butils_wrap.drift,
+    'linear_interp_kick': butils_wrap.linear_interp_kick,
+    'LIKick_n_drift': butils_wrap.linear_interp_kick_n_drift,
+    'synchrotron_radiation': butils_wrap.synchrotron_radiation,
+    'synchrotron_radiation_full': butils_wrap.synchrotron_radiation_full,
+    # 'linear_interp_time_translation': butils_wrap.linear_interp_time_translation,
+    'slice': butils_wrap.slice,
+    'slice_smooth': butils_wrap.slice_smooth,
+    'music_track': butils_wrap.music_track,
+    'music_track_multiturn': butils_wrap.music_track_multiturn,
+    'fast_resonator': butils_wrap.fast_resonator,
     'device': 'CPU'
 }
 
@@ -69,6 +66,27 @@ def use_fftw():
     with the ones coming from butils_wrap.
     '''
     globals().update(_FFTW_func_dict)
+
+class Precision:
+    def __init__(self, precision='double'):
+        self.str = precision
+        if precision in ['single', 's', '32', 'float32', 'float', 'f']:
+            self.real_t = np.float32
+            self.complex_t = np.complex64
+            self.num = 1
+        else precision == ['double', 'd', '64', 'float64']:
+            self.real_t = np.float64
+            self.complex_t = np.complex128
+            self.num = 2
+
+precision = Precision('double')
+
+
+# precision can be single or double
+def use_precision(_precision='double'):
+    global precision
+    precision = Precision(_precision)
+
 
 def update_active_dict(new_dict):
     '''

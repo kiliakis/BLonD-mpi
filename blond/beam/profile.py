@@ -19,7 +19,6 @@ from builtins import object
 import numpy as np
 from numpy.fft import rfft, rfftfreq
 from scipy import ndimage
-import ctypes
 from ..toolbox import filters_and_fitting as ffroutines
 from ..utils import bmath as bm
 
@@ -442,7 +441,7 @@ class Profile(object):
         """
         Constant space slicing with a constant frame. 
         """
-        bm.slice(self)
+        bm.slice(self.Beam.dt, self.n_macroparticles, self.cut_left, self.cut_right)
 
     def reduce_histo(self):
         from ..utils.mpi_config import worker
@@ -471,7 +470,7 @@ class Profile(object):
         """
         At the moment 4x slower than _slice but smoother (filtered).
         """
-        bm.slice_smooth(self)
+        bm.slice_smooth(self.Beam.dt, self.n_macroparticles, self.cut_left, self.cut_right)
 
     def apply_fit(self):
         """
