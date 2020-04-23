@@ -67,13 +67,14 @@ local:
             'reduce': [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
             'approx': [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
             'log': [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
-            'loadbalance': ['reportonly', 'reportonly', 'reportonly', 'reportonly'
-                            'reportonly', 'reportonly', 'reportonly', 'reportonly', 'reportonly', 'reportonly'],
+            'loadbalance': ['reportonly', 'reportonly', 'reportonly', 'reportonly',
+                            'reportonly', 'reportonly', 'reportonly', 'reportonly',
+                            'reportonly', 'reportonly'],
             'loadbalancearg': [500, 500, 500, 500, 500, 500, 500, 500, 500, 500],
             'timing': ['timing', 'timing', 'timing', 'timing', 'timing', 'timing'
                        'timing', 'timing', 'timing', 'timing'],
             'workers': [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
-            'omp': [1, 2, 4, 8, 14, 1, 2, 4, 8, 14,],
+            'omp': [1, 2, 4, 8, 14, 1, 2, 4, 8, 14],
             'mpi': ['mpich3', 'mpich3', 'mpich3', 'mpich3', 'mpich3', 'mpich3', 
                     'mpich3', 'mpich3', 'mpich3', 'mpich3'],
             'time': [180, 180, 180, 180, 180, 180, 180, 180, 180, 180],
