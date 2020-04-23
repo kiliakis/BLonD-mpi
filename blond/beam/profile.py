@@ -154,7 +154,7 @@ class CutOptions(object):
                                                       self.cuts_unit)
 
         self.edges = np.linspace(self.cut_left, self.cut_right,
-                                 self.n_slices + 1).astype(dtype=bm.precision.real_t, order='C')
+                                 self.n_slices + 1).astype(dtype=bm.precision.real_t, order='C', copy=False)
         self.bin_centers = (self.edges[:-1] + self.edges[1:])/2
         self.bin_size = (self.cut_right - self.cut_left) / self.n_slices
 
@@ -456,7 +456,7 @@ class Profile(object):
 
         with timing.timed_region('serial:conversion'):
             with mpiprof.traced_region('serial:conversion'):
-                self.n_macroparticles = self.n_macroparticles.astype(dtype=bm.precision.real_t, order='C')
+                self.n_macroparticles = self.n_macroparticles.astype(dtype=bm.precision.real_t, order='C', copy=False)
 
     @timing.timeit(key='serial:scale_histo')
     @mpiprof.traceit(key='serial:scale_histo')

@@ -367,7 +367,7 @@ def interp(x, xp, yp, left=None, right=None, result=None):
     if not right:
         right = yp[-1]
     if result is None:
-        result = np.empty(len(x), dtype=bm.precision.real_t, order='C')
+        result = np.empty(len(x), dtype=precision.real_t, order='C')
 
     __lib.interp(__getPointer(x), __getLen(x),
                  __getPointer(xp), __getLen(xp),
@@ -388,7 +388,7 @@ def interp_const_space(x, xp, yp, left=None, right=None, result=None):
     if not right:
         right = yp[-1]
     if result is None:
-        result = np.empty(len(x), dtype=bm.precision.real_t, order='C')
+        result = np.empty(len(x), dtype=precision.real_t, order='C')
 
     __lib.interp_const_space(__getPointer(x), __getLen(x),
                              __getPointer(xp), __getLen(xp),
@@ -401,7 +401,7 @@ def interp_const_space(x, xp, yp, left=None, right=None, result=None):
 
 
 def rfft(a, n=0, result=None):
-    a = a.astype(dtype=precision.real_t, order='C')
+    a = a.astype(dtype=precision.real_t, order='C', copy=False)
     if (n == 0) and (result == None):
         result = np.empty(len(a)//2 + 1, dtype=precision.complex_t, order='C')
     elif (n != 0) and (result == None):
@@ -424,12 +424,12 @@ def rfft(a, n=0, result=None):
 
 
 def irfft(a, n=0, result=None):
-    a = a.astype(dtype=precision.complex_t, order='C')
+    a = a.astype(dtype=precision.complex_t, order='C', copy=False)
 
     if (n == 0) and (result == None):
-        result = np.empty(2*(len(a)-1), dtype=bm.precision.real_t, order='C')
+        result = np.empty(2*(len(a)-1), dtype=precision.real_t, order='C')
     elif (n != 0) and (result == None):
-        result = np.empty(n, dtype=bm.precision.real_t, order='C')
+        result = np.empty(n, dtype=precision.real_t, order='C')
 
     if precision.num == 1:
         __lib.irfftf(__getPointer(a),
@@ -538,7 +538,7 @@ def _beam_phase(bin_centers, profile, alpha, omegarf, phirf, bin_size):
     __lib.beam_phase.restype = __c_real
     bin_centers = bin_centers.astype(dtype=precision.real_t, order='C',
                                      copy=False)
-    profile = profile.astype(dtype=precision.real_t, order='C')
+    profile = profile.astype(dtype=precision.real_t, order='C', copy=False)
 
     if precision.num == 1:
         coeff = __lib.beam_phasef(__getPointer(bin_centers),

@@ -126,6 +126,19 @@ long_tracker = RingAndRFTracker(rf, beam)
 beam.split()
 
 
+if args['monitor'] > 0 and worker.isMaster:
+    if args.get('monitorfile', None):
+        filename = args['monitorfile']
+    else:
+        filename = 'monitorfiles/ex01-t{}-p{}-b{}-sl{}-approx{}-r{}-m{}-se{}-w{}'.format(
+            n_iterations, n_particles, n_bunches, n_slices, approx, n_turns_reduce,
+            args['monitor'], seed, worker.workers)
+        slicesMonitor = SlicesMonitor(filename=filename,
+                                      n_turns=np.ceil(n_iterations / args['monitor']),
+                                      profile=profile,
+                                      rf=rf,
+                                      Nbunches=n_bunches)
+
 # Accelerator map
 # map_ = [long_tracker, profile]
 mpiprint("Map set")
@@ -146,7 +159,8 @@ for turn in range(n_iterations):
         mpiprint("   Beam gamma %3.3f" % beam.gamma)
         mpiprint("   Beam beta %3.3f" % beam.beta)
         mpiprint("   Beam energy %.6e eV" % beam.energy)
-        mpiprint("   Four-times r.m.s. bunch length %.4e s" % (4.*beam.sigma_dt))
+        mpiprint("   Four-times r.m.s. bunch length %.4e s" %
+                 (4.*beam.sigma_dt))
         mpiprint("   Gaussian bunch length %.4e s" % profile.bunchLength)
         mpiprint("")
 
@@ -166,24 +180,28 @@ for turn in range(n_iterations):
 
     worker.DLB(turn, beam)
 
-    if (turn % 10) == 0:
+    if (args['monitor'] > 0) and (turn % args['monitor'] == 0):
         beam.statistics()
         beam.gather_statistics()
-        mpiprint('dE mean: ', beam.mean_dE)
-        mpiprint('dE std: ', beam.sigma_dE)
-        mpiprint('dE min: ', beam.min_dE)
-        mpiprint('dE max: ', beam.max_dE)
+        if worker.isMaster:
+            # profile.fwhm()
+            slicesMonitor.track(turn)
 
-        mpiprint('dt mean: ', beam.mean_dt)
-        mpiprint('dt std: ', beam.sigma_dt)
-        mpiprint('dt min: ', beam.min_dt)
-        mpiprint('dt max: ', beam.max_dt)
+        # mpiprint('dE mean: ', beam.mean_dE)
+        # mpiprint('dE std: ', beam.sigma_dE)
+        # mpiprint('dE min: ', beam.min_dE)
+        # mpiprint('dE max: ', beam.max_dE)
+
+        # mpiprint('dt mean: ', beam.mean_dt)
+        # mpiprint('dt std: ', beam.sigma_dt)
+        # mpiprint('dt min: ', beam.min_dt)
+        # mpiprint('dt max: ', beam.max_dt)
 
 
 beam.gather()
 
-mpiprint('real dE std: ', np.std(beam.dE))
-mpiprint('real dt std: ', np.std(beam.dt))
+# mpiprint('real dE std: ', np.std(beam.dE))
+# mpiprint('real dt std: ', np.std(beam.dt))
 
 end_t = time.time()
 
@@ -191,6 +209,10 @@ timing.report(total_time=1e3*(end_t-start_t),
               out_dir=args['timedir'],
               out_file='worker-{}.csv'.format(worker.rank))
 worker.finalize()
+
+
+if args['monitor'] > 0:
+    slicesMonitor.close()
 
 mpiprint('dE mean: ', np.mean(beam.dE))
 mpiprint('dE std: ', np.std(beam.dE))

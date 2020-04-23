@@ -11,7 +11,7 @@ parser.add_argument('-s', '--slices', type=int,
 parser.add_argument('-b', '--bunches', type=int,
                     help='Number of bunches.')
 
-parser.add_argument('-reduce', '--reduce', type=int,
+parser.add_argument('-reduce', '--reduce', type=int, default=1,
                     help='Number of turns to reduce.')
 
 parser.add_argument('-t', '--turns', type=int,
@@ -54,7 +54,7 @@ parser.add_argument('-timedir', '--timedir', type=str, default='./timings/',
                     help='Directory to store the timing reports.'
                     '\nDefault: ./timings')
 
-parser.add_argument('-m', '--monitor', type=int, default=0, choices=[0, 1],
+parser.add_argument('-m', '--monitor', type=int, default=0,
                     help='Monitoring interval (0: no monitor).'
                     '\nDefault: 0')
 

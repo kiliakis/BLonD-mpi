@@ -15,6 +15,7 @@
 
 from builtins import object
 import h5py as hp
+import os
 import numpy as np
 from ..utils import bmath as bm
 
@@ -337,6 +338,9 @@ class SlicesMonitor(object):
 
     def __init__(self, filename, n_turns, profile, rf, Nbunches, buffer_size=100):
 
+        if not os.path.exists(os.path.dirname(filename)):
+            os.makedirs(os.path.dirname(filename))
+
         self.h5file = hp.File(filename + '.h5', 'w')
         self.n_turns = n_turns
         self.i_turn = 0
@@ -461,7 +465,7 @@ class SlicesMonitor(object):
 
         self.b_turns[idx] = turn
         # self.b_profile[idx] = self.profile.n_macroparticles.astype(np.int32)
-        self.b_losses[idx] = self.beam.losses
+        self.b_losses[idx] = self.beam.n_total_macroparticles_lost
         self.b_fwhm_bunch_position[idx] = self.profile.bunchPosition
         self.b_fwhm_bunch_length[idx] = self.profile.bunchLength
         self.b_mean_profile[idx] = bm.mean(self.profile.n_macroparticles)
