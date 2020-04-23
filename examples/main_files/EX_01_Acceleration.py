@@ -130,11 +130,12 @@ if args['monitor'] > 0 and worker.isMaster:
     if args.get('monitorfile', None):
         filename = args['monitorfile']
     else:
-        filename = 'monitorfiles/ex01-t{}-p{}-b{}-sl{}-approx{}-r{}-m{}-se{}-w{}'.format(
-            n_iterations, n_particles, n_bunches, n_slices, approx, n_turns_reduce,
-            args['monitor'], seed, worker.workers)
+        filename = 'monitorfiles/ex01-t{}-p{}-b{}-sl{}-approx{}-prec{}-r{}-m{}-se{}-w{}'.format(
+            n_iterations, n_particles, n_bunches, n_slices, approx, args['precision'],
+            n_turns_reduce, args['monitor'], seed, worker.workers)
         slicesMonitor = SlicesMonitor(filename=filename,
-                                      n_turns=np.ceil(n_iterations / args['monitor']),
+                                      n_turns=np.ceil(
+                                          n_iterations / args['monitor']),
                                       profile=profile,
                                       rf=rf,
                                       Nbunches=n_bunches)
