@@ -78,7 +78,7 @@ local:
             'mpi': ['mpich3', 'mpich3', 'mpich3', 'mpich3', 'mpich3', 'mpich3', 
                     'mpich3', 'mpich3', 'mpich3', 'mpich3'],
             'time': [180, 180, 180, 180, 180, 180, 180, 180, 180, 180],
-            'repeats': 5
+            'repeats': 4
         },
 
 
