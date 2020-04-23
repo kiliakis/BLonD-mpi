@@ -38,6 +38,7 @@ from blond.plots.plot import Plot
 from blond.utils.input_parser import parse
 from blond.utils import bmath as bm
 from blond.utils.mpi_config import worker, mpiprint
+bm.use_mpi()
 
 
 this_directory = os.path.dirname(os.path.realpath(__file__)) + '/'
@@ -165,8 +166,25 @@ for turn in range(n_iterations):
 
     worker.DLB(turn, beam)
 
+    if (turn % 10) == 0:
+        beam.statistics()
+        beam.gather_statistics()
+        mpiprint('dE mean: ', beam.mean_dE)
+        mpiprint('dE std: ', beam.sigma_dE)
+        mpiprint('dE min: ', beam.min_dE)
+        mpiprint('dE max: ', beam.max_dE)
+
+        mpiprint('dt mean: ', beam.mean_dt)
+        mpiprint('dt std: ', beam.sigma_dt)
+        mpiprint('dt min: ', beam.min_dt)
+        mpiprint('dt max: ', beam.max_dt)
+
 
 beam.gather()
+
+mpiprint('real dE std: ', np.std(beam.dE))
+mpiprint('real dt std: ', np.std(beam.dt))
+
 end_t = time.time()
 
 timing.report(total_time=1e3*(end_t-start_t),

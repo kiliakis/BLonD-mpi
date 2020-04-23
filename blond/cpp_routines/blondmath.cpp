@@ -28,6 +28,66 @@ using namespace std;
 
 extern "C" {
 
+    void where_more_than(const double *__restrict__ data, const int n,
+                         const double c1,
+                         bool *__restrict__ res)
+    {
+        #pragma omp parallel for
+        for (int i = 0; i < n; i++) {
+            res[i] = data[i] > c1;
+        }
+    }
+
+    void where_less_than(const double *__restrict__ data, const int n,
+                         const double c1,
+                         bool *__restrict__ res)
+    {
+        #pragma omp parallel for
+        for (int i = 0; i < n; i++) {
+            res[i] = data[i] < c1;
+        }
+    }
+
+    void where_more_less_than(const double *__restrict__ data, const int n,
+                              const double c1, const double c2,
+                              bool *__restrict__ res)
+    {
+        #pragma omp parallel for
+        for (int i = 0; i < n; i++) {
+            res[i] = (data[i] > c1) && (data[i] < c2);
+        }
+    }
+
+
+    void where_more_thanf(const float *__restrict__ data, const int n,
+                          const float c1,
+                          bool *__restrict__ res)
+    {
+        #pragma omp parallel for
+        for (int i = 0; i < n; i++) {
+            res[i] = data[i] > c1;
+        }
+    }
+
+    void where_less_thanf(const float *__restrict__ data, const int n,
+                          const float c1,
+                          bool *__restrict__ res)
+    {
+        #pragma omp parallel for
+        for (int i = 0; i < n; i++) {
+            res[i] = data[i] < c1;
+        }
+    }
+
+    void where_more_less_thanf(const float *__restrict__ data, const int n,
+                               const float c1, const float c2,
+                               bool *__restrict__ res)
+    {
+        #pragma omp parallel for
+        for (int i = 0; i < n; i++) {
+            res[i] = (data[i] > c1) && (data[i] < c2);
+        }
+    }
 
 
     int where(const double *__restrict__ dt, const int n_macroparticles,

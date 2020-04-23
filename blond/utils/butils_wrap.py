@@ -70,6 +70,29 @@ class c_complex64(ct.Structure):
         return self.real + (1.j) * self.imag
 
 
+def where(x, more_than=None, less_than=None, result=None):
+    if result is None:
+        result = np.empty(len(x), dtype=np.bool)
+    if more_than is None and less_than is not None:
+        __lib.where_less_than(__getPointer(x), __getLen(x),
+                              ct.c_double(less_than),
+                              __getPointer(result))
+    elif more_than is not None and less_than is None:
+        __lib.where_more_than(__getPointer(x), __getLen(x),
+                              ct.c_double(more_than),
+                              __getPointer(result))
+
+    elif more_than is not None and less_than is not None:
+        __lib.where_more_less_than(__getPointer(x), __getLen(x),
+                                   ct.c_double(more_than),
+                                   ct.c_double(less_than),
+                                   __getPointer(result))
+
+    else:
+        raise RuntimeError(
+            '[bmath:where] You need to define at least one of more_than, less_than')
+    return result
+
 def add(a, b, result=None, inplace=False):
     if(len(a) != len(b)):
         raise ValueError(
@@ -191,89 +214,7 @@ def mul(a, b, result=None):
     return result
 
 
-def mean(x):
-    __lib.mean.restype = __c_real
-    return __lib.mean(__getPointer(x), __getLen(x))
 
-
-def std(x):
-    __lib.stdev.restype = __c_real
-    return __lib.stdev(__getPointer(x), __getLen(x))
-
-
-def sin(x, result=None):
-    if isinstance(x, np.ndarray) and isinstance(x[0], np.float64):
-        if result is None:
-            result = np.empty(len(x), dtype=float)
-        __lib.fast_sinv(__getPointer(x), __getLen(x), __getPointer(result))
-        return result
-    elif isinstance(x, float) or isinstance(x, int):
-        __lib.fast_sin.restype = __c_real
-        return __lib.fast_sin(__c_real(x))
-    else:
-        # TypeError
-        raise RuntimeError('[sin] The type %s is not supported', type(x))
-
-
-def cos(x, result=None):
-    if isinstance(x, np.ndarray) and isinstance(x[0], np.float64):
-        if result is None:
-            result = np.empty(len(x), dtype=float)
-        __lib.fast_cosv(__getPointer(x), __getLen(x), __getPointer(result))
-        return result
-    elif isinstance(x, float) or isinstance(x, int):
-        __lib.fast_cos.restype = __c_real
-        return __lib.fast_cos(__c_real(x))
-    else:
-        # TypeError
-        raise RuntimeError('[cos] The type %s is not supported', type(x))
-
-
-def exp(x, result=None):
-    if isinstance(x, np.ndarray) and isinstance(x[0], np.float64):
-        if result is None:
-            result = np.empty(len(x), dtype=float)
-        __lib.fast_expv(__getPointer(x), __getLen(x), __getPointer(result))
-        return result
-    elif isinstance(x, float) or isinstance(x, int):
-        __lib.fast_exp.restype = __c_real
-        return __lib.fast_exp(__c_real(x))
-    else:
-        # TypeError
-        raise RuntimeError('[exp] The type %s is not supported', type(x))
-
-
-def interp(x, xp, yp, left=None, right=None, result=None):
-    if not left:
-        left = yp[0]
-    if not right:
-        right = yp[-1]
-    if result is None:
-        result = np.empty(len(x), dtype=float)
-    __lib.interp(__getPointer(x), __getLen(x),
-                 __getPointer(xp), __getLen(xp),
-                 __getPointer(yp),
-                 __c_real(left),
-                 __c_real(right),
-                 __getPointer(result))
-    return result
-
-
-def interp_const_space(x, xp, yp, left=None, right=None, result=None):
-    if not left:
-        left = yp[0]
-    if not right:
-        right = yp[-1]
-    if result is None:
-        result = np.empty_like(x, order='C')
-
-    __lib.interp_const_space(__getPointer(x), __getLen(x),
-                             __getPointer(xp), __getLen(xp),
-                             __getPointer(yp),
-                             __c_real(left),
-                             __c_real(right),
-                             __getPointer(result))
-    return result
 
 
 def argmin(x):
@@ -341,12 +282,130 @@ def convolve(signal, kernel, mode='full', result=None):
     return result
 
 
+
+def mean(x):
+    if isinstance(x[0], np.float32):
+        __lib.mean.restype = ct.c_float
+        return __lib.meanf(__getPointer(x), __getLen(x))
+    elif isinstance(x[0], np.float64):
+        __lib.mean.restype = ct.c_double
+        return __lib.mean(__getPointer(x), __getLen(x))
+
+def std(x):
+    if isinstance(x[0], np.float32):
+        __lib.stdevf.restype = ct.c_float
+        return __lib.stdevf(__getPointer(x), __getLen(x))
+    elif isinstance(x[0], np.float64):
+        __lib.stdev.restype = ct.c_double
+        return __lib.stdev(__getPointer(x), __getLen(x))
+
+def sin(x, result=None):
+    if isinstance(x, np.ndarray) and isinstance(x[0], np.float64):
+        if result is None:
+            result = np.empty(len(x), dtype=np.float64, order='C')
+        __lib.fast_sinv(__getPointer(x), __getLen(x), __getPointer(result))
+        return result
+    elif isinstance(x, np.ndarray) and isinstance(x[0], np.float32):
+        if result is None:
+            result = np.empty(len(x), dtype=np.float32, order='C')
+        __lib.fast_sinvf(__getPointer(x), __getLen(x), __getPointer(result))
+        return result
+    elif isinstance(x, np.float64) or isinstance(x, np.float32) or isinstance(x, int):
+        __lib.fast_sin.restype = ct.c_double
+        return __lib.fast_sin(ct.c_double(x))
+    else:
+        # TypeError
+        raise RuntimeError('[sin] The type %s is not supported', type(x))
+
+
+def cos(x, result=None):
+    if isinstance(x, np.ndarray) and isinstance(x[0], np.float64):
+        if result is None:
+            result = np.empty(len(x), dtype=np.float64, order='C')
+        __lib.fast_cosv(__getPointer(x), __getLen(x), __getPointer(result))
+        return result
+    elif isinstance(x, np.ndarray) and isinstance(x[0], np.float32):
+        if result is None:
+            result = np.empty(len(x), dtype=np.float32, order='C')
+        __lib.fast_cosvf(__getPointer(x), __getLen(x), __getPointer(result))
+        return result
+    elif isinstance(x, np.float64) or isinstance(x, np.float32) or isinstance(x, int):
+        __lib.fast_cos.restype = ct.c_double
+        return __lib.fast_cos(ct.c_double(x))
+    else:
+        # TypeError
+        raise RuntimeError('[cos] The type %s is not supported', type(x))
+
+
+def exp(x, result=None):
+    if isinstance(x, np.ndarray) and isinstance(x[0], np.float64):
+        if result is None:
+            result = np.empty(len(x), dtype=np.float64, order='C')
+        __lib.fast_expv(__getPointer(x), __getLen(x), __getPointer(result))
+        return result
+    elif isinstance(x, np.ndarray) and isinstance(x[0], np.float32):
+        if result is None:
+            result = np.empty(len(x), dtype=np.float32, order='C')
+        __lib.fast_expvf(__getPointer(x), __getLen(x), __getPointer(result))
+        return result
+    elif isinstance(x, np.float64) or isinstance(x, np.float32) or isinstance(x, int):
+        __lib.fast_exp.restype = ct.c_double
+        return __lib.fast_exp(ct.c_double(x))
+    else:
+        # TypeError
+        raise RuntimeError('[exp] The type %s is not supported', type(x))
+
+
+
+def interp(x, xp, yp, left=None, right=None, result=None):
+    x = x.astype(dtype=precision.real_t, order='C', copy=False)
+    xp = xp.astype(dtype=precision.real_t, order='C', copy=False)
+    yp = yp.astype(dtype=precision.real_t, order='C', copy=False)
+
+    if not left:
+        left = yp[0]
+    if not right:
+        right = yp[-1]
+    if result is None:
+        result = np.empty(len(x), dtype=bm.precision.real_t, order='C')
+
+    __lib.interp(__getPointer(x), __getLen(x),
+                 __getPointer(xp), __getLen(xp),
+                 __getPointer(yp),
+                 __c_real(left),
+                 __c_real(right),
+                 __getPointer(result))
+    return result
+
+
+def interp_const_space(x, xp, yp, left=None, right=None, result=None):
+    x = x.astype(dtype=precision.real_t, order='C', copy=False)
+    xp = xp.astype(dtype=precision.real_t, order='C', copy=False)
+    yp = yp.astype(dtype=precision.real_t, order='C', copy=False)
+
+    if not left:
+        left = yp[0]
+    if not right:
+        right = yp[-1]
+    if result is None:
+        result = np.empty(len(x), dtype=bm.precision.real_t, order='C')
+
+    __lib.interp_const_space(__getPointer(x), __getLen(x),
+                             __getPointer(xp), __getLen(xp),
+                             __getPointer(yp),
+                             __c_real(left),
+                             __c_real(right),
+                             __getPointer(result))
+    return result
+
+
+
 def rfft(a, n=0, result=None):
     a = a.astype(dtype=precision.real_t, order='C')
     if (n == 0) and (result == None):
-        result = np.empty(len(a)//2 + 1, dtype=precision.complex_t)
+        result = np.empty(len(a)//2 + 1, dtype=precision.complex_t, order='C')
     elif (n != 0) and (result == None):
-        result = np.empty(n//2 + 1, dtype=precision.complex_t)
+        result = np.empty(n//2 + 1, dtype=precision.complex_t, order='C')
 
     if precision.num == 1:
         __lib.rfftf(__getPointer(a),
@@ -368,9 +427,9 @@ def irfft(a, n=0, result=None):
     a = a.astype(dtype=precision.complex_t, order='C')
 
     if (n == 0) and (result == None):
-        result = np.empty(2*(len(a)-1), dtype=np.float64)
+        result = np.empty(2*(len(a)-1), dtype=bm.precision.real_t, order='C')
     elif (n != 0) and (result == None):
-        result = np.empty(n, dtype=np.float64)
+        result = np.empty(n, dtype=bm.precision.real_t, order='C')
 
     if precision.num == 1:
         __lib.irfftf(__getPointer(a),

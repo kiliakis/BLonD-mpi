@@ -33,6 +33,7 @@ from blond.llrf.beam_feedback import BeamFeedback
 from blond.utils.input_parser import parse
 from blond.monitors.monitors import SlicesMonitor
 from blond.utils.mpi_config import worker, mpiprint
+bm.use_mpi()
 
 this_directory = os.path.dirname(os.path.realpath(__file__)) + '/'
 worker.greet()

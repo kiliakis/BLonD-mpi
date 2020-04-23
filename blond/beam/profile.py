@@ -452,7 +452,7 @@ class Profile(object):
                 self.n_macroparticles = self.n_macroparticles.astype(
                     np.uint32, order='C')
 
-        worker.allreduce(self.n_macroparticles, dtype=np.uint32)
+        worker.allreduce(self.n_macroparticles, dtype=np.uint32, operator='custom_sum')
 
         with timing.timed_region('serial:conversion'):
             with mpiprof.traced_region('serial:conversion'):

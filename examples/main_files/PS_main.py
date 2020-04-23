@@ -35,6 +35,7 @@ import LoCa.Base.Bare_RF as brf
 # Impedance scenario import
 from PS_impedance.impedance_scenario import scenario
 cmap = colormap.cmap_white_blue_red
+bm.use_mpi()
 
 
 this_directory = os.path.dirname(os.path.realpath(__file__)) + '/'

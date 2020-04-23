@@ -29,6 +29,7 @@ from blond.input_parameters.rf_parameters import RFStation
 from blond.input_parameters.ring import Ring
 from blond.utils.mpi_config import worker, mpiprint
 from blond.utils.input_parser import parse
+bm.use_mpi()
 
 
 REAL_RAMP = True    # track full ramp

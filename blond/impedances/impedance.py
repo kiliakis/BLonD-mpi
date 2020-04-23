@@ -75,7 +75,8 @@ class TotalInducedVoltage(object):
         self.induced_voltage_list = induced_voltage_list
 
         # Induced voltage from the sum of the wake sources in V
-        self.induced_voltage = np.zeros(int(self.profile.n_slices))
+        self.induced_voltage = np.zeros(
+            int(self.profile.n_slices), dtype=bm.precision.real_t, order='C')
 
         # Time array of the wake in s
         self.time_array = self.profile.bin_centers
@@ -92,7 +93,7 @@ class TotalInducedVoltage(object):
         """
         Method to sum all the induced voltages in one single array.
         """
-        
+
         beam_spectrum_dict = {}
         temp_induced_voltage = 0
         for induced_voltage_object in self.induced_voltage_list:
@@ -101,7 +102,8 @@ class TotalInducedVoltage(object):
             temp_induced_voltage += \
                 induced_voltage_object.induced_voltage[:self.profile.n_slices]
 
-        self.induced_voltage = temp_induced_voltage
+        self.induced_voltage = temp_induced_voltage.astype(
+            dtype=bm.precision.real_t, order='C', copy=False)
 
     def induced_voltage_sum_packed(self):
         """
@@ -113,8 +115,8 @@ class TotalInducedVoltage(object):
         #             (obj.n_fft not in self.profile.beam_spectrum_dict):
         #         self.profile.beam_spectrum_generation(obj.n_fft)
 
-
         # Assuming the same n_fft for all, we take only the first one
+
         self.induced_voltage_list[0].profile.beam_spectrum_generation(
             self.induced_voltage_list[0].n_fft)
         beam_spectrum = self.induced_voltage_list[0].profile.beam_spectrum
@@ -129,7 +131,7 @@ class TotalInducedVoltage(object):
                     min_idx = min(obj.n_induced_voltage, min_idx)
 
                 self.induced_voltage = bm.irfft_packed(
-                    self.induced_voltage)[:, :min_idx]
+                    self.induced_voltage.astype(dtype=bm.precision.real_t, order='C', copy=False))[:, :min_idx]
                 self.induced_voltage = -self.beam.Particle.charge * \
                     e * self.beam.ratio * self.induced_voltage
                 self.induced_voltage = np.sum(self.induced_voltage, axis=0)
@@ -244,7 +246,7 @@ class _InducedVoltage(object):
                 # WakeLengthError
                 raise RuntimeError('Error: too short wake length. '
                                    + 'Increase it above {0:1.2e} s.'.format(self.profile.n_slices *
-                                                                          self.profile.bin_size))
+                                                                            self.profile.bin_size))
             # Wake length in s, rounded up to the next multiple of bin size
             self.wake_length = self.n_induced_voltage * self.profile.bin_size
             self.frequency_resolution = 1 / self.wake_length
@@ -256,7 +258,7 @@ class _InducedVoltage(object):
                 # FrequencyResolutionError
                 raise RuntimeError('Error: too large frequency_resolution. '
                                    + 'Reduce it below {0:1.2e} Hz.'.format(1 /
-                                                                         (self.profile.cut_right - self.profile.cut_left)))
+                                                                           (self.profile.cut_right - self.profile.cut_left)))
             self.wake_length = self.n_induced_voltage * self.profile.bin_size
             # Frequency resolution in Hz
             self.frequency_resolution = 1 / self.wake_length
@@ -327,9 +329,10 @@ class _InducedVoltage(object):
         with timing.timed_region('serial:indVolt1Turn'):
             with mpiprof.traced_region('serial:indVolt1Turn'):
                 induced_voltage = - (self.beam.Particle.charge * e * self.beam.ratio
-                                     * bm.irfft(self.total_impedance * beam_spectrum))
+                                     * bm.irfft(self.total_impedance.astype(dtype=bm.precision.complex_t, order='C', copy=False) * beam_spectrum))
 
-        self.induced_voltage = induced_voltage[:self.n_induced_voltage]
+        self.induced_voltage = induced_voltage[:self.n_induced_voltage].astype(
+            dtype=bm.precision.real_t, order='C', copy=False)
 
     # induced_voltage_1turn.last_turn = 0
 
@@ -367,7 +370,8 @@ class _InducedVoltage(object):
         t_rev = self.RFParams.t_rev[self.RFParams.counter[0]]
         # Shift in frequency domain
         induced_voltage_f = bm.rfft(self.mtw_memory, self.n_mtw_fft)
-        induced_voltage_f *= bm.exp(self.omegaj_mtw * t_rev)
+        induced_voltage_f *= bm.exp(self.omegaj_mtw.astype(
+            dtype=bm.precision.real_t, order='C', copy=False) * t_rev)
         self.mtw_memory = bm.irfft(induced_voltage_f)[:self.n_mtw_memory]
         # Setting to zero to the last part to remove the contribution from the
         # circular convolution
@@ -569,7 +573,7 @@ class InducedVoltageFreq(_InducedVoltage):
         Summing all the wake contributions in one total impedance.
         """
 
-        self.total_impedance = np.zeros(freq.shape, complex)
+        self.total_impedance = np.zeros(freq.shape, dtype=bm.precision.complex_t, order='C')
 
         for i in range(len(self.impedance_source_list)):
             self.impedance_source_list[i].imped_calc(freq)
@@ -631,7 +635,7 @@ class InductiveImpedance(_InducedVoltage):
                              * self.RFParams.t_rev[index] / self.profile.bin_size
                              * self.profile.beam_profile_derivative(self.deriv_mode)[1])
 
-        self.induced_voltage = induced_voltage[:self.n_induced_voltage]
+        self.induced_voltage = (induced_voltage[:self.n_induced_voltage]).astype(dtype=bm.precision.real_t, order='C', copy=False)
 
 
 class InducedVoltageResonator(_InducedVoltage):
@@ -724,13 +728,13 @@ class InducedVoltageResonator(_InducedVoltage):
 
         # Each the 'n_resonator' rows of the matrix holds the induced voltage
         # at the 'n_time' time-values of one cavity. For internal use.
-        self._tmp_matrix = np.ones((self.n_resonators, self.n_time))
+        self._tmp_matrix = np.ones((self.n_resonators, self.n_time), dtype=bm.precision.real_t, order='C')
 
         # Slopes of the line segments. For internal use.
-        self._kappa1 = np.zeros(int(self.profile.n_slices-1))
+        self._kappa1 = np.zeros(int(self.profile.n_slices-1), dtype=bm.precision.real_t, order='C')
 
         # Matrix to hold n_times many tArray[t]-bin_centers arrays.
-        self._deltaT = np.zeros((self.n_time, self.profile.n_slices))
+        self._deltaT = np.zeros((self.n_time, self.profile.n_slices), dtype=bm.precision.real_t, order='C')
 
         # Call the __init__ method of the parent class [calls process()]
         _InducedVoltage.__init__(self, Beam, Profile, wake_length=None,
@@ -746,8 +750,8 @@ class InducedVoltageResonator(_InducedVoltage):
 
         # Since profile object changed, need to assign the proper dimensions to
         # _kappa1 and _deltaT
-        self._kappa1 = np.zeros(int(self.profile.n_slices-1))
-        self._deltaT = np.zeros((self.n_time, self.profile.n_slices))
+        self._kappa1 = np.zeros(int(self.profile.n_slices-1), dtype=bm.precision.real_t, order='C')
+        self._deltaT = np.zeros((self.n_time, self.profile.n_slices), dtype=bm.precision.real_t, order='C')
 
     def induced_voltage_1turn(self, beam_spectrum_dict={}):
         r"""
@@ -783,7 +787,7 @@ class InducedVoltageResonator(_InducedVoltage):
         # ... and multiply with bunch charge
         self.induced_voltage *= -self.beam.Particle.charge*e \
             * self.beam.n_macroparticles*self.beam.ratio
-
+        self.induced_voltage = self.induced_voltage.astype(dtype=bm.precision.real_t, order='C', copy=False)
     # Implementation of Heaviside function
     def Heaviside(self, x):
         r"""
