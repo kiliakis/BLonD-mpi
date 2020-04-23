@@ -71,7 +71,7 @@ local:
                             'reportonly', 'reportonly', 'reportonly', 'reportonly',
                             'reportonly', 'reportonly'],
             'loadbalancearg': [500, 500, 500, 500, 500, 500, 500, 500, 500, 500],
-            'timing': ['timing', 'timing', 'timing', 'timing', 'timing', 'timing'
+            'timing': ['timing', 'timing', 'timing', 'timing', 'timing', 'timing',
                        'timing', 'timing', 'timing', 'timing'],
             'workers': [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
             'omp': [1, 2, 4, 8, 14, 1, 2, 4, 8, 14],
