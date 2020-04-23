@@ -105,6 +105,7 @@ if __name__ == '__main__':
                     open(os.path.join(top_result_dir, tc,
                                       analysis, '.analysis'), 'a').close()
 
+                    os.environ['OMP_NUM_THREADS'] = str(o) 
                     if args.environment == 'local':
                         batch_args = [common.mpirun, '-n', str(w)]
                     elif args.environment == 'cluster':
