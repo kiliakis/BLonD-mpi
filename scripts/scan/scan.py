@@ -47,6 +47,16 @@ if __name__ == '__main__':
 
         for analysis in yc['run_configs']:
             config = yc['configs'][analysis]
+            # make the size of all lists equal
+            maxlen = np.max([len(v) if isinstance(
+                v, list) else 1 for k, v in config.items()])
+            for k, v in config.items():
+                if isinstance(v, list):
+                    assert maxlen % len(v) == 0, 'Size of {} must be a multiple of {}'.format(len(v), maxlen)
+                    config[k] = v * int(maxlen / len(v))
+                else:
+                    config[k] = [v] * maxlen
+
             ps = config['particles']
             bs = config['bunches']
             ss = config['slices']
@@ -74,9 +84,9 @@ if __name__ == '__main__':
                  mtw, m, seed, exe, approx,
                  timing, mpi, log, lb, lba,
                  tp, prec) in zip(ps, bs, ss, ts, rs, ws,
-                            oss, times, mtws, ms, seeds,
-                            exes, approxs, timings, mpis,
-                            logs, lbs, lbas, tps, precs):
+                                  oss, times, mtws, ms, seeds,
+                                  exes, approxs, timings, mpis,
+                                  logs, lbs, lbas, tps, precs):
 
                 N = int(max(np.ceil(w * o / common.cores_per_cpu), 1))
 
@@ -105,7 +115,7 @@ if __name__ == '__main__':
                     open(os.path.join(top_result_dir, tc,
                                       analysis, '.analysis'), 'a').close()
 
-                    os.environ['OMP_NUM_THREADS'] = str(o) 
+                    os.environ['OMP_NUM_THREADS'] = str(o)
                     if args.environment == 'local':
                         batch_args = [common.mpirun, '-n', str(w)]
                     elif args.environment == 'cluster':

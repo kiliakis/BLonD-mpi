@@ -102,7 +102,7 @@ mpiprint("Setting up the simulation...")
 
 
 # Define general parameters
-ring = Ring(C, alpha, np.linspace(p_i, p_f, n_turns+1), Proton(), n_turns)
+ring = Ring(C, alpha, p_i, Proton(), n_turns)
 
 # Define beam and distribution
 beam = Beam(ring, n_particles, N_b)
