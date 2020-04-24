@@ -2,8 +2,9 @@
 local: 
     run_configs: 
         # Intermediate stages
-        - 'precision-monitor'
-        - 'precision-timing'
+        # - 'precision-monitor'
+        - 'precision-seed'
+        # - 'precision-timing'
 
         # - 'approx1-interm'
         # - 'approx2-interm'
@@ -49,6 +50,32 @@ local:
             'time': [180],
             'repeats': 1
         },
+
+        'precision-seed': {
+            'exe': ['EX_01_Acceleration.py'],
+            'particles': [1000000],
+            'bunches': [1],  # 192
+            'slices': [1000],
+            'turns': [1000000],
+            'monitor': [1000],
+            'seed': [1, 2, 3, 4],
+            'mtw': [0],
+            'precision': ['double'],
+            'withtp': [0],
+            'reduce': [1],
+            'approx': [0],
+            'log': [1],
+            'loadbalance': ['reportonly'],
+            'loadbalancearg': [500],
+            'timing': ['timing'],
+            'workers': [1],
+            'omp': [14],
+            'mpi': ['mpich3'],
+            'time': [180],
+            'repeats': 1
+        },
+
+
 
         'precision-timing': {
             'exe': ['EX_01_Acceleration.py', 'EX_01_Acceleration.py', 'EX_01_Acceleration.py', 'EX_01_Acceleration.py',
