@@ -48,7 +48,7 @@ if __name__ == '__main__':
                     yc['configs'][rc][k] = v * int(maxlen / len(v))
                 else:
                     yc['configs'][rc][k] = [v] * maxlen
-            total_sims += yc['configs'][rc]['repeats'] * maxlen
+            total_sims += np.sum(yc['configs'][rc]['repeats'])
 
         print("Total runs: ", total_sims)
         current_sim = 0
