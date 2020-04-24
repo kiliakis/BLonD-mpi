@@ -39,8 +39,16 @@ if __name__ == '__main__':
 
         total_sims = 0
         for rc in yc['run_configs']:
-            total_sims += yc['configs'][rc]['repeats'] * \
-                len(yc['configs'][rc]['workers'])
+            maxlen = np.max([len(v) if isinstance(v, list)
+                             else 1 for k, v in yc['configs'][rc].items()])
+            for k, v in yc['configs'][rc].items():
+                if isinstance(v, list):
+                    assert maxlen % len(
+                        v) == 0, 'Size of {} must be a multiple of {}'.format(len(v), maxlen)
+                    yc['configs'][rc][k] = v * int(maxlen / len(v))
+                else:
+                    yc['configs'][rc][k] = [v] * maxlen
+            total_sims += yc['configs'][rc]['repeats'] * maxlen
 
         print("Total runs: ", total_sims)
         current_sim = 0
@@ -48,14 +56,6 @@ if __name__ == '__main__':
         for analysis in yc['run_configs']:
             config = yc['configs'][analysis]
             # make the size of all lists equal
-            maxlen = np.max([len(v) if isinstance(
-                v, list) else 1 for k, v in config.items()])
-            for k, v in config.items():
-                if isinstance(v, list):
-                    assert maxlen % len(v) == 0, 'Size of {} must be a multiple of {}'.format(len(v), maxlen)
-                    config[k] = v * int(maxlen / len(v))
-                else:
-                    config[k] = [v] * maxlen
 
             ps = config['particles']
             bs = config['bunches']
@@ -83,10 +83,11 @@ if __name__ == '__main__':
             for (p, b, s, t, r, w, o, time,
                  mtw, m, seed, exe, approx,
                  timing, mpi, log, lb, lba,
-                 tp, prec) in zip(ps, bs, ss, ts, rs, ws,
-                                  oss, times, mtws, ms, seeds,
-                                  exes, approxs, timings, mpis,
-                                  logs, lbs, lbas, tps, precs):
+                 tp, prec, reps) in zip(ps, bs, ss, ts, rs, ws,
+                                        oss, times, mtws, ms, seeds,
+                                        exes, approxs, timings, mpis,
+                                        logs, lbs, lbas, tps, precs,
+                                        repeats):
 
                 N = int(max(np.ceil(w * o / common.cores_per_cpu), 1))
 
@@ -94,7 +95,7 @@ if __name__ == '__main__':
                                                 r, mtw, seed, approx, mpi,
                                                 lb, lba, m, tp, prec)
 
-                for i in range(repeats):
+                for i in range(reps):
                     timestr = datetime.now().strftime('%d%b%y.%H-%M-%S')
                     timestr = timestr + '-' + str(random.randint(0, 100))
                     output = result_dir.format(
