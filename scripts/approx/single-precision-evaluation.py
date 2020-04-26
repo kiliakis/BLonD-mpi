@@ -26,6 +26,12 @@ parser = argparse.ArgumentParser(
 # parser.add_argument('-b', '--basefile', type=str, default=None,
 #                     help='Base .h5 files.')
 
+parser.add_argument('-i', '--inputkey', type=str, default='2kT-acc',
+                    choices=['2kT-acc', '1mT-acc', '1mT-noacc',
+                             '1mT-acc-seed'],
+                    help='Key of the input config.')
+
+
 parser.add_argument('-o', '--outdir', type=str, default=None,
                     help='Directory to store the results.')
 
@@ -70,11 +76,14 @@ gconfig = {
                'std_dE': r'$s_{dE}$',
                'std_dt': r'$s_{dt}$'},
     'x_name': 'turns',
-    'y_names': ['std_profile', 'std_dE', 'std_dt',
-                # 'mean_profile',
-                # 'mean_dE',
-                # 'mean_dt'
-                ],
+    'y_names': [
+        'std_profile',
+        'std_dE',
+        'std_dt',
+        # 'mean_profile',
+        # 'mean_dE',
+        # 'mean_dt'
+    ],
     # 'y_err_name': 'std',
     'xlabel': {'xlabel': 'Turn', 'labelpad': 3, 'fontsize': 10},
     'ylabel': {'ylabel': r'Relative Error (\%)', 'labelpad': 3, 'fontsize': 10},
@@ -108,24 +117,29 @@ gconfig = {
         'direction': 'out', 'length': 3, 'width': 1,
     },
     'fontname': 'DejaVu Sans Mono',
-    'ylim': [-0.005, 0.12],
+    'ylim': [0.00001, 1],
     # 'xlim': [1.6, 36],
-    'yticks': [0.00, 0.025, 0.050, 0.075, 0.100],
-    'outfiles': ['{}/{}-{}.png', '{}/{}-{}.pdf'],
+    # 'yticks': [0.00001, 0.0001, 0.001, 0.01, 0.1, 1],
+    'outfiles': ['{}/{}-{}-{}.png', '{}/{}-{}-{}.pdf'],
     'cases': ['ex01'],
-    'infile': 'results/precision-analysis/ex01/precision-monitor/_p2000000_b1_s1000_t2000_w1_o4_N1_red1_mtw0_seed0_approx0_mpimpich3_lbreportonly_lba500_monitor100_tp0_precsingle_/23Apr20.18-46-53-10/monitor.h5',
-    'basefile': 'results/precision-analysis/ex01/precision-monitor/_p2000000_b1_s1000_t2000_w1_o4_N1_red1_mtw0_seed0_approx0_mpimpich3_lbreportonly_lba500_monitor100_tp0_precdouble_/23Apr20.18-47-57-19/monitor.h5',
-    # 'errorfile': 'comm-comp-std-report.csv',
-    # 'datafile': 'comm-comp-report.csv',
-    # 'files': [
-    #     '{}/{}/lb-tp-approx0-strong-scaling/{}',
-    #     '{}/{}/lb-tp-approx2-strong-scaling/{}',
-    #     '{}/{}/lb-tp-approx1-strong-scaling/{}',
-    # ],
-    # 'lines': {
-    #     'approx': ['0', '1', '2'],
-    #     'type': ['total'],
-    # },
+    'infiles': {
+        '2kT-acc': {'': 'results/precision-analysis/ex01/precision-monitor/_p2000000_b1_s1000_t2000_w1_o4_N1_red1_mtw0_seed0_approx0_mpimpich3_lbreportonly_lba500_monitor100_tp0_precsingle_/23Apr20.18-46-53-10/monitor.h5'},
+        '1mT-acc': {'': 'results/precision-analysis/ex01/precision-monitor/_p1000000_b1_s1000_t1000000_w1_o14_N1_red1_mtw0_seed0_approx0_mpimpich3_lbreportonly_lba500_monitor1000_tp0_precsingle_/24Apr20.15-11-52-92/monitor.h5'},
+        '1mT-noacc': {'': 'results/precision-analysis/ex01/precision-monitor/_p1000000_b1_s1000_t1000000_w1_o14_N1_red1_mtw0_seed0_approx0_mpimpich3_lbreportonly_lba500_monitor1000_tp0_precsingle_/24Apr20.19-29-44-0/monitor.h5'},
+        '1mT-acc-seed': {
+            'seed1-': 'results/precision-analysis/ex01/precision-seed/_p1000000_b1_s1000_t1000000_w1_o14_N1_red1_mtw0_seed1_approx0_mpimpich3_lbreportonly_lba500_monitor1000_tp0_precdouble_/25Apr20.00-58-27-36/monitor.h5',
+            'seed2-': 'results/precision-analysis/ex01/precision-seed/_p1000000_b1_s1000_t1000000_w1_o14_N1_red1_mtw0_seed2_approx0_mpimpich3_lbreportonly_lba500_monitor1000_tp0_precdouble_/25Apr20.03-38-30-55/monitor.h5',
+            'seed3-': 'results/precision-analysis/ex01/precision-seed/_p1000000_b1_s1000_t1000000_w1_o14_N1_red1_mtw0_seed3_approx0_mpimpich3_lbreportonly_lba500_monitor1000_tp0_precdouble_/25Apr20.06-16-34-10/monitor.h5',
+            # 'seed4-': 'results/precision-analysis/ex01/precision-seed/_p1000000_b1_s1000_t1000000_w1_o14_N1_red1_mtw0_seed4_approx0_mpimpich3_lbreportonly_lba500_monitor1000_tp0_precdouble_/25Apr20.08-54-30-58/monitor.h5',
+        },
+    },
+    'basefile': {
+        '2kT-acc': 'results/precision-analysis/ex01/precision-monitor/_p2000000_b1_s1000_t2000_w1_o4_N1_red1_mtw0_seed0_approx0_mpimpich3_lbreportonly_lba500_monitor100_tp0_precdouble_/23Apr20.18-47-57-19/monitor.h5',
+        '1mT-acc': 'results/precision-analysis/ex01/precision-monitor/_p1000000_b1_s1000_t1000000_w1_o14_N1_red1_mtw0_seed0_approx0_mpimpich3_lbreportonly_lba500_monitor1000_tp0_precdouble_/24Apr20.16-51-30-23/monitor.h5',
+        '1mT-noacc': 'results/precision-analysis/ex01/precision-monitor/_p1000000_b1_s1000_t1000000_w1_o14_N1_red1_mtw0_seed0_approx0_mpimpich3_lbreportonly_lba500_monitor1000_tp0_precdouble_/24Apr20.21-08-20-88/monitor.h5',
+        '1mT-acc-seed': 'results/precision-analysis/ex01/precision-monitor/_p1000000_b1_s1000_t1000000_w1_o14_N1_red1_mtw0_seed0_approx0_mpimpich3_lbreportonly_lba500_monitor1000_tp0_precdouble_/24Apr20.16-51-30-23/monitor.h5',
+    },
+
 }
 
 plt.rcParams['font.family'] = gconfig['fontname']
@@ -139,9 +153,11 @@ def running_mean(x, N, axis=None):
 
 if __name__ == '__main__':
 
+    inputkey = args.inputkey
+    infiles = gconfig['infiles'][inputkey]
+    basefile = gconfig['basefile'][inputkey]
+
     last_t = args.turns
-    infile = gconfig['infile']
-    basefile = gconfig['basefile']
     outdir = args.outdir
     points = args.points
     # tss = args.ts
@@ -149,15 +165,6 @@ if __name__ == '__main__':
     for case in gconfig['cases']:
         based = {}
         ind = {}
-
-        # Read infile
-        fullfile = os.path.join(project_dir, infile)
-        h5file = h5py.File(fullfile, 'r')
-        for key in h5file[gconfig['group']]:
-            val = h5file[gconfig['group']][key][()]
-            if key not in ind:
-                ind[key] = val.reshape(len(val))
-        h5file.close()
 
         # Read basefile
         fullfile = os.path.join(project_dir, basefile)
@@ -167,35 +174,47 @@ if __name__ == '__main__':
             if key not in based:
                 based[key] = val.reshape(len(val))
         h5file.close()
-
-        assert np.array_equal(based[gconfig['x_name']], ind[gconfig['x_name']])
         turns = based[gconfig['x_name']]
+        del based[gconfig['x_name']]
+
+        # Read infile
+        for keyf, infile in infiles.items():
+            fullfile = os.path.join(project_dir, infile)
+            h5file = h5py.File(fullfile, 'r')
+            if keyf not in ind:
+                ind[keyf] = {}
+            for key in h5file[gconfig['group']]:
+                val = h5file[gconfig['group']][key][()]
+                if key not in ind:
+                    ind[keyf][key] = val.reshape(len(val))
+            h5file.close()
+            assert np.array_equal(turns, ind[keyf][gconfig['x_name']])
+            del ind[keyf][gconfig['x_name']]
 
         points = min(len(turns), points) if points > 0 else len(turns)
         intv = int(np.ceil(len(turns)/points))
 
-        del based[gconfig['x_name']]
-        del ind[gconfig['x_name']]
-
         fig, ax = plt.subplots(ncols=1, nrows=1,
                                sharex=True, sharey=True,
                                figsize=gconfig['figsize'])
+        for keyf in ind.keys():
+            for key in (set(based.keys()) & set(ind[keyf].keys())):
+                if key not in gconfig['y_names']:
+                    continue
+                basevals = based[key]
+                indvals = ind[keyf][key]
+                assert len(basevals) == len(
+                    indvals) and len(turns) == len(basevals)
 
-        for key in (set(based.keys()) & set(ind.keys())):
-            if key not in gconfig['y_names']:
-                continue
-            basevals = based[key]
-            indvals = ind[key]
-            assert len(basevals) == len(indvals) and len(turns) == len(basevals)
-
-            error = 100 * np.abs(1 - indvals / basevals)
-            plt.plot(turns[::intv], error[::intv],
-                     label=gconfig['labels'][key],
-                     )
-            # marker=gconfig['markers'][idx],
-            # color=gconfig['colors'][idx],
-            # yerr=yerr,
-            # capsize=2)
+                error = 100 * np.abs(1 - indvals / basevals)
+                plt.plot(turns[::intv], error[::intv],
+                         label='{}{}'.format(keyf, gconfig['labels'][key]),
+                         )
+                # marker=gconfig['markers'][idx],
+                # color=gconfig['colors'][idx],
+                # yerr=yerr,
+                # capsize=2)
+        plt.yscale('log')
 
         plt.grid(True, which='both', axis='y', alpha=0.5)
         plt.grid(False, which='major', axis='x')
@@ -206,17 +225,17 @@ if __name__ == '__main__':
         # plt.xlim(gconfig['xlim'])
         # plt.xticks(x//20, np.array(x, int)//20, **gconfig['ticks'])
         ax.tick_params(**gconfig['tick_params'])
-
         ax.legend(**gconfig['legend'])
 
         plt.xticks(**gconfig['ticks'])
-        plt.yticks(gconfig['yticks'], gconfig['yticks'], **gconfig['ticks'])
-        # plt.yticks(**gconfig['ticks'])
+        yticks = [10**i for i in range(int(np.log10(gconfig['ylim'][0])),
+                                       int(np.log10(gconfig['ylim'][1]))+1)]
+        plt.yticks(yticks, yticks, **gconfig['ticks'])
 
         plt.tight_layout()
         plt.subplots_adjust(**gconfig['subplots_adjust'])
         for file in gconfig['outfiles']:
-            file = file.format(images_dir, this_filename[:-3], case)
+            file = file.format(images_dir, this_filename[:-3], case, inputkey)
             print('[{}] {}: {}'.format(this_filename[:-3], 'Saving figure', file))
 
             save_and_crop(fig, file, dpi=600, bbox_inches='tight')
