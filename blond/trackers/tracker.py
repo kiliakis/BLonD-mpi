@@ -483,7 +483,7 @@ class RingAndRFTracker(object):
                                                   bin_centers=self.profile.bin_centers,
                                                   charge=self.beam.Particle.charge,
                                                   acceleration_kick=self.acceleration_kick[turn])
-                            self.drift(self.beam.dt, self.beam.dE, turn + 1)
+                    self.drift(self.beam.dt, self.beam.dE, turn + 1)
 
                             # bm.LIKick_n_drift(self.beam.dt,
                             #                   self.beam.dE,
