@@ -3,8 +3,8 @@ local:
     run_configs: 
 
         - 'precision-monitor'
-        # - 'precision-seed'
-        # - 'precision-timing'
+        - 'precision-seed'
+        - 'precision-timing'
 
 
         # Intermediate stages
@@ -35,8 +35,8 @@ local:
             'particles': [500000],
             'bunches': [4],  # 192
             'slices': [1000],
-            'turns': [10000],
-            'monitor': [100],
+            'turns': [1000000],
+            'monitor': [1000],
             'seed': [0],
             'mtw': [0],
             'precision': ['single', 'double'],
