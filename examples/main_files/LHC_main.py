@@ -29,8 +29,10 @@ from blond.input_parameters.rf_parameters import RFStation
 from blond.input_parameters.ring import Ring
 from blond.utils.mpi_config import worker, mpiprint
 from blond.utils.input_parser import parse
-bm.use_mpi()
+from blond.utils import bmath as bm
 
+bm.use_mpi()
+bm.use_fftw()
 
 REAL_RAMP = True    # track full ramp
 MONITORING = False   # turn off plots and monitors
@@ -88,6 +90,8 @@ approx = args['approx']
 timing.mode = args['time']
 os.environ['OMP_NUM_THREADS'] = str(args['omp'])
 withtp = bool(args['withtp'])
+precision = args['precision']
+bm.use_precision(precision)
 
 
 worker.initLog(bool(args['log']), args['logdir'])
@@ -211,13 +215,27 @@ mpiprint('dt std: ', np.std(beam.dE))
 mpiprint('dt mean, 1st bunch: ', np.mean(beam.dt[:n_particles]))
 mpiprint('shift ', rf.phi_rf[0, 0]/rf.omega_rf[0, 0])
 
-beam.split_random()
+beam.split(random=False)
 
 mpiprint("Statistics set...")
 
 
 mpiprint("Map set")
 
+
+if args['monitor'] > 0 and worker.isMaster:
+    if args.get('monitorfile', None):
+        filename = args['monitorfile']
+    else:
+        filename = 'monitorfiles/lhc-t{}-p{}-b{}-sl{}-approx{}-prec{}-r{}-m{}-se{}-w{}'.format(
+            n_iterations, n_particles, n_bunches, n_slices, approx, args['precision'],
+            n_turns_reduce, args['monitor'], seed, worker.workers)
+    slicesMonitor = SlicesMonitor(filename=filename,
+                                  n_turns=np.ceil(
+                                      n_iterations / args['monitor']),
+                                  profile=profile,
+                                  rf=rf,
+                                  Nbunches=n_bunches)
 
 worker.initDLB(args['loadbalance'], args['loadbalancearg'], n_iterations)
 
@@ -256,6 +274,13 @@ for turn in range(n_iterations):
 
     tracker.track_only()
 
+    if (args['monitor'] > 0) and (turn % args['monitor'] == 0):
+        beam.statistics()
+        beam.gather_statistics()
+        if worker.isMaster:
+            # profile.fwhm()
+            slicesMonitor.track(turn)
+    
     worker.DLB(turn, beam)
 
 beam.gather()
@@ -266,6 +291,9 @@ timing.report(total_time=1e3*(end_t-start_t),
               out_file='worker-{}.csv'.format(worker.rank))
 
 worker.finalize()
+
+if args['monitor'] > 0:
+    slicesMonitor.close()
 
 
 mpiprint('dE mean: ', np.mean(beam.dE))

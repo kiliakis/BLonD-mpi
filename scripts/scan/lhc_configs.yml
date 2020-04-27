@@ -1,29 +1,114 @@
 
 local: 
     run_configs: 
+
+        - 'precision-monitor'
+        # - 'precision-seed'
+        # - 'precision-timing'
+
+
         # Intermediate stages
-        - 'approx0-interm'
-        - 'approx1-interm'
-        - 'approx2-interm'
-        - 'tp-approx0-interm'
-        - 'lb-tp-approx0-interm'
-        - 'lb-tp-approx1-interm'
-        - 'lb-tp-approx2-interm'
+        # - 'approx0-interm'
+        # - 'approx1-interm'
+        # - 'approx2-interm'
+        # - 'tp-approx0-interm'
+        # - 'lb-tp-approx0-interm'
+        # - 'lb-tp-approx1-interm'
+        # - 'lb-tp-approx2-interm'
 
-        # Optimal num of workers per node
-        - 'approx0-workers'
+        # # Optimal num of workers per node
+        # - 'approx0-workers'
 
-        # Strong scaling
-        - 'lb-tp-approx0-strong-scaling'
-        - 'lb-tp-approx1-strong-scaling'
+        # # Strong scaling
+        # - 'lb-tp-approx0-strong-scaling'
+        # - 'lb-tp-approx1-strong-scaling'
         
-        # Weak Scaling
-        - 'lb-tp-approx0-weak-scaling'
-        - 'lb-tp-approx1-weak-scaling'
-        - 'lb-tp-approx2-weak-scaling'
+        # # Weak Scaling
+        # - 'lb-tp-approx0-weak-scaling'
+        # - 'lb-tp-approx1-weak-scaling'
+        # - 'lb-tp-approx2-weak-scaling'
 
 
     configs: {
+        'precision-monitor': {
+            'exe': ['LHC_main.py'],
+            'particles': [500000],
+            'bunches': [4],  # 192
+            'slices': [1000],
+            'turns': [10000],
+            'monitor': [100],
+            'seed': [0],
+            'mtw': [0],
+            'precision': ['single', 'double'],
+            'withtp': [0],
+            'reduce': [1],
+            'approx': [0],
+            'log': [1],
+            'loadbalance': ['reportonly'],
+            'loadbalancearg': [500],
+            'timing': ['timing'],
+            'workers': [1],
+            'omp': [14],
+            'mpi': ['mpich3'],
+            'time': [180],
+            'repeats': 1
+        },
+
+        'precision-seed': {
+            'exe': ['LHC_main.py'],
+            'particles': [500000],
+            'bunches': [4],  # 192
+            'slices': [1000],
+            'turns': [1000000],
+            'monitor': [1000],
+            'seed': [1, 2, 3, 4],
+            'mtw': [0],
+            'precision': ['double'],
+            'withtp': [0],
+            'reduce': [1],
+            'approx': [0],
+            'log': [1],
+            'loadbalance': ['reportonly'],
+            'loadbalancearg': [500],
+            'timing': ['timing'],
+            'workers': [1],
+            'omp': [14],
+            'mpi': ['mpich3'],
+            'time': [180],
+            'repeats': 1
+        },
+
+
+
+        'precision-timing': {
+            'exe': ['LHC_main.py'],
+            'particles': [1000000],
+            'bunches': [4],  # 192
+            'slices': [1000],
+            'turns': [5000],
+            'monitor': [0],
+            'seed': [0],
+            'mtw': [0],
+            'precision': ['single', 'single', 'single', 'single', 'single', 
+                          'double', 'double', 'double', 'double', 'double'],
+            'withtp': [0],
+            'reduce': [1],
+            'approx': [0],
+            'log': [1],
+            'loadbalance': ['reportonly'],
+            'loadbalancearg': [500],
+            'timing': ['timing'],
+            'workers': [1],
+            'omp': [1, 2, 4, 8, 14, 1, 2, 4, 8, 14],
+            'mpi': ['mpich3'],
+            'time': [180],
+            'repeats': 4
+        },
+
+
+
+
+
         # Strong scaling
         'lb-tp-approx0-strong-scaling': {
             'exe': ['LHC_main.py', 'LHC_main.py', 'LHC_main.py', 'LHC_main.py'],
