@@ -35,7 +35,7 @@ local:
             'particles': [1000000],
             'bunches': [1],  # 192
             'slices': [256],
-            'turns': [1000000],
+            'turns': [100000],
             'monitor': [1000],
             'seed': [0],
             'mtw': [50],
@@ -59,7 +59,7 @@ local:
             'particles': [1000000],
             'bunches': [1],  # 192
             'slices': [256],
-            'turns': [1000000],
+            'turns': [100000],
             'monitor': [1000],
             'seed': [1, 2, 3],
             'mtw': [50],

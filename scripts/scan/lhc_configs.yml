@@ -32,7 +32,7 @@ local:
     configs: {
         'precision-monitor': {
             'exe': ['LHC_main.py'],
-            'particles': [1000000],
+            'particles': [100000],
             'bunches': [1],  # 192
             'slices': [1000],
             'turns': [1000000],
@@ -59,7 +59,7 @@ local:
             'particles': [1000000],
             'bunches': [1],  # 192
             'slices': [1000],
-            'turns': [1000000],
+            'turns': [100000],
             'monitor': [1000],
             'seed': [1, 2, 3],
             'mtw': [0],
