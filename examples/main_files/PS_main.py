@@ -476,6 +476,10 @@ for turn in range(n_iterations):
     if (args['monitor'] > 0) and (turn % args['monitor'] == 0):
         beam.statistics()
         beam.gather_statistics()
+        profile.fwhm_multibunch(n_bunches, bunch_spacing_buckets,
+                                rf_params.t_rf[0, turn], bucket_tolerance=0)
+                                # shiftX=rf_params.phi_rf[0, turn]/rf_params.omega_rf[0, turn])
+
         if worker.isMaster:
             # profile.fwhm()
             slicesMonitor.track(turn)

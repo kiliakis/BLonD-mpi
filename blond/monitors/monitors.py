@@ -397,51 +397,49 @@ class SlicesMonitor(object):
         self.b_max_profile = np.zeros((self.buffer_size, self.Nbunches),
                                       dtype='float64')
 
-        if self.Nbunches == 1:
-            # All these can be calculated only when single bunch
-            self.create_data('mean_dE', self.h5file['default'],
-                             (self.n_turns, self.Nbunches), dtype='float64')
-            self.create_data('norm_dE', self.h5file['default'],
-                             (self.n_turns, self.Nbunches), dtype='float64')
-            self.create_data('max_dE', self.h5file['default'],
-                             (self.n_turns, self.Nbunches), dtype='float64')
-            self.create_data('min_dE', self.h5file['default'],
-                             (self.n_turns, self.Nbunches), dtype='float64')
-            self.create_data('std_dE', self.h5file['default'],
-                             (self.n_turns, self.Nbunches), dtype='float64')
+        self.create_data('mean_dE', self.h5file['default'],
+                         (self.n_turns, self.Nbunches), dtype='float64')
+        self.create_data('norm_dE', self.h5file['default'],
+                         (self.n_turns, self.Nbunches), dtype='float64')
+        self.create_data('max_dE', self.h5file['default'],
+                         (self.n_turns, self.Nbunches), dtype='float64')
+        self.create_data('min_dE', self.h5file['default'],
+                         (self.n_turns, self.Nbunches), dtype='float64')
+        self.create_data('std_dE', self.h5file['default'],
+                         (self.n_turns, self.Nbunches), dtype='float64')
 
-            self.create_data('mean_dt', self.h5file['default'],
-                             (self.n_turns, self.Nbunches), dtype='float64')
-            self.create_data('norm_dt', self.h5file['default'],
-                             (self.n_turns, self.Nbunches), dtype='float64')
-            self.create_data('max_dt', self.h5file['default'],
-                             (self.n_turns, self.Nbunches), dtype='float64')
-            self.create_data('min_dt', self.h5file['default'],
-                             (self.n_turns, self.Nbunches), dtype='float64')
-            self.create_data('std_dt', self.h5file['default'],
-                             (self.n_turns, self.Nbunches), dtype='float64')
+        self.create_data('mean_dt', self.h5file['default'],
+                         (self.n_turns, self.Nbunches), dtype='float64')
+        self.create_data('norm_dt', self.h5file['default'],
+                         (self.n_turns, self.Nbunches), dtype='float64')
+        self.create_data('max_dt', self.h5file['default'],
+                         (self.n_turns, self.Nbunches), dtype='float64')
+        self.create_data('min_dt', self.h5file['default'],
+                         (self.n_turns, self.Nbunches), dtype='float64')
+        self.create_data('std_dt', self.h5file['default'],
+                         (self.n_turns, self.Nbunches), dtype='float64')
 
-            self.b_mean_dE = np.zeros(
-                (self.buffer_size, self.Nbunches), dtype='float64')
-            self.b_norm_dE = np.zeros(
-                (self.buffer_size, self.Nbunches), dtype='float64')
-            self.b_max_dE = np.zeros(
-                (self.buffer_size, self.Nbunches), dtype='float64')
-            self.b_min_dE = np.zeros(
-                (self.buffer_size, self.Nbunches), dtype='float64')
-            self.b_std_dE = np.zeros(
-                (self.buffer_size, self.Nbunches), dtype='float64')
+        self.b_mean_dE = np.zeros(
+            (self.buffer_size, self.Nbunches), dtype='float64')
+        self.b_norm_dE = np.zeros(
+            (self.buffer_size, self.Nbunches), dtype='float64')
+        self.b_max_dE = np.zeros(
+            (self.buffer_size, self.Nbunches), dtype='float64')
+        self.b_min_dE = np.zeros(
+            (self.buffer_size, self.Nbunches), dtype='float64')
+        self.b_std_dE = np.zeros(
+            (self.buffer_size, self.Nbunches), dtype='float64')
 
-            self.b_mean_dt = np.zeros(
-                (self.buffer_size, self.Nbunches), dtype='float64')
-            self.b_norm_dt = np.zeros(
-                (self.buffer_size, self.Nbunches), dtype='float64')
-            self.b_max_dt = np.zeros(
-                (self.buffer_size, self.Nbunches), dtype='float64')
-            self.b_min_dt = np.zeros(
-                (self.buffer_size, self.Nbunches), dtype='float64')
-            self.b_std_dt = np.zeros(
-                (self.buffer_size, self.Nbunches), dtype='float64')
+        self.b_mean_dt = np.zeros(
+            (self.buffer_size, self.Nbunches), dtype='float64')
+        self.b_norm_dt = np.zeros(
+            (self.buffer_size, self.Nbunches), dtype='float64')
+        self.b_max_dt = np.zeros(
+            (self.buffer_size, self.Nbunches), dtype='float64')
+        self.b_min_dt = np.zeros(
+            (self.buffer_size, self.Nbunches), dtype='float64')
+        self.b_std_dt = np.zeros(
+            (self.buffer_size, self.Nbunches), dtype='float64')
 
     def __del__(self):
         if self.i_turn > self.last_save:
@@ -473,26 +471,26 @@ class SlicesMonitor(object):
         self.b_min_profile[idx] = np.min(self.profile.n_macroparticles)
         self.b_max_profile[idx] = np.max(self.profile.n_macroparticles)
 
-        if self.Nbunches == 1:
-            self.b_mean_dE[idx] = self.beam.mean_dE
-            self.b_std_dE[idx] = self.beam.sigma_dE
-            self.b_norm_dE[idx] = self.rf.voltage[0, turn]
-            self.b_min_dE[idx] = self.beam.min_dE
-            self.b_max_dE[idx] = self.beam.max_dE
+        # if self.Nbunches == 1:
+        self.b_mean_dE[idx] = self.beam.mean_dE
+        self.b_std_dE[idx] = self.beam.sigma_dE
+        self.b_norm_dE[idx] = self.rf.voltage[0, turn]
+        self.b_min_dE[idx] = self.beam.min_dE
+        self.b_max_dE[idx] = self.beam.max_dE
 
-            self.b_mean_dt[idx] = self.beam.mean_dt
-            self.b_std_dt[idx] = self.beam.sigma_dt
-            self.b_min_dt[idx] = self.beam.min_dt
-            self.b_max_dt[idx] = self.beam.max_dt
+        self.b_mean_dt[idx] = self.beam.mean_dt
+        self.b_std_dt[idx] = self.beam.sigma_dt
+        self.b_min_dt[idx] = self.beam.min_dt
+        self.b_max_dt[idx] = self.beam.max_dt
 
-            if turn == 0:
-                self.b_norm_dt[idx] = self.rf.t_rev[0] * self.rf.eta_0[0] * \
-                    self.rf.voltage[0, 0] / \
-                    (self.rf.beta[0]**2 * self.rf.energy[0])
-            else:
-                self.b_norm_dt[idx] = self.rf.t_rev[turn] * self.rf.eta_0[turn] * \
-                    self.rf.voltage[0, turn-1] / \
-                    (self.rf.beta[turn]**2 * self.rf.energy[turn])
+        if turn == 0:
+            self.b_norm_dt[idx] = self.rf.t_rev[0] * self.rf.eta_0[0] * \
+                self.rf.voltage[0, 0] / \
+                (self.rf.beta[0]**2 * self.rf.energy[0])
+        else:
+            self.b_norm_dt[idx] = self.rf.t_rev[turn] * self.rf.eta_0[turn] * \
+                self.rf.voltage[0, turn-1] / \
+                (self.rf.beta[turn]**2 * self.rf.energy[turn])
 
     def write_data(self):
         i1_h5 = self.last_save
@@ -513,19 +511,19 @@ class SlicesMonitor(object):
         self.h5group['min_profile'][i1_h5:i2_h5] = self.b_min_profile[i1_b:i2_b]
         self.h5group['max_profile'][i1_h5:i2_h5] = self.b_max_profile[i1_b:i2_b]
 
-        if self.Nbunches == 1:
-            self.h5group['mean_dE'][i1_h5:i2_h5] = self.b_mean_dE[i1_b:i2_b]
-            self.h5group['norm_dE'][i1_h5:i2_h5] = self.b_norm_dE[i1_b:i2_b]
-            self.h5group['std_dE'][i1_h5:i2_h5] = self.b_std_dE[i1_b:i2_b]
-            self.h5group['min_dE'][i1_h5:i2_h5] = self.b_min_dE[i1_b:i2_b]
-            self.h5group['max_dE'][i1_h5:i2_h5] = self.b_max_dE[i1_b:i2_b]
+        # if self.Nbunches == 1:
+        self.h5group['mean_dE'][i1_h5:i2_h5] = self.b_mean_dE[i1_b:i2_b]
+        self.h5group['norm_dE'][i1_h5:i2_h5] = self.b_norm_dE[i1_b:i2_b]
+        self.h5group['std_dE'][i1_h5:i2_h5] = self.b_std_dE[i1_b:i2_b]
+        self.h5group['min_dE'][i1_h5:i2_h5] = self.b_min_dE[i1_b:i2_b]
+        self.h5group['max_dE'][i1_h5:i2_h5] = self.b_max_dE[i1_b:i2_b]
 
 
-            self.h5group['mean_dt'][i1_h5:i2_h5] = self.b_mean_dt[i1_b:i2_b]
-            self.h5group['norm_dt'][i1_h5:i2_h5] = self.b_norm_dt[i1_b:i2_b]
-            self.h5group['std_dt'][i1_h5:i2_h5] = self.b_std_dt[i1_b:i2_b]
-            self.h5group['min_dt'][i1_h5:i2_h5] = self.b_min_dt[i1_b:i2_b]
-            self.h5group['max_dt'][i1_h5:i2_h5] = self.b_max_dt[i1_b:i2_b]
+        self.h5group['mean_dt'][i1_h5:i2_h5] = self.b_mean_dt[i1_b:i2_b]
+        self.h5group['norm_dt'][i1_h5:i2_h5] = self.b_norm_dt[i1_b:i2_b]
+        self.h5group['std_dt'][i1_h5:i2_h5] = self.b_std_dt[i1_b:i2_b]
+        self.h5group['min_dt'][i1_h5:i2_h5] = self.b_min_dt[i1_b:i2_b]
+        self.h5group['max_dt'][i1_h5:i2_h5] = self.b_max_dt[i1_b:i2_b]
 
 
     def track(self, turn):

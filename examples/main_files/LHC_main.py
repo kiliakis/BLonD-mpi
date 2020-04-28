@@ -107,7 +107,8 @@ mpiprint("")
 
 # Import pre-processed momentum and voltage for the acceleration ramp
 if REAL_RAMP:
-    ps = np.load(os.path.join(inputDir,'LHC_momentum_programme_6.5TeV.npz'))['arr_0']
+    ps = np.load(os.path.join(inputDir, 'LHC_momentum_programme_6.5TeV.npz'))[
+        'arr_0']
     # ps = np.loadtxt(wrkDir+r'input/LHC_momentum_programme_6.5TeV.dat',
     # unpack=True)
     ps = np.ascontiguousarray(ps)
@@ -147,7 +148,8 @@ bigaussian(ring, rf, bunch, 0.3e-9, reinsertion=True, seed=seed)
 bunch_spacing_buckets = 10
 
 for i in np.arange(n_bunches):
-    beam.dt[i*n_particles:(i+1)*n_particles] = bunch.dt[0:n_particles] + i*rf.t_rf[0, 0]*10
+    beam.dt[i*n_particles:(i+1) *
+            n_particles] = bunch.dt[0:n_particles] + i*rf.t_rf[0, 0]*10
     beam.dE[i*n_particles:(i+1)*n_particles] = bunch.dE[0:n_particles]
 
 
@@ -277,10 +279,12 @@ for turn in range(n_iterations):
     if (args['monitor'] > 0) and (turn % args['monitor'] == 0):
         beam.statistics()
         beam.gather_statistics()
+        profile.fwhm_multibunch(n_bunches, bunch_spacing_buckets,
+                                rf.t_rf[0, turn], bucket_tolerance=0,
+                                shiftX=rf.phi_rf[0, turn]/rf.omega_rf[0, turn])
         if worker.isMaster:
-            # profile.fwhm()
             slicesMonitor.track(turn)
-    
+
     worker.DLB(turn, beam)
 
 beam.gather()

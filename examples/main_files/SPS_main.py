@@ -477,7 +477,6 @@ if args['monitor'] > 0 and worker.isMaster:
                                   Nbunches=n_bunches)
 
 
-
 worker.initDLB(args['loadbalance'], args['loadbalancearg'], n_iterations)
 
 delta = 0
@@ -531,7 +530,7 @@ for turn in range(n_iterations):
     if SPS_PHASELOOP is True:
         if turn % PL_save_turns == 0 and turn > 0:
             with timing.timed_region('serial:binShift') as tr:
-            
+
                 # present beam position
                 beamPosFromPhase = (phaseLoop.phi_beam - rf_station.phi_rf[0, turn])\
                     / rf_station.omega_rf[0, turn] + t_batch_begin
@@ -552,6 +551,10 @@ for turn in range(n_iterations):
     if (args['monitor'] > 0) and (turn % args['monitor'] == 0):
         beam.statistics()
         beam.gather_statistics()
+        profile.fwhm_multibunch(n_bunches, bunch_spacing,
+                                rf_station.t_rf[0, turn], bucket_tolerance=0)
+                                # shiftX=rf_station.phi_rf[0, turn]/rf_station.omega_rf[0, turn])
+
         if worker.isMaster:
             # profile.fwhm()
             slicesMonitor.track(turn)
