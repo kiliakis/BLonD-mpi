@@ -26,6 +26,7 @@ from blond.trackers.tracker import RingAndRFTracker, FullRingAndRF
 from blond.impedances.impedance import InducedVoltageTime, InducedVoltageFreq, TotalInducedVoltage, InductiveImpedance
 from blond.impedances.impedance_sources import Resonators
 from blond.monitors.monitors import SlicesMonitor
+from blond.utils import bmath as bm
 # Other imports
 from colormap import colormap
 # LoCa imports
@@ -36,7 +37,7 @@ import LoCa.Base.Bare_RF as brf
 from PS_impedance.impedance_scenario import scenario
 cmap = colormap.cmap_white_blue_red
 bm.use_mpi()
-
+bm.use_fftw()
 
 this_directory = os.path.dirname(os.path.realpath(__file__)) + '/'
 inputDir = os.path.join(this_directory, '../input_files/PS/')
@@ -128,6 +129,8 @@ approx = args['approx']
 timing.mode = args['time']
 os.environ['OMP_NUM_THREADS'] = str(args['omp'])
 withtp = bool(args['withtp'])
+precision = args['precision']
+bm.use_precision(precision)
 
 
 worker.initLog(bool(args['log']), args['logdir'])
@@ -401,12 +404,30 @@ match_beam_from_distribution(beam, full_tracker, ring,
 mpiprint('dE mean:', np.mean(beam.dE))
 mpiprint('dE std:', np.std(beam.dE))
 
-beam.split_random()
+beam.split(random=False)
 
 # Tracking -------------------------------------------------------------------
 
 
 mpiprint("Ready for tracking!\n")
+
+if args['monitor'] > 0 and worker.isMaster:
+    if args.get('monitorfile', None):
+        filename = args['monitorfile']
+    else:
+        filename = 'monitorfiles/ps-t{}-p{}-b{}-sl{}-approx{}-prec{}-r{}-m{}-se{}-w{}'.format(
+            n_iterations, n_particles, n_bunches, n_slices, approx, args['precision'],
+            n_turns_reduce, args['monitor'], seed, worker.workers)
+    slicesMonitor = SlicesMonitor(filename=filename,
+                                  n_turns=np.ceil(
+                                      n_iterations / args['monitor']),
+                                  profile=profile,
+                                  rf=rf_params,
+                                  Nbunches=n_bunches)
+
+
+
+
 worker.initDLB(args['loadbalance'], args['loadbalancearg'], n_iterations)
 
 worker.sync()
@@ -452,6 +473,13 @@ for turn in range(n_iterations):
 
     tracker.track_only()
 
+    if (args['monitor'] > 0) and (turn % args['monitor'] == 0):
+        beam.statistics()
+        beam.gather_statistics()
+        if worker.isMaster:
+            # profile.fwhm()
+            slicesMonitor.track(turn)
+    
     worker.DLB(turn, beam)
 
 beam.gather()
@@ -461,6 +489,9 @@ timing.report(total_time=1e3*(end_t-start_t),
               out_file='worker-{}.csv'.format(worker.rank))
 
 worker.finalize()
+
+if args['monitor'] > 0:
+    slicesMonitor.close()
 
 mpiprint('dE mean: ', np.mean(beam.dE))
 mpiprint('dE std: ', np.std(beam.dE))

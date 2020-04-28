@@ -4,7 +4,7 @@ local:
 
         - 'precision-monitor'
         - 'precision-seed'
-        - 'precision-timing'
+        # - 'precision-timing'
 
 
         # Intermediate stages
@@ -32,8 +32,8 @@ local:
     configs: {
         'precision-monitor': {
             'exe': ['LHC_main.py'],
-            'particles': [500000],
-            'bunches': [4],  # 192
+            'particles': [1000000],
+            'bunches': [1],  # 192
             'slices': [1000],
             'turns': [1000000],
             'monitor': [1000],
@@ -56,12 +56,12 @@ local:
 
         'precision-seed': {
             'exe': ['LHC_main.py'],
-            'particles': [500000],
-            'bunches': [4],  # 192
+            'particles': [1000000],
+            'bunches': [1],  # 192
             'slices': [1000],
             'turns': [1000000],
             'monitor': [1000],
-            'seed': [1, 2, 3, 4],
+            'seed': [1, 2, 3],
             'mtw': [0],
             'precision': ['double'],
             'withtp': [0],
