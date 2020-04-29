@@ -3,7 +3,7 @@ local:
     run_configs: 
         - 'precision-monitor'
         - 'precision-seed'
-        - 'precision-timing'
+        # - 'precision-timing'
 
         # Intermediate stages
         # - 'approx0-interm'
