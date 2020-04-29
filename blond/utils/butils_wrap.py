@@ -93,6 +93,7 @@ def where(x, more_than=None, less_than=None, result=None):
             '[bmath:where] You need to define at least one of more_than, less_than')
     return result
 
+
 def add(a, b, result=None, inplace=False):
     if(len(a) != len(b)):
         raise ValueError(
@@ -214,9 +215,6 @@ def mul(a, b, result=None):
     return result
 
 
-
-
-
 def argmin(x):
     __lib.min_idx.restype = ct.c_int
     return __lib.min_idx(__getPointer(x), __getLen(x))
@@ -282,7 +280,6 @@ def convolve(signal, kernel, mode='full', result=None):
     return result
 
 
-
 def mean(x):
     if isinstance(x[0], np.float32):
         __lib.meanf.restype = ct.c_float
@@ -291,6 +288,7 @@ def mean(x):
         __lib.mean.restype = ct.c_double
         return __lib.mean(__getPointer(x), __getLen(x))
 
+
 def std(x):
     if isinstance(x[0], np.float32):
         __lib.stdevf.restype = ct.c_float
@@ -298,6 +296,7 @@ def std(x):
     elif isinstance(x[0], np.float64):
         __lib.stdev.restype = ct.c_double
         return __lib.stdev(__getPointer(x), __getLen(x))
+
 
 def sin(x, result=None):
     if isinstance(x, np.ndarray) and isinstance(x[0], np.float64):
@@ -356,7 +355,6 @@ def exp(x, result=None):
         raise RuntimeError('[exp] The type %s is not supported', type(x))
 
 
-
 def interp(x, xp, yp, left=None, right=None, result=None):
     x = x.astype(dtype=precision.real_t, order='C', copy=False)
     xp = xp.astype(dtype=precision.real_t, order='C', copy=False)
@@ -369,12 +367,21 @@ def interp(x, xp, yp, left=None, right=None, result=None):
     if result is None:
         result = np.empty(len(x), dtype=precision.real_t, order='C')
 
-    __lib.interp(__getPointer(x), __getLen(x),
-                 __getPointer(xp), __getLen(xp),
-                 __getPointer(yp),
-                 __c_real(left),
-                 __c_real(right),
-                 __getPointer(result))
+    if precision.num == 1:
+        __lib.interpf(__getPointer(x), __getLen(x),
+                      __getPointer(xp), __getLen(xp),
+                      __getPointer(yp),
+                      __c_real(left),
+                      __c_real(right),
+                      __getPointer(result))
+    else:
+        __lib.interp(__getPointer(x), __getLen(x),
+                     __getPointer(xp), __getLen(xp),
+                     __getPointer(yp),
+                     __c_real(left),
+                     __c_real(right),
+                     __getPointer(result))
+
     return result
 
 
@@ -390,14 +397,22 @@ def interp_const_space(x, xp, yp, left=None, right=None, result=None):
     if result is None:
         result = np.empty(len(x), dtype=precision.real_t, order='C')
 
-    __lib.interp_const_space(__getPointer(x), __getLen(x),
-                             __getPointer(xp), __getLen(xp),
-                             __getPointer(yp),
-                             __c_real(left),
-                             __c_real(right),
-                             __getPointer(result))
-    return result
+    if precision.num == 1:
+        __lib.interp_const_spacef(__getPointer(x), __getLen(x),
+                                  __getPointer(xp), __getLen(xp),
+                                  __getPointer(yp),
+                                  __c_real(left),
+                                  __c_real(right),
+                                  __getPointer(result))
+    else:
+        __lib.interp_const_space(__getPointer(x), __getLen(x),
+                                 __getPointer(xp), __getLen(xp),
+                                 __getPointer(yp),
+                                 __c_real(left),
+                                 __c_real(right),
+                                 __getPointer(result))
 
+    return result
 
 
 def rfft(a, n=0, result=None):
@@ -677,7 +692,7 @@ def linear_interp_kick(dt, dE, voltage,
     # dE = dE.astype(dtype=precision.real_t, order='C', copy=False)
     # voltage = voltage.astype(dtype=precision.real_t, order='C', copy=False)
     # bin_centers = bin_centers.astype(
-        # dtype=precision.real_t, order='C', copy=False)
+    # dtype=precision.real_t, order='C', copy=False)
 
     if precision.num == 1:
         __lib.linear_interp_kickf(__getPointer(dt),

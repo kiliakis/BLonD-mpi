@@ -32,11 +32,11 @@ local:
     configs: {
         'precision-monitor': {
             'exe': ['LHC_main.py'],
-            'particles': [100000],
+            'particles': [1000000],
             'bunches': [1],  # 192
             'slices': [1000],
             'turns': [40000],
-            'monitor': [1000],
+            'monitor': [100],
             'seed': [0],
             'mtw': [0],
             'precision': ['single', 'double'],
@@ -60,7 +60,7 @@ local:
             'bunches': [1],  # 192
             'slices': [1000],
             'turns': [40000],
-            'monitor': [1000],
+            'monitor': [100],
             'seed': [1, 2, 3],
             'mtw': [0],
             'precision': ['double'],
@@ -89,8 +89,7 @@ local:
             'monitor': [0],
             'seed': [0],
             'mtw': [0],
-            'precision': ['single', 'single', 'single', 'single', 'single', 
-                          'double', 'double', 'double', 'double', 'double'],
+            'precision': ['single', 'double'],
             'withtp': [0],
             'reduce': [1],
             'approx': [0],
@@ -99,10 +98,10 @@ local:
             'loadbalancearg': [500],
             'timing': ['timing'],
             'workers': [1],
-            'omp': [1, 2, 4, 8, 14, 1, 2, 4, 8, 14],
+            'omp': [1, 1, 2, 2, 4, 4],
             'mpi': ['mpich3'],
             'time': [180],
-            'repeats': 4
+            'repeats': 3
         },
 
 

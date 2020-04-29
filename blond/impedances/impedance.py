@@ -17,7 +17,7 @@
 from __future__ import division, print_function
 from builtins import range, object
 import numpy as np
-from numpy.fft import rfft, irfft, rfftfreq
+# from numpy.fft import rfft, irfft, rfftfreq
 from ctypes import c_uint, c_double, c_void_p
 from scipy.constants import e
 from ..toolbox.next_regular import next_regular
@@ -293,7 +293,7 @@ class _InducedVoltage(object):
                 self.n_mtw_fft = next_regular(self.n_mtw_memory)
                 # Frequency and omega arrays
                 self.freq_mtw = \
-                    rfftfreq(self.n_mtw_fft, d=self.profile.bin_size)
+                    bm.rfftfreq(self.n_mtw_fft, d=self.profile.bin_size)
                 self.omegaj_mtw = 2.0j * np.pi * self.freq_mtw
                 # Selecting time-shift method
                 self.shift_trev = self.shift_trev_freq
@@ -302,10 +302,12 @@ class _InducedVoltage(object):
                 self.shift_trev = self.shift_trev_time
                 # Time array
                 self.time_mtw = np.linspace(0, self.wake_length,
-                                            self.n_mtw_memory, endpoint=False)
+                                            self.n_mtw_memory, endpoint=False,
+                                            dtype=bm.precision.real_t)
 
             # Array to add and shift in time the multi-turn wake over the turns
-            self.mtw_memory = np.zeros(self.n_mtw_memory)
+            self.mtw_memory = np.zeros(self.n_mtw_memory,
+                                       dtype=bm.precision.real_t, order='C')
 
             # Select induced voltage generation method to be used
             self.induced_voltage_generation = self.induced_voltage_mtw
@@ -319,10 +321,14 @@ class _InducedVoltage(object):
         """
         # if induced_voltage_1turn.last_turn < self.RFParams.counter[0]:
         # induced_voltage_1turn.last_turn = self.RFParams.counter[0]
-
+        # print('Inside induced_voltage_1turn')
         if self.n_fft not in beam_spectrum_dict:
+            # print('Before calling beam_spectrum_generation')
+
             self.profile.beam_spectrum_generation(self.n_fft)
             beam_spectrum_dict[self.n_fft] = self.profile.beam_spectrum
+
+        # print('After beam spectrum')
 
         beam_spectrum = beam_spectrum_dict[self.n_fft]
 
@@ -343,8 +349,10 @@ class _InducedVoltage(object):
         """
 
         # Shift of the memory wake field by the current revolution period
+        # print("Before shift_trev")
         self.shift_trev()
 
+        # print("Before induced_voltage_1turn")
         # Induced voltage of the current turn calculation
         self.induced_voltage_1turn()
 
@@ -370,8 +378,9 @@ class _InducedVoltage(object):
         t_rev = self.RFParams.t_rev[self.RFParams.counter[0]]
         # Shift in frequency domain
         induced_voltage_f = bm.rfft(self.mtw_memory, self.n_mtw_fft)
-        induced_voltage_f *= bm.exp(self.omegaj_mtw.astype(
-            dtype=bm.precision.real_t, order='C', copy=False) * t_rev)
+        self.omegaj_mtw = self.omegaj_mtw.astype(
+            dtype=bm.precision.real_t, order='C', copy=False)
+        induced_voltage_f *= bm.exp(self.omegaj_mtw * t_rev)
         self.mtw_memory = bm.irfft(induced_voltage_f)[:self.n_mtw_memory]
         # Setting to zero to the last part to remove the contribution from the
         # circular convolution
@@ -389,8 +398,8 @@ class _InducedVoltage(object):
         self.mtw_memory = bm.interp_const_space(self.time_mtw + t_rev,
                                                 self.time_mtw, self.mtw_memory,
                                                 left=0, right=0)
-        # self.mtw_memory = np.interp(self.time_mtw + t_rev, self.time_mtw,
-        # self.mtw_memory, left=0, right=0)
+        # self.mtw_memory = bm.interp(self.time_mtw + t_rev, self.time_mtw,
+        #                             self.mtw_memory, left=0, right=0)
 
     def _track(self):
         """
@@ -467,7 +476,8 @@ class InducedVoltageTime(_InducedVoltage):
 
         # Time array of the wake in s
         self.time = np.arange(0, self.wake_length, self.wake_length
-                              / self.n_induced_voltage)
+                              / self.n_induced_voltage,
+                              dtype=bm.precision.real_t)
 
         # Processing the wakes
         self.sum_wakes(self.time)
@@ -484,7 +494,7 @@ class InducedVoltageTime(_InducedVoltage):
 
         # Pseudo-impedance used to calculate linear convolution in the
         # frequency domain (padding zeros)
-        self.total_impedance = rfft(self.total_wake, self.n_fft)
+        self.total_impedance = bm.rfft(self.total_wake, self.n_fft)
 
 
 class InducedVoltageFreq(_InducedVoltage):
@@ -573,7 +583,8 @@ class InducedVoltageFreq(_InducedVoltage):
         Summing all the wake contributions in one total impedance.
         """
 
-        self.total_impedance = np.zeros(freq.shape, dtype=bm.precision.complex_t, order='C')
+        self.total_impedance = np.zeros(
+            freq.shape, dtype=bm.precision.complex_t, order='C')
 
         for i in range(len(self.impedance_source_list)):
             self.impedance_source_list[i].imped_calc(freq)
@@ -635,7 +646,8 @@ class InductiveImpedance(_InducedVoltage):
                              * self.RFParams.t_rev[index] / self.profile.bin_size
                              * self.profile.beam_profile_derivative(self.deriv_mode)[1])
 
-        self.induced_voltage = (induced_voltage[:self.n_induced_voltage]).astype(dtype=bm.precision.real_t, order='C', copy=False)
+        self.induced_voltage = (induced_voltage[:self.n_induced_voltage]).astype(
+            dtype=bm.precision.real_t, order='C', copy=False)
 
 
 class InducedVoltageResonator(_InducedVoltage):
@@ -728,13 +740,16 @@ class InducedVoltageResonator(_InducedVoltage):
 
         # Each the 'n_resonator' rows of the matrix holds the induced voltage
         # at the 'n_time' time-values of one cavity. For internal use.
-        self._tmp_matrix = np.ones((self.n_resonators, self.n_time), dtype=bm.precision.real_t, order='C')
+        self._tmp_matrix = np.ones(
+            (self.n_resonators, self.n_time), dtype=bm.precision.real_t, order='C')
 
         # Slopes of the line segments. For internal use.
-        self._kappa1 = np.zeros(int(self.profile.n_slices-1), dtype=bm.precision.real_t, order='C')
+        self._kappa1 = np.zeros(
+            int(self.profile.n_slices-1), dtype=bm.precision.real_t, order='C')
 
         # Matrix to hold n_times many tArray[t]-bin_centers arrays.
-        self._deltaT = np.zeros((self.n_time, self.profile.n_slices), dtype=bm.precision.real_t, order='C')
+        self._deltaT = np.zeros(
+            (self.n_time, self.profile.n_slices), dtype=bm.precision.real_t, order='C')
 
         # Call the __init__ method of the parent class [calls process()]
         _InducedVoltage.__init__(self, Beam, Profile, wake_length=None,
@@ -750,8 +765,10 @@ class InducedVoltageResonator(_InducedVoltage):
 
         # Since profile object changed, need to assign the proper dimensions to
         # _kappa1 and _deltaT
-        self._kappa1 = np.zeros(int(self.profile.n_slices-1), dtype=bm.precision.real_t, order='C')
-        self._deltaT = np.zeros((self.n_time, self.profile.n_slices), dtype=bm.precision.real_t, order='C')
+        self._kappa1 = np.zeros(
+            int(self.profile.n_slices-1), dtype=bm.precision.real_t, order='C')
+        self._deltaT = np.zeros(
+            (self.n_time, self.profile.n_slices), dtype=bm.precision.real_t, order='C')
 
     def induced_voltage_1turn(self, beam_spectrum_dict={}):
         r"""
@@ -787,8 +804,10 @@ class InducedVoltageResonator(_InducedVoltage):
         # ... and multiply with bunch charge
         self.induced_voltage *= -self.beam.Particle.charge*e \
             * self.beam.n_macroparticles*self.beam.ratio
-        self.induced_voltage = self.induced_voltage.astype(dtype=bm.precision.real_t, order='C', copy=False)
+        self.induced_voltage = self.induced_voltage.astype(
+            dtype=bm.precision.real_t, order='C', copy=False)
     # Implementation of Heaviside function
+
     def Heaviside(self, x):
         r"""
         Heaviside function, which returns 1 if x>1, 0 if x<0, and 1/2 if x=0
