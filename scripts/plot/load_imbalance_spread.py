@@ -49,7 +49,7 @@ gconfig = {
     'y_name': 'total_time(sec)',
     'percent_name': 'global_percentage',
     'xlabel': 'Nodes (x20 Cores)',
-    'ylabel': r'Time Spread(%)',
+    'ylabel': r'Time Spread(\%)',
     'title': {
                 # 's': '{}'.format(case.upper()),
                 'fontsize': 10,
@@ -89,7 +89,7 @@ gconfig = {
     'ylim': [0, 40],
     'xlim': [1.6, 36],
     'yticks': [0, 8, 16, 24, 32, 40],
-    'outfiles': ['{}/{}-{}.png'],
+    'outfiles': ['{}/{}-{}.png', '{}/{}-{}.pdf'],
     'errorfile': 'delta-std-report.csv',
     'deltafile': 'delta-report.csv',
     'datafile': 'avg-report.csv',
@@ -110,7 +110,14 @@ gconfig = {
 
 }
 
-plt.rcParams['font.family'] = gconfig['fontname']
+plt.rcParams['ps.useafm'] = True
+plt.rcParams['pdf.use14corefonts'] = True
+plt.rcParams['text.usetex'] = True #Let TeX do the typsetting
+plt.rcParams['text.latex.preamble'] = [r'\usepackage{sansmath}', r'\sansmath'] #Force sans-serif math mode (for axes labels)
+plt.rcParams['font.family'] = 'sans-serif' # ... for regular text
+plt.rcParams['font.sans-serif'] = 'Helvetica'
+
+# plt.rcParams['font.family'] = gconfig['fontname']
 # plt.rcParams['text.usetex'] = True
 
 if __name__ == '__main__':
@@ -248,7 +255,7 @@ if __name__ == '__main__':
     for file in gconfig['outfiles']:
         file = file.format(images_dir, this_filename[:-3], '-'.join(args.cases))
         print('[{}] {}: {}'.format(this_filename[:-3], 'Saving figure', file))
-        fig.savefig(file, dpi=600, bbox_inches='tight')
+        save_and_crop(fig, file, dpi=600, bbox_inches='tight')
     if args.show:
         plt.show()
     plt.close()

@@ -88,7 +88,7 @@ gconfig = {
     # 'ylim2': [0, 110],
     'yticks': [0, 0.2, 0.4, 0.6, 0.8, 1.0],
     # 'yticks2': [0, 20, 40, 60, 80, 100],
-    'outfiles': ['{}/{}-{}.png'],
+    'outfiles': ['{}/{}-{}.png', '{}/{}-{}.pdf'],
     'files': [
         '{}/{}/lb-tp-approx0-weak-scaling/comm-comp-report.csv',
         '{}/{}/lb-tp-approx2-weak-scaling/comm-comp-report.csv',
@@ -107,7 +107,14 @@ gconfig = {
     }
 }
 
-plt.rcParams['font.family'] = gconfig['fontname']
+plt.rcParams['ps.useafm'] = True
+plt.rcParams['pdf.use14corefonts'] = True
+plt.rcParams['text.usetex'] = True #Let TeX do the typsetting
+plt.rcParams['text.latex.preamble'] = [r'\usepackage{sansmath}', r'\sansmath'] #Force sans-serif math mode (for axes labels)
+plt.rcParams['font.family'] = 'sans-serif' # ... for regular text
+plt.rcParams['font.sans-serif'] = 'Helvetica'
+
+# plt.rcParams['font.family'] = gconfig['fontname']
 # plt.rcParams['text.usetex'] = True
 
 
@@ -229,7 +236,7 @@ if __name__ == '__main__':
     for file in gconfig['outfiles']:
         file = file.format(images_dir, this_filename[:-3], '-'.join(args.cases))
         print('[{}] {}: {}'.format(this_filename[:-3], 'Saving figure', file))
-        fig.savefig(file, dpi=600, bbox_inches='tight')
+        save_and_crop(fig, file, dpi=600, bbox_inches='tight')
     if args.show:
         plt.show()
     plt.close()

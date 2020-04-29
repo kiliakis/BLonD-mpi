@@ -114,8 +114,15 @@ gconfig = {
     # }
 }
 
-plt.rcParams['font.family'] = gconfig['fontname']
-plt.rcParams['text.usetex'] = True
+plt.rcParams['ps.useafm'] = True
+plt.rcParams['pdf.use14corefonts'] = True
+plt.rcParams['text.usetex'] = True #Let TeX do the typsetting
+plt.rcParams['text.latex.preamble'] = [r'\usepackage{sansmath}', r'\sansmath'] #Force sans-serif math mode (for axes labels)
+plt.rcParams['font.family'] = 'sans-serif' # ... for regular text
+plt.rcParams['font.sans-serif'] = 'Helvetica'
+
+# plt.rcParams['font.family'] = gconfig['fontname']
+# plt.rcParams['text.usetex'] = True
 
 if __name__ == '__main__':
     fig, ax_arr = plt.subplots(ncols=len(args.cases), nrows=1,
@@ -289,7 +296,7 @@ if __name__ == '__main__':
         file = file.format(images_dir, this_filename[:-3], '-'.join(args.cases))
         print('[{}] {}: {}'.format(this_filename[:-3], 'Saving figure', file))
 
-        fig.savefig(file, dpi=600, bbox_inches='tight')
+        save_and_crop(fig, file, dpi=600, bbox_inches='tight')
     if args.show:
         plt.show()
     plt.close()

@@ -285,7 +285,7 @@ def convolve(signal, kernel, mode='full', result=None):
 
 def mean(x):
     if isinstance(x[0], np.float32):
-        __lib.mean.restype = ct.c_float
+        __lib.meanf.restype = ct.c_float
         return __lib.meanf(__getPointer(x), __getLen(x))
     elif isinstance(x[0], np.float64):
         __lib.mean.restype = ct.c_double
@@ -535,12 +535,12 @@ def beam_phase(beamFB, omegarf, phirf):
 
 
 def _beam_phase(bin_centers, profile, alpha, omegarf, phirf, bin_size):
-    __lib.beam_phase.restype = __c_real
     bin_centers = bin_centers.astype(dtype=precision.real_t, order='C',
                                      copy=False)
     profile = profile.astype(dtype=precision.real_t, order='C', copy=False)
 
     if precision.num == 1:
+        __lib.beam_phasef.restype = __c_real
         coeff = __lib.beam_phasef(__getPointer(bin_centers),
                                   __getPointer(profile),
                                   __c_real(alpha),
@@ -550,6 +550,7 @@ def _beam_phase(bin_centers, profile, alpha, omegarf, phirf, bin_size):
                                   __getLen(profile))
 
     else:
+        __lib.beam_phase.restype = __c_real
         coeff = __lib.beam_phase(__getPointer(bin_centers),
                                  __getPointer(profile),
                                  __c_real(alpha),

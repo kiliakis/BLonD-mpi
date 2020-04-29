@@ -50,7 +50,7 @@ gconfig = {
     'omp_name': 'omp',
     'y_name': 'percent',
     'xlabel': 'Nodes (x20 Cores)',
-    'ylabel': 'Runtime(%)',
+    'ylabel': r'Runtime(\%)',
     'title': {
                 # 's': '{}'.format(case.upper()),
                 'fontsize': 10,
@@ -89,7 +89,7 @@ gconfig = {
     'ylim': [0, 100],
     'xlim': [1.6, 36],
     'yticks': [0, 20, 40, 60, 80, 100],
-    'outfiles': ['{}/{}-{}.png'],
+    'outfiles': ['{}/{}-{}.png', '{}/{}-{}.pdf'],
     'files': [
         '{}/{}/lb-tp-approx0-strong-scaling/comm-comp-report.csv',
         '{}/{}/lb-tp-approx1-strong-scaling/comm-comp-report.csv',
@@ -101,7 +101,15 @@ gconfig = {
     }
 
 }
-plt.rcParams['font.family'] = gconfig['fontname']
+
+plt.rcParams['ps.useafm'] = True
+plt.rcParams['pdf.use14corefonts'] = True
+plt.rcParams['text.usetex'] = True #Let TeX do the typsetting
+plt.rcParams['text.latex.preamble'] = [r'\usepackage{sansmath}', r'\sansmath'] #Force sans-serif math mode (for axes labels)
+plt.rcParams['font.family'] = 'sans-serif' # ... for regular text
+plt.rcParams['font.sans-serif'] = 'Helvetica'
+
+# plt.rcParams['font.family'] = gconfig['fontname']
 # plt.rcParams['text.usetex'] = True
 
 if __name__ == '__main__':
@@ -224,7 +232,7 @@ if __name__ == '__main__':
     for file in gconfig['outfiles']:
         file = file.format(images_dir, this_filename[:-3], '-'.join(args.cases))
         print('[{}] {}: {}'.format(this_filename[:-3], 'Saving figure', file))
-        fig.savefig(file, dpi=600, bbox_inches='tight')
+        save_and_crop(fig, file, dpi=600, bbox_inches='tight')
     if args.show:
         plt.show()
     plt.close()
