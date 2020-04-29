@@ -26,10 +26,10 @@ parser = argparse.ArgumentParser(
 # parser.add_argument('-b', '--basefile', type=str, default=None,
 #                     help='Base .h5 files.')
 
-parser.add_argument('-i', '--inputkey', type=str, default='2kT-acc',
-                    choices=['2kT-acc', '1mT-acc', '1mT-noacc',
-                             '1mT-acc-seed'],
-                    help='Key of the input config.')
+# parser.add_argument('-i', '--inputkey', type=str, default='2kT-acc',
+#                     choices=['2kT-acc', '1mT-acc', '1mT-noacc',
+#                              '1mT-acc-seed'],
+#                     help='Key of the input config.')
 
 
 parser.add_argument('-o', '--outdir', type=str, default=None,
@@ -120,30 +120,70 @@ gconfig = {
     'ylim': [0.00001, 1],
     # 'xlim': [1.6, 36],
     # 'yticks': [0.00001, 0.0001, 0.001, 0.01, 0.1, 1],
-    'outfiles': ['{}/{}-{}-{}.png', '{}/{}-{}-{}.pdf'],
-    'cases': ['ex01'],
+    'outfiles': ['{}/{}-{}.png', '{}/{}-{}.pdf'],
+    # 'cases': ['ex01'],
+    'inputkeys': [
+        # 'lhc-40kt-seed', 'sps-40kt-seed', 'ps-40kt-seed',
+        'lhc-40kt', 'sps-40kt', 'ps-40kt'
+    ],
     'infiles': {
-        '2kT-acc': {'': 'results/precision-analysis/ex01/precision-monitor/_p2000000_b1_s1000_t2000_w1_o4_N1_red1_mtw0_seed0_approx0_mpimpich3_lbreportonly_lba500_monitor100_tp0_precsingle_/23Apr20.18-46-53-10/monitor.h5'},
-        '1mT-acc': {'': 'results/precision-analysis/ex01/precision-monitor/_p1000000_b1_s1000_t1000000_w1_o14_N1_red1_mtw0_seed0_approx0_mpimpich3_lbreportonly_lba500_monitor1000_tp0_precsingle_/24Apr20.15-11-52-92/monitor.h5'},
-        '1mT-noacc': {'': 'results/precision-analysis/ex01/precision-monitor/_p1000000_b1_s1000_t1000000_w1_o14_N1_red1_mtw0_seed0_approx0_mpimpich3_lbreportonly_lba500_monitor1000_tp0_precsingle_/24Apr20.19-29-44-0/monitor.h5'},
-        '1mT-acc-seed': {
+        'ex01-2kt-acc': {'': 'results/precision-analysis/ex01/precision-monitor/_p2000000_b1_s1000_t2000_w1_o4_N1_red1_mtw0_seed0_approx0_mpimpich3_lbreportonly_lba500_monitor100_tp0_precsingle_/23Apr20.18-46-53-10/monitor.h5'},
+        'ex01-1mt-acc': {'': 'results/precision-analysis/ex01/precision-monitor/_p1000000_b1_s1000_t1000000_w1_o14_N1_red1_mtw0_seed0_approx0_mpimpich3_lbreportonly_lba500_monitor1000_tp0_precsingle_/24Apr20.15-11-52-92/monitor.h5'},
+        'ex01-1mt-noacc': {'': 'results/precision-analysis/ex01/precision-monitor/_p1000000_b1_s1000_t1000000_w1_o14_N1_red1_mtw0_seed0_approx0_mpimpich3_lbreportonly_lba500_monitor1000_tp0_precsingle_/24Apr20.19-29-44-0/monitor.h5'},
+        'ex01-1mt-acc-seed': {
             'seed1-': 'results/precision-analysis/ex01/precision-seed/_p1000000_b1_s1000_t1000000_w1_o14_N1_red1_mtw0_seed1_approx0_mpimpich3_lbreportonly_lba500_monitor1000_tp0_precdouble_/25Apr20.00-58-27-36/monitor.h5',
             'seed2-': 'results/precision-analysis/ex01/precision-seed/_p1000000_b1_s1000_t1000000_w1_o14_N1_red1_mtw0_seed2_approx0_mpimpich3_lbreportonly_lba500_monitor1000_tp0_precdouble_/25Apr20.03-38-30-55/monitor.h5',
-            'seed3-': 'results/precision-analysis/ex01/precision-seed/_p1000000_b1_s1000_t1000000_w1_o14_N1_red1_mtw0_seed3_approx0_mpimpich3_lbreportonly_lba500_monitor1000_tp0_precdouble_/25Apr20.06-16-34-10/monitor.h5',
-            # 'seed4-': 'results/precision-analysis/ex01/precision-seed/_p1000000_b1_s1000_t1000000_w1_o14_N1_red1_mtw0_seed4_approx0_mpimpich3_lbreportonly_lba500_monitor1000_tp0_precdouble_/25Apr20.08-54-30-58/monitor.h5',
+            # 'seed3-': 'results/precision-analysis/ex01/precision-seed/_p1000000_b1_s1000_t1000000_w1_o14_N1_red1_mtw0_seed3_approx0_mpimpich3_lbreportonly_lba500_monitor1000_tp0_precdouble_/25Apr20.06-16-34-10/monitor.h5',
         },
+        'lhc-40kt-seed': {
+            'seed1-': 'results/precision-analysis/lhc/precision-seed/_p1000000_b1_s1000_t40000_w1_o14_N1_red1_mtw0_seed1_approx0_mpimpich3_lbreportonly_lba500_monitor1000_tp0_precdouble_/29Apr20.11-33-28-67/monitor.h5',
+            'seed2-': 'results/precision-analysis/lhc/precision-seed/_p1000000_b1_s1000_t40000_w1_o14_N1_red1_mtw0_seed2_approx0_mpimpich3_lbreportonly_lba500_monitor1000_tp0_precdouble_/29Apr20.11-37-42-71/monitor.h5',
+            # 'seed3-': 'results/precision-analysis/lhc/precision-seed/_p1000000_b1_s1000_t40000_w1_o14_N1_red1_mtw0_seed3_approx0_mpimpich3_lbreportonly_lba500_monitor1000_tp0_precdouble_/29Apr20.11-41-57-38/monitor.h5',
+        },
+        'lhc-40kt': {
+            '': 'results/precision-analysis/lhc/precision-monitor/_p1000000_b1_s1000_t40000_w1_o14_N1_red1_mtw0_seed0_approx0_mpimpich3_lbreportonly_lba500_monitor1000_tp0_precsingle_/29Apr20.11-25-16-92/monitor.h5'
+        },
+        'sps-40kt-seed': {
+            'seed1-': 'results/precision-analysis/sps/precision-seed/_p1000000_b1_s1408_t40000_w1_o14_N1_red1_mtw0_seed1_approx0_mpimpich3_lbreportonly_lba500_monitor1000_tp0_precdouble_/28Apr20.21-08-19-16/monitor.h5',
+            'seed2-': 'results/precision-analysis/sps/precision-seed/_p1000000_b1_s1408_t40000_w1_o14_N1_red1_mtw0_seed2_approx0_mpimpich3_lbreportonly_lba500_monitor1000_tp0_precdouble_/28Apr20.21-29-28-95/monitor.h5',
+            # 'seed3-': 'results/precision-analysis/sps/precision-seed/_p1000000_b1_s1408_t40000_w1_o14_N1_red1_mtw0_seed3_approx0_mpimpich3_lbreportonly_lba500_monitor1000_tp0_precdouble_/28Apr20.21-52-41-4/monitor.h5',
+        },
+        'sps-40kt': {
+            '': 'results/precision-analysis/sps/precision-monitor/_p1000000_b1_s1408_t40000_w1_o14_N1_red1_mtw0_seed0_approx0_mpimpich3_lbreportonly_lba500_monitor1000_tp0_precsingle_/28Apr20.20-26-09-34/monitor.h5'
+        },
+        'ps-40kt-seed': {
+            'seed1-': 'results/precision-analysis/ps/precision-seed/_p1000000_b1_s256_t40000_w1_o14_N1_red1_mtw50_seed1_approx0_mpimpich3_lbreportonly_lba500_monitor100_tp0_precdouble_/29Apr20.13-22-35-2/monitor.h5',
+            'seed2-': 'results/precision-analysis/ps/precision-seed/_p1000000_b1_s256_t40000_w1_o14_N1_red1_mtw50_seed2_approx0_mpimpich3_lbreportonly_lba500_monitor100_tp0_precdouble_/29Apr20.13-27-53-16/monitor.h5',
+            # 'seed3-': 'results/precision-analysis/ps/precision-seed/_p1000000_b1_s256_t40000_w1_o14_N1_red1_mtw50_seed3_approx0_mpimpich3_lbreportonly_lba500_monitor100_tp0_precdouble_/29Apr20.13-33-05-20/monitor.h5',
+        },
+        'ps-40kt': {
+            '': 'results/precision-analysis/ps/precision-monitor/_p1000000_b1_s256_t40000_w1_o14_N1_red1_mtw50_seed0_approx0_mpimpich3_lbreportonly_lba500_monitor100_tp0_precsingle_/29Apr20.13-12-14-53/monitor.h5'
+        }
+
     },
     'basefile': {
-        '2kT-acc': 'results/precision-analysis/ex01/precision-monitor/_p2000000_b1_s1000_t2000_w1_o4_N1_red1_mtw0_seed0_approx0_mpimpich3_lbreportonly_lba500_monitor100_tp0_precdouble_/23Apr20.18-47-57-19/monitor.h5',
-        '1mT-acc': 'results/precision-analysis/ex01/precision-monitor/_p1000000_b1_s1000_t1000000_w1_o14_N1_red1_mtw0_seed0_approx0_mpimpich3_lbreportonly_lba500_monitor1000_tp0_precdouble_/24Apr20.16-51-30-23/monitor.h5',
-        '1mT-noacc': 'results/precision-analysis/ex01/precision-monitor/_p1000000_b1_s1000_t1000000_w1_o14_N1_red1_mtw0_seed0_approx0_mpimpich3_lbreportonly_lba500_monitor1000_tp0_precdouble_/24Apr20.21-08-20-88/monitor.h5',
-        '1mT-acc-seed': 'results/precision-analysis/ex01/precision-monitor/_p1000000_b1_s1000_t1000000_w1_o14_N1_red1_mtw0_seed0_approx0_mpimpich3_lbreportonly_lba500_monitor1000_tp0_precdouble_/24Apr20.16-51-30-23/monitor.h5',
+        'ex01-2kt-acc': 'results/precision-analysis/ex01/precision-monitor/_p2000000_b1_s1000_t2000_w1_o4_N1_red1_mtw0_seed0_approx0_mpimpich3_lbreportonly_lba500_monitor100_tp0_precdouble_/23Apr20.18-47-57-19/monitor.h5',
+        'ex01-1mt-acc': 'results/precision-analysis/ex01/precision-monitor/_p1000000_b1_s1000_t1000000_w1_o14_N1_red1_mtw0_seed0_approx0_mpimpich3_lbreportonly_lba500_monitor1000_tp0_precdouble_/24Apr20.16-51-30-23/monitor.h5',
+        'ex01-1mt-noacc': 'results/precision-analysis/ex01/precision-monitor/_p1000000_b1_s1000_t1000000_w1_o14_N1_red1_mtw0_seed0_approx0_mpimpich3_lbreportonly_lba500_monitor1000_tp0_precdouble_/24Apr20.21-08-20-88/monitor.h5',
+        'ex01-1mt-acc-seed': 'results/precision-analysis/ex01/precision-monitor/_p1000000_b1_s1000_t1000000_w1_o14_N1_red1_mtw0_seed0_approx0_mpimpich3_lbreportonly_lba500_monitor1000_tp0_precdouble_/24Apr20.16-51-30-23/monitor.h5',
+        'ps-40kt': 'results/precision-analysis/ps/precision-monitor/_p1000000_b1_s256_t40000_w1_o14_N1_red1_mtw50_seed0_approx0_mpimpich3_lbreportonly_lba500_monitor100_tp0_precdouble_/29Apr20.13-17-14-89/monitor.h5',
+        'sps-40kt': 'results/precision-analysis/sps/precision-monitor/_p1000000_b1_s1408_t40000_w1_o14_N1_red1_mtw0_seed0_approx0_mpimpich3_lbreportonly_lba500_monitor1000_tp0_precdouble_/28Apr20.20-45-00-98/monitor.h5',
+        'lhc-40kt': 'results/precision-analysis/lhc/precision-monitor/_p1000000_b1_s1000_t40000_w1_o14_N1_red1_mtw0_seed0_approx0_mpimpich3_lbreportonly_lba500_monitor1000_tp0_precdouble_/29Apr20.11-29-09-77/monitor.h5',
+        'ps-40kt-seed': 'results/precision-analysis/ps/precision-monitor/_p1000000_b1_s256_t40000_w1_o14_N1_red1_mtw50_seed0_approx0_mpimpich3_lbreportonly_lba500_monitor100_tp0_precdouble_/29Apr20.13-17-14-89/monitor.h5',
+        'sps-40kt-seed': 'results/precision-analysis/sps/precision-monitor/_p1000000_b1_s1408_t40000_w1_o14_N1_red1_mtw0_seed0_approx0_mpimpich3_lbreportonly_lba500_monitor1000_tp0_precdouble_/28Apr20.20-45-00-98/monitor.h5',
+        'lhc-40kt-seed': 'results/precision-analysis/lhc/precision-monitor/_p1000000_b1_s1000_t40000_w1_o14_N1_red1_mtw0_seed0_approx0_mpimpich3_lbreportonly_lba500_monitor1000_tp0_precdouble_/29Apr20.11-29-09-77/monitor.h5',
+
     },
 
 }
 
-plt.rcParams['font.family'] = gconfig['fontname']
-plt.rcParams['text.usetex'] = True
+plt.rcParams['ps.useafm'] = True
+plt.rcParams['pdf.use14corefonts'] = True
+plt.rcParams['text.usetex'] = True  # Let TeX do the typsetting
+# Force sans-serif math mode (for axes labels)
+plt.rcParams['text.latex.preamble'] = [r'\usepackage{sansmath}', r'\sansmath']
+plt.rcParams['font.family'] = 'sans-serif'  # ... for regular text
+plt.rcParams['font.sans-serif'] = 'Helvetica'
 
 
 def running_mean(x, N, axis=None):
@@ -153,16 +193,16 @@ def running_mean(x, N, axis=None):
 
 if __name__ == '__main__':
 
-    inputkey = args.inputkey
-    infiles = gconfig['infiles'][inputkey]
-    basefile = gconfig['basefile'][inputkey]
-
     last_t = args.turns
     outdir = args.outdir
     points = args.points
     # tss = args.ts
 
-    for case in gconfig['cases']:
+    for inputkey in gconfig['inputkeys']:
+        # for case in gconfig['cases']:
+        # inputkey = args.inputkey
+        infiles = gconfig['infiles'][inputkey]
+        basefile = gconfig['basefile'][inputkey]
         based = {}
         ind = {}
 
@@ -235,7 +275,7 @@ if __name__ == '__main__':
         plt.tight_layout()
         plt.subplots_adjust(**gconfig['subplots_adjust'])
         for file in gconfig['outfiles']:
-            file = file.format(images_dir, this_filename[:-3], case, inputkey)
+            file = file.format(images_dir, this_filename[:-3], inputkey)
             print('[{}] {}: {}'.format(this_filename[:-3], 'Saving figure', file))
 
             save_and_crop(fig, file, dpi=600, bbox_inches='tight')

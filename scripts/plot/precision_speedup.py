@@ -116,9 +116,10 @@ gconfig = {
 
 plt.rcParams['ps.useafm'] = True
 plt.rcParams['pdf.use14corefonts'] = True
-plt.rcParams['text.usetex'] = True #Let TeX do the typsetting
-plt.rcParams['text.latex.preamble'] = [r'\usepackage{sansmath}', r'\sansmath'] #Force sans-serif math mode (for axes labels)
-plt.rcParams['font.family'] = 'sans-serif' # ... for regular text
+plt.rcParams['text.usetex'] = True  # Let TeX do the typsetting
+# Force sans-serif math mode (for axes labels)
+plt.rcParams['text.latex.preamble'] = [r'\usepackage{sansmath}', r'\sansmath']
+plt.rcParams['font.family'] = 'sans-serif'  # ... for regular text
 plt.rcParams['font.sans-serif'] = 'Helvetica'
 
 # plt.rcParams['font.family'] = gconfig['fontname']
@@ -178,6 +179,10 @@ if __name__ == '__main__':
             print('ERROR: mvapich2 not found')
             exit(-1)
         yref = get_values(plots_dir[keyref], header, gconfig['y_name'])
+        xref = get_values(plots_dir[keyref], header, gconfig['x_name']) * \
+            get_values(plots_dir[keyref], header, gconfig['omp_name'])
+        sortidx = np.argsort(xref)
+        yref, xref = yref[sortidx], xref[sortidx]
 
         plt.grid(True, which='both', axis='y', alpha=0.5)
         # plt.grid(True, which='minor', alpha=0.5, zorder=1)
@@ -215,12 +220,16 @@ if __name__ == '__main__':
             parts = get_values(values, header, 'ppb')
             bunches = get_values(values, header, 'b')
             turns = get_values(values, header, 't')
+            x = x * omp
             if not args.no_errorbars:
                 # yerr is normalized to y
                 yerr = get_values(errors_dir[k], header, gconfig['y_name'])
                 yerr = yerr/y
             else:
                 yerr = np.zeros(len(y))
+            yerr = yerr * y
+            sortidx = np.argsort(x)
+            x, y, yerr = x[sortidx], y[sortidx], yerr[sortidx]
 
             # This is the throughput
             # y = parts * bunches * turns / y
@@ -235,25 +244,17 @@ if __name__ == '__main__':
 
             # speedup = y / yref
 
-            # x_new = []
-            # sp_new = []
-            # yerr_new = []
-            # for i, xi in enumerate(gconfig['x_to_keep']):
-            #     if xi in x:
-            #         x_new.append(xi)
-            #         sp_new.append(speedup[list(x).index(xi)])
-            #         yerr_new.append(yerr[list(x).index(xi)])
-            #     # else:
-            #     #     sp_new.append(0)
-            # x = np.array(x_new)
-            # speedup = np.array(sp_new)
-            # yerr = np.array(yerr_new)
-            # yerr is denormalized again
-            yerr = yerr * y
-            # efficiency = 100 * speedup / (x * omp[0] / ompref)
-            x = x * omp
-
-            # plt.bar(np.arange(len(x)))
+            x_new = []
+            y_new = []
+            yerr_new = []
+            for i, xi in enumerate(xref):
+                if xi in x:
+                    x_new.append(xi)
+                    y_new.append(y[list(x).index(xi)])
+                    yerr_new.append(yerr[list(x).index(xi)])
+            x = np.array(x_new)
+            y = np.array(y_new)
+            yerr = np.array(yerr_new)
 
             plt.bar(np.arange(len(x)) + .9*pos, y, width=.9 * width,
                     edgecolor='0.', label=label,
@@ -274,7 +275,7 @@ if __name__ == '__main__':
             # print("{}:{}:".format(case, label), speedup)
             pos += width
         # pos += width * step
-        plt.ylim(gconfig['ylim'])
+        # plt.ylim(gconfig['ylim'])
         # plt.xticks(np.arange(len(x)), np.array(x, int)//20)
         # plt.xlim(gconfig['xlim'])
         plt.xticks(np.arange(len(x)) + .9 * width/2,
