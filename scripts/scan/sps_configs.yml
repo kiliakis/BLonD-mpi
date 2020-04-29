@@ -95,7 +95,7 @@ local:
             'loadbalancearg': [500],
             'timing': ['timing'],
             'workers': [1],
-            'precision': ['single', 'double'],
+            'omp': [1, 1, 2, 2, 4, 4],
             'mpi': ['mpich3'],
             'time': [180],
             'repeats': 3
