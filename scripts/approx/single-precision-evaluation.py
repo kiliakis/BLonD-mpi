@@ -77,7 +77,7 @@ gconfig = {
                'std_dt': r'$s_{dt}$'},
     'x_name': 'turns',
     'y_names': [
-        'std_profile',
+        # 'std_profile',
         'std_dE',
         'std_dt',
         # 'mean_profile',
@@ -86,11 +86,11 @@ gconfig = {
     ],
     # 'y_err_name': 'std',
     'xlabel': {'xlabel': 'Turn', 'labelpad': 3, 'fontsize': 10},
-    'ylabel': {'ylabel': r'Relative Error (\%)', 'labelpad': 3, 'fontsize': 10},
+    'ylabel': {'ylabel': r'Relative Error', 'labelpad': 3, 'fontsize': 10},
     'title': {
         # 's': '{}'.format(case.upper()),
         'fontsize': 10,
-        'y': .85,
+        # 'y': .85,
         # 'x': 0.45,
         'fontweight': 'bold',
     },
@@ -101,13 +101,13 @@ gconfig = {
         'va': 'bottom',
         'ha': 'center'
     },
-    'ticks': {'fontsize': 10},
+    'ticks': {'fontsize': 9},
     'fontsize': 10,
     'legend': {
-        'loc': 'upper left', 'ncol': 1, 'handlelength': 1.5, 'fancybox': False,
+        'loc': 'best', 'ncol': 3, 'handlelength': 1.5, 'fancybox': False,
         'framealpha': .7, 'fontsize': 10, 'labelspacing': 0, 'borderpad': 0.5,
         'handletextpad': 0.5, 'borderaxespad': 0.1, 'columnspacing': 0.8,
-        # 'bbox_to_anchor': (0., 0.85)
+        # 'bbox_to_anchor': (0., 1.05)
     },
     'subplots_adjust': {
         'wspace': 0.0, 'hspace': 0.1, 'top': 0.93
@@ -117,63 +117,111 @@ gconfig = {
         'direction': 'out', 'length': 3, 'width': 1,
     },
     'fontname': 'DejaVu Sans Mono',
-    'ylim': [0.00001, 1],
+    'ylim': [1e-8, 1],
     # 'xlim': [1.6, 36],
     # 'yticks': [0.00001, 0.0001, 0.001, 0.01, 0.1, 1],
     'outfiles': ['{}/{}-{}.png', '{}/{}-{}.pdf'],
     # 'cases': ['ex01'],
     'inputkeys': [
-        # 'lhc-40kt-seed', 'sps-40kt-seed', 'ps-40kt-seed',
-        'lhc-40kt', 'sps-40kt', 'ps-40kt'
+        # 'ex01-1mt-acc',
+        # 'ex01-1mt-acc-seed',
+        'lhc-40kt-seed', 
+        'lhc-40kt',
+        # 'sps-40kt-seed', 'ps-40kt-seed',
+        # 'sps-40kt', 'ps-40kt'
     ],
-    'infiles': {
-        'ex01-2kt-acc': {'': 'results/precision-analysis/ex01/precision-monitor/_p2000000_b1_s1000_t2000_w1_o4_N1_red1_mtw0_seed0_approx0_mpimpich3_lbreportonly_lba500_monitor100_tp0_precsingle_/23Apr20.18-46-53-10/monitor.h5'},
-        'ex01-1mt-acc': {'': 'results/precision-analysis/ex01/precision-monitor/_p1000000_b1_s1000_t1000000_w1_o14_N1_red1_mtw0_seed0_approx0_mpimpich3_lbreportonly_lba500_monitor1000_tp0_precsingle_/24Apr20.15-11-52-92/monitor.h5'},
-        'ex01-1mt-noacc': {'': 'results/precision-analysis/ex01/precision-monitor/_p1000000_b1_s1000_t1000000_w1_o14_N1_red1_mtw0_seed0_approx0_mpimpich3_lbreportonly_lba500_monitor1000_tp0_precsingle_/24Apr20.19-29-44-0/monitor.h5'},
+    'plots': {
+        'ex01-2kt-acc': {
+            'in': {'': 'results/precision-analysis/ex01/precision-monitor/_p2000000_b1_s1000_t2000_w1_o4_N1_red1_mtw0_seed0_approx0_mpimpich3_lbreportonly_lba500_monitor100_tp0_precsingle_/23Apr20.18-46-53-10/monitor.h5'},
+            'title': 'EX01 2kT f32/f64',
+            'base': 'results/precision-analysis/ex01/precision-monitor/_p2000000_b1_s1000_t2000_w1_o4_N1_red1_mtw0_seed0_approx0_mpimpich3_lbreportonly_lba500_monitor100_tp0_precdouble_/23Apr20.18-47-57-19/monitor.h5',
+        },
+        'ex01-1mt-acc': {
+            'in': {'': 'results/precision-analysis/ex01/precision-monitor/_p1000000_b1_s1000_t1000000_w1_o14_N1_red1_mtw0_seed0_approx0_mpimpich3_lbreportonly_lba500_monitor1000_tp0_precsingle_/24Apr20.15-11-52-92/monitor.h5'},
+            'title': 'EX01 1mT f32/f64',
+            'base': 'results/precision-analysis/ex01/precision-monitor/_p1000000_b1_s1000_t1000000_w1_o14_N1_red1_mtw0_seed0_approx0_mpimpich3_lbreportonly_lba500_monitor1000_tp0_precdouble_/24Apr20.16-51-30-23/monitor.h5',
+        },
+        'ex01-1mt-noacc': {
+            'in': {'': 'results/precision-analysis/ex01/precision-monitor/_p1000000_b1_s1000_t1000000_w1_o14_N1_red1_mtw0_seed0_approx0_mpimpich3_lbreportonly_lba500_monitor1000_tp0_precsingle_/24Apr20.19-29-44-0/monitor.h5'},
+            'title': 'EX01 1mT noacc f32/f64',
+            'base': 'results/precision-analysis/ex01/precision-monitor/_p1000000_b1_s1000_t1000000_w1_o14_N1_red1_mtw0_seed0_approx0_mpimpich3_lbreportonly_lba500_monitor1000_tp0_precdouble_/24Apr20.21-08-20-88/monitor.h5',
+        },
         'ex01-1mt-acc-seed': {
-            'seed1-': 'results/precision-analysis/ex01/precision-seed/_p1000000_b1_s1000_t1000000_w1_o14_N1_red1_mtw0_seed1_approx0_mpimpich3_lbreportonly_lba500_monitor1000_tp0_precdouble_/25Apr20.00-58-27-36/monitor.h5',
-            'seed2-': 'results/precision-analysis/ex01/precision-seed/_p1000000_b1_s1000_t1000000_w1_o14_N1_red1_mtw0_seed2_approx0_mpimpich3_lbreportonly_lba500_monitor1000_tp0_precdouble_/25Apr20.03-38-30-55/monitor.h5',
-            # 'seed3-': 'results/precision-analysis/ex01/precision-seed/_p1000000_b1_s1000_t1000000_w1_o14_N1_red1_mtw0_seed3_approx0_mpimpich3_lbreportonly_lba500_monitor1000_tp0_precdouble_/25Apr20.06-16-34-10/monitor.h5',
+            'in': {
+                'seed1-': 'results/precision-analysis/ex01/precision-seed/_p1000000_b1_s1000_t1000000_w1_o14_N1_red1_mtw0_seed1_approx0_mpimpich3_lbreportonly_lba500_monitor1000_tp0_precdouble_/25Apr20.00-58-27-36/monitor.h5',
+                'seed2-': 'results/precision-analysis/ex01/precision-seed/_p1000000_b1_s1000_t1000000_w1_o14_N1_red1_mtw0_seed2_approx0_mpimpich3_lbreportonly_lba500_monitor1000_tp0_precdouble_/25Apr20.03-38-30-55/monitor.h5',
+                # 'seed3-': 'results/precision-analysis/ex01/precision-seed/_p1000000_b1_s1000_t1000000_w1_o14_N1_red1_mtw0_seed3_approx0_mpimpich3_lbreportonly_lba500_monitor1000_tp0_precdouble_/25Apr20.06-16-34-10/monitor.h5',
+            },
+            'title': 'EX01 1mT seeds',
+            'base': 'results/precision-analysis/ex01/precision-monitor/_p1000000_b1_s1000_t1000000_w1_o14_N1_red1_mtw0_seed0_approx0_mpimpich3_lbreportonly_lba500_monitor1000_tp0_precdouble_/24Apr20.16-51-30-23/monitor.h5',
         },
         'lhc-40kt-seed': {
-            'seed1-': 'results/precision-analysis/lhc/precision-seed/_p1000000_b1_s1000_t40000_w1_o14_N1_red1_mtw0_seed1_approx0_mpimpich3_lbreportonly_lba500_monitor1000_tp0_precdouble_/29Apr20.11-33-28-67/monitor.h5',
-            'seed2-': 'results/precision-analysis/lhc/precision-seed/_p1000000_b1_s1000_t40000_w1_o14_N1_red1_mtw0_seed2_approx0_mpimpich3_lbreportonly_lba500_monitor1000_tp0_precdouble_/29Apr20.11-37-42-71/monitor.h5',
-            # 'seed3-': 'results/precision-analysis/lhc/precision-seed/_p1000000_b1_s1000_t40000_w1_o14_N1_red1_mtw0_seed3_approx0_mpimpich3_lbreportonly_lba500_monitor1000_tp0_precdouble_/29Apr20.11-41-57-38/monitor.h5',
+            'in': {
+                'seed1-': 'results/precision-analysis/lhc/precision-seed/_p1000000_b1_s1000_t40000_w1_o1_N1_red1_mtw0_seed1_approx0_mpimpich3_lbreportonly_lba500_monitor100_tp0_precdouble_/30Apr20.12-50-26-95/monitor.h5',
+                'seed2-': 'results/precision-analysis/lhc/precision-seed/_p1000000_b1_s1000_t40000_w1_o1_N1_red1_mtw0_seed2_approx0_mpimpich3_lbreportonly_lba500_monitor100_tp0_precdouble_/30Apr20.13-04-33-62/monitor.h5'
+                # 'seed1-': 'results/precision-analysis/lhc/precision-seed/_p1000000_b1_s1000_t40000_w1_o14_N1_red1_mtw0_seed1_approx0_mpimpich3_lbreportonly_lba500_monitor1000_tp0_precdouble_/29Apr20.11-33-28-67/monitor.h5',
+                # 'seed2-': 'results/precision-analysis/lhc/precision-seed/_p1000000_b1_s1000_t40000_w1_o14_N1_red1_mtw0_seed2_approx0_mpimpich3_lbreportonly_lba500_monitor1000_tp0_precdouble_/29Apr20.11-37-42-71/monitor.h5',
+                # 'seed3-': 'results/precision-analysis/lhc/precision-seed/_p1000000_b1_s1000_t40000_w1_o14_N1_red1_mtw0_seed3_approx0_mpimpich3_lbreportonly_lba500_monitor1000_tp0_precdouble_/29Apr20.11-41-57-38/monitor.h5',
+            },
+            'title': 'LHC 40kT seeds',
+            'base': 'results/precision-analysis/lhc/precision-monitor/_p1000000_b1_s1000_t40000_w1_o1_N1_red1_mtw0_seed0_approx0_mpimpich3_lbreportonly_lba500_monitor100_tp0_precdouble_/30Apr20.12-36-13-54/monitor.h5'
+            # 'base': 'results/precision-analysis/lhc/precision-monitor/_p1000000_b1_s1000_t40000_w1_o14_N1_red1_mtw0_seed0_approx0_mpimpich3_lbreportonly_lba500_monitor1000_tp0_precdouble_/29Apr20.11-29-09-77/monitor.h5',
         },
         'lhc-40kt': {
-            '': 'results/precision-analysis/lhc/precision-monitor/_p1000000_b1_s1000_t40000_w1_o14_N1_red1_mtw0_seed0_approx0_mpimpich3_lbreportonly_lba500_monitor1000_tp0_precsingle_/29Apr20.11-25-16-92/monitor.h5'
+            'in': {
+                '': 'results/precision-analysis/lhc/precision-monitor/_p1000000_b1_s1000_t40000_w1_o4_N1_red1_mtw0_seed0_approx0_mpimpich3_lbreportonly_lba500_monitor100_tp0_precsingle_/30Apr20.10-41-20-74/monitor.h5'
+                # '': 'results/precision-analysis/lhc/precision-monitor/_p1000000_b1_s1000_t40000_w1_o14_N1_red1_mtw0_seed0_approx0_mpimpich3_lbreportonly_lba500_monitor1000_tp0_precsingle_/29Apr20.11-25-16-92/monitor.h5'
+            },
+            'title': 'LHC 40kT f32/f64',
+            'base': 'results/precision-analysis/lhc/precision-monitor/_p1000000_b1_s1000_t40000_w1_o1_N1_red1_mtw0_seed0_approx0_mpimpich3_lbreportonly_lba500_monitor100_tp0_precdouble_/30Apr20.12-36-13-54/monitor.h5'
+            # 'base': 'results/precision-analysis/lhc/precision-monitor/_p1000000_b1_s1000_t40000_w1_o14_N1_red1_mtw0_seed0_approx0_mpimpich3_lbreportonly_lba500_monitor1000_tp0_precdouble_/29Apr20.11-29-09-77/monitor.h5',
         },
         'sps-40kt-seed': {
-            'seed1-': 'results/precision-analysis/sps/precision-seed/_p1000000_b1_s1408_t40000_w1_o14_N1_red1_mtw0_seed1_approx0_mpimpich3_lbreportonly_lba500_monitor1000_tp0_precdouble_/28Apr20.21-08-19-16/monitor.h5',
-            'seed2-': 'results/precision-analysis/sps/precision-seed/_p1000000_b1_s1408_t40000_w1_o14_N1_red1_mtw0_seed2_approx0_mpimpich3_lbreportonly_lba500_monitor1000_tp0_precdouble_/28Apr20.21-29-28-95/monitor.h5',
-            # 'seed3-': 'results/precision-analysis/sps/precision-seed/_p1000000_b1_s1408_t40000_w1_o14_N1_red1_mtw0_seed3_approx0_mpimpich3_lbreportonly_lba500_monitor1000_tp0_precdouble_/28Apr20.21-52-41-4/monitor.h5',
+            'in': {
+                'seed1-': 'results/precision-analysis/sps/precision-seed/_p1000000_b1_s1408_t40000_w1_o14_N1_red1_mtw0_seed1_approx0_mpimpich3_lbreportonly_lba500_monitor1000_tp0_precdouble_/28Apr20.21-08-19-16/monitor.h5',
+                'seed2-': 'results/precision-analysis/sps/precision-seed/_p1000000_b1_s1408_t40000_w1_o14_N1_red1_mtw0_seed2_approx0_mpimpich3_lbreportonly_lba500_monitor1000_tp0_precdouble_/28Apr20.21-29-28-95/monitor.h5',
+                # 'seed3-': 'results/precision-analysis/sps/precision-seed/_p1000000_b1_s1408_t40000_w1_o14_N1_red1_mtw0_seed3_approx0_mpimpich3_lbreportonly_lba500_monitor1000_tp0_precdouble_/28Apr20.21-52-41-4/monitor.h5',
+            },
+            'title': 'SPS 40kT seeds',
+            'base': 'results/precision-analysis/sps/precision-monitor/_p1000000_b1_s1408_t40000_w1_o14_N1_red1_mtw0_seed0_approx0_mpimpich3_lbreportonly_lba500_monitor1000_tp0_precdouble_/28Apr20.20-45-00-98/monitor.h5',
         },
         'sps-40kt': {
-            '': 'results/precision-analysis/sps/precision-monitor/_p1000000_b1_s1408_t40000_w1_o14_N1_red1_mtw0_seed0_approx0_mpimpich3_lbreportonly_lba500_monitor1000_tp0_precsingle_/28Apr20.20-26-09-34/monitor.h5'
+            'in': {
+                '': 'results/precision-analysis/sps/precision-monitor/_p1000000_b1_s1408_t40000_w1_o14_N1_red1_mtw0_seed0_approx0_mpimpich3_lbreportonly_lba500_monitor1000_tp0_precsingle_/28Apr20.20-26-09-34/monitor.h5'
+            },
+            'title': 'SPS 40kT f32/f64',
+            'base': 'results/precision-analysis/sps/precision-monitor/_p1000000_b1_s1408_t40000_w1_o14_N1_red1_mtw0_seed0_approx0_mpimpich3_lbreportonly_lba500_monitor1000_tp0_precdouble_/28Apr20.20-45-00-98/monitor.h5',
         },
         'ps-40kt-seed': {
-            'seed1-': 'results/precision-analysis/ps/precision-seed/_p1000000_b1_s256_t40000_w1_o14_N1_red1_mtw50_seed1_approx0_mpimpich3_lbreportonly_lba500_monitor100_tp0_precdouble_/29Apr20.13-22-35-2/monitor.h5',
-            'seed2-': 'results/precision-analysis/ps/precision-seed/_p1000000_b1_s256_t40000_w1_o14_N1_red1_mtw50_seed2_approx0_mpimpich3_lbreportonly_lba500_monitor100_tp0_precdouble_/29Apr20.13-27-53-16/monitor.h5',
-            # 'seed3-': 'results/precision-analysis/ps/precision-seed/_p1000000_b1_s256_t40000_w1_o14_N1_red1_mtw50_seed3_approx0_mpimpich3_lbreportonly_lba500_monitor100_tp0_precdouble_/29Apr20.13-33-05-20/monitor.h5',
+            'in': {
+                'seed1-': 'results/precision-analysis/ps/precision-seed/_p1000000_b1_s256_t40000_w1_o14_N1_red1_mtw50_seed1_approx0_mpimpich3_lbreportonly_lba500_monitor100_tp0_precdouble_/29Apr20.13-22-35-2/monitor.h5',
+                'seed2-': 'results/precision-analysis/ps/precision-seed/_p1000000_b1_s256_t40000_w1_o14_N1_red1_mtw50_seed2_approx0_mpimpich3_lbreportonly_lba500_monitor100_tp0_precdouble_/29Apr20.13-27-53-16/monitor.h5',
+                # 'seed3-': 'results/precision-analysis/ps/precision-seed/_p1000000_b1_s256_t40000_w1_o14_N1_red1_mtw50_seed3_approx0_mpimpich3_lbreportonly_lba500_monitor100_tp0_precdouble_/29Apr20.13-33-05-20/monitor.h5',
+            },
+            'title': 'PS 40kT seeds',
+            'base': 'results/precision-analysis/ps/precision-monitor/_p1000000_b1_s256_t40000_w1_o14_N1_red1_mtw50_seed0_approx0_mpimpich3_lbreportonly_lba500_monitor100_tp0_precdouble_/29Apr20.13-17-14-89/monitor.h5',
         },
         'ps-40kt': {
-            '': 'results/precision-analysis/ps/precision-monitor/_p1000000_b1_s256_t40000_w1_o14_N1_red1_mtw50_seed0_approx0_mpimpich3_lbreportonly_lba500_monitor100_tp0_precsingle_/29Apr20.13-12-14-53/monitor.h5'
+            'in': {
+                '': 'results/precision-analysis/ps/precision-monitor/_p1000000_b1_s256_t40000_w1_o14_N1_red1_mtw50_seed0_approx0_mpimpich3_lbreportonly_lba500_monitor100_tp0_precsingle_/29Apr20.13-12-14-53/monitor.h5'
+            },
+            'title': 'PS 40kT f32/f64',
+            'base': 'results/precision-analysis/ps/precision-monitor/_p1000000_b1_s256_t40000_w1_o14_N1_red1_mtw50_seed0_approx0_mpimpich3_lbreportonly_lba500_monitor100_tp0_precdouble_/29Apr20.13-17-14-89/monitor.h5',
         }
-
     },
-    'basefile': {
-        'ex01-2kt-acc': 'results/precision-analysis/ex01/precision-monitor/_p2000000_b1_s1000_t2000_w1_o4_N1_red1_mtw0_seed0_approx0_mpimpich3_lbreportonly_lba500_monitor100_tp0_precdouble_/23Apr20.18-47-57-19/monitor.h5',
-        'ex01-1mt-acc': 'results/precision-analysis/ex01/precision-monitor/_p1000000_b1_s1000_t1000000_w1_o14_N1_red1_mtw0_seed0_approx0_mpimpich3_lbreportonly_lba500_monitor1000_tp0_precdouble_/24Apr20.16-51-30-23/monitor.h5',
-        'ex01-1mt-noacc': 'results/precision-analysis/ex01/precision-monitor/_p1000000_b1_s1000_t1000000_w1_o14_N1_red1_mtw0_seed0_approx0_mpimpich3_lbreportonly_lba500_monitor1000_tp0_precdouble_/24Apr20.21-08-20-88/monitor.h5',
-        'ex01-1mt-acc-seed': 'results/precision-analysis/ex01/precision-monitor/_p1000000_b1_s1000_t1000000_w1_o14_N1_red1_mtw0_seed0_approx0_mpimpich3_lbreportonly_lba500_monitor1000_tp0_precdouble_/24Apr20.16-51-30-23/monitor.h5',
-        'ps-40kt': 'results/precision-analysis/ps/precision-monitor/_p1000000_b1_s256_t40000_w1_o14_N1_red1_mtw50_seed0_approx0_mpimpich3_lbreportonly_lba500_monitor100_tp0_precdouble_/29Apr20.13-17-14-89/monitor.h5',
-        'sps-40kt': 'results/precision-analysis/sps/precision-monitor/_p1000000_b1_s1408_t40000_w1_o14_N1_red1_mtw0_seed0_approx0_mpimpich3_lbreportonly_lba500_monitor1000_tp0_precdouble_/28Apr20.20-45-00-98/monitor.h5',
-        'lhc-40kt': 'results/precision-analysis/lhc/precision-monitor/_p1000000_b1_s1000_t40000_w1_o14_N1_red1_mtw0_seed0_approx0_mpimpich3_lbreportonly_lba500_monitor1000_tp0_precdouble_/29Apr20.11-29-09-77/monitor.h5',
-        'ps-40kt-seed': 'results/precision-analysis/ps/precision-monitor/_p1000000_b1_s256_t40000_w1_o14_N1_red1_mtw50_seed0_approx0_mpimpich3_lbreportonly_lba500_monitor100_tp0_precdouble_/29Apr20.13-17-14-89/monitor.h5',
-        'sps-40kt-seed': 'results/precision-analysis/sps/precision-monitor/_p1000000_b1_s1408_t40000_w1_o14_N1_red1_mtw0_seed0_approx0_mpimpich3_lbreportonly_lba500_monitor1000_tp0_precdouble_/28Apr20.20-45-00-98/monitor.h5',
-        'lhc-40kt-seed': 'results/precision-analysis/lhc/precision-monitor/_p1000000_b1_s1000_t40000_w1_o14_N1_red1_mtw0_seed0_approx0_mpimpich3_lbreportonly_lba500_monitor1000_tp0_precdouble_/29Apr20.11-29-09-77/monitor.h5',
+    # 'basefile': {
+    #     'ex01-2kt-acc':
+    #     'ex01-1mt-acc':
+    #     'ex01-1mt-noacc':,
+    #     'ex01-1mt-acc-seed': 'results/precision-analysis/ex01/precision-monitor/_p1000000_b1_s1000_t1000000_w1_o14_N1_red1_mtw0_seed0_approx0_mpimpich3_lbreportonly_lba500_monitor1000_tp0_precdouble_/24Apr20.16-51-30-23/monitor.h5',
+    #     'ps-40kt': 'results/precision-analysis/ps/precision-monitor/_p1000000_b1_s256_t40000_w1_o14_N1_red1_mtw50_seed0_approx0_mpimpich3_lbreportonly_lba500_monitor100_tp0_precdouble_/29Apr20.13-17-14-89/monitor.h5',
+    #     'sps-40kt': 'results/precision-analysis/sps/precision-monitor/_p1000000_b1_s1408_t40000_w1_o14_N1_red1_mtw0_seed0_approx0_mpimpich3_lbreportonly_lba500_monitor1000_tp0_precdouble_/28Apr20.20-45-00-98/monitor.h5',
+    #     'lhc-40kt': 'results/precision-analysis/lhc/precision-monitor/_p1000000_b1_s1000_t40000_w1_o14_N1_red1_mtw0_seed0_approx0_mpimpich3_lbreportonly_lba500_monitor1000_tp0_precdouble_/29Apr20.11-29-09-77/monitor.h5',
+    #     'ps-40kt-seed': 'results/precision-analysis/ps/precision-monitor/_p1000000_b1_s256_t40000_w1_o14_N1_red1_mtw50_seed0_approx0_mpimpich3_lbreportonly_lba500_monitor100_tp0_precdouble_/29Apr20.13-17-14-89/monitor.h5',
+    #     'sps-40kt-seed': 'results/precision-analysis/sps/precision-monitor/_p1000000_b1_s1408_t40000_w1_o14_N1_red1_mtw0_seed0_approx0_mpimpich3_lbreportonly_lba500_monitor1000_tp0_precdouble_/28Apr20.20-45-00-98/monitor.h5',
+    #     'lhc-40kt-seed': 'results/precision-analysis/lhc/precision-monitor/_p1000000_b1_s1000_t40000_w1_o14_N1_red1_mtw0_seed0_approx0_mpimpich3_lbreportonly_lba500_monitor1000_tp0_precdouble_/29Apr20.11-29-09-77/monitor.h5',
 
-    },
+    # },
 
 }
 
@@ -199,10 +247,11 @@ if __name__ == '__main__':
     # tss = args.ts
 
     for inputkey in gconfig['inputkeys']:
+    # for plot in gconfig['plots']:
         # for case in gconfig['cases']:
         # inputkey = args.inputkey
-        infiles = gconfig['infiles'][inputkey]
-        basefile = gconfig['basefile'][inputkey]
+        infiles = gconfig['plots'][inputkey]['in']
+        basefile = gconfig['plots'][inputkey]['base']
         based = {}
         ind = {}
 
@@ -246,7 +295,7 @@ if __name__ == '__main__':
                 assert len(basevals) == len(
                     indvals) and len(turns) == len(basevals)
 
-                error = 100 * np.abs(1 - indvals / basevals)
+                error = np.abs(1 - indvals / basevals)
                 plt.plot(turns[::intv], error[::intv],
                          label='{}{}'.format(keyf, gconfig['labels'][key]),
                          )
@@ -255,13 +304,15 @@ if __name__ == '__main__':
                 # yerr=yerr,
                 # capsize=2)
         plt.yscale('log')
-
+        # ax.set_yscale('log')
+        # plt.rcParams['axes.formatter.min_exponent'] = 1
         plt.grid(True, which='both', axis='y', alpha=0.5)
         plt.grid(False, which='major', axis='x')
-        plt.title('{}'.format('Accuracy'), **gconfig['title'])
+        plt.title(gconfig['plots'][inputkey]['title'], **gconfig['title'])
         plt.xlabel(**gconfig['xlabel'])
         plt.ylabel(**gconfig['ylabel'])
         plt.ylim(gconfig['ylim'])
+        # plt.gca().ticklabel_format(axis='y', style='sci')
         # plt.xlim(gconfig['xlim'])
         # plt.xticks(x//20, np.array(x, int)//20, **gconfig['ticks'])
         ax.tick_params(**gconfig['tick_params'])
@@ -270,13 +321,14 @@ if __name__ == '__main__':
         plt.xticks(**gconfig['ticks'])
         yticks = [10**i for i in range(int(np.log10(gconfig['ylim'][0])),
                                        int(np.log10(gconfig['ylim'][1]))+1)]
-        plt.yticks(yticks, yticks, **gconfig['ticks'])
+        plt.yticks(yticks, ['{:1.0e}'.format(yi) for yi in yticks], **gconfig['ticks'])
 
         plt.tight_layout()
         plt.subplots_adjust(**gconfig['subplots_adjust'])
         for file in gconfig['outfiles']:
-            file = file.format(images_dir, this_filename[:-3], inputkey)
-            print('[{}] {}: {}'.format(this_filename[:-3], 'Saving figure', file))
+            file = file.format(images_dir, this_filename[: -3], inputkey)
+            print('[{}] {}: {}'.format(
+                this_filename[: -3], 'Saving figure', file))
 
             save_and_crop(fig, file, dpi=600, bbox_inches='tight')
         if args.show:

@@ -16,10 +16,12 @@ class Precision:
         self.str = precision
         if precision in ['single', 's', '32', 'float32', 'float', 'f']:
             self.real_t = np.float32
+            self.c_real_t = ct.c_float
             self.complex_t = np.complex64
             self.num = 1
         elif precision in ['double', 'd', '64', 'float64']:
             self.real_t = np.float64
+            self.c_real_t = ct.c_double
             self.complex_t = np.complex128
             self.num = 2
 
@@ -251,7 +253,7 @@ def arange(start, stop, step, dtype=float, result=None):
 
 
 def sum(x):
-    __lib.sum.restype = __c_real
+    __lib.sum.restype = ct.c_double
     return __lib.sum(__getPointer(x), __getLen(x))
 
 
@@ -533,11 +535,11 @@ def cumtrapz(y, x=None, dx=1.0, initial=None, result=None):
 
 def trapz(y, x=None, dx=1.0):
     if x is None:
-        __lib.trapz_const_delta.restype = __c_real
+        __lib.trapz_const_delta.restype = ct.c_double
         return __lib.trapz_const_delta(__getPointer(y), __c_real(dx),
                                        __getLen(y))
     else:
-        __lib.trapz_var_delta.restype = __c_real
+        __lib.trapz_var_delta.restype = ct.c_double
         return __lib.trapz_var_delta(__getPointer(y), __getPointer(x),
                                      __getLen(y))
 
@@ -555,7 +557,7 @@ def _beam_phase(bin_centers, profile, alpha, omegarf, phirf, bin_size):
     profile = profile.astype(dtype=precision.real_t, order='C', copy=False)
 
     if precision.num == 1:
-        __lib.beam_phasef.restype = __c_real
+        __lib.beam_phasef.restype = ct.c_float
         coeff = __lib.beam_phasef(__getPointer(bin_centers),
                                   __getPointer(profile),
                                   __c_real(alpha),
@@ -565,7 +567,7 @@ def _beam_phase(bin_centers, profile, alpha, omegarf, phirf, bin_size):
                                   __getLen(profile))
 
     else:
-        __lib.beam_phase.restype = __c_real
+        __lib.beam_phase.restype = ct.c_double
         coeff = __lib.beam_phase(__getPointer(bin_centers),
                                  __getPointer(profile),
                                  __c_real(alpha),
