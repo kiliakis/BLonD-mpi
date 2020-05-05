@@ -180,7 +180,7 @@ if __name__ == '__main__':
                             common.condor['jobname'], tc + '-' + analysis + job_name.split('/')[0] + '-' + str(i)]
                         batch_args += common.condor['default_args']
                         batch_args += ['-file', common.condor['script']]
-                        all_args = arg_str + ' '.join(batch_args)
+                        all_args = ' '.join(batch_args)
 
                     print(job_name, timestr)
                     print(job_name, timestr, file=analysis_file)
