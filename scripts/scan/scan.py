@@ -56,8 +56,6 @@ if __name__ == '__main__':
 
         for analysis in yc['run_configs']:
             # For the extract script
-            analysis_file = open(os.path.join(top_result_dir, tc,
-                                              analysis, '.analysis'), 'a')
 
             config = yc['configs'][analysis]
             # make the size of all lists equal
@@ -121,6 +119,10 @@ if __name__ == '__main__':
 
                     os.environ['OMP_NUM_THREADS'] = str(o)
 
+                    analysis_file = open(os.path.join(top_result_dir, tc,
+                                                      analysis, '.analysis'),
+                                         'a')
+
                     exe_args = [
                         common.python, os.path.join(common.exe_home, exe),
                         '--particles='+str(int(p)),
@@ -180,7 +182,7 @@ if __name__ == '__main__':
                     print(job_name, timestr)
                     print(job_name, timestr, file=analysis_file)
                     print(' '.join(all_args), file=analysis_file)
-                    
+
                     subprocess.call(all_args,
                                     stdout=open(output, 'w'),
                                     stderr=open(error, 'w'),
@@ -191,4 +193,4 @@ if __name__ == '__main__':
                     print("%lf %% is completed" % (100.0 * current_sim
                                                    / total_sims))
 
-            analysis_file.close()
+                    analysis_file.close()
