@@ -144,6 +144,7 @@ if __name__ == '__main__':
                     if args.environment == 'local':
                         batch_args = [common.mpirun, '-n', str(w)]
                         all_args = batch_args + exe_args
+                        all_args = ' '.join(all_args)
 
                     elif args.environment == 'slurm':
                         batch_args = [
@@ -161,6 +162,8 @@ if __name__ == '__main__':
                         batch_args += [common.slurm['script'],
                                        common.slurm['run']]
                         all_args = batch_args + exe_args
+                        all_args = ' '.join(all_args)
+
                     elif args.environment == 'condor':
                         arg_str = '"{} -n {} '.format(common.mpirun, str(w))
                         arg_str = arg_str + ' '.join(exe_args) + '"'
@@ -181,7 +184,7 @@ if __name__ == '__main__':
 
                     print(job_name, timestr)
                     print(job_name, timestr, file=analysis_file)
-                    print(' '.join(all_args), file=analysis_file)
+                    print(all_args, file=analysis_file)
 
                     subprocess.call(all_args,
                                     stdout=open(output, 'w'),
