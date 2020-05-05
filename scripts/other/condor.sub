@@ -1,0 +1,21 @@
+####################
+#
+# Simple HTCondor submit description file
+# Everything with a leading # is a comment
+####################
+
+
+# arguments    = SomeArgument
+
+# output       = outputfile
+# error        = errorfile
+# log          = myexe.log
+
+# +MaxRuntime = 60
+# request_cpus   = 1
+#request_memory = 1024
+
+# executable = condor.sh
+getenv = True
+should_transfer_files = IF_NEEDED
+queue

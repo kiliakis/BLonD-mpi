@@ -411,7 +411,7 @@ local:
     }
 
 
-cluster: 
+slurm: 
 
     run_configs: 
         # Strong scaling

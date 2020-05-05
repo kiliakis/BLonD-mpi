@@ -15,7 +15,7 @@ this_filename = sys.argv[0].split('/')[-1]
 parser = argparse.ArgumentParser(description='Run locally the MPI experiments.',
                                  usage='python {} -t lhc sps ps'.format(this_filename[:-3]))
 
-parser.add_argument('-e', '--environment', type=str, default='local', choices=['local', 'cluster'],
+parser.add_argument('-e', '--environment', type=str, default='local', choices=['local', 'slurm', 'condor'],
                     help='The environment to run the scan.')
 
 parser.add_argument('-t', '--testcases', type=str, default=['lhc,sps,ps'],
@@ -28,7 +28,8 @@ parser.add_argument('-o', '--output', type=str, default='./results/local',
 if __name__ == '__main__':
     args = parser.parse_args()
     top_result_dir = args.output
-
+    os.environ['BLONDHOME'] = common.blond_home
+    
     for tc in args.testcases.split(','):
         yc = yaml.load(open(this_directory + '/{}_configs.yml'.format(tc), 'r'),
                        Loader=yaml.FullLoader)[args.environment]
@@ -117,21 +118,6 @@ if __name__ == '__main__':
                                       analysis, '.analysis'), 'a').close()
 
                     os.environ['OMP_NUM_THREADS'] = str(o)
-                    if args.environment == 'local':
-                        batch_args = [common.mpirun, '-n', str(w)]
-                    elif args.environment == 'cluster':
-                        batch_args = [
-                            common.batchsubmit,
-                            common.nodes, str(N),
-                            common.workers, str(w),
-                            common.tasks_per_node, str(int(np.ceil(w/N))),
-                            common.cores, str(o),  # str(o),
-                            common.time, str(time),
-                            common.output, output,
-                            common.error, error,
-                            common.jobname, tc + '-' + analysis + job_name.split('/')[0] + '-' + str(i)]
-                        batch_args += common.default_batch_args
-                        batch_args += [common.batch_script, common.batchrun]
 
                     exe_args = [
                         common.python, os.path.join(common.exe_home, exe),
@@ -151,11 +137,45 @@ if __name__ == '__main__':
                         '--withtp', str(tp),
                         '--log', str(log), '--logdir', log_dir]
 
+                    if args.environment == 'local':
+                        batch_args = [common.mpirun, '-n', str(w)]
+                    elif args.environment == 'slurm':
+                        batch_args = [
+                            common.slurm['submit'],
+                            common.slurm['nodes'], str(N),
+                            common.slurm['workers'], str(w),
+                            common.slurm['tasks_per_node'], str(int(np.ceil(w/N))),
+                            common.slurm['cores'], str(o),  # str(o),
+                            common.slurm['time'], str(time),
+                            common.slurm['output'], output,
+                            common.slurm['error'], error,
+                            common.slurm['jobname'], tc + '-' + analysis + job_name.split('/')[0] + '-' + str(i)]
+                        batch_args += common.slurm['default_args']
+                        batch_args += [common.slurm['script'], common.slurm['run']]
+                    elif args.environment == 'condor':
+                        arg_str = '"{} -n {} '.format(common.mpirun, str(w))
+                        arg_str = arg_str + ' '.join(exe_args) + '"'
+
+                        batch_args = [
+                            common.condor['submit'],
+                            common.condor['executable'],
+                            common.condor['arguments']+arg_str,
+                            # common.condor['workers'], str(w),
+                            # common.condor['tasks_per_node'], str(int(np.ceil(w/N))),
+                            common.condor['cores']+str(o),  # str(o),
+                            common.condor['time']+str(time),
+                            common.condor['output']+output,
+                            common.condor['error']+error,
+                            common.condor['jobname'], tc + '-' + analysis + job_name.split('/')[0] + '-' + str(i)]
+                        batch_args += common.condor['default_args']
+                        batch_args += ['-file', common.condor['script']]
+
                     print(job_name, timestr)
 
                     all_args = batch_args + exe_args
                     subprocess.call(all_args, stdout=open(output, 'w'),
                                     stderr=open(error, 'w'), env=os.environ.copy())
+
                     # sleep(5)
                     current_sim += 1
                     print("%lf %% is completed" % (100.0 * current_sim
