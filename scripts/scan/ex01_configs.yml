@@ -809,3 +809,4 @@ condor:
             'time': [180],
             'repeats': 1
         },
+    }

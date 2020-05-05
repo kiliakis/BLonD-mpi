@@ -5,17 +5,18 @@
 ####################
 
 
-# arguments    = SomeArgument
 
-# output       = outputfile
-# error        = errorfile
-# log          = myexe.log
 
 # +MaxRuntime = 60
-# request_cpus   = 1
 #request_memory = 1024
 
-# executable = condor.sh
-getenv = True
+# executable 		= condor.sh
+# arguments    	= "python --version"
+# output       	= output.$(ClusterId)
+# error        	= error.$(ClusterId)
+# log          	= log.$(ClusterId)
+# request_cpus   	= 1
+# getenv 			= True
+# +MaxRuntime 	= 3600
 should_transfer_files = IF_NEEDED
 queue

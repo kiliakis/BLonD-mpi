@@ -55,6 +55,10 @@ if __name__ == '__main__':
         current_sim = 0
 
         for analysis in yc['run_configs']:
+            # For the extract script
+            analysis_file = open(os.path.join(top_result_dir, tc,
+                                              analysis, '.analysis'), 'a')
+
             config = yc['configs'][analysis]
             # make the size of all lists equal
 
@@ -103,6 +107,8 @@ if __name__ == '__main__':
                         tc, analysis, job_name, timestr, 'output.txt')
                     error = result_dir.format(
                         tc, analysis, job_name, timestr, 'error.txt')
+                    condor_log = result_dir.format(
+                        tc, analysis, job_name, timestr, 'log.txt')
                     monitorfile = result_dir.format(
                         tc, analysis, job_name, timestr, 'monitor')
                     log_dir = result_dir.format(
@@ -113,47 +119,45 @@ if __name__ == '__main__':
                         if not os.path.exists(d):
                             os.makedirs(d)
 
-                    # For the extract script
-                    open(os.path.join(top_result_dir, tc,
-                                      analysis, '.analysis'), 'a').close()
-
                     os.environ['OMP_NUM_THREADS'] = str(o)
 
                     exe_args = [
                         common.python, os.path.join(common.exe_home, exe),
-                        '--particles', str(int(p)),
-                        '--slices', str(s),
-                        '--bunches', str(int(b)),
-                        '--turns', str(t),
-                        '--omp', str(o),
-                        '--seed', str(seed),
-                        '--time', str(timing), '--timedir', report_dir,
-                        '--monitor', str(m), '--monitorfile', monitorfile,
-                        '--reduce', str(r),
-                        '--mtw', str(mtw),
-                        '--precision', str(prec),
-                        '--approx', str(approx),
-                        '--loadbalance', lb, '--loadbalancearg', str(lba),
-                        '--withtp', str(tp),
-                        '--log', str(log), '--logdir', log_dir]
+                        '--particles='+str(int(p)),
+                        '--slices='+str(s),
+                        '--bunches='+str(int(b)),
+                        '--turns='+str(t),
+                        '--omp='+str(o),
+                        '--seed='+str(seed),
+                        '--time='+str(timing), '--timedir='+report_dir,
+                        '--monitor='+str(m), '--monitorfile='+monitorfile,
+                        '--reduce='+str(r),
+                        '--mtw='+str(mtw),
+                        '--precision='+str(prec),
+                        '--approx='+str(approx),
+                        '--loadbalance='+lb, '--loadbalancearg='+str(lba),
+                        '--withtp='+str(tp),
+                        '--log='+str(log), '--logdir='+log_dir]
 
                     if args.environment == 'local':
                         batch_args = [common.mpirun, '-n', str(w)]
                         all_args = batch_args + exe_args
-                        
+
                     elif args.environment == 'slurm':
                         batch_args = [
                             common.slurm['submit'],
                             common.slurm['nodes'], str(N),
                             common.slurm['workers'], str(w),
-                            common.slurm['tasks_per_node'], str(int(np.ceil(w/N))),
+                            common.slurm['tasks_per_node'], str(
+                                int(np.ceil(w/N))),
                             common.slurm['cores'], str(o),  # str(o),
                             common.slurm['time'], str(time),
                             common.slurm['output'], output,
                             common.slurm['error'], error,
                             common.slurm['jobname'], tc + '-' + analysis + job_name.split('/')[0] + '-' + str(i)]
                         batch_args += common.slurm['default_args']
-                        batch_args += [common.slurm['script'], common.slurm['run']]
+                        batch_args += [common.slurm['script'],
+                                       common.slurm['run']]
                         all_args = batch_args + exe_args
                     elif args.environment == 'condor':
                         arg_str = '"{} -n {} '.format(common.mpirun, str(w))
@@ -163,23 +167,28 @@ if __name__ == '__main__':
                             common.condor['submit'],
                             common.condor['executable'],
                             common.condor['arguments']+arg_str,
-                            # common.condor['workers'], str(w),
-                            # common.condor['tasks_per_node'], str(int(np.ceil(w/N))),
                             common.condor['cores']+str(o),  # str(o),
-                            common.condor['time']+str(time),
+                            '-append', common.condor['time']+str(time),
                             common.condor['output']+output,
                             common.condor['error']+error,
+                            common.condor['log']+condor_log,
                             common.condor['jobname'], tc + '-' + analysis + job_name.split('/')[0] + '-' + str(i)]
                         batch_args += common.condor['default_args']
                         batch_args += ['-file', common.condor['script']]
-                        all_args = batch_args
+                        all_args = arg_str + ' '.join(batch_args)
 
                     print(job_name, timestr)
-
-                    subprocess.call(all_args, stdout=open(output, 'w'),
-                                    stderr=open(error, 'w'), env=os.environ.copy())
+                    print(job_name, timestr, file=analysis_file)
+                    print(' '.join(all_args), file=analysis_file)
+                    
+                    subprocess.call(all_args,
+                                    stdout=open(output, 'w'),
+                                    stderr=open(error, 'w'),
+                                    env=os.environ.copy())
 
                     # sleep(5)
                     current_sim += 1
                     print("%lf %% is completed" % (100.0 * current_sim
                                                    / total_sims))
+
+            analysis_file.close()
