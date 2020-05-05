@@ -29,7 +29,7 @@ if __name__ == '__main__':
     args = parser.parse_args()
     top_result_dir = args.output
     os.environ['BLONDHOME'] = common.blond_home
-    
+
     for tc in args.testcases.split(','):
         yc = yaml.load(open(this_directory + '/{}_configs.yml'.format(tc), 'r'),
                        Loader=yaml.FullLoader)[args.environment]
@@ -139,6 +139,8 @@ if __name__ == '__main__':
 
                     if args.environment == 'local':
                         batch_args = [common.mpirun, '-n', str(w)]
+                        all_args = batch_args + exe_args
+                        
                     elif args.environment == 'slurm':
                         batch_args = [
                             common.slurm['submit'],
@@ -152,6 +154,7 @@ if __name__ == '__main__':
                             common.slurm['jobname'], tc + '-' + analysis + job_name.split('/')[0] + '-' + str(i)]
                         batch_args += common.slurm['default_args']
                         batch_args += [common.slurm['script'], common.slurm['run']]
+                        all_args = batch_args + exe_args
                     elif args.environment == 'condor':
                         arg_str = '"{} -n {} '.format(common.mpirun, str(w))
                         arg_str = arg_str + ' '.join(exe_args) + '"'
@@ -169,10 +172,10 @@ if __name__ == '__main__':
                             common.condor['jobname'], tc + '-' + analysis + job_name.split('/')[0] + '-' + str(i)]
                         batch_args += common.condor['default_args']
                         batch_args += ['-file', common.condor['script']]
+                        all_args = batch_args
 
                     print(job_name, timestr)
 
-                    all_args = batch_args + exe_args
                     subprocess.call(all_args, stdout=open(output, 'w'),
                                     stderr=open(error, 'w'), env=os.environ.copy())
 
