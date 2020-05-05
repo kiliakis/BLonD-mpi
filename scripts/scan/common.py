@@ -39,6 +39,7 @@ condor = {
     'executable': 'executable='+os.path.join(blond_home, 'scripts/other/condor.sh'),
     'output': 'output=',
     'error': 'error=',
+    'log': 'log=',
     'arguments': 'arguments=',
     'jobname': '-batch-name',
     'time': '+MaxRuntime=',
