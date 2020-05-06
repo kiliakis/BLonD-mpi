@@ -6,7 +6,7 @@ condor:
         - 'precision-timing'
 
 
-    configs:
+    configs: {
         'precision-monitor': {
             'exe': ['LHC_main.py'],
             'particles': [1000000],
@@ -25,7 +25,7 @@ condor:
             'loadbalancearg': [500],
             'timing': ['timing'],
             'workers': [1],
-            'omp': [14],
+            'omp': [4],
             'mpi': ['mpich3'],
             'time': [1800],
             'repeats': 1
@@ -49,7 +49,7 @@ condor:
             'loadbalancearg': [500],
             'timing': ['timing'],
             'workers': [1],
-            'omp': [14],
+            'omp': [4],
             'mpi': ['mpich3'],
             'time': [1800],
             'repeats': 1
@@ -82,7 +82,8 @@ condor:
             'mpi': ['mpich3'],
             'time': [1800],
             'repeats': 2
-        },
+        }
+    }
 
 
 
