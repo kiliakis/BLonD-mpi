@@ -804,7 +804,7 @@ condor:
             'loadbalancearg': [500],
             'timing': ['timing'],
             'workers': [1],
-            'omp': [14],
+            'omp': [1],
             'mpi': ['mpich3'],
             'time': [180],
             'repeats': 1

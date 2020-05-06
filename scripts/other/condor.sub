@@ -18,5 +18,5 @@
 # request_cpus   	= 1
 # getenv 			= True
 # +MaxRuntime 	= 3600
-should_transfer_files = IF_NEEDED
+# should_transfer_files = IF_NEEDED
 queue

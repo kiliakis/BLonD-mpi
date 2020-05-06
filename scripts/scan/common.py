@@ -45,6 +45,7 @@ condor = {
     'time': '+MaxRuntime=',
     'cores': 'request_cpus=',
     'default_args': [
+        'environment="PATH={PATH} PYTHONPATH={PYTHONPATH}"',
         'getenv=True',
         'should_transfer_files=IF_NEEDED'
     ]

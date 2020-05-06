@@ -164,8 +164,8 @@ if __name__ == '__main__':
 
                     elif args.environment == 'condor':
                         arg_str = '"{} -n {} '.format(common.mpirun, str(w))
-                        arg_str = arg_str + ' '.join(exe_args) + '"'
-
+                        #arg_str = arg_str + ' '.join(exe_args) + '"'
+                        arg_str+= ' --version "'
                         batch_args = [
                             common.condor['submit'],
                             common.condor['executable'],
