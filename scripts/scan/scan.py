@@ -29,7 +29,7 @@ if __name__ == '__main__':
     args = parser.parse_args()
     top_result_dir = args.output
     os.environ['BLONDHOME'] = common.blond_home
-
+    # os.environ['HOME'] = 
     for tc in args.testcases.split(','):
         yc = yaml.load(open(this_directory + '/{}_configs.yml'.format(tc), 'r'),
                        Loader=yaml.FullLoader)[args.environment]
