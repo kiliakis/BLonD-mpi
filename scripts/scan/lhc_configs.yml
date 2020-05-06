@@ -1,9 +1,96 @@
 
+condor:
+    run_configs:
+        - 'precision-monitor'
+        - 'precision-seed'
+        - 'precision-timing'
+
+
+    configs:
+        'precision-monitor': {
+            'exe': ['LHC_main.py'],
+            'particles': [1000000],
+            'bunches': [1],  # 192
+            'slices': [1000],
+            'turns': [40000],
+            'monitor': [100],
+            'seed': [0],
+            'mtw': [0],
+            'precision': ['single', 'double'],
+            'withtp': [0],
+            'reduce': [1],
+            'approx': [0],
+            'log': [1],
+            'loadbalance': ['reportonly'],
+            'loadbalancearg': [500],
+            'timing': ['timing'],
+            'workers': [1],
+            'omp': [14],
+            'mpi': ['mpich3'],
+            'time': [1800],
+            'repeats': 1
+        },
+
+        'precision-seed': {
+            'exe': ['LHC_main.py'],
+            'particles': [1000000],
+            'bunches': [1],  # 192
+            'slices': [1000],
+            'turns': [40000],
+            'monitor': [100],
+            'seed': [1, 2, 3],
+            'mtw': [0],
+            'precision': ['double'],
+            'withtp': [0],
+            'reduce': [1],
+            'approx': [0],
+            'log': [1],
+            'loadbalance': ['reportonly'],
+            'loadbalancearg': [500],
+            'timing': ['timing'],
+            'workers': [1],
+            'omp': [14],
+            'mpi': ['mpich3'],
+            'time': [1800],
+            'repeats': 1
+        },
+
+
+
+        'precision-timing': {
+            'exe': ['LHC_main.py'],
+            'particles': [1000000],
+            'bunches': [4],  # 192
+            'slices': [1000],
+            'turns': [5000],
+            'monitor': [0],
+            'seed': [0],
+            'mtw': [0],
+            'precision': ['single', 'double'],
+            'withtp': [0],
+            'reduce': [1],
+            'approx': [0],
+            'log': [1],
+            'loadbalance': ['reportonly'],
+            'loadbalancearg': [500],
+            'timing': ['timing'],
+            'workers': [1],
+            'omp': [
+                1, 1, 
+                # 2, 2, 4, 4
+            ],
+            'mpi': ['mpich3'],
+            'time': [1800],
+            'repeats': 2
+        },
+
+
+
 local: 
     run_configs: 
 
-        # - 'precision-monitor'
-        # - 'precision-seed'
+        - 'precision-monitor'
+        - 'precision-seed'
         - 'precision-timing'
 
 
