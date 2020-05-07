@@ -68,6 +68,10 @@ parser.add_argument('--flags', type=str, default='',
 parser.add_argument('--libs', type=str, default='',
                     help='Any extra libraries needed to compile')
 
+parser.add_argument('-libname', '--libname', type=str, default=os.path.join(basepath, 'cpp_routines/libblond'),
+                    help='The blond library name, without the file extension.')
+
+
 # Additional libs needed to compile the blond library
 libs = []
 
@@ -136,9 +140,15 @@ if (__name__ == "__main__"):
 
     if ('posix' in os.name):
         cflags += ['-fPIC']
-        libname = os.path.join(basepath, 'cpp_routines/libblond.so')
+        root, ext = os.path.splitext(args.libname)
+        if not ext:
+            ext = '.so'
+        libname = root + ext
     elif ('win' in sys.platform):
-        libname = os.path.join(basepath, 'cpp_routines/libblond.dll')
+        root, ext = os.path.splitext(args.libname)
+        if not ext:
+            ext = '.dll'
+        libname = root + ext
     else:
         print(
             'YOU ARE NOT USING A WINDOWS OR LINUX OPERATING SYSTEM. ABORTING...')
