@@ -12,4 +12,10 @@ echo "PYTHONPATH = $PYTHONPATH"
 which mpirun
 which python
 
+if [ -z "$FFTWDIR" ]; then
+	python blond/compile.py -p --with-fftw-omp --with-fftw-lib=$FFTWDIR/lib --with-fftw-header=$FFTWDIR/include;
+else
+	python blond/compile.py -p --with-fftw-omp;
+fi
+
 $@
