@@ -59,7 +59,7 @@ gconfig = {
                 # 'x': 0.55,
                 'fontweight': 'bold',
     },
-    'figsize': [5, 2.2],
+    'figsize': [6, 2.2],
     'annotate': {
         'fontsize': 9,
         'textcoords': 'data',
@@ -75,7 +75,7 @@ gconfig = {
         'bbox_to_anchor': (0., 0.85)
     },
     'subplots_adjust': {
-        'wspace': 0.0, 'hspace': 0.1, 'top': 0.93
+        'wspace': 0.05, 'hspace': 0.1, 'top': 0.93
     },
     'tick_params_left': {
         'pad': 1, 'top': 0, 'bottom': 1, 'left': 1,

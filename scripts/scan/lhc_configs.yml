@@ -3,7 +3,7 @@ condor:
     run_configs:
         - 'precision-monitor'
         - 'precision-seed'
-        - 'precision-timing'
+        # - 'precision-timing'
 
 
     configs: {
@@ -25,7 +25,7 @@ condor:
             'loadbalancearg': [500],
             'timing': ['timing'],
             'workers': [1],
-            'omp': [4],
+            'omp': [2],
             'mpi': ['mpich3'],
             'time': [1800],
             'repeats': 1
@@ -38,7 +38,7 @@ condor:
             'slices': [1000],
             'turns': [40000],
             'monitor': [100],
-            'seed': [1, 2, 3],
+            'seed': [1, 2],
             'mtw': [0],
             'precision': ['double'],
             'withtp': [0],
@@ -49,7 +49,7 @@ condor:
             'loadbalancearg': [500],
             'timing': ['timing'],
             'workers': [1],
-            'omp': [4],
+            'omp': [2],
             'mpi': ['mpich3'],
             'time': [1800],
             'repeats': 1
@@ -92,7 +92,7 @@ local:
 
         - 'precision-monitor'
         - 'precision-seed'
-        - 'precision-timing'
+        # - 'precision-timing'
 
 
         # Intermediate stages
@@ -136,7 +136,7 @@ local:
             'loadbalancearg': [500],
             'timing': ['timing'],
             'workers': [1],
-            'omp': [14],
+            'omp': [2],
             'mpi': ['mpich3'],
             'time': [180],
             'repeats': 1
@@ -149,7 +149,7 @@ local:
             'slices': [1000],
             'turns': [40000],
             'monitor': [100],
-            'seed': [1, 2, 3],
+            'seed': [1, 2],
             'mtw': [0],
             'precision': ['double'],
             'withtp': [0],
@@ -160,7 +160,7 @@ local:
             'loadbalancearg': [500],
             'timing': ['timing'],
             'workers': [1],
-            'omp': [14],
+            'omp': [2],
             'mpi': ['mpich3'],
             'time': [180],
             'repeats': 1

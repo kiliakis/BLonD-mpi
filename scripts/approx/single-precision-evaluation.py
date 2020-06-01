@@ -77,7 +77,7 @@ gconfig = {
                'std_dt': r'$s_{dt}$'},
     'x_name': 'turns',
     'y_names': [
-        # 'std_profile',
+        'std_profile',
         'std_dE',
         'std_dt',
         # 'mean_profile',
@@ -85,8 +85,8 @@ gconfig = {
         # 'mean_dt'
     ],
     # 'y_err_name': 'std',
-    'xlabel': {'xlabel': 'Turn', 'labelpad': 3, 'fontsize': 10},
-    'ylabel': {'ylabel': r'Relative Error', 'labelpad': 3, 'fontsize': 10},
+    'xlabel': {'xlabel': 'Turn', 'labelpad': 1, 'fontsize': 10},
+    'ylabel': {'ylabel': r'Relative Error', 'labelpad': 1, 'fontsize': 10},
     'title': {
         # 's': '{}'.format(case.upper()),
         'fontsize': 10,
@@ -94,7 +94,7 @@ gconfig = {
         # 'x': 0.45,
         'fontweight': 'bold',
     },
-    'figsize': [5, 2.],
+    'figsize': [5, 1.9],
     'annotate': {
         'fontsize': 9,
         'textcoords': 'data',
@@ -123,12 +123,12 @@ gconfig = {
     'outfiles': ['{}/{}-{}.png', '{}/{}-{}.pdf'],
     # 'cases': ['ex01'],
     'inputkeys': [
-        # 'ex01-1mt-acc',
-        # 'ex01-1mt-acc-seed',
+        'ex01-1mt-acc',
+        'ex01-1mt-acc-seed',
         'lhc-40kt-seed', 
         'lhc-40kt',
-        # 'sps-40kt-seed', 'ps-40kt-seed',
-        # 'sps-40kt', 'ps-40kt'
+        'sps-40kt-seed', 'ps-40kt-seed',
+        'sps-40kt', 'ps-40kt'
     ],
     'plots': {
         'ex01-2kt-acc': {
@@ -157,23 +157,23 @@ gconfig = {
         },
         'lhc-40kt-seed': {
             'in': {
-                'seed1-': 'results/precision-analysis/lhc/precision-seed/_p1000000_b1_s1000_t40000_w1_o1_N1_red1_mtw0_seed1_approx0_mpimpich3_lbreportonly_lba500_monitor100_tp0_precdouble_/30Apr20.12-50-26-95/monitor.h5',
-                'seed2-': 'results/precision-analysis/lhc/precision-seed/_p1000000_b1_s1000_t40000_w1_o1_N1_red1_mtw0_seed2_approx0_mpimpich3_lbreportonly_lba500_monitor100_tp0_precdouble_/30Apr20.13-04-33-62/monitor.h5'
+                'seed1-': 'results/precision-analysis/pc/lhc/precision-seed/_p1000000_b1_s1000_t40000_w1_o2_N1_red1_mtw0_seed1_approx0_mpimpich3_lbreportonly_lba500_monitor100_tp0_precdouble_/20May20.12-31-23-84/monitor.h5',
+                'seed2-': 'results/precision-analysis/pc/lhc/precision-seed/_p1000000_b1_s1000_t40000_w1_o2_N1_red1_mtw0_seed2_approx0_mpimpich3_lbreportonly_lba500_monitor100_tp0_precdouble_/20May20.12-36-39-64/monitor.h5'
                 # 'seed1-': 'results/precision-analysis/lhc/precision-seed/_p1000000_b1_s1000_t40000_w1_o14_N1_red1_mtw0_seed1_approx0_mpimpich3_lbreportonly_lba500_monitor1000_tp0_precdouble_/29Apr20.11-33-28-67/monitor.h5',
                 # 'seed2-': 'results/precision-analysis/lhc/precision-seed/_p1000000_b1_s1000_t40000_w1_o14_N1_red1_mtw0_seed2_approx0_mpimpich3_lbreportonly_lba500_monitor1000_tp0_precdouble_/29Apr20.11-37-42-71/monitor.h5',
                 # 'seed3-': 'results/precision-analysis/lhc/precision-seed/_p1000000_b1_s1000_t40000_w1_o14_N1_red1_mtw0_seed3_approx0_mpimpich3_lbreportonly_lba500_monitor1000_tp0_precdouble_/29Apr20.11-41-57-38/monitor.h5',
             },
             'title': 'LHC 40kT seeds',
-            'base': 'results/precision-analysis/lhc/precision-monitor/_p1000000_b1_s1000_t40000_w1_o1_N1_red1_mtw0_seed0_approx0_mpimpich3_lbreportonly_lba500_monitor100_tp0_precdouble_/30Apr20.12-36-13-54/monitor.h5'
+            'base': 'results/precision-analysis/pc/lhc/precision-monitor/_p1000000_b1_s1000_t40000_w1_o2_N1_red1_mtw0_seed0_approx0_mpimpich3_lbreportonly_lba500_monitor100_tp0_precdouble_/20May20.12-26-08-48/monitor.h5'
             # 'base': 'results/precision-analysis/lhc/precision-monitor/_p1000000_b1_s1000_t40000_w1_o14_N1_red1_mtw0_seed0_approx0_mpimpich3_lbreportonly_lba500_monitor1000_tp0_precdouble_/29Apr20.11-29-09-77/monitor.h5',
         },
         'lhc-40kt': {
             'in': {
-                '': 'results/precision-analysis/lhc/precision-monitor/_p1000000_b1_s1000_t40000_w1_o4_N1_red1_mtw0_seed0_approx0_mpimpich3_lbreportonly_lba500_monitor100_tp0_precsingle_/30Apr20.10-41-20-74/monitor.h5'
+                '': 'results/precision-analysis/pc/lhc/precision-monitor/_p1000000_b1_s1000_t40000_w1_o2_N1_red1_mtw0_seed0_approx0_mpimpich3_lbreportonly_lba500_monitor100_tp0_precsingle_/20May20.12-22-54-37/monitor.h5'
                 # '': 'results/precision-analysis/lhc/precision-monitor/_p1000000_b1_s1000_t40000_w1_o14_N1_red1_mtw0_seed0_approx0_mpimpich3_lbreportonly_lba500_monitor1000_tp0_precsingle_/29Apr20.11-25-16-92/monitor.h5'
             },
             'title': 'LHC 40kT f32/f64',
-            'base': 'results/precision-analysis/lhc/precision-monitor/_p1000000_b1_s1000_t40000_w1_o1_N1_red1_mtw0_seed0_approx0_mpimpich3_lbreportonly_lba500_monitor100_tp0_precdouble_/30Apr20.12-36-13-54/monitor.h5'
+            'base': 'results/precision-analysis/pc/lhc/precision-monitor/_p1000000_b1_s1000_t40000_w1_o2_N1_red1_mtw0_seed0_approx0_mpimpich3_lbreportonly_lba500_monitor100_tp0_precdouble_/20May20.12-26-08-48/monitor.h5'
             # 'base': 'results/precision-analysis/lhc/precision-monitor/_p1000000_b1_s1000_t40000_w1_o14_N1_red1_mtw0_seed0_approx0_mpimpich3_lbreportonly_lba500_monitor1000_tp0_precdouble_/29Apr20.11-29-09-77/monitor.h5',
         },
         'sps-40kt-seed': {

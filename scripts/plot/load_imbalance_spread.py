@@ -57,7 +57,8 @@ gconfig = {
                 # 'x': 0.55,
                 'fontweight': 'bold',
     },
-    'figsize': [5, 2.],
+    # 'figsize': [5, 4.],
+    'figsize': [5, 2.8],
     'annotate': {
         'fontsize': 9,
         'textcoords': 'data',
