@@ -6,6 +6,7 @@ from functools import wraps
 from ..utils import bmath as bm
 from mpi4py import MPI
 import socket
+import time
 
 try:
     from pyprof import timing
@@ -579,6 +580,89 @@ class Worker:
     def timer_reset(self, phase):
         self.times[phase] = {'start': MPI.Wtime(), 'total': 0.}
 
+    def initDelay(self, delaystr):
+        self.delay = {}
+        self.delay['type'] = delaystr.split(',')[0]
+        if self.delay['type'] == 'off':
+            delayed_ids = np.array([], int)
+        else:
+            assert len(delaystr.split(',')
+                       ) == 6, 'Artificial delay string missing arguments'
+            init, incr, top, dcr, workers, delay = [int(a) for a in delaystr.split(',')]
+            assert init > 0 and incr > 0 and top > 0 and dcr > 0, 'Wrong artificial delay values'
+            self.delay['init'] = init
+            self.delay['init%'] = 0
+            self.delay['incr'] = incr + init
+            self.delay['incr%'] = delay / incr / 100
+            self.delay['top'] = top + incr + init
+            self.delay['top%'] = delay / 100
+            self.delay['dcr'] = dcr + top + incr + init
+            self.delay['dcr%'] = delay / dcr / 100
+            self.delay['active%'] = 0.
+            self.delay['tconst'] = 0.
+            self.delay['tcomp'] = 0.
+            self.delay['tcomm'] = 0.
+            delayed_workers = int(np.ceil(int(workers)/100. * self.workers))
+            delayed_ids = np.random.choice(
+                self.workers, delayed_workers, replace=False)
+
+        if self.rank in delayed_ids:
+            self.delay['delayed'] = True
+        else:
+            self.delay['delayed'] = False
+
+        if self.isMaster:
+            self.logger.critical('[{}]: Delayed worker ids: {}'.format(
+                self.rank, ','.join(delayed_ids.astype(str))))
+
+    def trackDelay(self, turn):
+        if self.delay['delayed']:
+            modturn = turn % self.delay['dcr']
+
+            if modturn < self.delay['init'] - 1:
+                # Not need to do anything, just wait and collect stats
+                pass
+            elif modturn == self.delay['init'] - 1:
+                # Last turn of the init interval, update the time values
+                tconst = timing.get(['serial:'], exclude_lst=[
+                    'serial:sync', 'serial:intraSync'])
+                tcomm = timing.get(['comm:'])
+                tcomp = timing.get(['comp:'])
+                self.delay['tconst'] = (
+                    tconst - self.delay['tconst']) / self.delay['init'] / 1000
+                self.delay['tcomp'] = (
+                    tcomp - self.delay['tcomp']) / self.delay['init'] / 1000
+                self.delay['tcomm'] = (
+                    tcomm - self.delay['tcomm']) / self.delay['init'] / 1000
+            else:
+                # Here I need to apply some delay
+                # I update the active_percent and then apply the delay
+                if modturn < self.delay['incr']:
+                    self.delay['active%'] += self.delay['incr%']
+                elif modturn < self.delay['top']:
+                    pass
+                elif modturn < self.delay['dcr']:
+                    self.delay['active%'] -= self.delay['dcr%']
+            # self.logger.critical('[{}]: tconst:{}, tcomp:{}, tcomm:{}'.format(
+            #     self.rank, tconst, tcomp, tcomm))
+
+                with timing.timed_region('serial:artificial'):
+                    time.sleep(self.delay['active%']*self.delay['tconst'])
+
+                with timing.timed_region('comm:artificial'):
+                    time.sleep(self.delay['active%']*self.delay['tcomm'])
+
+                with timing.timed_region('comp:artificial'):
+                    time.sleep(self.delay['active%']*self.delay['tcomp'])
+
+                if modturn == self.delay['dcr'] - 1:
+                    # this should bring the added delay back to zero
+                    assert np.isclose(self.delay['active%'], 0)
+                    self.delay['tconst'] = timing.get(['serial:'], exclude_lst=[
+                        'serial:sync', 'serial:intraSync'])
+                    self.delay['tcomm'] = timing.get(['comm:'])
+                    self.delay['tcomp'] = timing.get(['comp:'])
+
     def initDLB(self, lb_type, lb_arg, n_iter):
         self.lb_turns = []
         self.lb_type = lb_type
@@ -696,7 +780,7 @@ class MPILog(object):
         self.root_logger = logging.getLogger()
         self.root_logger.setLevel(logging.WARNING)
         if not os.path.exists(log_dir):
-            os.makedirs(log_dir)
+            os.makedirs(log_dir, exist_ok=True)
 
         log_name = log_dir+'/worker-%.3d.log' % rank
         # Console handler on INFO level

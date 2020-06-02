@@ -83,6 +83,18 @@ parser.add_argument('-lba', '--loadbalancearg', type=int, default=0,
                     help='Additional Load balance argument, used only if lb is times or interval.'
                     '\nDefault: 0 --> 10 times per run or every 1k turns.')
 
+parser.add_argument('-artificialdelay', '--artificialdelay', type=str,
+                    default='off',
+                    help='Add artificial delay to a percentage of the workers. Format:\n' +
+                         'init,incr,top,dcr,workers,delay.\n' +
+                         'init: initiation interval.\n' +
+                         'incr: turns needed to reach max delay.\n' +
+                         'top: turns with constant max delay.\n' +
+                         'dcr: turns to reach initial delay.\n' +
+                         'workers: percentage of workers with delayed runtime.\n' +
+                         'delay: delay increase percentage.\n' +
+                         'Default: off. Example: 200,50,300,50,25,20')
+
 
 def parse():
     args = parser.parse_args()
