@@ -82,7 +82,7 @@ class Worker:
 
     def initLog(self, log, logdir):
         self.log = log
-        self.logger = MPILog(rank=self.rank, logdir)
+        self.logger = MPILog(rank=self.rank, log_dir=logdir)
         if not self.log:
             self.logger.disable()
 
@@ -620,7 +620,7 @@ class Worker:
             delayed_workers = int(np.ceil(int(workers)/100. * self.workers))
             
             assert delayed_workers > 0 and delayed_workers <= self.workers
-            
+
             delayed_ids = np.array_split(np.arange(self.workers), delayed_workers)
             delayed_ids = [a[0] for a in delayed_ids]
             # delayed_ids = np.arange(self.workers)[::self.workers+1-delayed_workers]
