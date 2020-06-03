@@ -98,7 +98,8 @@ gconfig = {
         'bbox_to_anchor': (1.35, 1)
     },
     'subplots_adjust': {
-        'wspace': 0.05, 'hspace': 0.1, 'top': 1
+        'wspace': 0.05, 'hspace': 0.1, 
+        # 'top': 1
     },
     'tick_params': {
         'pad': 1, 'top': 0, 'bottom': 0, 'left': 1,
@@ -135,7 +136,7 @@ def plot_traces(ax, file, idx, nrows):
                 if line not in plotdir:
                     plotdir[line] = np.zeros(turns)
                 if len(v) != turns:
-                    v = np.ones(turns) * np.mean(v)
+                    v = np.ones(turns) * np.sum(v) / turns
                 plotdir[line] += v
                 break
     plotdir['total'] = np.sum([v for v in plotdir.values()], axis=0)
@@ -180,7 +181,7 @@ if __name__ == '__main__':
     for file, ax, idx in zip(files, axes, np.arange(len(files))):
         plot_traces(ax, os.path.join(indir, file), idx, nrows)
 
-    plt.tight_layout()
+    # plt.tight_layout()
     plt.subplots_adjust(**gconfig['subplots_adjust'])
     for file in gconfig['outfiles']:
         if args.filename:

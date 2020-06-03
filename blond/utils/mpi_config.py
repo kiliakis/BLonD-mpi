@@ -646,14 +646,20 @@ class Worker:
             # self.logger.critical('[{}]: tconst:{}, tcomp:{}, tcomm:{}'.format(
             #     self.rank, tconst, tcomp, tcomm))
 
-                with timing.timed_region('serial:artificial'):
-                    time.sleep(self.delay['active%']*self.delay['tconst'])
+                sleep = self.delay['active%']*self.delay['tconst']
+                if sleep > 0.:
+                    with timing.timed_region('serial:artificial'):
+                        time.sleep(sleep)
 
-                with timing.timed_region('comm:artificial'):
-                    time.sleep(self.delay['active%']*self.delay['tcomm'])
+                sleep = self.delay['active%']*self.delay['tcomm']
+                if sleep > 0.:
+                    with timing.timed_region('comm:artificial'):
+                        time.sleep(sleep)
 
-                with timing.timed_region('comp:artificial'):
-                    time.sleep(self.delay['active%']*self.delay['tcomp'])
+                sleep = self.delay['active%']*self.delay['comp']
+                if sleep > 0.:
+                    with timing.timed_region('comp:artificial'):
+                        time.sleep(sleep)
 
                 if modturn == self.delay['dcr'] - 1:
                     # this should bring the added delay back to zero
