@@ -40,7 +40,6 @@ parser.add_argument('-skip', '--skip', type=int, default='5',
                     ' Default: 5, plot every 5 points.')
 
 
-
 # parser.add_argument('-r', '--report', type=str, choices=['comm-comp', 'avg', 'delta'],
 #                     default='comm-comp',
 #                     help='Choose from 3 report types: comm-comp, avg, delta'
@@ -98,7 +97,7 @@ gconfig = {
         'bbox_to_anchor': (1.35, 1)
     },
     'subplots_adjust': {
-        'wspace': 0.05, 'hspace': 0.1, 
+        'wspace': 0.05, 'hspace': 0.1,
         # 'top': 1
     },
     'tick_params': {
@@ -145,13 +144,13 @@ def plot_traces(ax, file, idx, nrows):
         plt.plot(np.arange(len(v))[::args.skip], v[::args.skip], color=gconfig['colors'][k],
                  label=k, **gconfig['plot'])
 
-    plt.ylim(ymax=1.4* np.mean(plotdir['total']))
+    plt.ylim(ymax=1.4 * np.mean(plotdir['total']))
     # plt.xlim(0-1.3*width/2, pos-1.4*width/2)
     plt.grid(True, which='both', axis='y', alpha=0.5)
 
     plt.yticks(**gconfig['ticks'])
     plt.xticks(**gconfig['xticks'])
-    
+
     if idx // gconfig['subplots']['ncols'] == nrows - 1:
         plt.xlabel(**gconfig['xlabel'])
 
@@ -160,11 +159,15 @@ def plot_traces(ax, file, idx, nrows):
 
     if idx % gconfig['subplots']['ncols'] == gconfig['subplots']['ncols'] - 1:
         plt.legend(**gconfig['legend'])
-    plt.title(os.path.splitext(file)[0].split('/')[-1],
-              **gconfig['title'])
-
+    # plt.title(os.path.splitext(file)[0].split('/')[-1],
+              # **gconfig['title'])
+    worker = os.path.splitext(file)[0].split('/')[-1]
+    plt.text(0.98, .98, '{} total: {:.2f}s'.format(worker, indir['total_time']/1e3),
+             ha='right', va='top',
+             transform=ax.transAxes)
     ax.tick_params(**gconfig['tick_params'])
     plt.tight_layout()
+
 
 if __name__ == '__main__':
     args = parser.parse_args()
@@ -187,7 +190,8 @@ if __name__ == '__main__':
         if args.filename:
             file = file.format(outdir, args.filename)
         else:
-            file = file.format(outdir, os.path.basename(os.path.normpath(indir)))
+            file = file.format(
+                outdir, os.path.basename(os.path.normpath(indir)))
         # print('[{}] {}: {}'.format(this_filename[:-3], 'Saving figure', file))
         save_and_crop(fig, file, dpi=300, bbox_inches='tight')
     if args.show:

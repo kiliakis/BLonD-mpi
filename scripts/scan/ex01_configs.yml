@@ -2,7 +2,7 @@
 local: 
     run_configs: 
         # - 'nodlb-nodelay-tracing'
-        # - 'dlb-nodelay-tracing'
+        - 'dlb-nodelay-tracing'
         - 'nodlb-delay-tracing'
         - 'dlb-delay-tracing'
         # Intermediate stages
@@ -54,7 +54,7 @@ local:
             'omp': [1],
             'mpi': ['mpich3'],
             'time': [180],
-            'repeats': 2
+            'repeats': 1
         },
 
         'dlb-nodelay-tracing': {
@@ -79,7 +79,7 @@ local:
             'omp': [1],
             'mpi': ['mpich3'],
             'time': [180],
-            'repeats': 2
+            'repeats': 1
         },
 
         'nodlb-delay-tracing': {
@@ -104,7 +104,7 @@ local:
             'omp': [1],
             'mpi': ['mpich3'],
             'time': [180],
-            'repeats': 2
+            'repeats': 1
         },
 
         'dlb-delay-tracing': {
@@ -129,7 +129,7 @@ local:
             'omp': [1],
             'mpi': ['mpich3'],
             'time': [180],
-            'repeats': 2
+            'repeats': 1
         },
 
         'precision-monitor': {
