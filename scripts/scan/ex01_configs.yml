@@ -54,7 +54,7 @@ local:
             'omp': [1],
             'mpi': ['mpich3'],
             'time': [180],
-            'repeats': 1
+            'repeats': 2
         },
 
         'dlb-nodelay-tracing': {
@@ -79,7 +79,7 @@ local:
             'omp': [1],
             'mpi': ['mpich3'],
             'time': [180],
-            'repeats': 1
+            'repeats': 2
         },
 
         'nodlb-delay-tracing': {
@@ -98,13 +98,13 @@ local:
             'log': [1],
             'loadbalance': ['reportonly'],
             'loadbalancearg': [100],
-            'artificialdelay': ['400,50,1500,50,25,25'],
+            'artificialdelay': ['1800,100,3000,100,50,30'],
             'timing': ['timing'],
             'workers': [2],
             'omp': [1],
             'mpi': ['mpich3'],
             'time': [180],
-            'repeats': 1
+            'repeats': 2
         },
 
         'dlb-delay-tracing': {
@@ -123,13 +123,13 @@ local:
             'log': [1],
             'loadbalance': ['interval'],
             'loadbalancearg': [100],
-            'artificialdelay': ['400,50,1500,50,25,25'],
+            'artificialdelay': ['1800,100,3000,100,50,30'],
             'timing': ['timing'],
             'workers': [2],
             'omp': [1],
             'mpi': ['mpich3'],
             'time': [180],
-            'repeats': 1
+            'repeats': 2
         },
 
         'precision-monitor': {

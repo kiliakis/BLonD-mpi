@@ -35,9 +35,13 @@ parser.add_argument('-i', '--indir', type=str, default='./',
                     help='The directory containing the report files.'
                     ' Default: Use the current working directory.')
 
-parser.add_argument('-skip', '--skip', type=int, default='5',
+parser.add_argument('-skip', '--skip', type=int, default=5,
                     help='How many points to skip'
                     ' Default: 5, plot every 5 points.')
+
+parser.add_argument('-w', '--window', type=int, default=10,
+                    help='Width of running mean to smoothen spiky curves.'
+                    ' Default: 10.')
 
 
 # parser.add_argument('-r', '--report', type=str, choices=['comm-comp', 'avg', 'delta'],
@@ -60,6 +64,9 @@ gconfig = {
         'const': 'red',
         'sync': 'gray',
         'total': 'black'
+    },
+    'alpha': {
+        'total': 0.7
     },
     'extract_turns': 'comp:histo',
     'plot': {
@@ -141,8 +148,11 @@ def plot_traces(ax, file, idx, nrows):
     plotdir['total'] = np.sum([v for v in plotdir.values()], axis=0)
 
     for k, v in plotdir.items():
-        plt.plot(np.arange(len(v))[::args.skip], v[::args.skip], color=gconfig['colors'][k],
-                 label=k, **gconfig['plot'])
+        # x = np.arange(len(v))[::args.skip]
+        # y = v[::args.skip]
+        y = running_mean(v, args.window)
+        plt.plot(np.arange(len(y)), y, color=gconfig['colors'][k],
+                 label=k, **gconfig['plot'], alpha=gconfig['alpha'].get(k,1))
 
     plt.ylim(ymax=1.4 * np.mean(plotdir['total']))
     # plt.xlim(0-1.3*width/2, pos-1.4*width/2)

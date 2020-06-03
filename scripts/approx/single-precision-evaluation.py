@@ -234,9 +234,7 @@ plt.rcParams['font.family'] = 'sans-serif'  # ... for regular text
 plt.rcParams['font.sans-serif'] = 'Helvetica'
 
 
-def running_mean(x, N, axis=None):
-    cumsum = np.cumsum(np.insert(x, 0, 0, axis=0), axis=0)
-    return (cumsum[N:] - cumsum[:-N])/N
+
 
 
 if __name__ == '__main__':

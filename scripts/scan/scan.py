@@ -30,7 +30,7 @@ if __name__ == '__main__':
     top_result_dir = args.output
     os.environ['BLONDHOME'] = common.blond_home
     # os.environ['FFTWDIR'] = os.environ.get('FFTWDIR', '$HOME/install')
-    # os.environ['HOME'] = 
+    # os.environ['HOME'] =
     for tc in args.testcases.split(','):
         yc = yaml.load(open(this_directory + '/{}_configs.yml'.format(tc), 'r'),
                        Loader=yaml.FullLoader)[args.environment]
@@ -89,10 +89,10 @@ if __name__ == '__main__':
                  mtw, m, seed, exe, approx,
                  timing, mpi, log, lb, lba,
                  tp, prec, reps, artdel) in zip(ps, bs, ss, ts, rs, ws,
-                                        oss, times, mtws, ms, seeds,
-                                        exes, approxs, timings, mpis,
-                                        logs, lbs, lbas, tps, precs,
-                                        repeats, artdels):
+                                                oss, times, mtws, ms, seeds,
+                                                exes, approxs, timings, mpis,
+                                                logs, lbs, lbas, tps, precs,
+                                                repeats, artdels):
 
                 N = int(max(np.ceil(w * o / common.cores_per_cpu), 1))
 
@@ -145,7 +145,8 @@ if __name__ == '__main__':
                         '--artificialdelay='+str(artdel)]
 
                     if args.environment == 'local':
-                        batch_args = [common.mpirun, '-n', str(w)]
+                        batch_args = [common.mpirun, '-n', str(w),
+                                      '-bind-to', 'socket']
                         all_args = batch_args + exe_args
 
                     elif args.environment == 'slurm':
@@ -182,7 +183,7 @@ if __name__ == '__main__':
                         batch_args += common.condor['default_args']
                         batch_args += ['-file', common.condor['script']]
                         all_args = batch_args
-                        
+
                     print(job_name, timestr)
                     print(job_name, timestr, file=analysis_file)
 
