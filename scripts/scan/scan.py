@@ -37,7 +37,7 @@ if __name__ == '__main__':
 
         result_dir = top_result_dir + '/{}/{}/{}/{}/{}'
 
-        job_name_form = '_p{}_b{}_s{}_t{}_w{}_o{}_N{}_red{}_mtw{}_seed{}_approx{}_mpi{}_lb{}_lba{}_monitor{}_tp{}_prec{}_'
+        job_name_form = '_p{}_b{}_s{}_t{}_w{}_o{}_N{}_red{}_mtw{}_seed{}_approx{}_mpi{}_lb{}_lba{}_monitor{}_tp{}_prec{}_artdel{}_'
 
         total_sims = 0
         for rc in yc['run_configs']:
@@ -83,21 +83,22 @@ if __name__ == '__main__':
             repeats = config['repeats']
             tps = config['withtp']
             precs = config['precision']
+            artdels = config['artificialdelay']
 
             for (p, b, s, t, r, w, o, time,
                  mtw, m, seed, exe, approx,
                  timing, mpi, log, lb, lba,
-                 tp, prec, reps) in zip(ps, bs, ss, ts, rs, ws,
+                 tp, prec, reps, artdel) in zip(ps, bs, ss, ts, rs, ws,
                                         oss, times, mtws, ms, seeds,
                                         exes, approxs, timings, mpis,
                                         logs, lbs, lbas, tps, precs,
-                                        repeats):
+                                        repeats, artdels):
 
                 N = int(max(np.ceil(w * o / common.cores_per_cpu), 1))
 
                 job_name = job_name_form.format(p, b, s, t, w, o, N,
                                                 r, mtw, seed, approx, mpi,
-                                                lb, lba, m, tp, prec)
+                                                lb, lba, m, tp, prec, artdel)
 
                 for i in range(reps):
                     timestr = datetime.now().strftime('%d%b%y.%H-%M-%S')
@@ -140,7 +141,8 @@ if __name__ == '__main__':
                         '--approx='+str(approx),
                         '--loadbalance='+lb, '--loadbalancearg='+str(lba),
                         '--withtp='+str(tp),
-                        '--log='+str(log), '--logdir='+log_dir]
+                        '--log='+str(log), '--logdir='+log_dir,
+                        '--artificialdelay='+str(artdel)]
 
                     if args.environment == 'local':
                         batch_args = [common.mpirun, '-n', str(w)]

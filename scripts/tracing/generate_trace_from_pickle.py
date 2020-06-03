@@ -25,6 +25,12 @@ parser.add_argument('-o', '--outdir', type=str,
                     help='The directory to store the traces.'
                     ' Default: Same as the input directory')
 
+parser.add_argument('-f', '--filename', type=str,
+                    default=None,
+                    help='The output filename.'
+                    ' Default: Automatically assigned.')
+
+
 parser.add_argument('-i', '--indir', type=str, default='./',
                     help='The directory containing the report files.'
                     ' Default: Use the current working directory.')
@@ -32,6 +38,8 @@ parser.add_argument('-i', '--indir', type=str, default='./',
 parser.add_argument('-skip', '--skip', type=int, default='5',
                     help='How many points to skip'
                     ' Default: 5, plot every 5 points.')
+
+
 
 # parser.add_argument('-r', '--report', type=str, choices=['comm-comp', 'avg', 'delta'],
 #                     default='comm-comp',
@@ -66,7 +74,7 @@ gconfig = {
         'fontsize': 10
     },
     'ylabel': {
-        'ylabel': 'Delay',
+        'ylabel': 'Turn time (ms)',
         'labelpad': 1,
         'fontsize': 10
     },
@@ -175,7 +183,10 @@ if __name__ == '__main__':
     plt.tight_layout()
     plt.subplots_adjust(**gconfig['subplots_adjust'])
     for file in gconfig['outfiles']:
-        file = file.format(outdir, os.path.basename(os.path.normpath(indir)))
+        if args.filename:
+            file = file.format(outdir, args.filename)
+        else:
+            file = file.format(outdir, os.path.basename(os.path.normpath(indir)))
         # print('[{}] {}: {}'.format(this_filename[:-3], 'Saving figure', file))
         save_and_crop(fig, file, dpi=300, bbox_inches='tight')
     if args.show:
