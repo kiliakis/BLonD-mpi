@@ -622,7 +622,7 @@ class Worker:
             assert delayed_workers > 0 and delayed_workers <= self.workers
 
             delayed_ids = np.array_split(np.arange(self.workers), delayed_workers)
-            delayed_ids = [a[0] for a in delayed_ids]
+            delayed_ids = [str(a[0]) for a in delayed_ids]
             # delayed_ids = np.arange(self.workers)[::self.workers+1-delayed_workers]
             # delayed_ids = np.random.choice(
                 # self.workers, delayed_workers, replace=False)
@@ -635,7 +635,7 @@ class Worker:
         if self.isMaster:
             if self.log:
                 self.logger.critical('[{}]: Delayed worker ids: {}'.format(
-                    self.rank, ','.join(delayed_ids.astype(str))))
+                    self.rank, ','.join(delayed_ids)))
 
     def trackDelay(self, turn):
         if self.delay['delayed']:
