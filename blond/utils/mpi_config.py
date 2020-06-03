@@ -627,7 +627,7 @@ class Worker:
             # delayed_ids = np.random.choice(
                 # self.workers, delayed_workers, replace=False)
 
-        if self.rank in delayed_ids:
+        if str(self.rank) in delayed_ids:
             self.delay['delayed'] = True
         else:
             self.delay['delayed'] = False
