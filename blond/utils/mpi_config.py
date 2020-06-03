@@ -656,7 +656,7 @@ class Worker:
                     with timing.timed_region('comm:artificial'):
                         time.sleep(sleep)
 
-                sleep = self.delay['active%']*self.delay['comp']
+                sleep = self.delay['active%']*self.delay['tcomp']
                 if sleep > 0.:
                     with timing.timed_region('comp:artificial'):
                         time.sleep(sleep)
