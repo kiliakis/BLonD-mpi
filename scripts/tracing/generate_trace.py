@@ -128,7 +128,7 @@ plt.rcParams['font.family'] = 'sans-serif'  # ... for regular text
 plt.rcParams['font.sans-serif'] = 'Helvetica'
 
 
-def plot_traces(ax, file, idx, nrows):
+def plot_traces_from_pickle(ax, file, idx, nrows):
     plt.sca(ax)
 
     with open(file, 'rb') as f:
@@ -152,7 +152,7 @@ def plot_traces(ax, file, idx, nrows):
         # y = v[::args.skip]
         y = running_mean(v, args.window)
         plt.plot(np.arange(len(y)), y, color=gconfig['colors'][k],
-                 label=k, **gconfig['plot'], alpha=gconfig['alpha'].get(k,1))
+                 label=k, **gconfig['plot'], alpha=gconfig['alpha'].get(k, 1))
 
     plt.ylim(ymax=1.4 * np.mean(plotdir['total']))
     # plt.xlim(0-1.3*width/2, pos-1.4*width/2)
@@ -170,7 +170,76 @@ def plot_traces(ax, file, idx, nrows):
     if idx % gconfig['subplots']['ncols'] == gconfig['subplots']['ncols'] - 1:
         plt.legend(**gconfig['legend'])
     # plt.title(os.path.splitext(file)[0].split('/')[-1],
-              # **gconfig['title'])
+        # **gconfig['title'])
+    worker = os.path.splitext(file)[0].split('/')[-1]
+    plt.text(0.98, .98, '{} total: {:.2f}s'.format(worker, indir['total_time']/1e3),
+             ha='right', va='top',
+             transform=ax.transAxes)
+    ax.tick_params(**gconfig['tick_params'])
+    plt.tight_layout()
+
+
+def plot_traces_from_log(ax, file, idx, nrows):
+    plt.sca(ax)
+
+    regexp = re.compile(
+        '.*[(\d+)]:\sTurn\s(\d+),\sTconst\s(.*),\sTcomp\s(.*),\sTcomm\s(.*),\sTsync\s(.*),\sLatency\s(.*),\sParticles\s(.*)')
+    f = open(file, 'r')
+
+    plotdir = {}
+    for line in file:
+        match = regexp.match(line)
+        if match:
+            wid, turn, const, comp, comm, sync, latency, particles = match.groups()
+            if 'turn' not in plotdir:
+                plotdir['turn'] = []
+                plotdir['wid'] = wid
+                plotdir['const'] = []
+                plotdir['comm'] = []
+                plotdir['comp'] = []
+                plotdir['sync'] = []
+                plotdir['latency'] = []
+                plotdir['particles'] = []
+                plotdir['total'] = []
+            # plotdir['wid'].append(wid)
+            assert plotdir['wid'] == wid
+            plotdir['turn'].append(int(turn))
+            plotdir['const'].append(float(const))
+            plotdir['comp'].append(float(comp))
+            plotdir['comm'].append(float(comm))
+            plotdir['sync'].append(float(sync))
+            plotdir['latency'].append(float(latency))
+            plotdir['particles'].append(int(particles))
+            plotdir['total'].append(
+                float(const) + float(comp) + float(sync) + float(comm))
+
+
+    for k, v in plotdir.items():
+        if k not in gconfig['colors']:
+            continue
+        # x = np.arange(len(v))[::args.skip]
+        # y = v[::args.skip]
+        # y = running_mean(v, args.window)
+        plt.plot(plotdir['turns'], v, color=gconfig['colors'][k],
+                 label=k, **gconfig['plot'], alpha=gconfig['alpha'].get(k, 1))
+
+    plt.ylim(ymax=1.4 * np.mean(plotdir['total']))
+    # plt.xlim(0-1.3*width/2, pos-1.4*width/2)
+    plt.grid(True, which='both', axis='y', alpha=0.5)
+
+    plt.yticks(**gconfig['ticks'])
+    plt.xticks(**gconfig['xticks'])
+
+    if idx // gconfig['subplots']['ncols'] == nrows - 1:
+        plt.xlabel(**gconfig['xlabel'])
+
+    if idx % gconfig['subplots']['ncols'] == 0:
+        plt.ylabel(**gconfig['ylabel'])
+
+    if idx % gconfig['subplots']['ncols'] == gconfig['subplots']['ncols'] - 1:
+        plt.legend(**gconfig['legend'])
+    # plt.title(os.path.splitext(file)[0].split('/')[-1],
+        # **gconfig['title'])
     worker = os.path.splitext(file)[0].split('/')[-1]
     plt.text(0.98, .98, '{} total: {:.2f}s'.format(worker, indir['total_time']/1e3),
              ha='right', va='top',
