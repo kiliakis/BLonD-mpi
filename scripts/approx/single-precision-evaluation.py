@@ -123,12 +123,13 @@ gconfig = {
     'outfiles': ['{}/{}-{}.png', '{}/{}-{}.pdf'],
     # 'cases': ['ex01'],
     'inputkeys': [
-        'ex01-1mt-acc',
-        'ex01-1mt-acc-seed',
-        'lhc-40kt-seed', 
-        'lhc-40kt',
-        'sps-40kt-seed', 'ps-40kt-seed',
-        'sps-40kt', 'ps-40kt'
+        'psb-100kt'
+        # 'ex01-1mt-acc',
+        # 'ex01-1mt-acc-seed',
+        # 'lhc-40kt-seed', 
+        # 'lhc-40kt',
+        # 'sps-40kt-seed', 'ps-40kt-seed',
+        # 'sps-40kt', 'ps-40kt'
     ],
     'plots': {
         'ex01-2kt-acc': {
@@ -207,6 +208,13 @@ gconfig = {
             },
             'title': 'PS 40kT f32/f64',
             'base': 'results/precision-analysis/ps/precision-monitor/_p1000000_b1_s256_t40000_w1_o14_N1_red1_mtw50_seed0_approx0_mpimpich3_lbreportonly_lba500_monitor100_tp0_precdouble_/29Apr20.13-17-14-89/monitor.h5',
+        },
+        'psb-100kt': {
+            'in': {
+                '': 'results/precision-analysis/psb/precision-monitor/_p500000_b1_s128_t100000_w1_o1_N1_red1_mtw50_seed12345_approx0_mpimpich3_lbreportonly_lba500_tp0_precsingle_/4Jun20.17-04-01-01/monitor.h5'
+            },
+            'title': 'PSB 100kT f32/f64',
+            'base': 'results/precision-analysis/psb/precision-monitor/_p500000_b1_s128_t100000_w1_o1_N1_red1_mtw50_seed12345_approx0_mpimpich3_lbreportonly_lba500_tp0_precdouble_/4Jun20.17-10-01-01/monitor.h5',
         }
     },
     # 'basefile': {
