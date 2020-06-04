@@ -91,8 +91,8 @@ condor:
 local: 
     run_configs: 
 
-        # - 'precision-monitor'
         - 'precision-seed'
+        - 'precision-monitor'
         # - 'precision-timing'
 
 
@@ -121,26 +121,27 @@ local:
     configs: {
         'precision-monitor': {
             'exe': ['PSBNoiseExample.py'],
-            'particles': [1000000],
+            'particles': [500000],
             'bunches': [1],  # 192
-            'slices': [1000],
-            'turns': [40000],
-            'monitor': [100],
+            'slices': [128],
+            'turns': [50000],
+            'monitor': [0],
             'seed': [0],
             'mtw': [0],
             'precision': ['single', 'double'],
             'withtp': [0],
             'reduce': [1],
             'approx': [0],
-            'log': [1],
+            'log': [0],
             'loadbalance': ['reportonly'],
             'loadbalancearg': [500],
             'timing': ['timing'],
+            'artificialdelay': ['off'],
             'workers': [1],
-            'omp': [2],
+            'omp': [1],
             'mpi': ['mpich3'],
-            'time': [180],
-            'repeats': 1
+            'time': [1800],
+            'repeats': 2
         },
 
         'precision-seed': {
@@ -148,9 +149,9 @@ local:
             'particles': [500000],
             'bunches': [1],  # 192
             'slices': [128],
-            'turns': [100000],
-            'monitor': [500],
-            'seed': [1, 2],
+            'turns': [500000],
+            'monitor': [1000],
+            'seed': [0, 1, 2],
             'mtw': [0],
             'precision': ['double'],
             'withtp': [0],

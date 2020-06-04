@@ -89,12 +89,12 @@ gconfig = {
     'ylabel': {'ylabel': r'Relative Error', 'labelpad': 1, 'fontsize': 10},
     'title': {
         # 's': '{}'.format(case.upper()),
-        'fontsize': 10,
-        # 'y': .85,
+        'fontsize': 9,
+        'y': .95,
         # 'x': 0.45,
         'fontweight': 'bold',
     },
-    'figsize': [5, 1.9],
+    'figsize': [5.4, 1.6],
     'annotate': {
         'fontsize': 9,
         'textcoords': 'data',
@@ -123,7 +123,8 @@ gconfig = {
     'outfiles': ['{}/{}-{}.png', '{}/{}-{}.pdf'],
     # 'cases': ['ex01'],
     'inputkeys': [
-        'psb-100kt'
+        'psb-100kt',
+        'psb-100kt-seed',
         # 'ex01-1mt-acc',
         # 'ex01-1mt-acc-seed',
         # 'lhc-40kt-seed', 
@@ -215,7 +216,17 @@ gconfig = {
             },
             'title': 'PSB 100kT f32/f64',
             'base': 'results/precision-analysis/psb/precision-monitor/_p500000_b1_s128_t100000_w1_o1_N1_red1_mtw50_seed12345_approx0_mpimpich3_lbreportonly_lba500_tp0_precdouble_/4Jun20.17-10-01-01/monitor.h5',
-        }
+        },
+        'psb-100kt-seed': {
+            'in': {
+                'seed1-': 'results/precision-analysis/psb/precision-seed/_p500000_b1_s128_t100000_w1_o2_N1_red1_mtw0_seed1_approx0_mpimpich3_lbreportonly_lba500_monitor500_tp0_precdouble_artdeloff_/04Jun20.22-23-38-14/monitor.h5',
+                'seed2-': 'results/precision-analysis/psb/precision-seed/_p500000_b1_s128_t100000_w1_o2_N1_red1_mtw0_seed2_approx0_mpimpich3_lbreportonly_lba500_monitor500_tp0_precdouble_artdeloff_/04Jun20.22-32-29-3/monitor.h5',
+                # 'seed3-': 'results/precision-analysis/ps/precision-seed/_p1000000_b1_s256_t40000_w1_o14_N1_red1_mtw50_seed3_approx0_mpimpich3_lbreportonly_lba500_monitor100_tp0_precdouble_/29Apr20.13-33-05-20/monitor.h5',
+            },
+            'title': 'PSB 100kT seeds',
+            'base': 'results/precision-analysis/psb/precision-monitor/_p500000_b1_s128_t100000_w1_o1_N1_red1_mtw50_seed12345_approx0_mpimpich3_lbreportonly_lba500_tp0_precdouble_/4Jun20.17-10-01-01/monitor.h5',
+        },
+
     },
     # 'basefile': {
     #     'ex01-2kt-acc':
