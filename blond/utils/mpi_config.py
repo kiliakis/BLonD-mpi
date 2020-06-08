@@ -426,8 +426,11 @@ class Worker:
         self.coefficients['times'].append(tcomp)
 
         if len(self.coefficients['times']) < 2:
-            # If it is the first time the function is called,
-            # I need to do something different, I don't have enough data
+            # We need at least two data points for our estimations
+            # Therefore here, we exchange with the neighboor worker only
+            # the processing rate, and the one running faster takes
+            # 1% more workload. Therefore, the next time, we will have a
+            # second datapoint, needed to start making predictions.
             # to caluclate the coefficients.
             if self.intraworkers != 2:
                 exit('Only support two workers per node for now!')
@@ -471,26 +474,47 @@ class Worker:
             return self.interval
 
         else:
-            weights = np.ones(len(self.coefficients['times']))
-            weights[-1] = np.sum(weights[:-1])
+            # We pass weights to the polyfit
+            # The weight function I am using is:
+            # e(-x/5), where x is the abs(distance) from the last
+            # datapoint.
+            ncoeffs = len(self.coefficients['times'])
+            weights = np.exp(-(ncoeffs - 1 - np.arange(ncoeffs))/5)
+            # weights = np.ones(len(self.coefficients['times']))
+            # weights[-1] = np.sum(weights[:-1])
+            # We model the runtime as latency * particles + c
+            # where latency = p[0] and c = p[1]
             p = np.polyfit(self.coefficients['particles'],
                            self.coefficients['times'], deg=1,
                            w=weights)
             latency = p[0]
+            # assert latency != 0
             tconst += p[1]
+            totalt = tcomp + tconst
             # latency = tcomp / beam.n_macroparticles
-            recvbuf = np.empty(3 * self.workers, dtype=float)
+            recvbuf = np.empty(4 * self.workers, dtype=float)
             self.intercomm.Allgather(
-                np.array([latency, tconst, beam.n_macroparticles]), recvbuf)
+                np.array([latency, tconst, totalt, beam.n_macroparticles]),
+                recvbuf)
 
-            latencies = recvbuf[::3]
-            ctimes = recvbuf[1::3]
-            Pi_old = recvbuf[2::3]
+            latencies = recvbuf[::4]
+            ctimes = recvbuf[1::4]
+            totalt = recvbuf[2::4]
+            Pi_old = recvbuf[3::4]
 
+            avgt = np.mean(totalt)
             P = np.sum(Pi_old)
-            sum1 = np.sum(ctimes/latencies)
-            sum2 = np.sum(1./latencies)
-            Pi = (P + sum1 - ctimes * sum2)/(latencies * sum2)
+
+            # For the scheme to work I need that avgt > ctimes, if not
+            # it means that a machine will be assigned negative number fo particles
+            # I need to put a lower bound on the number of particles that
+            # a machine can get, example 10% of the total/n_workers
+            Pi = np.maximum((avgt - ctimes) / latencies, 0.1 * P/self.workers)
+
+            # sum1 = np.sum(ctimes/latencies)
+            # sum2 = np.sum(1./latencies)
+            # Pi = (P + sum1 - ctimes * sum2)/(latencies * sum2)
+
             dPi = np.rint(Pi_old - Pi)
 
             for i in range(len(dPi)):
@@ -499,7 +523,12 @@ class Worker:
                 elif dPi[i] > Pi[i]:
                     dPi[i] = Pi[i]
 
-            transactions = calc_transactions(dPi, 2**4)[self.rank]
+            # Need better definition of the cutoff
+            # Maybe as a percentage of the number of particles
+            # Let's say that each transaction has to be at least
+            # 5% of total/n_workers
+            transactions = calc_transactions(
+                dPi, cutoff=0.05 * P / self.workers)[self.rank]
             if dPi[self.rank] > 0 and len(transactions) > 0:
                 reqs = []
                 tot_to_send = np.sum([t[1] for t in transactions])
@@ -600,7 +629,8 @@ class Worker:
         else:
             assert len(delaystr.split(',')
                        ) == 6, 'Artificial delay string missing arguments'
-            init, incr, top, dcr, workers, delay = [int(a) for a in delaystr.split(',')]
+            init, incr, top, dcr, workers, delay = [
+                int(a) for a in delaystr.split(',')]
             assert init > 0 and incr > 0 and top > 0 and dcr > 0, 'Wrong artificial delay values'
             self.delay['init'] = init
             self.delay['incr'] = incr + init
@@ -612,22 +642,23 @@ class Worker:
             self.delay['top%'] = delay / 100
             self.delay['dcr%'] = delay / dcr / 100
             self.delay['active%'] = 0.
-            
+
             self.delay['tconst'] = 0.
             self.delay['tcomp'] = 0.
             # self.delay['tcomm'] = 0.
             # assert workers/100 * self.workers == int(workers/100)
             delayed_workers = int(np.ceil(int(workers)/100. * self.workers))
-            
+
             assert delayed_workers > 0 and delayed_workers <= self.workers
 
-            delayed_ids = np.array_split(np.arange(self.workers), delayed_workers)
-            delayed_ids = [str(a[0]) for a in delayed_ids]
+            delayed_ids = np.array_split(
+                np.arange(self.workers), delayed_workers)
+            # delayed_ids = [str(a[0]) for a in delayed_ids]
             # delayed_ids = np.arange(self.workers)[::self.workers+1-delayed_workers]
             # delayed_ids = np.random.choice(
-                # self.workers, delayed_workers, replace=False)
+            # self.workers, delayed_workers, replace=False)
 
-        if str(self.rank) in delayed_ids:
+        if self.rank in delayed_ids:
             self.delay['delayed'] = True
         else:
             self.delay['delayed'] = False
@@ -635,7 +666,7 @@ class Worker:
         if self.isMaster:
             if self.log:
                 self.logger.critical('[{}]: Delayed worker ids: {}'.format(
-                    self.rank, ','.join(delayed_ids)))
+                    self.rank, ','.join(delayed_ids.astype(str))))
 
     def trackDelay(self, turn):
         if self.delay['delayed']:
@@ -655,7 +686,7 @@ class Worker:
                     tconst - self.delay['tconst']) / self.delay['init'] / 1000
                 self.delay['tcomp'] = (
                     tcomp - self.delay['tcomp']) / self.delay['init'] / 1000
-                
+
                 assert self.delay['tconst'] >= 0 and self.delay['tcomp'] >= 0
                 # self.delay['tcomm'] = (
                 #     tcomm - self.delay['tcomm']) / self.delay['init'] / 1000

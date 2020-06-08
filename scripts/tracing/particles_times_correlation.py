@@ -16,9 +16,9 @@ this_filename = sys.argv[0].split('/')[-1]
 parser = argparse.ArgumentParser(description='Generate worker trace from pickle files.',
                                  usage='python script.py [-i indir] [-p pattern]')
 
-parser.add_argument('-p', '--pattern', type=str, default='worker-*.*',
+parser.add_argument('-p', '--pattern', type=str, default='worker-*.log',
                     help='The input file names pattern. '
-                    ' Default: worker-*.*')
+                    ' Default: worker-*.log')
 
 parser.add_argument('-o', '--outdir', type=str,
                     default=None,
@@ -39,15 +39,17 @@ parser.add_argument('-skip', '--skip', type=int, default=5,
                     help='How many points to skip'
                     ' Default: 5, plot every 5 points.')
 
-parser.add_argument('-w', '--window', type=int, default=10,
-                    help='Width of running mean to smoothen spiky curves.'
-                    ' Default: 10.')
 
 
-parser.add_argument('-from', '--from', type=str, default='log', choices=['pickle', 'log'],
-                    dest='fromfile',
-                    help='Use log files as input or pickle files.'
-                    ' Default: log.')
+# parser.add_argument('-w', '--window', type=int, default=10,
+#                     help='Width of running mean to smoothen spiky curves.'
+#                     ' Default: 10.')
+
+
+# parser.add_argument('-from', '--from', type=str, default='log', choices=['pickle', 'log'],
+#                     dest='fromfile',
+#                     help='Use log files as input or pickle files.'
+#                     ' Default: log.')
 
 
 # parser.add_argument('-r', '--report', type=str, choices=['comm-comp', 'avg', 'delta'],
@@ -69,15 +71,16 @@ gconfig = {
         'comm': 'orange',
         'const': 'red',
         'sync': 'gray',
-        'total': 'black'
+        # 'total': 'black'
     },
     'alpha': {
         'total': 0.7
     },
     'extract_turns': 'comp:histo',
     'plot': {
-        'lw': 1,
-        'ls': '-',
+        # 'lw': 1,
+        'ls': '',
+        'marker': '.'
 
     },
     'xlabel': {
@@ -120,7 +123,7 @@ gconfig = {
     'fontname': 'DejaVu Sans Mono',
     # 'ylim': [0.45, 1.02],
     # 'yticks': [0.5, 0.6, 0.7, .8, .9, 1.],
-    'outfiles': ['{}/{}-traces.png', '{}/{}-traces.pdf'],
+    'outfiles': ['{}/{}-corr.png', '{}/{}-corr.pdf'],
     'subplots': {'sharex': True, 'sharey': True, 'ncols': 2,
                  'figsize': [5, 2.5]}
 }
@@ -134,58 +137,9 @@ plt.rcParams['font.family'] = 'sans-serif'  # ... for regular text
 plt.rcParams['font.sans-serif'] = 'Helvetica'
 
 
-def plot_traces_from_pickle(ax, file, idx, nrows):
-    plt.sca(ax)
-
-    with open(file, 'rb') as f:
-        indir = pickle.load(f)
-    plotdir = {}
-    turns = len(indir[gconfig['extract_turns']])
-    for k, v in indir.items():
-        for line, expr in gconfig['lines'].items():
-            match = re.match(expr, k)
-            if match:
-                if line not in plotdir:
-                    plotdir[line] = np.zeros(turns)
-                if len(v) != turns:
-                    v = np.ones(turns) * np.sum(v) / turns
-                plotdir[line] += v
-                break
-    plotdir['total'] = np.sum([v for v in plotdir.values()], axis=0)
-
-    for k, v in plotdir.items():
-        # x = np.arange(len(v))[::args.skip]
-        # y = v[::args.skip]
-        y = running_mean(v, args.window)
-        plt.plot(np.arange(len(y)), y, color=gconfig['colors'][k],
-                 label=k, **gconfig['plot'], alpha=gconfig['alpha'].get(k, 1))
-
-    plt.ylim(ymax=1.4 * np.mean(plotdir['total']))
-    # plt.xlim(0-1.3*width/2, pos-1.4*width/2)
-    plt.grid(True, which='both', axis='y', alpha=0.5)
-
-    plt.yticks(**gconfig['ticks'])
-    plt.xticks(**gconfig['xticks'])
-
-    if idx // gconfig['subplots']['ncols'] == nrows - 1:
-        plt.xlabel(**gconfig['xlabel'])
-
-    if idx % gconfig['subplots']['ncols'] == 0:
-        plt.ylabel(**gconfig['ylabel'])
-
-    if idx % gconfig['subplots']['ncols'] == gconfig['subplots']['ncols'] - 1:
-        plt.legend(**gconfig['legend'])
-    # plt.title(os.path.splitext(file)[0].split('/')[-1],
-        # **gconfig['title'])
-    worker = os.path.splitext(file)[0].split('/')[-1]
-    plt.text(0.98, .98, '{} total: {:.2f}s'.format(worker, indir['total_time']/1e3),
-             ha='right', va='top',
-             transform=ax.transAxes)
-    ax.tick_params(**gconfig['tick_params'])
-    plt.tight_layout()
 
 
-def plot_traces_from_log(ax, file, idx, nrows):
+def plot_correlations_from_log(ax, file, idx, nrows):
     plt.sca(ax)
 
     regexp = re.compile(
@@ -224,10 +178,13 @@ def plot_traces_from_log(ax, file, idx, nrows):
         # x = np.arange(len(v))[::args.skip]
         # y = v[::args.skip]
         # y = running_mean(v, args.window)
-        plt.plot(plotdir['turns'], v, color=gconfig['colors'][k],
+        v = np.array(v)
+        v = (v - min(v)) / ((max(v) - min(v)))
+        print(f'{k}: {v}')
+        plt.plot(plotdir['particles'], v, color=gconfig['colors'][k],
                  label=k, **gconfig['plot'], alpha=gconfig['alpha'].get(k, 1))
 
-    plt.ylim(ymax=1.4 * np.mean(plotdir['total']))
+    # plt.ylim(ymax=1.4 * np.mean(plotdir['total']))
     # plt.xlim(0-1.3*width/2, pos-1.4*width/2)
     plt.grid(True, which='both', axis='y', alpha=0.5)
 
@@ -245,9 +202,9 @@ def plot_traces_from_log(ax, file, idx, nrows):
     # plt.title(os.path.splitext(file)[0].split('/')[-1],
         # **gconfig['title'])
     worker = os.path.splitext(file)[0].split('/')[-1]
-    plt.text(0.98, .98, '{} total: {:.2f}s'.format(worker, np.sum(plotdir['total'])/1e3),
-             ha='right', va='top',
-             transform=ax.transAxes)
+    # plt.text(0.98, .98, '{} total: {:.2f}s'.format(worker, np.sum(plotdir['total'])/1e3),
+    #          ha='right', va='top',
+    #          transform=ax.transAxes)
     ax.tick_params(**gconfig['tick_params'])
     plt.tight_layout()
 
@@ -265,16 +222,13 @@ if __name__ == '__main__':
     fig, axes = plt.subplots(nrows=nrows, **gconfig['subplots'])
     axes = axes.ravel()
     for file, ax, idx in zip(sorted(files), axes, np.arange(len(files))):
-        if args.fromfile == 'log':
-            plot_traces_from_log(ax, os.path.join(indir, file), idx, nrows)
-        elif args.fromfile == 'pickle':
-            plot_traces_from_pickle(ax, os.path.join(indir, file), idx, nrows)
+        plot_correlations_from_log(ax, os.path.join(indir, file), idx, nrows)
 
     # plt.tight_layout()
     plt.subplots_adjust(**gconfig['subplots_adjust'])
     for file in gconfig['outfiles']:
         if args.filename:
-            file = file.format(outdir, args.filename+'-'+args.fromfile)
+            file = file.format(outdir, args.filename)
         else:
             file = file.format(
                 outdir, os.path.basename(os.path.normpath(indir)))
