@@ -483,7 +483,7 @@ class Worker:
             # weights = np.ones(len(self.coefficients['times']))
             # weights[-1] = np.sum(weights[:-1])
             # We model the runtime as latency * particles + c
-            # where latency = p[0] and c = p[1]
+            # where latency = p[1] and c = p[0]
             p = np.polynomial.polynomial.Polynomial.fit(
                 self.coefficients['particles'],
                 self.coefficients['times'],
@@ -655,7 +655,7 @@ class Worker:
 
             delayed_ids = np.array_split(
                 np.arange(self.workers), delayed_workers)
-            # delayed_ids = [str(a[0]) for a in delayed_ids]
+            delayed_ids = [a[0] for a in delayed_ids]
             # delayed_ids = np.arange(self.workers)[::self.workers+1-delayed_workers]
             # delayed_ids = np.random.choice(
             # self.workers, delayed_workers, replace=False)
