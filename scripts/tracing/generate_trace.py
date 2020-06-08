@@ -120,7 +120,10 @@ gconfig = {
     'fontname': 'DejaVu Sans Mono',
     # 'ylim': [0.45, 1.02],
     # 'yticks': [0.5, 0.6, 0.7, .8, .9, 1.],
-    'outfiles': ['{}/{}-traces.png', '{}/{}-traces.pdf'],
+    'outfiles': [
+        '{}/{}.png',
+        # '{}/{}.pdf'
+    ],
     'subplots': {'sharex': True, 'sharey': True, 'ncols': 2,
                  'figsize': [5, 2.5]}
 }
