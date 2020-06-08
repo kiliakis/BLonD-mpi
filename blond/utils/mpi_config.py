@@ -479,9 +479,9 @@ class Worker:
         # Need better definition of the cutoff
         # Maybe as a percentage of the number of particles
         # Let's say that each transaction has to be at least
-        # 5% of total/n_workers
+        # 1% of total/n_workers
         transactions = calc_transactions(
-            dPi, cutoff=0.05 * P / self.workers)[self.rank]
+            dPi, cutoff=0.01 * P / self.workers)[self.rank]
         if dPi[self.rank] > 0 and len(transactions) > 0:
             reqs = []
             tot_to_send = np.sum([t[1] for t in transactions])
