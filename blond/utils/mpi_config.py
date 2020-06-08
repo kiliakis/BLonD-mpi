@@ -484,13 +484,14 @@ class Worker:
             # weights[-1] = np.sum(weights[:-1])
             # We model the runtime as latency * particles + c
             # where latency = p[0] and c = p[1]
-            p = np.polynomial.fit(self.coefficients['particles'],
-                                  self.coefficients['times'],
-                                  deg=1,
-                                  w=weights)
-            latency = p[0]
+            p = np.polynomial.polynomial.Polynomial.fit(
+                self.coefficients['particles'],
+                self.coefficients['times'],
+                deg=1,
+                w=weights).convert().coef
+            latency = p[1]
             # assert latency != 0
-            tconst += p[1]
+            tconst += p[0]
             totalt = tcomp + tconst
             # latency = tcomp / beam.n_macroparticles
             recvbuf = np.empty(4 * self.workers, dtype=float)
