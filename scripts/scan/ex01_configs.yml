@@ -129,7 +129,7 @@ local:
             'omp': [1],
             'mpi': ['mpich3'],
             'time': [180],
-            'repeats': 2
+            'repeats': 1
         },
 
         'precision-monitor': {

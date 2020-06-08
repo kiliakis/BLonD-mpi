@@ -484,9 +484,10 @@ class Worker:
             # weights[-1] = np.sum(weights[:-1])
             # We model the runtime as latency * particles + c
             # where latency = p[0] and c = p[1]
-            p = np.polyfit(self.coefficients['particles'],
-                           self.coefficients['times'], deg=1,
-                           w=weights)
+            p = np.polynomial.fit(self.coefficients['particles'],
+                                  self.coefficients['times'],
+                                  deg=1,
+                                  w=weights)
             latency = p[0]
             # assert latency != 0
             tconst += p[1]
