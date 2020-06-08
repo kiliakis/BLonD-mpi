@@ -619,7 +619,7 @@ class Worker:
         if self.isMaster:
             if self.log:
                 self.logger.critical('[{}]: Delayed worker ids: {}'.format(
-                    self.rank, ','.join(delayed_ids.astype(str))))
+                    self.rank, ','.join(np.array(delayed_ids, str))))
 
     def trackDelay(self, turn):
         if self.delay['delayed']:
@@ -732,11 +732,13 @@ class Worker:
 
 def calc_transactions(dpi, cutoff):
     trans = {}
-    for i in range(len(dpi)):
-        trans[i] = []
-    arr = [{'val': i[1], 'id':i[0]} for i in enumerate(dpi)]
+    arr = []
+    for i in enumerate(dpi):
+        trans[i[0]] = []
+        arr.append({'val': i[1], 'id':i[0]})
 
     # First pass is to prioritize transactions within the same node
+    # basically transactions between worker i and i + 1, i: 0, 2, 4, ...
     i = 0
     # e = len(arr)-1
     while i < len(arr)-1:
