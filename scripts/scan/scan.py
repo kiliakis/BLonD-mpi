@@ -37,7 +37,7 @@ if __name__ == '__main__':
 
         result_dir = top_result_dir + '/{}/{}/{}/{}/{}'
 
-        job_name_form = '_p{}_b{}_s{}_t{}_w{}_o{}_N{}_red{}_mtw{}_seed{}_approx{}_mpi{}_lb{}_lba{}_monitor{}_tp{}_prec{}_artdel{}_'
+        job_name_form = '_p{}_b{}_s{}_t{}_w{}_o{}_N{}_red{}_mtw{}_seed{}_approx{}_mpi{}_lb{}_monitor{}_tp{}_prec{}_artdel{}_'
 
         total_sims = 0
         for rc in yc['run_configs']:
