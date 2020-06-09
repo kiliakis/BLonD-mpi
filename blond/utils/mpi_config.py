@@ -485,8 +485,8 @@ class Worker:
         sum2 = np.sum(1./latencies)
         Pi = (P + sum1 - ctimes * sum2)/(latencies * sum2)
         # Pi = np.maximum(Pi_old + (synctimes - avgt - ctimes)/latencies, 0.1 * P/self.workers)
-        Pi = np.maximum(Pi, 0.1 * P / self.n_workers)
-        
+        Pi = np.maximum(Pi, 0.1 * P / self.workers)
+
         dPi = np.rint(Pi_old - Pi)
 
         for i in range(len(dPi)):
