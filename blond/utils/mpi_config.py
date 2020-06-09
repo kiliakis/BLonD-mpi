@@ -456,7 +456,7 @@ class Worker:
         synctimes = recvbuf[2::4]
         Pi_old = recvbuf[3::4]
 
-        avgt = np.mean(totalt)
+        avgt = np.mean(synctimes)
         P = np.sum(Pi_old)
 
         # For the scheme to work I need that avgt > ctimes, if not
