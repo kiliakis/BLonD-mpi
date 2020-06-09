@@ -79,7 +79,6 @@ if __name__ == '__main__':
             mpis = config['mpi']
             logs = config['log']
             lbs = config['loadbalance']
-            lbas = config['loadbalancearg']
             repeats = config['repeats']
             tps = config['withtp']
             precs = config['precision']
@@ -87,18 +86,18 @@ if __name__ == '__main__':
 
             for (p, b, s, t, r, w, o, time,
                  mtw, m, seed, exe, approx,
-                 timing, mpi, log, lb, lba,
+                 timing, mpi, log, lb, #lba,
                  tp, prec, reps, artdel) in zip(ps, bs, ss, ts, rs, ws,
                                                 oss, times, mtws, ms, seeds,
                                                 exes, approxs, timings, mpis,
-                                                logs, lbs, lbas, tps, precs,
+                                                logs, lbs, tps, precs,
                                                 repeats, artdels):
 
                 N = int(max(np.ceil(w * o / common.cores_per_cpu), 1))
 
                 job_name = job_name_form.format(p, b, s, t, w, o, N,
                                                 r, mtw, seed, approx, mpi,
-                                                lb, lba, m, tp, prec, artdel)
+                                                lb, m, tp, prec, artdel)
 
                 for i in range(reps):
                     timestr = datetime.now().strftime('%d%b%y.%H-%M-%S')
@@ -139,7 +138,7 @@ if __name__ == '__main__':
                         '--mtw='+str(mtw),
                         '--precision='+str(prec),
                         '--approx='+str(approx),
-                        '--loadbalance='+lb, '--loadbalancearg='+str(lba),
+                        '--loadbalance='+lb,
                         '--withtp='+str(tp),
                         '--log='+str(log), '--logdir='+log_dir,
                         '--artificialdelay='+str(artdel)]
