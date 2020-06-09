@@ -421,7 +421,7 @@ class Worker:
 
     @timing.timeit(key='comm:redistribute')
     @mpiprof.traceit(key='comm:redistribute')
-    def redistribute(self, turn, beam, tcomp, tconst):
+    def redistribute(self, turn, beam, tcomp, tsync):
         self.coefficients['particles'].append(beam.n_macroparticles)
         self.coefficients['times'].append(tcomp)
 
@@ -442,17 +442,18 @@ class Worker:
             w=weights).convert().coef
         latency = p[1]
         # assert latency != 0
-        tconst += p[0]
-        totalt = tcomp + tconst
+        ctime = p[0]
+        # tconst += p[0]
+        # totalt = tcomp + tconst
         # latency = tcomp / beam.n_macroparticles
         sendbuf = np.array(
-            [latency, tconst, totalt, beam.n_macroparticles], dtype=float)
+            [latency, ctime, tsync, beam.n_macroparticles], dtype=float)
         recvbuf = np.empty(len(sendbuf) * self.workers, dtype=float)
         self.intercomm.Allgather(sendbuf, recvbuf)
 
         latencies = recvbuf[::4]
         ctimes = recvbuf[1::4]
-        totalt = recvbuf[2::4]
+        synctimes = recvbuf[2::4]
         Pi_old = recvbuf[3::4]
 
         avgt = np.mean(totalt)
@@ -462,8 +463,9 @@ class Worker:
         # it means that a machine will be assigned negative number fo particles
         # I need to put a lower bound on the number of particles that
         # a machine can get, example 10% of the total/n_workers
-        Pi = np.maximum((avgt - ctimes) / latencies, 0.1 * P/self.workers)
-
+        # Pi = np.maximum((avgt - ctimes) / latencies, 0.1 * P/self.workers)
+        # Pi = np.maximum((avgt - ctimes) / latencies, 0.1 * P/self.workers)
+        Pi = np.maximum(Pi_old + (synctimes - avgt - ctimes)/latencies, 0.1 * P/self.workers)
         # sum1 = np.sum(ctimes/latencies)
         # sum2 = np.sum(1./latencies)
         # Pi = (P + sum1 - ctimes * sum2)/(latencies * sum2)
@@ -728,8 +730,9 @@ class Worker:
         if self.lb_type != 'reportonly':
             intv = self.redistribute(turn, beam,
                                      tcomp=tcomp_new-self.dlb['tcomp'],
-                                     tconst=((tconst_new-self.dlb['tconst'])
-                                             + (tcomm_new - self.dlb['tcomm'])))
+                                     tsync=tsync_new - self.dlb['tsync'])
+                                     # tconst=((tconst_new-self.dlb['tconst'])
+                                             # + (tcomm_new - self.dlb['tcomm'])))
         if self.lb_type == 'dynamic':
             self.lb_turns[0] += intv
         self.report(turn, beam, tcomp=tcomp_new-self.dlb['tcomp'],
