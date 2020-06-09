@@ -430,7 +430,7 @@ class Worker:
         # e(-x/5), where x is the abs(distance) from the last
         # datapoint.
         ncoeffs = len(self.coefficients['times'])
-        weights = np.exp(-(ncoeffs - 1 - np.arange(ncoeffs))/5)
+        weights = np.exp(-(ncoeffs - 1 - np.arange(ncoeffs))/self.dlb['decay'])
         # weights = np.ones(len(self.coefficients['times']))
         # weights[-1] = np.sum(weights[:-1])
         # We model the runtime as latency * particles + c
@@ -481,7 +481,7 @@ class Worker:
         # Let's say that each transaction has to be at least
         # 1% of total/n_workers
         transactions = calc_transactions(
-            dPi, cutoff=0.05 * P / self.workers)[self.rank]
+            dPi, cutoff=self.dlb['cutoff'] * P / self.workers)[self.rank]
         if dPi[self.rank] > 0 and len(transactions) > 0:
             reqs = []
             tot_to_send = np.sum([t[1] for t in transactions])
@@ -678,31 +678,43 @@ class Worker:
                     # self.delay['tcomm'] = timing.get(['comm:'])
                     self.delay['tcomp'] = timing.get(['comp:'])
 
-    def initDLB(self, lb_type, lb_arg, n_iter):
+    def initDLB(self, lbstr, n_iter):
+        # lbstr = lbtype,lbarg,cutoff,decay
         self.lb_turns = []
-        self.lb_type = lb_type
-        self.lb_arg = lb_arg
-        if lb_type == 'times':
-            if lb_arg != 0:
-                intv = max(n_iter // (lb_arg+1), 1)
+
+        self.lb_type = lbstr.split(',')[0]
+
+        if self.lb_type == 'off':
+            return self.lb_turns
+
+        assert len(lbstr.split(',')) == 4, 'Wrong number of LB arguments'
+        lb_arg, cutoff, decay = lbstr.split(',')[1:]
+        if not cutoff:
+            cutoff = 0.01
+        if not decay:
+            decay = 4
+        if self.lb_type == 'times':
+            if lb_arg:
+                intv = max(n_iter // (int(lb_arg)+1), 1)
             else:
                 intv = max(n_iter // (10 + 1), 1)
             self.lb_turns = np.arange(0, n_iter, intv)[1:]
 
-        elif lb_type == 'interval':
-            if lb_arg != 0:
-                self.lb_turns = np.arange(0, n_iter, lb_arg)[1:]
+        elif self.lb_type == 'interval':
+            if lb_arg:
+                self.lb_turns = np.arange(0, n_iter, int(lb_arg))[1:]
             else:
                 self.lb_turns = np.arange(0, n_iter, 1000)[1:]
-        elif lb_type == 'dynamic':
+        elif self.lb_type == 'dynamic':
             self.lb_turns = [self.start_turn]
-        elif lb_type == 'reportonly':
-            if lb_arg != 0:
-                self.lb_turns = np.arange(0, n_iter, lb_arg)
+        elif self.lb_type == 'reportonly':
+            if lb_arg:
+                self.lb_turns = np.arange(0, n_iter, int(lb_arg))
             else:
                 self.lb_turns = np.arange(0, n_iter, 100)
-        self.dlb_times = {'tcomp': 0, 'tcomm': 0,
-                          'tconst': 0, 'tsync': 0}
+        self.dlb = {'tcomp': 0, 'tcomm': 0,
+                    'tconst': 0, 'tsync': 0,
+                    'cutoff': float(cutoff), 'decay': float(decay)}
         return self.lb_turns
 
     def DLB(self, turn, beam):
@@ -715,19 +727,19 @@ class Worker:
         tsync_new = timing.get(['serial:sync', 'serial:intraSync'])
         if self.lb_type != 'reportonly':
             intv = self.redistribute(turn, beam,
-                                     tcomp=tcomp_new-self.dlb_times['tcomp'],
-                                     tconst=((tconst_new-self.dlb_times['tconst'])
-                                             + (tcomm_new - self.dlb_times['tcomm'])))
+                                     tcomp=tcomp_new-self.dlb['tcomp'],
+                                     tconst=((tconst_new-self.dlb['tconst'])
+                                             + (tcomm_new - self.dlb['tcomm'])))
         if self.lb_type == 'dynamic':
             self.lb_turns[0] += intv
-        self.report(turn, beam, tcomp=tcomp_new-self.dlb_times['tcomp'],
-                    tcomm=tcomm_new-self.dlb_times['tcomm'],
-                    tconst=tconst_new-self.dlb_times['tconst'],
-                    tsync=tsync_new-self.dlb_times['tsync'])
-        self.dlb_times['tcomp'] = tcomp_new
-        self.dlb_times['tcomm'] = tcomm_new
-        self.dlb_times['tconst'] = tconst_new
-        self.dlb_times['tsync'] = tsync_new
+        self.report(turn, beam, tcomp=tcomp_new-self.dlb['tcomp'],
+                    tcomm=tcomm_new-self.dlb['tcomm'],
+                    tconst=tconst_new-self.dlb['tconst'],
+                    tsync=tsync_new-self.dlb['tsync'])
+        self.dlb['tcomp'] = tcomp_new
+        self.dlb['tcomm'] = tcomm_new
+        self.dlb['tconst'] = tconst_new
+        self.dlb['tsync'] = tsync_new
 
 
 def calc_transactions(dpi, cutoff):
@@ -735,7 +747,7 @@ def calc_transactions(dpi, cutoff):
     arr = []
     for i in enumerate(dpi):
         trans[i[0]] = []
-        arr.append({'val': i[1], 'id':i[0]})
+        arr.append({'val': i[1], 'id': i[0]})
 
     # First pass is to prioritize transactions within the same node
     # basically transactions between worker i and i + 1, i: 0, 2, 4, ...

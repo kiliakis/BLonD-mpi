@@ -136,7 +136,7 @@ beam.split()
 # map_ = [long_tracker, profile]
 mpiprint("Map set")
 
-worker.initDLB(args['loadbalance'], args['loadbalancearg'], n_iterations)
+worker.initDLB(args['loadbalance'], n_iterations)
 
 worker.initDelay(args['artificialdelay'])
 
