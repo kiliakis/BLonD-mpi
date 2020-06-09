@@ -425,6 +425,9 @@ class Worker:
         self.coefficients['particles'].append(beam.n_macroparticles)
         self.coefficients['times'].append(tcomp)
 
+        # Keep only the last 5 values
+        self.coefficients['particles'] = self.coefficients['particles'][-5:]
+        self.coefficients['times'] = self.coefficients['times'][-5:]
         # We pass weights to the polyfit
         # The weight function I am using is:
         # e(-x/5), where x is the abs(distance) from the last
