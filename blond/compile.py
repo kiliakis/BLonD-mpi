@@ -9,7 +9,7 @@
 
 '''
 
-@author: Danilo Quartullo, Konstantinos Iliakis
+@author: Danilo Quartullo
 '''
 
 # MAKE SURE YOU HAVE GCC 4.8.1 OR LATER VERSIONS ON YOUR SYSTEM LINKED TO YOUR
@@ -17,7 +17,6 @@
 # source /afs/cern.ch/sw/lcg/contrib/gcc/4.8.1/x86_64-slc6/setup.sh
 # TO GET GCC 4.8.1 64 BIT. IN GENERAL IT IS ADVISED TO USE PYTHON 64 BIT PLUS
 # GCC 64 BIT.
-
 from __future__ import print_function
 import os
 import sys
@@ -69,13 +68,19 @@ parser.add_argument('--flags', type=str, default='',
 parser.add_argument('--libs', type=str, default='',
                     help='Any extra libraries needed to compile')
 
+parser.add_argument('-libname', '--libname', type=str, default=os.path.join(basepath, 'cpp_routines/libblond'),
+                    help='The blond library name, without the file extension.')
+
+
 # Additional libs needed to compile the blond library
 libs = []
 
-
 # EXAMPLE FLAGS: -Ofast -std=c++11 -fopt-info-vec -march=native
 #                -mfma4 -fopenmp -ftree-vectorizer-verbose=1
-cflags = ['-O3', '-ffast-math', '-std=c++11', '-shared']
+cflags = ['-O3', '-ffast-math', '-g', '-std=c++11', '-shared',
+          '-march=native', '-Wno-psabi']
+# cflags = ['-Ofast', '-std=c++11']
+# libs = ['-L/afs/cern.ch/work/k/kiliakis/install/lib','-lfftw3', '-lm']
 
 cpp_files = [
     os.path.join(basepath, 'cpp_routines/kick.cpp'),
@@ -87,6 +92,7 @@ cpp_files = [
     os.path.join(basepath, 'cpp_routines/fast_resonator.cpp'),
     os.path.join(basepath, 'cpp_routines/beam_phase.cpp'),
     os.path.join(basepath, 'cpp_routines/fft.cpp'),
+    os.path.join(basepath, 'cpp_routines/common.cpp'),
     os.path.join(basepath, 'toolbox/tomoscope.cpp'),
     os.path.join(basepath, 'synchrotron_radiation/synchrotron_radiation.cpp'),
     os.path.join(basepath, 'beam/sparse_histogram.cpp'),
@@ -124,19 +130,25 @@ if (__name__ == "__main__"):
         if 'win' in sys.platform:
             libs += ['-lfftw3-3']
         else:
-            libs += ['-lfftw3']
+            libs += ['-lfftw3', '-lfftw3f']
             if args.with_fftw_omp:
                 cflags += ['-DFFTW3PARALLEL']
-                libs += ['-lfftw3_omp']
+                libs += ['-lfftw3_omp', '-lfftw3f_omp']
             elif args.with_fftw_threads:
                 cflags += ['-DFFTW3PARALLEL']
-                libs += ['-lfftw3_threads']
+                libs += ['-lfftw3_threads', '-lfftw3f_threads']
 
     if ('posix' in os.name):
         cflags += ['-fPIC']
-        libname = os.path.join(basepath, 'cpp_routines/libblond.so')
+        root, ext = os.path.splitext(args.libname)
+        if not ext:
+            ext = '.so'
+        libname = root + ext
     elif ('win' in sys.platform):
-        libname = os.path.join(basepath, 'cpp_routines/libblond.dll')
+        root, ext = os.path.splitext(args.libname)
+        if not ext:
+            ext = '.dll'
+        libname = root + ext
     else:
         print(
             'YOU ARE NOT USING A WINDOWS OR LINUX OPERATING SYSTEM. ABORTING...')

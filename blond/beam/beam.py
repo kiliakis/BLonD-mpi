@@ -7,7 +7,7 @@
 # submit itself to any jurisdiction.
 # Project website: http://blond.web.cern.ch/
 
-"""Module containing the fundamental beam class with methods to compute beam
+"""Module containing the fundamental beam class with methods to compute beam 
 statistics
 
 :Authors: **Danilo Quartullo**, **Helga Timko**, **ALexandre Lasheen**
@@ -17,10 +17,8 @@ statistics
 from __future__ import division
 from builtins import object
 import numpy as np
-import itertools as itl
 from scipy.constants import m_p, m_e, e, c
 from ..trackers.utilities import is_in_separatrix
-from ..utils import exceptions as blExcept
 from ..utils import bmath as bm
 
 
@@ -55,7 +53,7 @@ class Beam(object):
 
     This class containes the beam coordinates (dt, dE) and the beam properties.
 
-    The beam coordinate 'dt' is defined as the particle arrival time to the RF
+    The beam coordinate 'dt' is defined as the particle arrival time to the RF 
     station w.r.t. the reference time that is the sum of turns. The beam
     coordiate 'dE' is defined as the particle energy offset w.r.t. the
     energy of the synchronous particle.
@@ -139,17 +137,23 @@ class Beam(object):
         self.gamma = Ring.gamma[0][0]
         self.energy = Ring.energy[0][0]
         self.momentum = Ring.momentum[0][0]
-        self.dt = np.zeros([int(n_macroparticles)])
-        self.dE = np.zeros([int(n_macroparticles)])
+        self.dt = np.zeros([int(n_macroparticles)], dtype=bm.precision.real_t)
+        self.dE = np.zeros([int(n_macroparticles)], dtype=bm.precision.real_t)
+
         self.mean_dt = 0.
-        self.mean_dE = 0.
         self.sigma_dt = 0.
+        self.min_dt = 0.
+        self.max_dt = 0.
+
+        self.mean_dE = 0.
         self.sigma_dE = 0.
+        self.min_dE = 0.
+        self.max_dE = 0.
+
         self.intensity = float(intensity)
         self.n_macroparticles = int(n_macroparticles)
         self.ratio = self.intensity/self.n_macroparticles
         self.id = np.arange(1, self.n_macroparticles + 1, dtype=int)
-        # For MPI
         self.n_total_macroparticles_lost = 0
 
     @property
@@ -157,7 +161,7 @@ class Beam(object):
         '''Number of lost macro-particles, defined as @property.
 
         Returns
-        -------
+        -------        
         n_macroparticles_lost : int
             number of macroparticles lost.
 
@@ -170,7 +174,7 @@ class Beam(object):
         '''Number of transmitted macro-particles, defined as @property.
 
         Returns
-        -------
+        -------        
         n_macroparticles_alive : int
             number of macroparticles not lost.
 
@@ -184,8 +188,10 @@ class Beam(object):
 
         indexalive = np.where(self.id == 0)[0]
         if len(indexalive) < self.n_macroparticles:
-            self.dt = np.ascontiguousarray(self.beam.dt[indexalive])
-            self.dE = np.ascontiguousarray(self.beam.dE[indexalive])
+            self.dt = np.ascontiguousarray(
+                self.beam.dt[indexalive], dtype=bm.precision.real_t, order='C')
+            self.dE = np.ascontiguousarray(
+                self.beam.dE[indexalive], dtype=bm.precision.real_t, order='C')
             self.n_macroparticles = len(self.beam.dt)
         else:
             # AllParticlesLost
@@ -206,10 +212,16 @@ class Beam(object):
 
         # Statistics only for particles that are not flagged as lost
         itemindex = np.where(self.id != 0)[0]
-        self.mean_dt = np.mean(self.dt[itemindex])
-        self.mean_dE = np.mean(self.dE[itemindex])
-        self.sigma_dt = np.std(self.dt[itemindex])
-        self.sigma_dE = np.std(self.dE[itemindex])
+        # itemindex = bm.where(self.id, 0)
+        self.mean_dt = bm.mean(self.dt[itemindex])
+        self.sigma_dt = bm.std(self.dt[itemindex])
+        self.min_dt = np.min(self.dt[itemindex])
+        self.max_dt = np.max(self.dt[itemindex])
+
+        self.mean_dE = bm.mean(self.dE[itemindex])
+        self.sigma_dE = bm.std(self.dE[itemindex])
+        self.min_dE = np.min(self.dE[itemindex])
+        self.max_dE = np.max(self.dE[itemindex])
 
         # R.m.s. emittance in Gaussian approximation
         self.epsn_rms_l = np.pi*self.sigma_dE*self.sigma_dt  # in eVs
@@ -236,7 +248,7 @@ class Beam(object):
     def losses_longitudinal_cut(self, dt_min, dt_max):
         '''Beam losses based on longitudinal cuts.
 
-        Set to 0 all the particle's id with dt not in the interval
+        Set to 0 all the particle's id with dt not in the interval 
         (dt_min, dt_max).
 
         Parameters
@@ -286,83 +298,6 @@ class Beam(object):
         if itemindex.size != 0:
             self.id[itemindex] = 0
 
-    def add_particles(self, new_particles):
-        '''
-        Method to add array of new particles to beam object
-        New particles are given id numbers sequential from last id of this beam
-
-        Parameters
-        ----------
-        new_particles : array-like
-            (2, n) array of (dt, dE) for new particles
-        '''
-
-        try:
-            newdt = new_particles[0]
-            newdE = new_particles[1]
-            if len(newdt) != len(newdE):
-                raise blExcept.ParticleAdditionError(
-                    "new_particles must have equal number of time and energy coordinates")
-        except TypeError:
-            raise blExcept.ParticleAdditionError(
-                "new_particles shape must be (2, n)")
-
-        nNew = len(newdt)
-
-        self.id = np.concatenate((self.id, np.arange(self.n_macroparticles + 1,
-                                                     self.n_macroparticles
-                                                     + nNew + 1, dtype=int)))
-        self.n_macroparticles += nNew
-
-        self.dt = np.concatenate((self.dt, newdt))
-        self.dE = np.concatenate((self.dE, newdE))
-
-    def add_beam(self, other_beam):
-        '''
-        Method to add the particles from another beam to this beam
-        New particles are given id numbers sequential from last id of this beam
-        Particles with id == 0 keep id == 0 and are included in addition
-
-        Parameters
-        ----------
-        other_beam : blond beam object
-        '''
-
-        if not isinstance(other_beam, type(self)):
-            raise TypeError("add_beam method requires a beam object as input")
-
-        self.dt = np.concatenate((self.dt, other_beam.dt))
-        self.dE = np.concatenate((self.dE, other_beam.dE))
-
-        counter = itl.count(self.n_macroparticles + 1)
-        newids = np.zeros(other_beam.n_macroparticles)
-
-        for i in range(other_beam.n_macroparticles):
-            if other_beam.id[i]:
-                newids[i] = next(counter)
-            else:
-                next(counter)
-
-        self.id = np.concatenate((self.id, newids))
-        self.n_macroparticles += other_beam.n_macroparticles
-
-    def __iadd__(self, other):
-        '''
-        Initialisation of in place addition calls add_beam(other) if other
-        is a blond beam object, calls add_particles(other) otherwise
-
-        Parameters
-        ----------
-        other : blond beam object or (2, n) array
-        '''
-
-        if isinstance(other, type(self)):
-            self.add_beam(other)
-            return self
-        else:
-            self.add_particles(other)
-            return self
-
     def split(self, random=False, fast=False):
         '''
         MPI ONLY ROUTINE: Splits the beam equally among the workers for
@@ -399,6 +334,58 @@ class Beam(object):
         assert (len(self.dt) == len(self.dE) and len(self.dt) == len(self.id))
 
         self.n_macroparticles = len(self.dt)
+        # self.is_splitted = True
+
+    # Split and gather should be going in pairs, undefined behavior in case
+    # of split split or gather gather sequence
+    # def split(self):
+    #     from ..utils.mpi_config import worker
+    #     if len(worker.indices) == 0 or worker.isMaster:
+    #         start, size = worker.split(self.n_macroparticles)
+    #         self.dt = self.dt[start: start + size]
+    #         self.dE = self.dE[start: start + size]
+    #         self.id = self.id[start: start + size]
+    #         worker.indices['beam'] = {'start': start,
+    #                                   'size': size,
+    #                                   'stride': 1,
+    #                                   'total_size': self.n_macroparticles}
+    #         self.n_macroparticles = size
+
+    # def split_random(self):
+    #     from ..utils.mpi_config import worker
+    #     if len(worker.indices) == 0 or worker.isMaster:
+    #         # start, size = worker.split(self.n_macroparticles)
+    #         start = worker.rank
+    #         stride = worker.workers
+    #         self.dt = np.ascontiguousarray(self.dt[start:: stride])
+    #         self.dE = np.ascontiguousarray(self.dE[start:: stride])
+    #         self.id = np.ascontiguousarray(self.id[start:: stride])
+    #         size = len(self.dt)
+    #         worker.indices['beam'] = {'start': start,
+    #                                   'size': size,
+    #                                   'stride': stride,
+    #                                   'total_size': self.n_macroparticles}
+    #         self.n_macroparticles = size
+
+    # def split_random(self):
+    #     from ..utils.mpi_config import worker
+    #     import random
+
+    #     ids = np.arange(self.n_macroparticles)
+    #     random.shuffle(ids)
+    #     ids = worker.scatter(ids, self.n_macroparticles)
+    #     self.dt = np.ascontiguousarray(
+    #         self.dt[ids], dtype=bm.precision.real_t, order='C')
+    #     self.dE = np.ascontiguousarray(
+    #         self.dE[ids], dtype=bm.precision.real_t, order='C')
+    #     self.id = np.ascontiguousarray(
+    #         self.id[ids], dtype=bm.precision.real_t, order='C')
+    #     size = len(self.dt)
+    #     worker.indices['beam'] = {'start': 0,
+    #                               'stride': 0,
+    #                               'size': size,
+    #                               'total_size': self.n_macroparticles}
+    #     self.n_macroparticles = size
 
     def gather(self, all=False):
         '''
@@ -418,12 +405,24 @@ class Beam(object):
             self.dt = worker.allgather(self.dt)
             self.dE = worker.allgather(self.dE)
             self.id = worker.allgather(self.id)
+            self.is_splitted = False
         else:
             self.dt = worker.gather(self.dt)
             self.dE = worker.gather(self.dE)
             self.id = worker.gather(self.id)
+            if worker.isMaster:
+                self.is_splitted = False
 
         self.n_macroparticles = len(self.dt)
+
+    # def gather(self):
+    #     from ..utils.mpi_config import worker
+
+    #     total_size = worker.indices['beam']['total_size']
+    #     self.dt = worker.gather(self.dt, total_size)
+    #     self.dE = worker.gather(self.dE, total_size)
+    #     self.id = worker.gather(self.id, total_size)
+    #     self.n_macroparticles = total_size
 
     def gather_statistics(self, all=False):
         '''
@@ -439,21 +438,133 @@ class Beam(object):
                 'ERROR: Cannot use this routine unless in MPI Mode')
 
         from ..utils.mpi_config import worker
-
         if all:
-            temp = worker.allgather(np.array([self.mean_dt]))
-            self.mean_dt = np.mean(temp)
-            temp = worker.allgather(np.array([self.mean_dE]))
-            self.mean_dE = np.mean(temp)
-            temp = worker.allgather(np.array([self.n_macroparticles_lost]))
-            self.n_total_macroparticles_lost = np.sum(temp)
+            # temp = worker.allgather(np.array([self.mean_dt]))
+            # self.mean_dt = bm.mean(temp)
+
+            self.mean_dt = worker.allreduce(
+                np.array([self.mean_dt]), operator='mean')[0]
+            
+            self.min_dt = worker.allreduce(
+                np.array([np.min(self.dt)]), operator='min')[0]
+
+            self.max_dt = worker.allreduce(
+                np.array([np.max(self.dt)]), operator='max')[0]
+
+            self.std_dt = worker.allreduce(
+                np.array([self.mean_dt, self.sigma_dt, self.n_macroparticles_alive]),
+                operator='std')[0]
+
+            self.mean_dE = worker.allreduce(
+                np.array([self.mean_dE]), operator='mean')[0]
+
+            self.min_dE = worker.allreduce(
+                np.array([np.min(self.dE)]), operator='min')[0]
+
+            self.max_dE = worker.allreduce(
+                np.array([np.max(self.dE)]), operator='max')[0]
+
+            self.std_dE = worker.allreduce(
+                np.array([self.mean_dE, self.sigma_dE, self.n_macroparticles_alive]),
+                operator='std')[0]
+
+            self.n_total_macroparticles_lost = worker.allreduce(
+                np.array([self.n_macroparticles_lost]), operator='sum')[0]
+
+
         else:
-            temp = worker.gather(np.array([self.mean_dt]))
-            self.mean_dt = np.mean(temp)
-            temp = worker.gather(np.array([self.mean_dE]))
-            self.mean_dE = np.mean(temp)
-            temp = worker.gather(np.array([self.n_macroparticles_lost]))
-            self.n_total_macroparticles_lost = np.sum(temp)
+            self.mean_dt = worker.reduce(
+                np.array([self.mean_dt]), operator='mean')[0]
+            
+            self.min_dt = worker.reduce(
+                np.array([np.min(self.dt)]), operator='min')[0]
+
+            self.max_dt = worker.reduce(
+                np.array([np.max(self.dt)]), operator='max')[0]
+
+            self.std_dt = worker.reduce(
+                np.array([self.mean_dt, self.sigma_dt, self.n_macroparticles_alive]),
+                operator='std')[0]
+
+            self.mean_dE = worker.reduce(
+                np.array([self.mean_dE]), operator='mean')[0]
+
+            self.min_dE = worker.reduce(
+                np.array([np.min(self.dE)]), operator='min')[0]
+
+            self.max_dE = worker.reduce(
+                np.array([np.max(self.dE)]), operator='max')[0]
+
+            self.std_dE = worker.reduce(
+                np.array([self.mean_dE, self.sigma_dE, self.n_macroparticles_alive]),
+                operator='std')[0]
+
+            self.n_total_macroparticles_lost = worker.reduce(
+                np.array([self.n_macroparticles_lost]), operator='sum')[0]
+
+
+            # temp = worker.gather(np.array([self.mean_dt]))
+            # self.mean_dt = bm.mean(temp)
+
+            # temp = worker.gather(np.array([self.mean_dE]))
+            # self.mean_dE = bm.mean(temp)
+
+            # temp = worker.gather(np.array([self.n_macroparticles_lost]))
+            # self.n_total_macroparticles_lost = np.sum(temp)
+
+            # temp = worker.gather(np.array([np.min(self.dt)]))
+            # self.min_dt = np.min(temp)
+
+            # temp = worker.gather(np.array([np.max(self.dt)]))
+            # self.max_dt = np.max(temp)
+
+            # temp = worker.gather(np.array([np.max(self.dt)]))
+            # self.max_dt = np.max(temp)
+
+            # temp = worker.gather(np.array([np.max(self.dt)]))
+            # self.max_dt = np.max(temp)
+
+        #     temp = worker.gather(np.array([self.mean_dt]))
+        #     self.mean_dt = bm.mean(temp)
+        #     temp = worker.gather(np.array([self.mean_dE]))
+        #     self.mean_dE = bm.mean(temp)
+        #     temp = worker.gather(np.array([self.n_macroparticles_lost]))
+        #     self.n_total_macroparticles_lost = np.sum(temp)
+
+        #     total_size = worker.workers
+        #     mean_dt_arr = worker.gather(np.array([self.mean_dt]), total_size)
+        #     mean_dE_arr = worker.gather(np.array([self.mean_dE]), total_size)
+        #     losses_arr = worker.gather(np.array([self.n_macroparticles_lost]),
+        #                                total_size)
+
+        #     self.mean_dt = np.mean(mean_dt_arr)
+        #     self.min_dt = np.min(min_dt_arr)
+        #     self.max_dt = np.max(max_dt_arr)
+
+        #     self.mean_dE = np.mean(mean_dE_arr)
+        #     self.min_dE = np.min(min_dE_arr)
+        #     self.max_dE = np.max(max_dE_arr)
+
+        #     self.losses = np.sum(losses_arr)
+        # else:
+
+    # def gather_mean_dE(self):
+    #     from ..utils.mpi_config import worker
+
+    #     total_size = worker.workers
+    #     self.mean_dE = np.mean(self.dE)
+    #     mean_dE_arr = worker.gather(np.array([self.mean_dE]), total_size)
+    #     self.mean_dE = np.mean(mean_dE_arr)
+    #     return self.mean_dE
+
+    # def gather_mean_dt(self):
+    #     from ..utils.mpi_config import worker
+
+    #     total_size = worker.workers
+    #     self.mean_dt = np.mean(self.dt)
+    #     mean_dt_arr = worker.gather(np.array([self.mean_dt]), total_size)
+    #     self.mean_dt = np.mean(mean_dt_arr)
+    #     return self.mean_dt
 
     def gather_losses(self, all=False):
         '''

@@ -10,12 +10,13 @@ import numpy as np
 import copy
 import matplotlib.pyplot as plt
 from scipy.integrate import cumtrapz
-
+from ..utils import bmath as bm
 from ..beam.beam import Beam
 from ..beam.distributions import matched_from_distribution_function,\
                            matched_from_line_density, populate_bunch,\
                            distribution_function, potential_well_cut,\
                            X0_from_bunch_length
+import gc
 
 def matched_from_distribution_density_multibunch(beam, Ring, FullRingAndRF, distribution_options_list,
                                       n_bunches, bunch_spacing_buckets,
@@ -205,10 +206,10 @@ def matched_from_distribution_density_multibunch(beam, Ring, FullRingAndRF, dist
                      TotalInducedVoltageIteration.induced_voltage)
             plt.show()
                 
-    beam.dt = beamIteration.dt
+    beam.dt = beamIteration.dt.astype(dtype=bm.precision.real_t, order='C', copy=False)
 
-    beam.dE = beamIteration.dE
-    
+    beam.dE = beamIteration.dE.astype(dtype=bm.precision.real_t, order='C', copy=False)
+    gc.collect()
     
 def matched_from_line_density_multibunch(beam, Ring,
                         FullRingAndRF, line_density_options_list, n_bunches,
@@ -366,9 +367,9 @@ def matched_from_line_density_multibunch(beam, Ring,
         plt.plot(TotalInducedVoltageIteration.profile.bin_centers, TotalInducedVoltageIteration.induced_voltage)
         plt.show()
                 
-    beam.dt = beamIteration.dt
-    beam.dE = beamIteration.dE
-
+    beam.dt = beamIteration.dt.astype(dtype=bm.precision.real_t, order='C', copy=False)
+    beam.dE = beamIteration.dE.astype(dtype=bm.precision.real_t, order='C', copy=False)
+    gc.collect()
 
 def match_beam_from_distribution(beam, FullRingAndRF, GeneralParameters,
                                   distribution_options, n_bunches,
@@ -451,12 +452,12 @@ def match_beam_from_distribution(beam, FullRingAndRF, GeneralParameters,
                       potential_well, seed, distribution_options,
                       full_ring_and_RF=FullRingAndRF)
         if indexBunch==0:
-            beam.dt = temporary_beam.dt
-            beam.dE = temporary_beam.dE
+            beam.dt = temporary_beam.dt.astype(dtype=bm.precision.real_t, order='C', copy=False)
+            beam.dE = temporary_beam.dE.astype(dtype=bm.precision.real_t, order='C', copy=False)
         else:
             beam.dt = np.append(beam.dt, temporary_beam.dt +(indexBunch *bunch_spacing_buckets *bucket_size_tau))
             beam.dE = np.append(beam.dE, temporary_beam.dE)
-    
+    gc.collect()
     print(str(n_bunches)+' stationary bunches without intensity generated')
 #------------------------------------------------------------------------
 # REMATCH THE BUNCHES WITH INTENSITY EFFECTS
@@ -467,7 +468,9 @@ def match_beam_from_distribution(beam, FullRingAndRF, GeneralParameters,
             conv = 0.
             # Compute the induced voltage/potential for all the beam
             profile.track()
+            # print('Before induced_voltage_sum')
             TotalInducedVoltage.induced_voltage_sum()
+            # print('After induced_voltage_sum')
             
             induced_voltage_coordinates = TotalInducedVoltage.time_array
             induced_voltage = TotalInducedVoltage.induced_voltage

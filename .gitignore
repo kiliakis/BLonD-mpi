@@ -20,3 +20,4 @@
 *.tex
 *.csv
 *.png
+*tests_mpi/*

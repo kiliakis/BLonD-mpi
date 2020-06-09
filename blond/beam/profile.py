@@ -17,9 +17,8 @@
 from __future__ import division, print_function
 from builtins import object
 import numpy as np
-# from numpy.fft import rfft, rfftfreq
+from numpy.fft import rfft, rfftfreq
 from scipy import ndimage
-import ctypes
 from ..toolbox import filters_and_fitting as ffroutines
 from ..utils import bmath as bm
 
@@ -115,14 +114,14 @@ class CutOptions(object):
 
         if self.cuts_unit == 'rad' and self.RFParams is None:
             # CutError
-            raise RuntimeError('You should pass an RFParams object to ' +
-                               'convert from radians to seconds')
+            raise RuntimeError('You should pass an RFParams object to '
+                               + 'convert from radians to seconds')
         if self.cuts_unit != 'rad' and self.cuts_unit != 's':
             # CutError
             raise RuntimeError('cuts_unit should be "s" or "rad"')
 
-        self.edges = np.zeros(n_slices + 1, dtype=float)
-        self.bin_centers = np.zeros(n_slices, dtype=float)
+        self.edges = np.zeros(n_slices + 1, dtype=bm.precision.real_t, order='C')
+        self.bin_centers = np.zeros(n_slices, dtype=bm.precision.real_t, order='C')
 
     def set_cuts(self, Beam=None):
         """
@@ -149,13 +148,13 @@ class CutOptions(object):
 
         else:
 
-            self.cut_left = float(self.convert_coordinates(self.cut_left,
-                                                           self.cuts_unit))
-            self.cut_right = float(self.convert_coordinates(self.cut_right,
-                                                            self.cuts_unit))
+            self.cut_left = self.convert_coordinates(self.cut_left,
+                                                     self.cuts_unit)
+            self.cut_right = self.convert_coordinates(self.cut_right,
+                                                      self.cuts_unit)
 
         self.edges = np.linspace(self.cut_left, self.cut_right,
-                                 self.n_slices + 1)
+                                 self.n_slices + 1).astype(dtype=bm.precision.real_t, order='C', copy=False)
         self.bin_centers = (self.edges[:-1] + self.edges[1:])/2
         self.bin_size = (self.cut_right - self.cut_left) / self.n_slices
 
@@ -394,11 +393,11 @@ class Profile(object):
         self.set_slices_parameters()
 
         # Initialize profile array as zero array
-        self.n_macroparticles = np.zeros(self.n_slices, dtype=float)
+        self.n_macroparticles = np.zeros(self.n_slices, dtype=bm.precision.real_t, order='C')
 
         # Initialize beam_spectrum and beam_spectrum_freq as empty arrays
-        self.beam_spectrum = np.array([], dtype=float)
-        self.beam_spectrum_freq = np.array([], dtype=float)
+        self.beam_spectrum = np.array([], dtype=bm.precision.real_t, order='C')
+        self.beam_spectrum_freq = np.array([], dtype=bm.precision.real_t, order='C')
 
         if OtherSlicesOptions.smooth:
             self.operations = [self._slice_smooth]
@@ -438,56 +437,41 @@ class Profile(object):
 
     @timing.timeit(key='comp:histo')
     @mpiprof.traceit(key='comp:histo')
-    def _slice(self, reduce=True):
+    def _slice(self):
         """
-        Constant space slicing with a constant frame.
+        Constant space slicing with a constant frame. 
         """
-        bm.slice(self.Beam.dt, self.n_macroparticles, self.cut_left,
-                 self.cut_right)
+        bm.slice(self.Beam.dt, self.n_macroparticles,
+                 self.cut_left, self.cut_right)
 
-        if bm.mpiMode() and reduce:
-            self.reduce_histo()
-
-    def reduce_histo(self, dtype=np.uint32):
-        if not bm.mpiMode():
-            raise RuntimeError(
-                'ERROR: Cannot use this routine unless in MPI Mode')
-
+    def reduce_histo(self):
         from ..utils.mpi_config import worker
 
         with timing.timed_region('serial:conversion'):
             with mpiprof.traced_region('serial:conversion'):
                 self.n_macroparticles = self.n_macroparticles.astype(
-                    dtype, order='C')
+                    np.uint32, order='C')
 
-        worker.allreduce(self.n_macroparticles)
+        worker.allreduce(self.n_macroparticles, dtype=np.uint32, operator='custom_sum')
 
         with timing.timed_region('serial:conversion'):
             with mpiprof.traced_region('serial:conversion'):
-                self.n_macroparticles = self.n_macroparticles.astype(
-                    np.float64, order='C')
+                self.n_macroparticles = self.n_macroparticles.astype(dtype=bm.precision.real_t, order='C', copy=False)
 
     @timing.timeit(key='serial:scale_histo')
     @mpiprof.traceit(key='serial:scale_histo')
     def scale_histo(self):
-        if not bm.mpiMode():
-            raise RuntimeError(
-                'ERROR: Cannot use this routine unless in MPI Mode')
-        
         from ..utils.mpi_config import worker
         bm.mul(self.n_macroparticles, worker.workers, self.n_macroparticles)
 
         # self.n_macroparticles *= worker.workers
 
-    def _slice_smooth(self, reduce=True):
+    def _slice_smooth(self):
         """
         At the moment 4x slower than _slice but smoother (filtered).
         """
-        bm.slice_smooth(self.Beam.dt, self.n_macroparticles, self.cut_left,
-                        self.cut_right)
-
-        if bm.mpiMode() and reduce:
-            self.reduce_histo(dtype=np.float64)
+        bm.slice_smooth(self.Beam.dt, self.n_macroparticles,
+                        self.cut_left, self.cut_right)
 
     def apply_fit(self):
         """

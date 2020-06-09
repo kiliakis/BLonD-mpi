@@ -6,7 +6,9 @@ path = os.path.realpath(__file__)
 basepath = os.sep.join(path.split(os.sep)[:-1])
 libblond = None
 try:
-    if ('posix' in os.name):
+    if os.environ.get('LIBBLOND'):
+        libblond = ctypes.CDLL(os.environ['LIBBLOND'])
+    elif ('posix' in os.name):
         libblond = ctypes.CDLL(os.path.join(
             basepath, 'cpp_routines/libblond.so'))
     elif ('win' in sys.platform):
