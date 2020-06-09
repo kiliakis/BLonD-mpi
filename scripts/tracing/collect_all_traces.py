@@ -76,7 +76,10 @@ if __name__ == '__main__':
         last_level = os.path.basename(os.path.normpath(root))
         if last_level == 'log' and len(fnmatch.filter(files, file_pattern)) > 0:
             print(f'\nExtracting traces from dir: {root}')
-            filename = root.split('/')[-4] + '-' + root.split('/')[-2]
+            experiment = root.split('/')[-4]
+            date = root.split('/')[-2]
+            lb = root.split('_lb')[1].split('_')[0]
+            filename = f'{experiment}-{lb}-{date}'
             output = subprocess.run(['python', args.tracescript,
                                      '--from', 'log',
                                      '--pattern', file_pattern,

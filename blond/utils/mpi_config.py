@@ -426,8 +426,8 @@ class Worker:
         self.coefficients['times'].append(tcomp)
 
         # Keep only the last 5 values
-        self.coefficients['particles'] = self.coefficients['particles'][-5:]
-        self.coefficients['times'] = self.coefficients['times'][-5:]
+        self.coefficients['particles'] = self.coefficients['particles'][-self.dlb['coeffs_keep']:]
+        self.coefficients['times'] = self.coefficients['times'][-self.dlb['coeffs_keep']:]
         # We pass weights to the polyfit
         # The weight function I am using is:
         # e(-x/5), where x is the abs(distance) from the last
@@ -706,12 +706,15 @@ class Worker:
         if self.lb_type == 'off':
             return self.lb_turns
 
-        assert len(lbstr.split(',')) == 4, 'Wrong number of LB arguments'
-        lb_arg, cutoff, decay = lbstr.split(',')[1:]
+        assert len(lbstr.split(',')) == 5, 'Wrong number of LB arguments'
+        lb_arg, cutoff, decay, keep = lbstr.split(',')[1:]
         if not cutoff:
             cutoff = 0.01
         if not decay:
             decay = 4
+        if not keep:
+            keep = 10
+
         if self.lb_type == 'times':
             if lb_arg:
                 intv = max(n_iter // (int(lb_arg)+1), 1)
@@ -733,7 +736,8 @@ class Worker:
                 self.lb_turns = np.arange(0, n_iter, 100)
         self.dlb = {'tcomp': 0, 'tcomm': 0,
                     'tconst': 0, 'tsync': 0,
-                    'cutoff': float(cutoff), 'decay': float(decay)}
+                    'cutoff': float(cutoff), 'decay': float(decay),
+                    'coeffs_keep': int(keep)}
         return self.lb_turns
 
     def DLB(self, turn, beam):
