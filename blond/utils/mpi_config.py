@@ -445,10 +445,10 @@ class Worker:
         tconst += p[0]
         totalt = tcomp + tconst
         # latency = tcomp / beam.n_macroparticles
-        recvbuf = np.empty(4 * self.workers, dtype=float)
-        self.intercomm.Allgather(
-            np.array([latency, tconst, totalt, beam.n_macroparticles]),
-            recvbuf)
+        sendbuf = np.array(
+            [latency, tconst, totalt, beam.n_macroparticles], dtype=float)
+        recvbuf = np.empty(len(sendbuf) * self.workers, dtype=float)
+        self.intercomm.Allgather(sendbuf, recvbuf)
 
         latencies = recvbuf[::4]
         ctimes = recvbuf[1::4]
