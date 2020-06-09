@@ -421,7 +421,7 @@ class Worker:
 
     @timing.timeit(key='comm:redistribute')
     @mpiprof.traceit(key='comm:redistribute')
-    def redistribute(self, turn, beam, tcomp, tsync):
+    def redistribute(self, turn, beam, tcomp, tconst):
         self.coefficients['particles'].append(beam.n_macroparticles)
         self.coefficients['times'].append(tcomp)
 
@@ -438,28 +438,39 @@ class Worker:
         # weights[-1] = np.sum(weights[:-1])
         # We model the runtime as latency * particles + c
         # where latency = p[1] and c = p[0]
-        p = np.polynomial.polynomial.Polynomial.fit(
+        
+        p = np.polyfit(
             self.coefficients['particles'],
             self.coefficients['times'],
             deg=1,
-            w=weights).convert().coef
-        latency = p[1]
-        # assert latency != 0
-        ctime = p[0]
+            w=weights)
+        latency = p[0]
+        tconst += p[1]
+        
+        # p = np.polynomial.polynomial.Polynomial.fit(
+        #     self.coefficients['particles'],
+        #     self.coefficients['times'],
+        #     deg=1,
+        #     w=weights).convert().coef
+        # latency = p[1]
+        # # ctime = p[0]
         # tconst += p[0]
+
+
         # totalt = tcomp + tconst
         # latency = tcomp / beam.n_macroparticles
         sendbuf = np.array(
-            [latency, ctime, tsync, beam.n_macroparticles], dtype=float)
+            # [latency, ctime, tsync, beam.n_macroparticles], dtype=float)
+            [latency, tconst, beam.n_macroparticles], dtype=float)
         recvbuf = np.empty(len(sendbuf) * self.workers, dtype=float)
         self.intercomm.Allgather(sendbuf, recvbuf)
 
-        latencies = recvbuf[::4]
-        ctimes = recvbuf[1::4]
-        synctimes = recvbuf[2::4]
-        Pi_old = recvbuf[3::4]
+        latencies = recvbuf[::3]
+        ctimes = recvbuf[1::3]
+        # synctimes = recvbuf[2::4]
+        Pi_old = recvbuf[2::3]
 
-        avgt = np.mean(synctimes)
+        # avgt = np.mean(synctimes)
         P = np.sum(Pi_old)
 
         # For the scheme to work I need that avgt > ctimes, if not
@@ -468,10 +479,12 @@ class Worker:
         # a machine can get, example 10% of the total/n_workers
         # Pi = np.maximum((avgt - ctimes) / latencies, 0.1 * P/self.workers)
         # Pi = np.maximum((avgt - ctimes) / latencies, 0.1 * P/self.workers)
-        Pi = np.maximum(Pi_old + (synctimes - avgt - ctimes)/latencies, 0.1 * P/self.workers)
-        # sum1 = np.sum(ctimes/latencies)
-        # sum2 = np.sum(1./latencies)
-        # Pi = (P + sum1 - ctimes * sum2)/(latencies * sum2)
+        
+
+        sum1 = np.sum(ctimes/latencies)
+        sum2 = np.sum(1./latencies)
+        Pi = (P + sum1 - ctimes * sum2)/(latencies * sum2)
+        # Pi = np.maximum(Pi_old + (synctimes - avgt - ctimes)/latencies, 0.1 * P/self.workers)
 
         dPi = np.rint(Pi_old - Pi)
 
@@ -733,9 +746,9 @@ class Worker:
         if self.lb_type != 'reportonly':
             intv = self.redistribute(turn, beam,
                                      tcomp=tcomp_new-self.dlb['tcomp'],
-                                     tsync=tsync_new - self.dlb['tsync'])
-                                     # tconst=((tconst_new-self.dlb['tconst'])
-                                             # + (tcomm_new - self.dlb['tcomm'])))
+                                     # tsync=tsync_new - self.dlb['tsync'])
+                                     tconst=((tconst_new-self.dlb['tconst'])
+                                             + (tcomm_new - self.dlb['tcomm'])))
         if self.lb_type == 'dynamic':
             self.lb_turns[0] += intv
         self.report(turn, beam, tcomp=tcomp_new-self.dlb['tcomp'],
