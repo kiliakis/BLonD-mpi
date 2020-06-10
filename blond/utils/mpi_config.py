@@ -425,17 +425,16 @@ class Worker:
         self.coefficients['particles'].append(beam.n_macroparticles)
         self.coefficients['times'].append(tcomp)
 
-        # Keep only the last 5 values
+        # Keep only the last values
         self.coefficients['particles'] = self.coefficients['particles'][-self.dlb['coeffs_keep']:]
         self.coefficients['times'] = self.coefficients['times'][-self.dlb['coeffs_keep']:]
+
         # We pass weights to the polyfit
         # The weight function I am using is:
-        # e(-x/5), where x is the abs(distance) from the last
-        # datapoint.
+        # e(-x/T), where x is the abs(distance) from the last
+        # datapoint, and T is the decay coefficient
         ncoeffs = len(self.coefficients['times'])
         weights = np.exp(-(ncoeffs - 1 - np.arange(ncoeffs))/self.dlb['decay'])
-        # weights = np.ones(len(self.coefficients['times']))
-        # weights[-1] = np.sum(weights[:-1])
         # We model the runtime as latency * particles + c
         # where latency = p[1] and c = p[0]
         
@@ -447,44 +446,28 @@ class Worker:
         latency = p[0]
         tconst += p[1]
 
-        # p = np.polynomial.polynomial.Polynomial.fit(
-        #     self.coefficients['particles'],
-        #     self.coefficients['times'],
-        #     deg=1,
-        #     w=weights).convert().coef
-        # latency = p[1]
-        # # ctime = p[0]
-        # tconst += p[0]
-
-
-        # totalt = tcomp + tconst
-        # latency = tcomp / beam.n_macroparticles
         sendbuf = np.array(
-            # [latency, ctime, tsync, beam.n_macroparticles], dtype=float)
             [latency, tconst, beam.n_macroparticles], dtype=float)
         recvbuf = np.empty(len(sendbuf) * self.workers, dtype=float)
         self.intercomm.Allgather(sendbuf, recvbuf)
 
         latencies = recvbuf[::3]
         ctimes = recvbuf[1::3]
-        # synctimes = recvbuf[2::4]
         Pi_old = recvbuf[2::3]
 
         # avgt = np.mean(synctimes)
         P = np.sum(Pi_old)
 
-        # For the scheme to work I need that avgt > ctimes, if not
-        # it means that a machine will be assigned negative number fo particles
-        # I need to put a lower bound on the number of particles that
-        # a machine can get, example 10% of the total/n_workers
-        # Pi = np.maximum((avgt - ctimes) / latencies, 0.1 * P/self.workers)
-        # Pi = np.maximum((avgt - ctimes) / latencies, 0.1 * P/self.workers)
         
 
         sum1 = np.sum(ctimes/latencies)
         sum2 = np.sum(1./latencies)
         Pi = (P + sum1 - ctimes * sum2)/(latencies * sum2)
-        # Pi = np.maximum(Pi_old + (synctimes - avgt - ctimes)/latencies, 0.1 * P/self.workers)
+
+        # For the scheme to work I need that avgt > ctimes, if not
+        # it means that a machine will be assigned negative number fo particles
+        # I need to put a lower bound on the number of particles that
+        # a machine can get, example 10% of the total/n_workers
         Pi = np.maximum(Pi, 0.1 * P / self.workers)
 
         dPi = np.rint(Pi_old - Pi)
@@ -709,11 +692,11 @@ class Worker:
         assert len(lbstr.split(',')) == 5, 'Wrong number of LB arguments'
         lb_arg, cutoff, decay, keep = lbstr.split(',')[1:]
         if not cutoff:
-            cutoff = 0.01
+            cutoff = 0.03
         if not decay:
-            decay = 4
+            decay = 5
         if not keep:
-            keep = 10
+            keep = 20
 
         if self.lb_type == 'times':
             if lb_arg:
