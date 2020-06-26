@@ -15,7 +15,6 @@ from __future__ import division
 from builtins import range, object
 import numpy as np
 from scipy.constants import e
-import ctypes
 from ..utils import bmath as bm
 
 

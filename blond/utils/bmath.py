@@ -46,6 +46,7 @@ _CPU_func_dict = {
     'synchrotron_radiation': butils_wrap.synchrotron_radiation,
     'synchrotron_radiation_full': butils_wrap.synchrotron_radiation_full,
     # 'linear_interp_time_translation': butils_wrap.linear_interp_time_translation,
+    'sparse_histogram': butils_wrap.sparse_histogram,
     'slice': butils_wrap.slice,
     'slice_smooth': butils_wrap.slice_smooth,
     'music_track': butils_wrap.music_track,

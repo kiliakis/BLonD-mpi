@@ -33,9 +33,10 @@ using namespace vdt;
 
 
 // Definition of struct particle
+template <typename T>
 struct particle {
-    double de;
-    double dt;
+    T de;
+    T dt;
     bool operator<(const particle &o) const
     {
         return dt < o.dt;
@@ -85,7 +86,7 @@ extern "C" void music_track(double *__restrict__ beam_dt,
 
 
     // Particle sorting with respect to dt
-    std::vector<particle> particles; particles.reserve(n_macroparticles);
+    std::vector<particle<double>> particles; particles.reserve(n_macroparticles);
     for (int i = 0; i < n_macroparticles; i++)
         particles.push_back({beam_dE[i], beam_dt[i]});
 #ifdef PARALLEL
@@ -151,7 +152,7 @@ extern "C" void music_track_multiturn(double *__restrict__ beam_dt,
 
 
     // Particle sorting with respect to dt
-    std::vector<particle> particles; particles.reserve(n_macroparticles);
+    std::vector<particle<double>> particles; particles.reserve(n_macroparticles);
     for (int i = 0; i < n_macroparticles; i++)
         particles.push_back({beam_dE[i], beam_dt[i]});
 #ifdef PARALLEL
@@ -215,16 +216,6 @@ extern "C" void music_track_multiturn(double *__restrict__ beam_dt,
 }
 
 
-// Definition of struct particle
-struct particlef {
-    float de;
-    float dt;
-    bool operator<(const particle &o) const
-    {
-        return dt < o.dt;
-    }
-};
-
 
 extern "C" void music_trackf(float *__restrict__ beam_dt,
                              float *__restrict__ beam_dE,
@@ -268,7 +259,7 @@ extern "C" void music_trackf(float *__restrict__ beam_dt,
 
 
     // Particle sorting with respect to dt
-    std::vector<particle> particles; particles.reserve(n_macroparticles);
+    std::vector<particle<float>> particles; particles.reserve(n_macroparticles);
     for (int i = 0; i < n_macroparticles; i++)
         particles.push_back({beam_dE[i], beam_dt[i]});
 #ifdef PARALLEL
@@ -334,7 +325,7 @@ extern "C" void music_track_multiturnf(float *__restrict__ beam_dt,
 
 
     // Particle sorting with respect to dt
-    std::vector<particle> particles; particles.reserve(n_macroparticles);
+    std::vector<particle<float>> particles; particles.reserve(n_macroparticles);
     for (int i = 0; i < n_macroparticles; i++)
         particles.push_back({beam_dE[i], beam_dt[i]});
 #ifdef PARALLEL

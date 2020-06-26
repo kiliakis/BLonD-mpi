@@ -791,6 +791,29 @@ def slice(dt, profile, cut_left, cut_right):
                         __getLen(dt))
 
 
+def sparse_histogram(dt, profile, cut_left, cut_right, bunch_indexes):
+    assert isinstance(dt[0], precision.real_t)
+    assert isinstance(profile[0], precision.real_t)
+
+
+    if precision.num == 1:
+        __lib.sparse_histogramf(__getPointer(dt),
+                         __getPointer(profile),
+                         __getPointer(cut_left),
+                         __getPointer(cut_right),
+                         __getPointer(bunch_indexes),
+                         __getLen(profile),
+                         __getLen(cut_left),
+                         __getLen(dt))
+    else:
+        __lib.sparse_histogram(__getPointer(dt),
+                        __getPointer(profile),
+                        __c_real(cut_left),
+                        __c_real(cut_right),
+                        __getLen(profile),
+                        __getLen(dt))
+
+
 def slice_smooth(dt, profile, cut_left, cut_right):
     assert isinstance(dt[0], precision.real_t)
     assert isinstance(profile[0], precision.real_t)
