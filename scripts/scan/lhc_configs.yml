@@ -90,8 +90,10 @@ condor:
 local: 
     run_configs: 
 
-        - 'precision-monitor'
-        - 'precision-seed'
+        # - 'precision-monitor'
+        - 'srp-monitor'
+        - 'rds-monitor'
+        # - 'precision-seed'
         # - 'precision-timing'
 
 
@@ -159,8 +161,9 @@ local:
             'log': [1],
             'loadbalance': ['reportonly,,,,'],
             'artificialdelay': ['off'],
+            # 'gpu': [0],
             'timing': ['timing'],
-            'workers': [1],
+            'workers': [2, 4, 8],
             'omp': [2],
             'mpi': ['mpich3'],
             'time': [180],
@@ -207,7 +210,7 @@ local:
             'approx': [0],
             'log': [1],
             'loadbalance': ['reportonly,,,,'],
-            'gpu': [0],
+            # 'gpu': [0],
             'timing': ['timing'],
             'workers': [1],
             'omp': [2],

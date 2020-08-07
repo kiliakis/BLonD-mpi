@@ -1,10 +1,11 @@
 
 local: 
     run_configs: 
-
-        # - 'precision-monitor'
+        - 'srp-monitor'
+        - 'rds-monitor'
         # - 'precision-seed'
-        - 'precision-timing'
+        # - 'precision-seed'
+        # - 'precision-timing'
 
         # Intermediate stages
         # - 'approx0-interm'
@@ -30,6 +31,57 @@ local:
 
     configs: {
 
+        'srp-monitor': {
+            'exe': ['PS_main.py'],
+            'particles': [1000000],
+            'bunches': [1],  # 192
+            'slices': [256],
+            'turns': [40000],
+            'monitor': [100],
+            'seed': [0],
+            'mtw': [50],
+            'precision': ['double'],
+            'withtp': [0],
+            'reduce': [2],
+            'approx': [1],
+            'log': [1],
+            'loadbalance': ['reportonly,,,,'],
+            'artificialdelay': ['off'],
+            'gpu': [0],
+            'timing': ['timing'],
+            'workers': [1],
+            'omp': [2],
+            'mpi': ['mpich3'],
+            'time': [180],
+            'repeats': 1
+        },
+
+
+        'rds-monitor': {
+            'exe': ['PS_main.py'],
+            'particles': [1000000],
+            'bunches': [1],  # 192
+            'slices': [256],
+            'turns': [40000],
+            'monitor': [100],
+            'seed': [0],
+            'mtw': [50],
+            'precision': ['double'],
+            'withtp': [0],
+            'reduce': [1],
+            'approx': [2],
+            'log': [1],
+            'loadbalance': ['reportonly,,,,'],
+            'artificialdelay': ['off'],
+            # 'gpu': [0],
+            'timing': ['timing'],
+            'workers': [1, 2, 4, 8],
+            'omp': [2],
+            'mpi': ['mpich3'],
+            'time': [180],
+            'repeats': 1
+        },
+
         'precision-monitor': {
             'exe': ['PS_main.py'],
             'particles': [1000000],
@@ -45,7 +97,8 @@ local:
             'approx': [0],
             'log': [1],
             'loadbalance': ['reportonly'],
-            'loadbalancearg': [500],
+            'artificialdelay': ['off'],
+
             'timing': ['timing'],
             'workers': [1],
             'omp': [14],
@@ -61,7 +114,7 @@ local:
             'slices': [256],
             'turns': [40000],
             'monitor': [100],
-            'seed': [1, 2, 3],
+            'seed': [0, 1, 2, 3],
             'mtw': [50],
             'precision': ['double'],
             'withtp': [0],
@@ -69,7 +122,7 @@ local:
             'approx': [0],
             'log': [1],
             'loadbalance': ['reportonly'],
-            'loadbalancearg': [500],
+            'artificialdelay': ['off'],
             'timing': ['timing'],
             'workers': [1],
             'omp': [14],
