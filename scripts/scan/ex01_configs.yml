@@ -1,14 +1,18 @@
 
 local: 
     run_configs: 
+        - 'nodlb-nodelay-tracing'
+        # - 'dlb-nodelay-tracing'
+        - 'nodlb-delay-tracing'
+        - 'dlb-delay-tracing'
         # Intermediate stages
         # - 'precision-monitor'
-        - 'precision-seed'
+        # - 'precision-seed'
         # - 'precision-timing'
 
         # - 'approx1-interm'
         # - 'approx2-interm'
-        # - 'tp-approx0-interm'
+        # - 'tp-approx0-interm' 
         # - 'lb-tp-approx0-interm'
         # - 'lb-tp-approx1-interm'
         # - 'lb-tp-approx2-interm'
@@ -27,6 +31,113 @@ local:
 
 
     configs: {
+
+        'nodlb-nodelay-tracing': {
+            'exe': ['test_EX_01_Acceleration.py'],
+            'particles': [10000000],
+            'bunches': [1],  # 192
+            'slices': [1000],
+            'turns': [10000],
+            'monitor': [0],
+            'seed': [0],
+            'mtw': [0],
+            'precision': ['double'],
+            'withtp': [0],
+            'reduce': [1],
+            'approx': [0],
+            'log': [1],
+            'loadbalance': ['reportonly,100,,,'],
+            'artificialdelay': ['off'],
+            'timing': ['timing'],
+            'workers': [2],
+            'omp': [1],
+            'mpi': ['mpich3'],
+            'time': [180],
+            'repeats': 2
+        },
+
+        'dlb-nodelay-tracing': {
+            'exe': ['test_EX_01_Acceleration.py'],
+            'particles': [10000000],
+            'bunches': [1],  # 192
+            'slices': [1000],
+            'turns': [10000],
+            'monitor': [0],
+            'seed': [0],
+            'mtw': [0],
+            'precision': ['double'],
+            'withtp': [0],
+            'reduce': [1],
+            'approx': [0],
+            'log': [1],
+            'loadbalance': ['interval,100,,,'],
+            'artificialdelay': ['off'],
+            'timing': ['timing'],
+            'workers': [2],
+            'omp': [1],
+            'mpi': ['mpich3'],
+            'time': [180],
+            'repeats': 2
+        },
+
+        'nodlb-delay-tracing': {
+            'exe': ['test_EX_01_Acceleration.py'],
+            'particles': [10000000],
+            'bunches': [1],  # 192
+            'slices': [1000],
+            'turns': [10000],
+            'monitor': [0],
+            'seed': [0],
+            'mtw': [0],
+            'precision': ['double'],
+            'withtp': [0],
+            'reduce': [1],
+            'approx': [0],
+            'log': [1],
+            'loadbalance': ['reportonly,100,,,'],
+            'artificialdelay': ['1800,100,3000,100,50,30'],
+            'timing': ['timing'],
+            'workers': [2],
+            'omp': [1],
+            'mpi': ['mpich3'],
+            'time': [180],
+            'repeats': 2
+        },
+
+        'dlb-delay-tracing': {
+            'exe': ['test_EX_01_Acceleration.py'],
+            'particles': [10000000],
+            'bunches': [1],  # 192
+            'slices': [1000],
+            'turns': [10000],
+            'monitor': [0],
+            'seed': [0],
+            'mtw': [0],
+            'precision': ['double'],
+            'withtp': [0],
+            'reduce': [1],
+            'approx': [0],
+            'log': [1],
+            'loadbalance': [
+                'interval,100,0.03,5,10', 'interval,100,0.03,10,10',
+                'interval,100,0.03,5,20', 'interval,100,0.03,10,20',
+                'interval,100,0.04,5,10', 'interval,100,0.04,10,10',
+                'interval,100,0.04,5,20', 'interval,100,0.04,10,20',
+                'interval,100,0.05,5,10', 'interval,100,0.05,10,10',
+                'interval,100,0.05,5,20', 'interval,100,0.05,10,20',
+                'interval,100,0.06,5,10', 'interval,100,0.06,10,10',
+                'interval,100,0.06,5,20', 'interval,100,0.06,10,20'
+            ],
+
+            'artificialdelay': ['1800,100,3000,100,50,30'],
+            'timing': ['timing'],
+            'workers': [2],
+            'omp': [1],
+            'mpi': ['mpich3'],
+            'time': [180],
+            'repeats': 2
+        },
+
         'precision-monitor': {
             'exe': ['EX_01_Acceleration.py', 'EX_01_Acceleration.py', 'EX_01_Constant.py', 'EX_01_Constant.py'],
             'particles': [1000000],
@@ -41,8 +152,7 @@ local:
             'reduce': [1],
             'approx': [0],
             'log': [1],
-            'loadbalance': ['reportonly'],
-            'loadbalancearg': [500],
+            'loadbalance': ['reportonly,500,,'],
             'timing': ['timing'],
             'workers': [1],
             'omp': [14],
@@ -65,8 +175,7 @@ local:
             'reduce': [1],
             'approx': [0],
             'log': [1],
-            'loadbalance': ['reportonly'],
-            'loadbalancearg': [500],
+            'loadbalance': ['reportonly,500,,'],
             'timing': ['timing'],
             'workers': [1],
             'omp': [14],
@@ -78,33 +187,26 @@ local:
 
 
         'precision-timing': {
-            'exe': ['EX_01_Acceleration.py', 'EX_01_Acceleration.py', 'EX_01_Acceleration.py', 'EX_01_Acceleration.py',
-                    'EX_01_Acceleration.py', 'EX_01_Acceleration.py', 'EX_01_Acceleration.py', 'EX_01_Acceleration.py',
-                    'EX_01_Acceleration.py', 'EX_01_Acceleration.py'],
-            'particles': [2000000, 2000000, 2000000, 2000000, 2000000, 2000000, 2000000, 2000000, 2000000, 2000000],
-            'bunches': [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],  # 192
-            'slices': [1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000],
-            'turns': [2000, 2000, 2000, 2000, 2000, 2000, 2000, 2000, 2000, 2000],
-            'monitor': [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-            'seed': [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-            'mtw': [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            'exe': ['EX_01_Acceleration.py'],
+            'particles': [2000000],
+            'bunches': [1],  # 192
+            'slices': [1000],
+            'turns': [2000],
+            'monitor': [0],
+            'seed': [0],
+            'mtw': [0],
             'precision': ['single', 'single', 'single', 'single', 'single', 
                           'double', 'double', 'double', 'double', 'double'],
-            'withtp': [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-            'reduce': [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
-            'approx': [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-            'log': [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
-            'loadbalance': ['reportonly', 'reportonly', 'reportonly', 'reportonly',
-                            'reportonly', 'reportonly', 'reportonly', 'reportonly',
-                            'reportonly', 'reportonly'],
-            'loadbalancearg': [500, 500, 500, 500, 500, 500, 500, 500, 500, 500],
-            'timing': ['timing', 'timing', 'timing', 'timing', 'timing', 'timing',
-                       'timing', 'timing', 'timing', 'timing'],
-            'workers': [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+            'withtp': [0],
+            'reduce': [1],
+            'approx': [0],
+            'log': [1],
+            'loadbalance': ['reportonly,500,,'],
+            'timing': ['timing'],
+            'workers': [1],
             'omp': [1, 2, 4, 8, 14, 1, 2, 4, 8, 14],
-            'mpi': ['mpich3', 'mpich3', 'mpich3', 'mpich3', 'mpich3', 'mpich3', 
-                    'mpich3', 'mpich3', 'mpich3', 'mpich3'],
-            'time': [180, 180, 180, 180, 180, 180, 180, 180, 180, 180],
+            'mpi': ['mpich3'],
+            'time': [180],
             'repeats': 4
         },
 
