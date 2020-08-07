@@ -428,7 +428,7 @@ if args['monitor'] > 0 and worker.isMaster:
 
 
 
-worker.initDLB(args['loadbalance'], args['loadbalancearg'], n_iterations)
+worker.initDLB(args['loadbalance'], n_iterations)
 
 worker.sync()
 timing.reset()

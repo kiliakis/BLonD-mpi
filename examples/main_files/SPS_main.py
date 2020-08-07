@@ -477,7 +477,7 @@ if args['monitor'] > 0 and worker.isMaster:
                                   Nbunches=n_bunches)
 
 
-worker.initDLB(args['loadbalance'], args['loadbalancearg'], n_iterations)
+worker.initDLB(args['loadbalance'], n_iterations)
 
 delta = 0
 worker.sync()
