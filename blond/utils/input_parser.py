@@ -66,6 +66,11 @@ parser.add_argument('-seed', '--seed', type=int, default=0,
                     help='Seed value for the particle distribution generation.'
                     '\nDefault: None')
 
+parser.add_argument('-gpu', '--gpu', type=int, default=0,
+                    help='Use the GPU to run the computational core: 0 (OFF), num (ON, number of gpus to use)'
+                    'Default: 0 (OFF)')
+
+
 parser.add_argument('-trace', '--trace', type=int, default=0, choices=[0, 1],
                     help='Trace the specified regions of interest (MPE).'
                     '\nDefault: No tracing.')
@@ -74,14 +79,19 @@ parser.add_argument('-tracefile', '--tracefile', type=str, default='mpe-trace',
                     help='The file name to save the MPE trace (without the file extension).'
                     '\nDefault: mpe-trace')
 
-parser.add_argument('-lb', '--loadbalance', type=str, choices=['off', 'times', 'interval', 'reportonly'],
-                    default=0,
-                    help='Load balance policy: off, times, interval, reportonly.'
-                    '\nDefault: off ')
+parser.add_argument('-lb', '--loadbalance', type=str,
+                    default='off',
+                    help='Load balance configuration. Format: '
+                    'type,arg,cutoff,decay,keep\n'
+                    'type: off, times, interval, reportonly.\n'
+                    'arg: Number of times to run or interval in turns, ex: 100. Default: 500'
+                    'cutoff: A percentage that defines the minimum number of particles'
+                    'in a transaction. ex: 0.01 for 1 percent of the total. Default: 0.03'
+                    'decay: The weight function has the form exp(-x/decay).'
+                    'Lower values give more weight to the last measurements. Default: 5'
+                    'keep: Only consider the last keep number of measurements. Default: 20'
+                    'Default: off ')
 
-parser.add_argument('-lba', '--loadbalancearg', type=int, default=0,
-                    help='Additional Load balance argument, used only if lb is times or interval.'
-                    '\nDefault: 0 --> 10 times per run or every 1k turns.')
 
 parser.add_argument('-artificialdelay', '--artificialdelay', type=str,
                     default='off',
