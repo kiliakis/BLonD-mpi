@@ -6,6 +6,7 @@ from functools import wraps
 from ..utils import bmath as bm
 from mpi4py import MPI
 import socket
+import time
 
 try:
     from pyprof import timing
@@ -78,10 +79,10 @@ class Worker:
         tempcomm.Free()
         self.log = False
         self.trace = False
-        self.logger = MPILog(rank=self.rank)
 
     def initLog(self, log, logdir):
         self.log = log
+        self.logger = MPILog(rank=self.rank, log_dir=logdir)
         if not self.log:
             self.logger.disable()
 
@@ -125,7 +126,8 @@ class Worker:
     @timing.timeit(key='comm:gather')
     @mpiprof.traceit(key='comm:gather')
     def gather(self, var):
-        self.logger.debug('gather')
+        if self.log:
+            self.logger.debug('gather')
 
         # First I need to know the total size
         counts = np.zeros(self.workers, dtype=int)
@@ -169,7 +171,8 @@ class Worker:
     # All workers gather the variable var (from all workers)
 
     def allgather(self, var):
-        self.logger.debug('allgather')
+        if self.log:
+            self.logger.debug('allgather')
 
         # One first gather to collect all the sizes
         counts = np.zeros(self.workers, dtype=int)
@@ -190,7 +193,8 @@ class Worker:
     @timing.timeit(key='comm:scatter')
     @mpiprof.traceit(key='comm:scatter')
     def scatter(self, var):
-        self.logger.debug('scatter')
+        if self.log:
+            self.logger.debug('scatter')
         # First broadcast the total_size from the master
         total_size = int(self.intercomm.bcast(len(var), root=0))
 
@@ -262,7 +266,8 @@ class Worker:
     def reduce(self, sendbuf, recvbuf=None, dtype=np.uint32, operator='custom_sum'):
         # supported ops:
         # sum, mean, std, max, min, prod, custom_sum
-        self.logger.debug('reduce')
+        if self.log:
+            self.logger.debug('reduce')
         operator = operator.lower()
         if operator == 'custom_sum':
             dtype = sendbuf.dtype.name
@@ -326,7 +331,8 @@ class Worker:
     def allreduce(self, sendbuf, recvbuf=None, dtype=np.uint32, operator='custom_sum'):
         # supported ops:
         # sum, mean, std, max, min, prod, custom_sum
-        self.logger.debug('allreduce')
+        if self.log:
+            self.logger.debug('allreduce')
         operator = operator.lower()
         if operator == 'custom_sum':
             dtype = sendbuf.dtype.name
@@ -381,26 +387,30 @@ class Worker:
     @timing.timeit(key='serial:sync')
     @mpiprof.traceit(key='serial:sync')
     def sync(self):
-        self.logger.debug('sync')
+        if self.log:
+            self.logger.debug('sync')
         self.intercomm.Barrier()
 
     @timing.timeit(key='serial:intraSync')
     @mpiprof.traceit(key='serial:intraSync')
     def intraSync(self):
-        self.logger.debug('intraSync')
+        if self.log:
+            self.logger.debug('intraSync')
         self.intracomm.Barrier()
 
     @timing.timeit(key='serial:finalize')
     @mpiprof.traceit(key='serial:finalize')
     def finalize(self):
-        self.logger.debug('finalize')
+        if self.log:
+            self.logger.debug('finalize')
         if not self.isMaster:
             sys.exit(0)
 
     @timing.timeit(key='comm:sendrecv')
     @mpiprof.traceit(key='comm:sendrecv')
     def sendrecv(self, sendbuf, recvbuf):
-        self.logger.debug('sendrecv')
+        if self.log:
+            self.logger.debug('sendrecv')
         if self.isFirst and not self.isLast:
             self.intracomm.Sendrecv(sendbuf, dest=self.intraworkers-1, sendtag=0,
                                     recvbuf=recvbuf, source=self.intraworkers-1,
@@ -554,15 +564,18 @@ class Worker:
 
     def report(self, turn, beam, tcomp, tcomm, tconst, tsync):
         latency = tcomp / beam.n_macroparticles
-        self.logger.critical('[{}]: Turn {}, Tconst {:g}, Tcomp {:g}, Tcomm {:g}, Tsync {:g}, Latency {:g}, Particles {:g}'.format(
-            self.rank, turn, tconst, tcomp, tcomm, tsync, latency, beam.n_macroparticles))
+        if self.log:
+            self.logger.critical('[{}]: Turn {}, Tconst {:g}, Tcomp {:g}, Tcomm {:g}, Tsync {:g}, Latency {:g}, Particles {:g}'.format(
+                self.rank, turn, tconst, tcomp, tcomm, tsync, latency, beam.n_macroparticles))
 
     def greet(self):
-        self.logger.debug('greet')
+        if self.log:
+            self.logger.debug('greet')
         print('[{}]@{}: Hello World!'.format(self.rank, self.hostname))
 
     def print_version(self):
-        self.logger.debug('version')
+        if self.log:
+            self.logger.debug('version')
         # print('[{}] Library version: {}'.format(self.rank, MPI.Get_library_version()))
         # print('[{}] Version: {}'.format(self.rank,MPI.Get_version()))
         print('[{}] Library: {}'.format(self.rank, MPI.get_vendor()))
@@ -578,6 +591,108 @@ class Worker:
 
     def timer_reset(self, phase):
         self.times[phase] = {'start': MPI.Wtime(), 'total': 0.}
+
+    def initDelay(self, delaystr):
+        self.delay = {}
+        self.delay['type'] = delaystr.split(',')[0]
+        if self.delay['type'] == 'off':
+            delayed_ids = np.array([], int)
+        else:
+            assert len(delaystr.split(',')
+                       ) == 6, 'Artificial delay string missing arguments'
+            init, incr, top, dcr, workers, delay = [int(a) for a in delaystr.split(',')]
+            assert init > 0 and incr > 0 and top > 0 and dcr > 0, 'Wrong artificial delay values'
+            self.delay['init'] = init
+            self.delay['incr'] = incr + init
+            self.delay['top'] = top + incr + init
+            self.delay['dcr'] = dcr + top + incr + init
+
+            # self.delay['init%'] = 0
+            self.delay['incr%'] = delay / incr / 100
+            self.delay['top%'] = delay / 100
+            self.delay['dcr%'] = delay / dcr / 100
+            self.delay['active%'] = 0.
+            
+            self.delay['tconst'] = 0.
+            self.delay['tcomp'] = 0.
+            # self.delay['tcomm'] = 0.
+            # assert workers/100 * self.workers == int(workers/100)
+            delayed_workers = int(np.ceil(int(workers)/100. * self.workers))
+            
+            assert delayed_workers > 0 and delayed_workers <= self.workers
+
+            delayed_ids = np.array_split(np.arange(self.workers), delayed_workers)
+            delayed_ids = [str(a[0]) for a in delayed_ids]
+            # delayed_ids = np.arange(self.workers)[::self.workers+1-delayed_workers]
+            # delayed_ids = np.random.choice(
+                # self.workers, delayed_workers, replace=False)
+
+        if str(self.rank) in delayed_ids:
+            self.delay['delayed'] = True
+        else:
+            self.delay['delayed'] = False
+
+        if self.isMaster:
+            if self.log:
+                self.logger.critical('[{}]: Delayed worker ids: {}'.format(
+                    self.rank, ','.join(delayed_ids)))
+
+    def trackDelay(self, turn):
+        if self.delay['delayed']:
+            modturn = turn % self.delay['dcr']
+
+            if modturn < self.delay['init'] - 1:
+                # Not need to do anything, just wait and collect stats
+                pass
+            elif modturn == self.delay['init'] - 1:
+                # Last turn of the init interval, update the time values
+                tconst = timing.get(['serial:'], exclude_lst=[
+                    'serial:sync', 'serial:intraSync'])
+                tcomp = timing.get(['comp:'])
+                # tcomm = timing.get(['comm:'])
+
+                self.delay['tconst'] = (
+                    tconst - self.delay['tconst']) / self.delay['init'] / 1000
+                self.delay['tcomp'] = (
+                    tcomp - self.delay['tcomp']) / self.delay['init'] / 1000
+                
+                assert self.delay['tconst'] >= 0 and self.delay['tcomp'] >= 0
+                # self.delay['tcomm'] = (
+                #     tcomm - self.delay['tcomm']) / self.delay['init'] / 1000
+            else:
+                # Here I need to apply some delay
+                # I update the active_percent and then apply the delay
+                if modturn < self.delay['incr']:
+                    self.delay['active%'] += self.delay['incr%']
+                elif modturn < self.delay['top']:
+                    pass
+                elif modturn < self.delay['dcr']:
+                    self.delay['active%'] -= self.delay['dcr%']
+            # self.logger.critical('[{}]: tconst:{}, tcomp:{}, tcomm:{}'.format(
+            #     self.rank, tconst, tcomp, tcomm))
+
+                sleep = self.delay['active%']*self.delay['tconst']
+                if sleep > 0.:
+                    with timing.timed_region('serial:artificial') as tr:
+                        time.sleep(sleep)
+
+                # sleep = self.delay['active%']*self.delay['tcomm']
+                # if sleep > 0.:
+                #     with timing.timed_region('comm:artificial') as tr:
+                #         time.sleep(sleep)
+
+                sleep = self.delay['active%']*self.delay['tcomp']
+                if sleep > 0.:
+                    with timing.timed_region('comp:artificial') as tr:
+                        time.sleep(sleep)
+
+                if modturn == self.delay['dcr'] - 1:
+                    # this should bring the added delay back to zero
+                    assert np.isclose(self.delay['active%'], 0)
+                    self.delay['tconst'] = timing.get(['serial:'], exclude_lst=[
+                        'serial:sync', 'serial:intraSync'])
+                    # self.delay['tcomm'] = timing.get(['comm:'])
+                    self.delay['tcomp'] = timing.get(['comp:'])
 
     def initDLB(self, lb_type, lb_arg, n_iter):
         self.lb_turns = []
@@ -696,7 +811,7 @@ class MPILog(object):
         self.root_logger = logging.getLogger()
         self.root_logger.setLevel(logging.WARNING)
         if not os.path.exists(log_dir):
-            os.makedirs(log_dir)
+            os.makedirs(log_dir, exist_ok=True)
 
         log_name = log_dir+'/worker-%.3d.log' % rank
         # Console handler on INFO level
