@@ -1,8 +1,9 @@
 
 local: 
     run_configs: 
-        - 'srp-monitor'
-        - 'rds-monitor'
+        # - 'srp-monitor'
+        # - 'rds-monitor'
+        - 'exact'
         # - 'precision-monitor'
 
         # - 'precision-monitor'
@@ -75,6 +76,31 @@ local:
             'timing': ['timing'],
             'workers': [1, 2, 4, 8],
             'omp': [2],
+            'mpi': ['mpich3'],
+            'time': [180],
+            'repeats': 1
+        },
+
+        'exact': {
+            'exe': ['SPS_main.py'],
+            'particles': [1000000],
+            'bunches': [1],  # 192
+            'slices': [1408],
+            'turns': [40000],
+            'monitor': [100],
+            'seed': [0],
+            'mtw': [0],
+            'precision': ['double'],
+            'withtp': [0],
+            'reduce': [1],
+            'approx': [0],
+            'log': [1],
+            'loadbalance': ['reportonly,,,,'],
+            'artificialdelay': ['off'],
+            # 'gpu': [0],
+            'timing': ['timing'],
+            'workers': [1],
+            'omp': [4],
             'mpi': ['mpich3'],
             'time': [180],
             'repeats': 1
