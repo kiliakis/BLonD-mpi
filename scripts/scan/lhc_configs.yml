@@ -178,7 +178,7 @@ local:
             'slices': [1000],
             'turns': [40000],
             'monitor': [100],
-            'seed': [0],
+            'seed': [1, 2, 3],
             'mtw': [0],
             'precision': ['double'],
             'withtp': [0],
