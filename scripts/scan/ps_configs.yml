@@ -2,8 +2,8 @@
 local: 
     run_configs: 
         - 'srp-monitor'
-        - 'rds-monitor'
-        - 'exact'
+        # - 'rds-monitor'
+        # - 'exact'
         # - 'precision-seed'
         # - 'precision-seed'
         # - 'precision-timing'
@@ -43,7 +43,7 @@ local:
             'mtw': [50],
             'precision': ['double'],
             'withtp': [0],
-            'reduce': [2],
+            'reduce': [3, 4],
             'approx': [1],
             'log': [1],
             'loadbalance': ['reportonly,,,,'],

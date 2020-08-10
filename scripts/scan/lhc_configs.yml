@@ -91,10 +91,10 @@ local:
     run_configs: 
 
         # - 'precision-monitor'
-        # - 'srp-monitor'
+        - 'srp-monitor'
         # - 'rds-monitor'
         # - 'precision-seed'
-        - 'exact'
+        # - 'exact'
         # - 'precision-timing'
 
 
@@ -133,7 +133,7 @@ local:
             'mtw': [0],
             'precision': ['double'],
             'withtp': [0],
-            'reduce': [2],
+            'reduce': [3, 4],
             'approx': [1],
             'log': [1],
             'loadbalance': ['reportonly,,,,'],
@@ -145,6 +145,8 @@ local:
             'time': [180],
             'repeats': 1
         },
+
+
 
         'rds-monitor': {
             'exe': ['LHC_main.py'],
