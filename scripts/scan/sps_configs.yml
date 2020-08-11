@@ -2,8 +2,8 @@
 local: 
     run_configs: 
         - 'srp-monitor'
-        # - 'rds-monitor'
-        # - 'exact'
+        - 'rds-monitor'
+        - 'exact'
         # - 'precision-monitor'
 
         # - 'precision-monitor'
@@ -35,7 +35,7 @@ local:
         'srp-monitor': {
             'exe': ['SPS_main.py'],
             'particles': [1000000],
-            'bunches': [1],  # 192
+            'bunches': [4],  # 192
             'slices': [1408],
             'turns': [40000],
             'monitor': [100],
@@ -43,14 +43,14 @@ local:
             'mtw': [0],
             'precision': ['double'],
             'withtp': [0],
-            'reduce': [3, 4],
+            'reduce': [2, 3, 4],
             'approx': [1],
             'log': [1],
             'loadbalance': ['reportonly,,,,'],
             'artificialdelay': ['off'],
             'timing': ['timing'],
             'workers': [1],
-            'omp': [2],
+            'omp': [4],
             'mpi': ['mpich3'],
             'time': [180],
             'repeats': 1
@@ -59,7 +59,7 @@ local:
         'rds-monitor': {
             'exe': ['SPS_main.py'],
             'particles': [1000000],
-            'bunches': [1],  # 192
+            'bunches': [4],  # 192
             'slices': [1408],
             'turns': [40000],
             'monitor': [100],
@@ -74,8 +74,8 @@ local:
             'artificialdelay': ['off'],
             # 'gpu': [0],
             'timing': ['timing'],
-            'workers': [1, 2, 4, 8],
-            'omp': [2],
+            'workers': [2, 4, 8],
+            'omp': [4],
             'mpi': ['mpich3'],
             'time': [180],
             'repeats': 1
@@ -84,11 +84,11 @@ local:
         'exact': {
             'exe': ['SPS_main.py'],
             'particles': [1000000],
-            'bunches': [1],  # 192
+            'bunches': [4],  # 192
             'slices': [1408],
             'turns': [40000],
             'monitor': [100],
-            'seed': [1, 2, 3],
+            'seed': [0, 1, 2, 3],
             'mtw': [0],
             'precision': ['double'],
             'withtp': [0],
