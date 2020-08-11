@@ -12,7 +12,8 @@ python = 'python'
 cores_per_cpu = 20
 # SLURM flags
 slurm = {
-    'script': os.path.join(blond_home, 'scripts/other/batch-simple.sh'),
+    # 'script': os.path.join(blond_home, 'scripts/other/batch-simple.sh'),
+    'script': os.path.join(blond_home, 'scripts/other/submit-aris.sh'),
     'submit': 'sbatch',
     'run': 'srun',
     'nodes': '-N',
@@ -28,7 +29,7 @@ slurm = {
             '--mem', '0',
             '--export', 'ALL',
             '--hint', 'nomultithread',
-            '--partition', 'inf-short'
+            # '--partition', 'inf-short'
     ]
 }
 

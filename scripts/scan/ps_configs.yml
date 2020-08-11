@@ -497,34 +497,118 @@ slurm:
 
     run_configs: 
         # Strong scaling
-        - 'lb-tp-approx0-strong-scaling'
-        - 'lb-tp-approx1-strong-scaling'
-        - 'lb-tp-approx2-strong-scaling'
+        # - 'lb-tp-approx0-strong-scaling'
+        # - 'lb-tp-approx1-strong-scaling'
+        # - 'lb-tp-approx2-strong-scaling'
         
         # Weak Scaling
-        - 'lb-tp-approx0-weak-scaling'
-        - 'lb-tp-approx1-weak-scaling'
-        - 'lb-tp-approx2-weak-scaling'
+        # - 'lb-tp-approx0-weak-scaling'
+        # - 'lb-tp-approx1-weak-scaling'
+        # - 'lb-tp-approx2-weak-scaling'
 
         # Intermediate stages
-        - 'approx0-interm'
-        - 'approx1-interm'
-        - 'approx2-interm'
-        - 'tp-approx0-interm'
-        - 'lb-tp-approx0-interm'
-        - 'lb-tp-approx1-interm'
-        - 'lb-tp-approx2-interm'
+        # - 'approx0-interm'
+        # - 'approx1-interm'
+        # - 'approx2-interm'
+        # - 'tp-approx0-interm'
+        # - 'lb-tp-approx0-interm'
+        # - 'lb-tp-approx1-interm'
+        # - 'lb-tp-approx2-interm'
 
         # Optimal num of workers per node
-        - 'approx0-workers'
+        # - 'approx0-workers'
         
         # Various MPI implementations
         # 'approx0-impl'
         # 'approx0-mvapich2-impl'
         # 'approx0-openmpi3-impl'
 
+        - 'rds-timing'
+        - 'exact-timing'
+        - 'srp-timing'
+
 
     configs: {
+
+
+        'srp-timing': {
+            'exe': ['PS_main.py'],
+            'particles': [1000000],
+            'bunches': [1],  # 192
+            'slices': [256],
+            'turns': [40000],
+            'monitor': [0],
+            'seed': [0],
+            'mtw': [50],
+            'precision': ['double'],
+            'withtp': [0],
+            'reduce': [2, 3, 4],
+            'approx': [1],
+            'log': [1],
+            'loadbalance': ['reportonly,,,,'],
+            'artificialdelay': ['off'],
+            'gpu': [0],
+            'timing': ['timing'],
+            'workers': [1],
+            'omp': [1],
+            'mpi': ['mpich3'],
+            'time': [180],
+            'repeats': 3
+        },
+
+
+        'rds-timing': {
+            'exe': ['PS_main.py'],
+            'particles': [1000000],
+            'bunches': [1],  # 192
+            'slices': [256],
+            'turns': [40000],
+            'monitor': [0],
+            'seed': [0],
+            'mtw': [50],
+            'precision': ['double'],
+            'withtp': [0],
+            'reduce': [1],
+            'approx': [2],
+            'log': [1],
+            'loadbalance': ['reportonly,,,,'],
+            'artificialdelay': ['off'],
+            # 'gpu': [0],
+            'timing': ['timing'],
+            'workers': [2, 4, 8],
+            'omp': [1],
+            'mpi': ['mpich3'],
+            'time': [180],
+            'repeats': 3
+        },
+
+        'exact-timing': {
+            'exe': ['PS_main.py'],
+            'particles': [1000000],
+            'bunches': [1],  # 192
+            'slices': [256],
+            'turns': [40000],
+            'monitor': [0],
+            'seed': [0],
+            'mtw': [50],
+            'precision': ['double'],
+            'withtp': [0],
+            'reduce': [1],
+            'approx': [0],
+            'log': [1],
+            'loadbalance': ['reportonly,,,,'],
+            'artificialdelay': ['off'],
+            # 'gpu': [0],
+            'timing': ['timing'],
+            'workers': [1, 2, 4, 8],
+            'omp': [1],
+            'mpi': ['mpich3'],
+            'time': [180],
+            'repeats': 3
+        },
+
+
+
         # Strong scaling
         'lb-tp-approx0-strong-scaling': {
             'exe': ['PS_main.py', 'PS_main.py', 'PS_main.py', 'PS_main.py'],

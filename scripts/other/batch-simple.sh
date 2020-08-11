@@ -1,5 +1,8 @@
 #!/bin/bash
 
+#SBATCH --partition=inf-short    # Partition
+
+
 $@
 
 # old_module=$(module list 2>&1 | grep -ohE "mpi/\w+/[0-9.]+")
