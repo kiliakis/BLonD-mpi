@@ -213,13 +213,13 @@ class Beam(object):
         # Statistics only for particles that are not flagged as lost
         itemindex = np.where(self.id != 0)[0]
         # itemindex = bm.where(self.id, 0)
-        self.mean_dt = bm.mean(self.dt[itemindex])
-        self.sigma_dt = bm.std(self.dt[itemindex])
+        self.mean_dt = np.mean(self.dt[itemindex])
+        self.sigma_dt = np.std(self.dt[itemindex])
         self.min_dt = np.min(self.dt[itemindex])
         self.max_dt = np.max(self.dt[itemindex])
 
-        self.mean_dE = bm.mean(self.dE[itemindex])
-        self.sigma_dE = bm.std(self.dE[itemindex])
+        self.mean_dE = np.mean(self.dE[itemindex])
+        self.sigma_dE = np.std(self.dE[itemindex])
         self.min_dE = np.min(self.dE[itemindex])
         self.max_dE = np.max(self.dE[itemindex])
 
