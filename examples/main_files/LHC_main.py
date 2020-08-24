@@ -162,6 +162,10 @@ profile = Profile(beam, CutOptions(n_slices=n_slices, cut_left=-0.5e-9,
 mpiprint("Beam generated, profile set...")
 mpiprint("Using %d slices" % n_slices)
 
+# beam.statistics()
+i = 0
+min_dt = bunch_spacing_buckets * (i+ 0.5 * rf.t_rf[0, 0]) - 0.9 * rf.t_rf[0, 0]
+max_dt = bunch_spacing_buckets * (i+ 0.5 * rf.t_rf[0, 0]) + 0.9 * rf.t_rf[0, 0]
 # Define emittance BUP feedback
 noiseFB = LHCNoiseFB(rf, profile, bl_target)
 mpiprint("Phase noise feedback set...")
@@ -277,6 +281,7 @@ for turn in range(n_iterations):
     tracker.track_only()
 
     if (args['monitor'] > 0) and (turn % args['monitor'] == 0):
+        beam.losses_longitudinal_cut(min_dt, max_dt)
         beam.statistics()
         beam.gather_statistics()
         profile.fwhm_multibunch(n_bunches, bunch_spacing_buckets,

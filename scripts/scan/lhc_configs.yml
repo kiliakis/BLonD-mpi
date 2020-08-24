@@ -127,8 +127,8 @@ local:
 
         'srp-monitor': {
             'exe': ['LHC_main.py'],
-            'particles': [1000000],
-            'bunches': [4],  # 192
+            'particles': [4000000],
+            'bunches': [1],  # 192
             'slices': [1000],
             'turns': [40000],
             'monitor': [100],
@@ -154,8 +154,8 @@ local:
 
         'rds-monitor': {
             'exe': ['LHC_main.py'],
-            'particles': [1000000],
-            'bunches': [4],  # 192
+            'particles': [4000000],
+            'bunches': [1],  # 192
             'slices': [1000],
             'turns': [40000],
             'monitor': [100],
@@ -180,12 +180,12 @@ local:
 
         'exact': {
             'exe': ['LHC_main.py'],
-            'particles': [1000000],
-            'bunches': [4],  # 192
+            'particles': [4000000],
+            'bunches': [1],  # 192
             'slices': [1000],
             'turns': [40000],
             'monitor': [100],
-            'seed': [0, 1, 2, 3],
+            'seed': [0, 1, 2],
             'mtw': [0],
             'precision': ['double'],
             'withtp': [0],

@@ -34,8 +34,8 @@ local:
     configs: {
         'srp-monitor': {
             'exe': ['SPS_main.py'],
-            'particles': [1000000],
-            'bunches': [4],  # 192
+            'particles': [4000000],
+            'bunches': [1],  # 192
             'slices': [1408],
             'turns': [40000],
             'monitor': [100],
@@ -58,8 +58,8 @@ local:
 
         'rds-monitor': {
             'exe': ['SPS_main.py'],
-            'particles': [1000000],
-            'bunches': [4],  # 192
+            'particles': [4000000],
+            'bunches': [1],  # 192
             'slices': [1408],
             'turns': [40000],
             'monitor': [100],
@@ -83,12 +83,12 @@ local:
 
         'exact': {
             'exe': ['SPS_main.py'],
-            'particles': [1000000],
-            'bunches': [4],  # 192
+            'particles': [4000000],
+            'bunches': [1],  # 192
             'slices': [1408],
             'turns': [40000],
             'monitor': [100],
-            'seed': [0, 1, 2, 3],
+            'seed': [0, 1, 2],
             'mtw': [0],
             'precision': ['double'],
             'withtp': [0],
@@ -528,7 +528,7 @@ slurm:
 
         'srp-timing': {
             'exe': ['SPS_main.py'],
-            'particles': [1000000],
+            'particles': [4000000],
             'bunches': [1],  # 192
             'slices': [1408],
             'turns': [40000],
@@ -548,12 +548,12 @@ slurm:
             'omp': [10],
             'mpi': ['openmpi4'],
             'time': [180],
-            'repeats': 2
+            'repeats': 1
         },
 
         'rds-timing': {
             'exe': ['SPS_main.py'],
-            'particles': [1000000],
+            'particles': [4000000],
             'bunches': [1],  # 192
             'slices': [1408],
             'turns': [40000],
@@ -573,7 +573,7 @@ slurm:
             'omp': [10],
             'mpi': ['openmpi4'],
             'time': [180],
-            'repeats': 2
+            'repeats': 1
         },
 
         'exact-timing': {
@@ -598,7 +598,7 @@ slurm:
             'omp': [10],
             'mpi': ['openmpi4'],
             'time': [180],
-            'repeats': 2
+            'repeats': 1
         },
 
 

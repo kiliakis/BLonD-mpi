@@ -442,6 +442,11 @@ for copy in range(n_bunches):
     beam.dE[beginIndex:endIndex] = PS_beam.dE
     beginIndex = endIndex
 
+i = 0
+min_dt = bunch_spacing * (i+ 0.5 * rf_station.t_rf[0, 0]) - 0.9 * rf_station.t_rf[0, 0]
+max_dt = bunch_spacing * (i+ 0.5 * rf_station.t_rf[0, 0]) + 0.9 * rf_station.t_rf[0, 0]
+
+
 mpiprint('dE mean: ', np.mean(beam.dE))
 mpiprint('dE std: ', np.std(beam.dE))
 # profile.track()
@@ -549,6 +554,7 @@ for turn in range(n_iterations):
                     phaseLoop.time_offset -= delta
 
     if (args['monitor'] > 0) and (turn % args['monitor'] == 0):
+        beam.losses_longitudinal_cut(min_dt, max_dt)
         beam.statistics()
         beam.gather_statistics()
         profile.fwhm_multibunch(n_bunches, bunch_spacing,

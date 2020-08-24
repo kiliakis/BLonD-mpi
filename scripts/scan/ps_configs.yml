@@ -34,8 +34,8 @@ local:
 
         'srp-monitor': {
             'exe': ['PS_main.py'],
-            'particles': [1000000],
-            'bunches': [4],  # 192
+            'particles': [4000000],
+            'bunches': [1],  # 192
             'slices': [256],
             'turns': [40000],
             'monitor': [100],
@@ -60,8 +60,8 @@ local:
 
         'rds-monitor': {
             'exe': ['PS_main.py'],
-            'particles': [1000000],
-            'bunches': [4],  # 192
+            'particles': [4000000],
+            'bunches': [1],  # 192
             'slices': [256],
             'turns': [40000],
             'monitor': [100],
@@ -85,12 +85,12 @@ local:
 
         'exact': {
             'exe': ['PS_main.py'],
-            'particles': [1000000],
+            'particles': [4000000],
             'bunches': [4],  # 192
             'slices': [256],
             'turns': [40000],
             'monitor': [100],
-            'seed': [0, 1, 2, 3],
+            'seed': [0, 1, 2],
             'mtw': [50],
             'precision': ['double'],
             'withtp': [0],

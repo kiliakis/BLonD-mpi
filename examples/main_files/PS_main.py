@@ -401,6 +401,10 @@ match_beam_from_distribution(beam, full_tracker, ring,
                              n_points_potential=int(1e3),
                              dt_margin_percent=0.1, seed=seed)
 
+i = 0
+min_dt = bunch_spacing_buckets * (i+ 0.5 * rf_params.t_rf[0, 0]) - 0.9 * rf_params.t_rf[0, 0]
+max_dt = bunch_spacing_buckets * (i+ 0.5 * rf_params.t_rf[0, 0]) + 0.9 * rf_params.t_rf[0, 0]
+
 mpiprint('dE mean:', np.mean(beam.dE))
 mpiprint('dE std:', np.std(beam.dE))
 
@@ -474,6 +478,7 @@ for turn in range(n_iterations):
     tracker.track_only()
 
     if (args['monitor'] > 0) and (turn % args['monitor'] == 0):
+        beam.losses_longitudinal_cut(min_dt, max_dt)
         beam.statistics()
         beam.gather_statistics()
         profile.fwhm_multibunch(n_bunches, bunch_spacing_buckets,
