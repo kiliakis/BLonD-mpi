@@ -533,7 +533,7 @@ slurm:
 
         'srp-timing': {
             'exe': ['PS_main.py'],
-            'particles': [1000000],
+            'particles': [4000000],
             'bunches': [1],  # 192
             'slices': [256],
             'turns': [40000],
@@ -553,13 +553,13 @@ slurm:
             'omp': [10],
             'mpi': ['mpich3'],
             'time': [180],
-            'repeats': 2
+            'repeats': 3
         },
 
 
         'rds-timing': {
             'exe': ['PS_main.py'],
-            'particles': [1000000],
+            'particles': [4000000],
             'bunches': [1],  # 192
             'slices': [256],
             'turns': [40000],
@@ -579,12 +579,12 @@ slurm:
             'omp': [10],
             'mpi': ['mpich3'],
             'time': [180],
-            'repeats': 2
+            'repeats': 3
         },
 
         'exact-timing': {
             'exe': ['PS_main.py'],
-            'particles': [1000000],
+            'particles': [4000000],
             'bunches': [1],  # 192
             'slices': [256],
             'turns': [40000],
@@ -604,7 +604,7 @@ slurm:
             'omp': [10],
             'mpi': ['mpich3'],
             'time': [180],
-            'repeats': 2
+            'repeats': 3
         },
 
 
