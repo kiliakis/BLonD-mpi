@@ -553,6 +553,9 @@ for turn in range(n_iterations):
                 if phaseLoop.alpha != 0:
                     phaseLoop.time_offset -= delta
 
+                min_dt -= delta
+                max_dt -= delta
+
     if (args['monitor'] > 0) and (turn % args['monitor'] == 0):
         beam.losses_longitudinal_cut(min_dt, max_dt)
         beam.statistics()
