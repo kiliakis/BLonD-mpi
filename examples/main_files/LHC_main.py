@@ -164,8 +164,8 @@ mpiprint("Using %d slices" % n_slices)
 
 # beam.statistics()
 i = 0
-min_dt = bunch_spacing_buckets * (i+ 0.5 * rf.t_rf[0, 0]) - 0.9 * rf.t_rf[0, 0]
-max_dt = bunch_spacing_buckets * (i+ 0.5 * rf.t_rf[0, 0]) + 0.9 * rf.t_rf[0, 0]
+min_dt = (bunch_spacing_buckets * i + 0.5) * rf.t_rf[0, 0] - 0.9 * rf.t_rf[0, 0]
+max_dt = (bunch_spacing_buckets * i + 0.5) * rf.t_rf[0, 0] + 0.9 * rf.t_rf[0, 0]
 # Define emittance BUP feedback
 noiseFB = LHCNoiseFB(rf, profile, bl_target)
 mpiprint("Phase noise feedback set...")

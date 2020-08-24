@@ -402,8 +402,8 @@ match_beam_from_distribution(beam, full_tracker, ring,
                              dt_margin_percent=0.1, seed=seed)
 
 i = 0
-min_dt = bunch_spacing_buckets * (i+ 0.5 * rf_params.t_rf[0, 0]) - 0.9 * rf_params.t_rf[0, 0]
-max_dt = bunch_spacing_buckets * (i+ 0.5 * rf_params.t_rf[0, 0]) + 0.9 * rf_params.t_rf[0, 0]
+min_dt = (bunch_spacing_buckets * i + 0.5) * rf_params.t_rf[0, 0] - 0.9 * rf_params.t_rf[0, 0]
+max_dt = (bunch_spacing_buckets * i + 0.5) * rf_params.t_rf[0, 0] + 0.9 * rf_params.t_rf[0, 0]
 
 mpiprint('dE mean:', np.mean(beam.dE))
 mpiprint('dE std:', np.std(beam.dE))

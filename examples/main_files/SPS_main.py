@@ -443,8 +443,8 @@ for copy in range(n_bunches):
     beginIndex = endIndex
 
 i = 0
-min_dt = bunch_spacing * (i+ 0.5 * rf_station.t_rf[0, 0]) - 0.9 * rf_station.t_rf[0, 0]
-max_dt = bunch_spacing * (i+ 0.5 * rf_station.t_rf[0, 0]) + 0.9 * rf_station.t_rf[0, 0]
+min_dt = (bunch_spacing * i+ 0.5) * rf_station.t_rf[0, 0] - 0.9 * rf_station.t_rf[0, 0]
+max_dt = (bunch_spacing * i+ 0.5) * rf_station.t_rf[0, 0] + 0.9 * rf_station.t_rf[0, 0]
 
 
 mpiprint('dE mean: ', np.mean(beam.dE))
