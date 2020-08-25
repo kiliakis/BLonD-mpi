@@ -529,7 +529,7 @@ slurm:
         'srp-timing': {
             'exe': ['SPS_main.py'],
             'particles': [4000000],
-            'bunches': [1],  # 192
+            'bunches': [4],  # 192
             'slices': [1408],
             'turns': [40000],
             'monitor': [0],
@@ -537,14 +537,15 @@ slurm:
             'mtw': [0],
             'precision': ['double'],
             'withtp': [0],
-            'reduce': [2, 2, 2, 2, 3, 3, 3, 3, 4, 4, 4, 4],
-            # 'reduce': [2, 3, 4],
+            # 'reduce': [2, 2, 2, 2, 3, 3, 3, 3, 4, 4, 4, 4],
+            'reduce': [2, 3, 4],
             'approx': [1],
             'log': [1],
             'loadbalance': ['reportonly,,,,'],
             'artificialdelay': ['off'],
             'timing': ['timing'],
-            'workers': [1, 2, 4, 8],
+            # 'workers': [1, 2, 4, 8],
+            'workers': [16],
             'omp': [10],
             'mpi': ['openmpi4'],
             'time': [180],
@@ -554,7 +555,7 @@ slurm:
         'rds-timing': {
             'exe': ['SPS_main.py'],
             'particles': [4000000],
-            'bunches': [1],  # 192
+            'bunches': [4],  # 192
             'slices': [1408],
             'turns': [40000],
             'monitor': [0],
@@ -569,7 +570,8 @@ slurm:
             'artificialdelay': ['off'],
             # 'gpu': [0],
             'timing': ['timing'],
-            'workers': [1, 2, 4, 8],
+            # 'workers': [1, 2, 4, 8],
+            'workers': [16],
             'omp': [10],
             'mpi': ['openmpi4'],
             'time': [180],
@@ -579,7 +581,7 @@ slurm:
         'exact-timing': {
             'exe': ['SPS_main.py'],
             'particles': [4000000],
-            'bunches': [1],  # 192
+            'bunches': [4],  # 192
             'slices': [1408],
             'turns': [40000],
             'monitor': [0],
@@ -594,7 +596,8 @@ slurm:
             'artificialdelay': ['off'],
             # 'gpu': [0],
             'timing': ['timing'],
-            'workers': [1, 2, 4, 8],
+            # 'workers': [1, 2, 4, 8],
+            'workers': [16],
             'omp': [10],
             'mpi': ['openmpi4'],
             'time': [180],
