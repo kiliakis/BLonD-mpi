@@ -3,7 +3,8 @@ local:
     run_configs: 
         # - 'srp-monitor'
         # - 'rds-monitor'
-        - 'exact'
+        # - 'exact'
+        - 'float32'
         # - 'precision-seed'
         # - 'precision-seed'
         # - 'precision-timing'
@@ -93,6 +94,31 @@ local:
             'seed': [0, 1, 2],
             'mtw': [50],
             'precision': ['double'],
+            'withtp': [0],
+            'reduce': [1],
+            'approx': [0],
+            'log': [1],
+            'loadbalance': ['reportonly,,,,'],
+            'artificialdelay': ['off'],
+            # 'gpu': [0],
+            'timing': ['timing'],
+            'workers': [1],
+            'omp': [4],
+            'mpi': ['mpich3'],
+            'time': [180],
+            'repeats': 1
+        },
+
+        'float32': {
+            'exe': ['PS_main.py'],
+            'particles': [4000000],
+            'bunches': [1],  # 192
+            'slices': [256],
+            'turns': [40000],
+            'monitor': [100],
+            'seed': [0],
+            'mtw': [50],
+            'precision': ['single'],
             'withtp': [0],
             'reduce': [1],
             'approx': [0],
@@ -523,10 +549,11 @@ slurm:
         # 'approx0-mvapich2-impl'
         # 'approx0-openmpi3-impl'
 
-        - 'rds-timing'
-        - 'exact-timing'
-        - 'srp-timing'
+        # - 'rds-timing'
+        # - 'exact-timing'
+        # - 'srp-timing'
 
+        - 'float32-timing'
 
     configs: {
 
@@ -619,6 +646,34 @@ slurm:
             'repeats': 2
         },
 
+
+        'float32-timing': {
+            'exe': ['PS_main.py'],
+            'particles': [1000000, 1000000, 2000000, 2000000],
+            'bunches': [1, 2, 2, 4],  # 192
+            # 'particles': [4000000],
+            # 'bunches': [4],  # 192
+            'slices': [256],
+            'turns': [40000],
+            'monitor': [0],
+            'seed': [0],
+            'mtw': [50],
+            'precision': ['single'],
+            'withtp': [0],
+            'reduce': [1],
+            'approx': [0],
+            'log': [1],
+            'loadbalance': ['reportonly,,,,'],
+            'artificialdelay': ['off'],
+            # 'gpu': [0],
+            'timing': ['timing'],
+            'workers': [1, 2, 4, 8],
+            # 'workers': [16],
+            'omp': [10],
+            'mpi': ['mpich3'],
+            'time': [180],
+            'repeats': 2
+        },
 
 
         # Strong scaling

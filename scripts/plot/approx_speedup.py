@@ -16,18 +16,26 @@ parser = argparse.ArgumentParser(description='Generate the figure of the interme
 parser.add_argument('-i', '--inputdir', type=str, default=os.path.join(project_dir, 'results'),
                     help='The directory with the results.')
 
+parser.add_argument('-o', '--outdir', type=str, default=None,
+                    help='The directory to store the plots.'
+                    'Default: In a plots directory inside the input results directory.')
+
 parser.add_argument('-c', '--cases', type=str, default='lhc,sps,ps',
                     help='A comma separated list of the testcases to run. Default: lhc,sps,ps')
 
 parser.add_argument('-s', '--show', action='store_true',
                     help='Show the plots.')
 
+
+
 args = parser.parse_args()
 args.cases = args.cases.split(',')
 
 res_dir = args.inputdir
-images_dir = os.path.join(res_dir, 'plots')
-
+if args.outdir is None:
+    images_dir = os.path.join(res_dir, 'plots')
+else:
+    images_dir = args.outdir
 
 if not os.path.exists(images_dir):
     os.makedirs(images_dir)
@@ -68,7 +76,7 @@ gconfig = {
         'loc': 'upper right', 'ncol': 7, 'handlelength': 1.1, 'fancybox': True,
         'framealpha': 0., 'fontsize': 9, 'labelspacing': 0, 'borderpad': 0.5,
         'handletextpad': 0.2, 'borderaxespad': 0.1, 'columnspacing': 0.3,
-        # 'bbox_to_anchor': (-0.01, 1.12)
+        'bbox_to_anchor': (1, 1.15)
     },
     'subplots_adjust': {
         'wspace': 0.0, 'hspace': 0.1, 'top': 0.93
@@ -100,7 +108,7 @@ gconfig = {
         # 'lb': ['reportonly'],
         'approx': ['0', '1', '2'],
         'red': ['1', '2', '3', '4'],
-        'ppb': ['4000000'],
+        # 'ppb': ['4000000'],
         # 'lba': ['500'],
         # 'b': ['96', '48', '72', '21'],
         # 't': ['5000'],

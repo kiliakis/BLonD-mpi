@@ -85,8 +85,8 @@ gconfig = {
         # 'mean_dt'
     ],
     # 'y_err_name': 'std',
-    'xlabel': {'xlabel': 'Turn', 'labelpad': 1, 'fontsize': 10},
-    'ylabel': {'ylabel': r'Relative Error', 'labelpad': 1, 'fontsize': 10},
+    'xlabel': {'xlabel': 'Turn', 'labelpad': 1, 'fontsize': 9},
+    'ylabel': {'ylabel': r'Relative Error', 'labelpad': 1, 'fontsize': 9},
     'title': {
         # 's': '{}'.format(case.upper()),
         'fontsize': 9,
@@ -94,7 +94,7 @@ gconfig = {
         # 'x': 0.45,
         'fontweight': 'bold',
     },
-    'figsize': [5.4, 2.4],
+    'figsize': [5.4, 1.6],
     'annotate': {
         'fontsize': 9,
         'textcoords': 'data',
@@ -102,11 +102,11 @@ gconfig = {
         'ha': 'center'
     },
     'ticks': {'fontsize': 9},
-    'fontsize': 10,
+    'fontsize': 9,
     'legend': {
-        'loc': 'best', 'ncol': 3, 'handlelength': 1.5, 'fancybox': False,
-        'framealpha': .7, 'fontsize': 10, 'labelspacing': 0, 'borderpad': 0.5,
-        'handletextpad': 0.5, 'borderaxespad': 0.1, 'columnspacing': 0.8,
+        'loc': 'upper left', 'ncol': 3, 'handlelength': 1., 'fancybox': False,
+        'framealpha': .7, 'fontsize': 9, 'labelspacing': 0, 'borderpad': 0.2,
+        'handletextpad': 0.2, 'borderaxespad': 0.1, 'columnspacing': 0.4,
         # 'bbox_to_anchor': (0., 1.05)
     },
     'subplots_adjust': {
@@ -301,7 +301,7 @@ if __name__ == '__main__':
         # plt.rcParams['axes.formatter.min_exponent'] = 1
         plt.grid(True, which='both', axis='y', alpha=0.5)
         plt.grid(False, which='major', axis='x')
-        plt.title(gconfig['plots'][inputkey]['title'], **gconfig['title'])
+        # plt.title(gconfig['plots'][inputkey]['title'], **gconfig['title'])
         plt.xlabel(**gconfig['xlabel'])
         plt.ylabel(**gconfig['ylabel'])
         plt.ylim(gconfig['ylim'])
