@@ -649,10 +649,10 @@ slurm:
 
         'float32-timing': {
             'exe': ['PS_main.py'],
-            'particles': [1000000, 1000000, 2000000, 2000000],
-            'bunches': [1, 2, 2, 4],  # 192
-            # 'particles': [4000000],
-            # 'bunches': [4],  # 192
+            # 'particles': [1000000, 1000000, 2000000, 2000000],
+            # 'bunches': [1, 2, 2, 4],  # 192
+            'particles': [4000000],
+            'bunches': [4],  # 192
             'slices': [256],
             'turns': [40000],
             'monitor': [0],
@@ -667,8 +667,8 @@ slurm:
             'artificialdelay': ['off'],
             # 'gpu': [0],
             'timing': ['timing'],
-            'workers': [1, 2, 4, 8],
-            # 'workers': [16],
+            # 'workers': [1, 2, 4, 8],
+            'workers': [16],
             'omp': [10],
             'mpi': ['mpich3'],
             'time': [180],

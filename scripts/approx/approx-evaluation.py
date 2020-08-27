@@ -123,17 +123,26 @@ gconfig = {
     'outfiles': ['{}/{}-{}.png', '{}/{}-{}.pdf'],
     # 'cases': ['ex01'],
     'inputkeys': [
-        'ps-srp',
-        'ps-rds',
-        'ps-40kt-seed',
-        'sps-srp',
-        'sps-rds',
-        'sps-40kt-seed',
-        'lhc-srp',
-        'lhc-rds',
-        'lhc-40kt-seed',
+        'ps-f32',
+        # 'ps-srp',
+        # 'ps-rds',
+        # 'ps-40kt-seed',
+        'sps-f32',
+        # 'sps-srp',
+        # 'sps-rds',
+        # 'sps-40kt-seed',
+        'lhc-f32',
+        # 'lhc-srp',
+        # 'lhc-rds',
+        # 'lhc-40kt-seed',
     ],
     'plots': {
+        'ps-f32': {
+            'in': {'f32': 'results/approx-eval-2/ps/float32/_p4000000_b1_s256_t40000_w1_o4_N1_red1_mtw50_seed0_approx0_mpimpich3_lbreportonly,,,,_monitor100_tp0_precsingle_artdeloff_/27Aug20.16-13-20-47/monitor.h5',
+                   },
+            'title': 'PS F32 40kT 1x1M P',
+            'base': 'results/approx-eval-2/ps/exact/_p4000000_b1_s256_t40000_w1_o4_N1_red1_mtw50_seed0_approx0_mpimpich3_lbreportonly,,,,_monitor100_tp0_precdouble_artdeloff_/25Aug20.10-21-36-33/monitor.h5',
+        },
         'ps-srp': {
             'in': {'r2': 'results/approx-eval-2/ps/srp-monitor/_p4000000_b1_s256_t40000_w1_o4_N1_red2_mtw50_seed0_approx1_mpimpich3_lbreportonly,,,,_monitor100_tp0_precdouble_artdeloff_/24Aug20.14-45-02-45/monitor.h5',
                    'r3': 'results/approx-eval-2/ps/srp-monitor/_p4000000_b1_s256_t40000_w1_o4_N1_red3_mtw50_seed0_approx1_mpimpich3_lbreportonly,,,,_monitor100_tp0_precdouble_artdeloff_/24Aug20.14-56-17-69/monitor.h5',
@@ -162,6 +171,12 @@ gconfig = {
 
             'base': 'results/approx-eval-2/ps/exact/_p4000000_b1_s256_t40000_w1_o4_N1_red1_mtw50_seed0_approx0_mpimpich3_lbreportonly,,,,_monitor100_tp0_precdouble_artdeloff_/25Aug20.10-21-36-33/monitor.h5',
         },
+        'sps-f32': {
+            'in': {'f32': 'results/approx-eval-2/sps/float32/_p4000000_b1_s1408_t40000_w1_o4_N1_red1_mtw0_seed0_approx0_mpimpich3_lbreportonly,,,,_monitor100_tp0_precsingle_artdeloff_/27Aug20.16-13-09-11/monitor.h5',
+                   },
+            'title': 'SPS F32 40kT 1x1M P',
+            'base': 'results/approx-eval-2/sps/exact/_p4000000_b1_s1408_t40000_w1_o4_N1_red1_mtw0_seed0_approx0_mpimpich3_lbreportonly,,,,_monitor100_tp0_precdouble_artdeloff_/24Aug20.17-32-07-77/monitor.h5',
+        },
         'sps-srp': {
             'in': {'r2': 'results/approx-eval-2/sps/srp-monitor/_p4000000_b1_s1408_t40000_w1_o4_N1_red2_mtw0_seed0_approx1_mpimpich3_lbreportonly,,,,_monitor100_tp0_precdouble_artdeloff_/24Aug20.14-54-44-38/monitor.h5',
                    'r3': 'results/approx-eval-2/sps/srp-monitor/_p4000000_b1_s1408_t40000_w1_o4_N1_red3_mtw0_seed0_approx1_mpimpich3_lbreportonly,,,,_monitor100_tp0_precdouble_artdeloff_/24Aug20.15-20-10-24/monitor.h5',
@@ -187,6 +202,12 @@ gconfig = {
             'title': 'SPS 40kT seeds 1x1M P',
             'base': 'results/approx-eval-2/sps/exact/_p4000000_b1_s1408_t40000_w1_o4_N1_red1_mtw0_seed0_approx0_mpimpich3_lbreportonly,,,,_monitor100_tp0_precdouble_artdeloff_/24Aug20.17-32-07-77/monitor.h5',
             # 'base': 'results/approx-eval/sps/exact/_p1000000_b1_s1408_t40000_w1_o4_N1_red1_mtw0_seed0_approx0_mpimpich3_lbreportonly,,,,_monitor100_tp0_precdouble_artdeloff_/10Aug20.11-52-48-93/monitor.h5',
+        },
+        'lhc-f32': {
+            'in': {'f32': 'results/approx-eval-2/lhc/float32/_p4000000_b1_s1000_t40000_w1_o4_N1_red1_mtw0_seed0_approx0_mpimpich3_lbreportonly,,,,_monitor100_tp0_precsingle_artdeloff_/27Aug20.16-13-01-28/monitor.h5',
+                   },
+            'title': 'LHC F32 40kT 1x1M P',
+            'base': 'results/approx-eval-2/lhc/exact/_p4000000_b1_s1000_t40000_w1_o4_N1_red1_mtw0_seed0_approx0_mpimpich3_lbreportonly,,,,_monitor100_tp0_precdouble_artdeloff_/24Aug20.15-39-18-76/monitor.h5',
         },
         'lhc-srp': {
             'in': {'r2': 'results/approx-eval-2/lhc/srp-monitor/_p4000000_b1_s1000_t40000_w1_o4_N1_red2_mtw0_seed0_approx1_mpimpich3_lbreportonly,,,,_monitor100_tp0_precdouble_artdeloff_/24Aug20.14-44-53-65/monitor.h5',

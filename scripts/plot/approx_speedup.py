@@ -102,12 +102,14 @@ gconfig = {
         '{}/{}/exact-timing/comm-comp-report.csv',
         '{}/{}/rds-timing/comm-comp-report.csv',
         '{}/{}/srp-timing/comm-comp-report.csv',
+        '{}/{}/float32-timing/comm-comp-report.csv',
     ],
     'lines': {
         # 'mpi': ['mpich3', 'mvapich2', 'openmpi3'],
         # 'lb': ['reportonly'],
         'approx': ['0', '1', '2'],
         'red': ['1', '2', '3', '4'],
+        'prec': ['single', 'double'],
         # 'ppb': ['4000000'],
         # 'lba': ['500'],
         # 'b': ['96', '48', '72', '21'],
@@ -199,6 +201,7 @@ if __name__ == '__main__':
             # tp = k.split('_')[-1]
             red = k.split('red')[1].split('_')[0]
             experiment = k.split('_')[-1]
+            prec = k.split('prec')[1].split('_')[0]
             # if lb == 'interval':
             #     lb = 'LB-'
             # elif lb == 'reportonly':
@@ -208,7 +211,9 @@ if __name__ == '__main__':
             # elif tp == 'tp0':
             #     tp = ''
             approx = gconfig['approx'][approx]
-            if approx == '':
+            if prec == '':
+                label = 'f32'
+            elif approx == '':
                 label = 'base'
             elif approx == 'RDS':
                 label = 'RDS'
