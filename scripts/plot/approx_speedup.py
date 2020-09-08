@@ -62,7 +62,7 @@ gconfig = {
         # 'x': 0.55,
         'fontweight': 'bold',
     },
-    'figsize': [5, 2.1],
+    'figsize': [5, 2.2],
     'annotate': {
         'fontsize': 8.5,
         'textcoords': 'data',
@@ -73,10 +73,10 @@ gconfig = {
     'ticks': {'fontsize': 10, 'rotation': '0'},
     'fontsize': 10,
     'legend': {
-        'loc': 'upper right', 'ncol': 7, 'handlelength': 1.1, 'fancybox': True,
+        'loc': 'upper right', 'ncol': 7, 'handlelength': 1.2, 'fancybox': True,
         'framealpha': 0., 'fontsize': 9, 'labelspacing': 0, 'borderpad': 0.5,
-        'handletextpad': 0.2, 'borderaxespad': 0.1, 'columnspacing': 0.3,
-        'bbox_to_anchor': (1, 1.15)
+        'handletextpad': 0.2, 'borderaxespad': 0.1, 'columnspacing': 0.4,
+        'bbox_to_anchor': (1, 1.17)
     },
     'subplots_adjust': {
         'wspace': 0.0, 'hspace': 0.1, 'top': 0.93
@@ -86,9 +86,9 @@ gconfig = {
         'direction': 'out', 'length': 3, 'width': 1,
     },
     'fontname': 'DejaVu Sans Mono',
-    'ylim': [0.25, 1.15],
+    'ylim': [0.2, 1.15],
     # 'ylim2': [10, 90],
-    'yticks': [0.4, 0.6, 0.8, 1],
+    'yticks': [0.2, 0.4, 0.6, 0.8, 1],
     # 'yticks2': [0, 20, 40, 60, 80, 100],
     'outfiles': ['{}/{}-{}.png', '{}/{}-{}.pdf'],
     'files': [
@@ -169,7 +169,7 @@ if __name__ == '__main__':
         # First the reference value
         keyref = ''
         for k in plots_dir.keys():
-            if 'approx0' in k:
+            if 'approx0' in k and 'double' in k:
                 keyref = k
                 break
         if keyref == '':
@@ -190,7 +190,7 @@ if __name__ == '__main__':
             this_filename[:-3], case, 'Plotting data'))
         # To sort the keys, by approx and then reduce value
         print(plots_dir.keys())
-        keys =['_'.join(a.split('_')[1:3]) for a in list(plots_dir.keys())]
+        keys =['_'.join(a.split('_')[1:4]) for a in list(plots_dir.keys())]
         print(keys)
         keys = np.array(list(plots_dir.keys()))[np.argsort(keys)]
         for idx, k in enumerate(keys):
@@ -211,7 +211,7 @@ if __name__ == '__main__':
             # elif tp == 'tp0':
             #     tp = ''
             approx = gconfig['approx'][approx]
-            if prec == '':
+            if prec == 'single':
                 label = 'f32'
             elif approx == '':
                 label = 'base'
@@ -237,7 +237,7 @@ if __name__ == '__main__':
             speedup = []
             j = 0
             for i, xiref in enumerate(xref):
-                if xiref == x[j]:
+                if j < len(x) and xiref == x[j]:
                     speedup.append(yref[i]/y[j])
                     j += 1
                 else:
@@ -298,7 +298,7 @@ if __name__ == '__main__':
     # print(labels)
 
     plt.legend(handles=handles, labels=labels, **gconfig['legend'])
-    # plt.xlim(0-1.3*width/2, pos-1.4*width/2)
+    # plt.xlim(width/2, pos-width/2)
     plt.yticks(gconfig['yticks'], **gconfig['ticks'])
 
     plt.xticks(np.arange(len(xref)), np.array(xref, int), **gconfig['xticks'])
