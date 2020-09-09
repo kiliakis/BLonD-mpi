@@ -549,10 +549,9 @@ slurm:
         # 'approx0-mvapich2-impl'
         # 'approx0-openmpi3-impl'
 
-        # - 'rds-timing'
-        # - 'exact-timing'
-        # - 'srp-timing'
-
+        - 'rds-timing'
+        - 'exact-timing'
+        - 'srp-timing'
         - 'float32-timing'
 
     configs: {
@@ -560,8 +559,8 @@ slurm:
 
         'srp-timing': {
             'exe': ['PSBUnstableExample.py'],
-            'particles': [1000000, 1000000, 2000000, 2000000],
-            'bunches': [1, 2, 2, 4],  # 192
+            'particles': [1000000, 2000000, 4000000, 8000000],
+            'bunches': [1],  # 192
             # 'particles': [4000000],
             # 'bunches': [4],  # 192
             'slices': [128],
@@ -591,8 +590,8 @@ slurm:
         'rds-timing': {
             'exe': ['PSBUnstableExample.py'],
             # 'particles': [4000000],
-            'particles': [1000000, 1000000, 2000000, 2000000],
-            'bunches': [1, 2, 2, 4],  # 192
+            'particles': [1000000, 2000000, 4000000, 8000000],
+            'bunches': [1],  # 192
 
             # 'bunches': [4],  # 192
             'slices': [128],
@@ -619,8 +618,8 @@ slurm:
 
         'exact-timing': {
             'exe': ['PSBUnstableExample.py'],
-            'particles': [1000000, 1000000, 2000000, 2000000],
-            'bunches': [1, 2, 2, 4],  # 192
+            'particles': [1000000, 2000000, 4000000, 8000000],
+            'bunches': [1],  # 192
 
             # 'particles': [4000000],
             # 'bunches': [4],  # 192
@@ -649,10 +648,10 @@ slurm:
 
         'float32-timing': {
             'exe': ['PSBUnstableExample.py'],
-            # 'particles': [1000000, 1000000, 2000000, 2000000],
-            # 'bunches': [1, 2, 2, 4],  # 192
-            'particles': [4000000],
-            'bunches': [4],  # 192
+            'particles': [1000000, 2000000, 4000000, 8000000],
+            'bunches': [1],  # 192
+            # 'particles': [4000000],
+            # 'bunches': [4],  # 192
             'slices': [128],
             'turns': [35000],
             'monitor': [0],
@@ -667,8 +666,8 @@ slurm:
             'artificialdelay': ['off'],
             # 'gpu': [0],
             'timing': ['timing'],
-            # 'workers': [1, 2, 4, 8],
-            'workers': [16],
+            'workers': [1, 2, 4, 8],
+            # 'workers': [16],
             'omp': [10],
             'mpi': ['mpich3'],
             'time': [180],

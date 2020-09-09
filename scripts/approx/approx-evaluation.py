@@ -123,20 +123,56 @@ gconfig = {
     'outfiles': ['{}/{}-{}.png', '{}/{}-{}.pdf'],
     # 'cases': ['ex01'],
     'inputkeys': [
-        'ps-f32',
+        'psb-f32',
+        'psb-srp',
+        'psb-rds',
+        'psb-40kt-seed',
+        # 'ps-f32',
         # 'ps-srp',
         # 'ps-rds',
         # 'ps-40kt-seed',
-        'sps-f32',
+        # 'sps-f32',
         # 'sps-srp',
         # 'sps-rds',
         # 'sps-40kt-seed',
-        'lhc-f32',
+        # 'lhc-f32',
         # 'lhc-srp',
         # 'lhc-rds',
         # 'lhc-40kt-seed',
     ],
     'plots': {
+        'psb-f32': {
+            'in': {'f32': 'results/approx-eval-2/psb/float32/_p4000000_b1_s128_t35000_w1_o4_N1_red1_mtw50_seed0_approx0_mpimpich3_lbreportonly,,,,_monitor100_tp0_precsingle_artdeloff_/08Sep20.15-56-56-71/monitor.h5',
+                   },
+            'title': 'PSB F32 35kT 1x4M P',
+            'base': 'results/approx-eval-2/psb/exact/_p4000000_b1_s128_t35000_w1_o4_N1_red1_mtw50_seed0_approx0_mpimpich3_lbreportonly,,,,_monitor100_tp0_precdouble_artdeloff_/08Sep20.15-51-11-83/monitor.h5',
+        },
+        'psb-srp': {
+            'in': {'r2': 'results/approx-eval-2/psb/srp-monitor/_p4000000_b1_s128_t35000_w1_o4_N1_red2_mtw50_seed0_approx1_mpimpich3_lbreportonly,,,,_monitor100_tp0_precdouble_artdeloff_/08Sep20.15-43-02-74/monitor.h5',
+                   'r3': 'results/approx-eval-2/psb/srp-monitor/_p4000000_b1_s128_t35000_w1_o4_N1_red3_mtw50_seed0_approx1_mpimpich3_lbreportonly,,,,_monitor100_tp0_precdouble_artdeloff_/08Sep20.15-44-47-39/monitor.h5',
+                   'r4': 'results/approx-eval-2/psb/srp-monitor/_p4000000_b1_s128_t35000_w1_o4_N1_red4_mtw50_seed0_approx1_mpimpich3_lbreportonly,,,,_monitor100_tp0_precdouble_artdeloff_/08Sep20.15-46-22-81/monitor.h5'
+                   },
+            'title': 'PSB SRP 35kT 1x4M P',
+            'base': 'results/approx-eval-2/psb/exact/_p4000000_b1_s128_t35000_w1_o4_N1_red1_mtw50_seed0_approx0_mpimpich3_lbreportonly,,,,_monitor100_tp0_precdouble_artdeloff_/08Sep20.15-51-11-83/monitor.h5',
+        },
+        'psb-rds': {
+            'in': {'w2': 'results/approx-eval-2/psb/rds-monitor/_p4000000_b1_s128_t35000_w2_o4_N1_red1_mtw50_seed0_approx2_mpimpich3_lbreportonly,,,,_monitor100_tp0_precdouble_artdeloff_/08Sep20.15-47-55-83/monitor.h5',
+                   'w4': 'results/approx-eval-2/psb/rds-monitor/_p4000000_b1_s128_t35000_w4_o4_N1_red1_mtw50_seed0_approx2_mpimpich3_lbreportonly,,,,_monitor100_tp0_precdouble_artdeloff_/08Sep20.15-49-11-19/monitor.h5',
+                   'w8': 'results/approx-eval-2/psb/rds-monitor/_p4000000_b1_s128_t35000_w8_o4_N2_red1_mtw50_seed0_approx2_mpimpich3_lbreportonly,,,,_monitor100_tp0_precdouble_artdeloff_/08Sep20.15-50-14-80/monitor.h5'
+                   },
+            'title': 'PSB RDS 35kT 1x4M P',
+            'base': 'results/approx-eval-2/psb/exact/_p4000000_b1_s128_t35000_w1_o4_N1_red1_mtw50_seed0_approx0_mpimpich3_lbreportonly,,,,_monitor100_tp0_precdouble_artdeloff_/08Sep20.15-51-11-83/monitor.h5',
+        },
+        'psb-40kt-seed': {
+            'in': {
+                'seed1-': 'results/approx-eval-2/psb/exact/_p4000000_b1_s128_t35000_w1_o4_N1_red1_mtw50_seed1_approx0_mpimpich3_lbreportonly,,,,_monitor100_tp0_precdouble_artdeloff_/08Sep20.15-53-05-68/monitor.h5',
+                'seed2-': 'results/approx-eval-2/psb/exact/_p4000000_b1_s128_t35000_w1_o4_N1_red1_mtw50_seed2_approx0_mpimpich3_lbreportonly,,,,_monitor100_tp0_precdouble_artdeloff_/08Sep20.15-55-00-51/monitor.h5',
+                # 'seed3-': 'results/precision-analysis/ps/precision-seed/_p1000000_b1_s256_t40000_w1_o14_N1_red1_mtw50_seed3_approx0_mpimpich3_lbreportonly_lba500_monitor100_tp0_precdouble_/29Apr20.13-33-05-20/monitor.h5',
+            },
+            'title': 'PSB 35kT seeds 1x4M P',
+
+            'base': 'results/approx-eval-2/psb/exact/_p4000000_b1_s128_t35000_w1_o4_N1_red1_mtw50_seed0_approx0_mpimpich3_lbreportonly,,,,_monitor100_tp0_precdouble_artdeloff_/08Sep20.15-51-11-83/monitor.h5',
+        },
         'ps-f32': {
             'in': {'f32': 'results/approx-eval-2/ps/float32/_p4000000_b1_s256_t40000_w1_o4_N1_red1_mtw50_seed0_approx0_mpimpich3_lbreportonly,,,,_monitor100_tp0_precsingle_artdeloff_/27Aug20.16-13-20-47/monitor.h5',
                    },
