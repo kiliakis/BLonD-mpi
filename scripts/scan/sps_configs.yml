@@ -627,7 +627,7 @@ slurm:
             'workers': [1, 2, 4, 8, 16],
             'omp': [10],
             'mpi': ['openmpi4'],
-            'time': [30],
+            'time': [60],
             'repeats': 2
         },
 
@@ -655,7 +655,7 @@ slurm:
             # 'workers': [16],
             'omp': [10],
             'mpi': ['openmpi4'],
-            'time': [30],
+            'time': [60],
             'repeats': 2
         },
 
