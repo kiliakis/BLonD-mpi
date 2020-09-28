@@ -116,7 +116,6 @@ ring = inputRing.Ring(C, momentum_compaction, (momProg[0], momProg[1]),
 n_turns = ring.n_turns
 print("N Turns: " + str(n_turns))
 
-n_particles = int(5E5)
 
 #%%
 

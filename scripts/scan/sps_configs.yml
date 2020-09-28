@@ -549,9 +549,62 @@ slurm:
         # - 'rds-timing'
         # - 'exact-timing'
         # - 'srp-timing'
-        - 'float32-timing'
+        # - 'float32-timing'
+        - 'f32-srp-timing'
+        - 'f32-rds-timing'
 
     configs: {
+
+        'f32-srp-timing': {
+            'exe': ['SPS_main.py'],
+            'particles': [1000000, 1000000, 2000000, 2000000, 4000000],
+            'bunches': [1, 2, 2, 4, 4],  # 192
+            'slices': [1408],
+            'turns': [10000],
+            'monitor': [0],
+            'seed': [0],
+            'mtw': [0],
+            'precision': ['single'],
+            'withtp': [0],
+            'reduce': [2, 2, 2, 2, 2, 3, 3, 3, 3, 3, 4, 4, 4, 4, 4],
+            'approx': [1],
+            'log': [1],
+            'loadbalance': ['reportonly,,,,'],
+            'artificialdelay': ['off'],
+            'timing': ['timing'],
+            'workers': [1, 2, 4, 8, 16],
+            'omp': [10],
+            'mpi': ['openmpi4'],
+            'time': [30],
+            'repeats': 2
+        },
+
+        'f32-rds-timing': {
+            'exe': ['SPS_main.py'],
+            'particles': [1000000, 1000000, 2000000, 2000000, 4000000],
+            'bunches': [1, 2, 2, 4, 4],  # 192
+            'slices': [1408],
+            'turns': [10000],
+            'monitor': [0],
+            'seed': [0],
+            'mtw': [0],
+            'precision': ['single'],
+            'withtp': [0],
+            'reduce': [1],
+            'approx': [2],
+            'log': [1],
+            'loadbalance': ['reportonly,,,,'],
+            'artificialdelay': ['off'],
+            # 'gpu': [0],
+            'timing': ['timing'],
+            'workers': [1, 2, 4, 8, 16],
+            'omp': [10],
+            'mpi': ['openmpi4'],
+            'time': [30],
+            'repeats': 2
+        },
+
+
 
         'srp-timing': {
             'exe': ['SPS_main.py'],
@@ -560,7 +613,7 @@ slurm:
             'bunches': [1, 2, 2, 4],  # 192
             # 'bunches': [4],  # 192
             'slices': [1408],
-            'turns': [40000],
+            'turns': [10000],
             'monitor': [0],
             'seed': [0],
             'mtw': [0],
@@ -577,7 +630,7 @@ slurm:
             # 'workers': [16],
             'omp': [10],
             'mpi': ['openmpi4'],
-            'time': [180],
+            'time': [30],
             'repeats': 2
         },
 
@@ -589,7 +642,7 @@ slurm:
             # 'particles': [4000000],
             # 'bunches': [4],  # 192
             'slices': [1408],
-            'turns': [40000],
+            'turns': [10000],
             'monitor': [0],
             'seed': [0],
             'mtw': [0],
@@ -606,7 +659,7 @@ slurm:
             # 'workers': [16],
             'omp': [10],
             'mpi': ['openmpi4'],
-            'time': [180],
+            'time': [30],
             'repeats': 2
         },
 
@@ -618,7 +671,7 @@ slurm:
             # 'particles': [4000000],
             'bunches': [4],  # 192
             'slices': [1408],
-            'turns': [40000],
+            'turns': [10000],
             'monitor': [0],
             'seed': [0],
             'mtw': [0],
@@ -635,7 +688,7 @@ slurm:
             'workers': [1, 2, 4, 8],
             'omp': [10],
             'mpi': ['openmpi4'],
-            'time': [180],
+            'time': [30],
             'repeats': 2
         },
 
@@ -647,7 +700,7 @@ slurm:
             'particles': [4000000],
             'bunches': [4],  # 192
             'slices': [1408],
-            'turns': [40000],
+            'turns': [10000],
             'monitor': [0],
             'seed': [0],
             'mtw': [0],
@@ -664,7 +717,7 @@ slurm:
             # 'workers': [1, 2, 4, 8],
             'omp': [10],
             'mpi': ['openmpi4'],
-            'time': [180],
+            'time': [30],
             'repeats': 2
         },
 
