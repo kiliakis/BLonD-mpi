@@ -93,7 +93,9 @@ local:
         # - 'srp-monitor'
         # - 'rds-monitor'
         # - 'exact'
-        - 'float32'
+        # - 'float32'
+        - 'f32-rds-monitor'
+        - 'f32-srp-monitor'
         # - 'precision-monitor'
         # - 'precision-seed'
         # - 'rds-timing'
@@ -125,6 +127,56 @@ local:
 
 
     configs: {
+
+        'f32-srp-monitor': {
+            'exe': ['LHC_main.py'],
+            'particles': [4000000],
+            'bunches': [1],  # 192
+            'slices': [1000],
+            'turns': [40000],
+            'monitor': [100],
+            'seed': [0],
+            'mtw': [0],
+            'precision': ['single'],
+            'withtp': [0],
+            'reduce': [2, 3, 4],
+            'approx': [1],
+            'log': [1],
+            'loadbalance': ['reportonly,,,,'],
+            'artificialdelay': ['off'],
+            'timing': ['timing'],
+            'workers': [1],
+            'omp': [4],
+            'mpi': ['mpich3'],
+            'time': [180],
+            'repeats': 1
+        },
+
+
+        'f32-rds-monitor': {
+            'exe': ['LHC_main.py'],
+            'particles': [4000000],
+            'bunches': [1],  # 192
+            'slices': [1000],
+            'turns': [40000],
+            'monitor': [100],
+            'seed': [0],
+            'mtw': [0],
+            'precision': ['single'],
+            'withtp': [0],
+            'reduce': [1],
+            'approx': [2],
+            'log': [1],
+            'loadbalance': ['reportonly,,,,'],
+            'artificialdelay': ['off'],
+            # 'gpu': [0],
+            'timing': ['timing'],
+            'workers': [2, 4, 8],
+            'omp': [4],
+            'mpi': ['mpich3'],
+            'time': [180],
+            'repeats': 1
+        },
 
         'srp-monitor': {
             'exe': ['LHC_main.py'],
