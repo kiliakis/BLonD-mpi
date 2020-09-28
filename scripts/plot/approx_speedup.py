@@ -46,8 +46,8 @@ gconfig = {
         '1': 'SRP',
         '2': 'RDS',
     },
-    'hatches': ['', '', 'xx', '', 'xx', '', 'xx'],
-    'colors': ['0.1', '0.45', '0.45', '0.7', '0.7', '0.95', '0.95'],
+    'hatches': ['', '', 'xx', '', 'xx', '', 'xx', '', 'xx'],
+    'colors': ['0.1', '0.3', '0.3', '0.5', '0.5', '0.7', '0.7', '0.95', '0.95'],
     'x_name': 'n',
     # 'x_to_keep': [16],
     'omp_name': 'omp',
@@ -73,7 +73,7 @@ gconfig = {
     'ticks': {'fontsize': 10, 'rotation': '0'},
     'fontsize': 10,
     'legend': {
-        'loc': 'upper right', 'ncol': 7, 'handlelength': 1.2, 'fancybox': True,
+        'loc': 'upper right', 'ncol': 9, 'handlelength': 1.2, 'fancybox': True,
         'framealpha': 0., 'fontsize': 9, 'labelspacing': 0, 'borderpad': 0.5,
         'handletextpad': 0.2, 'borderaxespad': 0.1, 'columnspacing': 0.4,
         'bbox_to_anchor': (1, 1.17)
@@ -103,12 +103,15 @@ gconfig = {
         '{}/{}/rds-timing/comm-comp-report.csv',
         '{}/{}/srp-timing/comm-comp-report.csv',
         '{}/{}/float32-timing/comm-comp-report.csv',
+        '{}/{}/f32-rds-timing/comm-comp-report.csv',
+        '{}/{}/f32-srp-timing/comm-comp-report.csv',
     ],
     'lines': {
         # 'mpi': ['mpich3', 'mvapich2', 'openmpi3'],
         # 'lb': ['reportonly'],
         'approx': ['0', '1', '2'],
-        'red': ['1', '2', '3', '4'],
+        # 'red': ['1', '2', '3', '4'],
+        'red': ['1', '2', '3'],
         'prec': ['single', 'double'],
         # 'ppb': ['4000000'],
         # 'lba': ['500'],
@@ -193,7 +196,8 @@ if __name__ == '__main__':
         keys =['_'.join(a.split('_')[1:4]) for a in list(plots_dir.keys())]
         print(keys)
         keys = np.array(list(plots_dir.keys()))[np.argsort(keys)]
-        for idx, k in enumerate(keys):
+        idx = 0
+        for k in keys:
             values = plots_dir[k]
             # mpiv = k.split('_mpi')[1].split('_')[0]
             # lb = k.split('lb')[1].split('_')[0]
@@ -211,14 +215,18 @@ if __name__ == '__main__':
             # elif tp == 'tp0':
             #     tp = ''
             approx = gconfig['approx'][approx]
+            label = ''
             if prec == 'single':
                 label = 'f32'
-            elif approx == '':
+            if approx == '':
                 label = 'base'
             elif approx == 'RDS':
-                label = 'RDS'
+                label += 'RDS'
             elif approx == 'SRP':
-                label = '{}-{}'.format(approx, red)
+                label += 'SRP-{}'.format(red)
+            if label == 'base':
+                continue
+
             # if label == '1':
             #     label = 'base'
             # if label[-1] == '-':
@@ -274,6 +282,7 @@ if __name__ == '__main__':
                     ax.annotate('{:.2f}'.format(speedup[i]),
                                 xy=(pos+idx*width+i, speedup[i]),
                                 rotation='90', **gconfig['annotate'])
+            idx += 1
         pos += step
 
     # vals = np.mean(avg, axis=0)
@@ -298,7 +307,7 @@ if __name__ == '__main__':
     # print(labels)
 
     plt.legend(handles=handles, labels=labels, **gconfig['legend'])
-    # plt.xlim(width/2, pos-width/2)
+    # plt.xlim(width, pos-width/2)
     plt.yticks(gconfig['yticks'], **gconfig['ticks'])
 
     plt.xticks(np.arange(len(xref)), np.array(xref, int), **gconfig['xticks'])
