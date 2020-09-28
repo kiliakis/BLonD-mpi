@@ -607,7 +607,7 @@ slurm:
         # - 'srp-timing'
 
         # - 'float32-timing'
-        - 'f32-srp-timing'
+        # - 'f32-srp-timing'
         - 'f32-rds-timing'
 
     configs: {
@@ -640,8 +640,10 @@ slurm:
 
         'f32-rds-timing': {
             'exe': ['PS_main.py'],
-            'particles': [1000000, 1000000, 2000000, 2000000, 4000000],
-            'bunches': [1, 2, 2, 4, 4],  # 192
+            # 'particles': [1000000, 1000000, 2000000, 2000000, 4000000],
+            'particles': [2000000],
+            # 'bunches': [1, 2, 2, 4, 4],  # 192
+            'bunches': [2],  # 192
             'slices': [256],
             'turns': [10000],
             'monitor': [0],
@@ -655,7 +657,8 @@ slurm:
             'loadbalance': ['reportonly,,,,'],
             'artificialdelay': ['off'],
             'timing': ['timing'],
-            'workers': [1, 2, 4, 8, 16],
+            # 'workers': [1, 2, 4, 8, 16],
+            'workers': [4],
             'omp': [10],
             'mpi': ['openmpi4'],
             'time': [30],
