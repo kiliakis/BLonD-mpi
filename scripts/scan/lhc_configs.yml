@@ -703,9 +703,9 @@ slurm:
         # - 'rds-timing'
         # - 'exact-timing'
 
-        # - 'float32-timing'
-        - 'f32-srp-timing'
-        - 'f32-rds-timing'
+        - 'float32-timing'
+        # - 'f32-srp-timing'
+        # - 'f32-rds-timing'
 
     configs: {
 
@@ -845,9 +845,9 @@ slurm:
         'float32-timing': {
             'exe': ['LHC_main.py'],
             # 'particles': [1000000, 1000000, 2000000, 2000000],
-            'particles': [4000000],
+            'particles': [1000000],
             # 'bunches': [1, 2, 2, 4],  # 192
-            'bunches': [4],  # 192
+            'bunches': [1],  # 192
             'slices': [1000],
             'turns': [10000],
             'monitor': [0],
@@ -862,7 +862,7 @@ slurm:
             'artificialdelay': ['off'],
             'timing': ['timing'],
             # 'workers': [1, 2, 4, 8],
-            'workers': [16],
+            'workers': [1],
             'omp': [10],
             'mpi': ['openmpi4'],
             'time': [180],

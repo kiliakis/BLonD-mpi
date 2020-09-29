@@ -602,12 +602,12 @@ slurm:
         # 'approx0-mvapich2-impl'
         # 'approx0-openmpi3-impl'
 
-        - 'rds-timing'
+        # - 'rds-timing'
         - 'exact-timing'
-        - 'srp-timing'
-        - 'float32-timing'
-        - 'f32-srp-timing'
-        - 'f32-rds-timing'
+        # - 'srp-timing'
+        # - 'float32-timing'
+        # - 'f32-srp-timing'
+        # - 'f32-rds-timing'
 
     configs: {
 
@@ -724,8 +724,9 @@ slurm:
 
         'exact-timing': {
             'exe': ['PSBUnstableExample.py'],
+            # 'particles': [1000000, 2000000, 4000000, 8000000, 16000000],
             'particles': [1000000, 2000000, 4000000, 8000000, 16000000],
-            'particles': [16000000],
+            # 'particles': [16000000],
             'bunches': [1],  # 192
 
             # 'bunches': [4],  # 192

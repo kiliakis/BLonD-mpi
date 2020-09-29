@@ -46,6 +46,15 @@ gconfig = {
         '1': 'SRP',
         '2': 'RDS',
     },
+    'label': {
+        'double': 'base',
+        'single': 'f32',
+        'singleSRP': 'f32-SRP',
+        'doubleSRP': 'SRP',
+        'singleRDS': 'f32-RDS',
+        'doubleRDS': 'RDS',
+    },
+
     'hatches': ['', '', 'xx', '', 'xx', '', 'xx', '', 'xx'],
     'colors': ['0.1', '0.3', '0.3', '0.5', '0.5', '0.7', '0.7', '0.95', '0.95'],
     'x_name': 'n',
@@ -74,7 +83,7 @@ gconfig = {
     'fontsize': 10,
     'legend': {
         'loc': 'upper right', 'ncol': 9, 'handlelength': 1.2, 'fancybox': True,
-        'framealpha': 0., 'fontsize': 9, 'labelspacing': 0, 'borderpad': 0.5,
+        'framealpha': 0., 'fontsize': 8.5, 'labelspacing': 0, 'borderpad': 0.5,
         'handletextpad': 0.2, 'borderaxespad': 0.1, 'columnspacing': 0.4,
         'bbox_to_anchor': (1, 1.17)
     },
@@ -86,7 +95,7 @@ gconfig = {
         'direction': 'out', 'length': 3, 'width': 1,
     },
     'fontname': 'DejaVu Sans Mono',
-    'ylim': [0.2, 1.15],
+    'ylim': [0., 1.15],
     # 'ylim2': [10, 90],
     'yticks': [0.2, 0.4, 0.6, 0.8, 1],
     # 'yticks2': [0, 20, 40, 60, 80, 100],
@@ -116,7 +125,7 @@ gconfig = {
         # 'ppb': ['4000000'],
         # 'lba': ['500'],
         # 'b': ['96', '48', '72', '21'],
-        # 't': ['5000'],
+        # 't': ['40000'],
         'type': ['total'],
     }
 
@@ -167,7 +176,8 @@ if __name__ == '__main__':
                     plots_dir['_{}_tp1'.format(key)] = temp[key].copy()
                 else:
                     plots_dir['_{}_tp0'.format(key)] = temp[key].copy()
-        width = .95*step / (len(plots_dir.keys()))
+        
+        width = step / (len(plots_dir.keys()))
 
         # First the reference value
         keyref = ''
@@ -215,15 +225,17 @@ if __name__ == '__main__':
             # elif tp == 'tp0':
             #     tp = ''
             approx = gconfig['approx'][approx]
-            label = ''
-            if prec == 'single':
-                label = 'f32'
-            if approx == '':
-                label = 'base'
-            elif approx == 'RDS':
-                label += 'RDS'
-            elif approx == 'SRP':
-                label += 'SRP-{}'.format(red)
+            label = gconfig['label'][prec+approx]
+            # if prec == 'single':
+            #     label = 'f32'
+            # if approx == '':
+            #     label = 'base'
+            # elif approx == 'RDS':
+            #     label += 'RDS'
+            # elif approx == 'SRP':
+            #     label += 'SRP-{}'.format(red)
+            if approx == 'SRP':
+                label += '-{}'.format(red)
             if label == 'base':
                 continue
 
@@ -307,7 +319,8 @@ if __name__ == '__main__':
     # print(labels)
 
     plt.legend(handles=handles, labels=labels, **gconfig['legend'])
-    # plt.xlim(width, pos-width/2)
+    _,xmax = plt.xlim()
+    plt.xlim(xmin=0-width, xmax=xmax-3*width/2)
     plt.yticks(gconfig['yticks'], **gconfig['ticks'])
 
     plt.xticks(np.arange(len(xref)), np.array(xref, int), **gconfig['xticks'])
