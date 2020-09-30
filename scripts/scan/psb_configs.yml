@@ -615,7 +615,7 @@ slurm:
         'f32-srp-timing': {
             'exe': ['PSBUnstableExample.py'],
             # 'particles': [1000000, 2000000, 4000000, 8000000, 16000000],
-            'particles': [32000000, 64000000],
+            'particles': [64000000],
             'bunches': [1],  # 192
             'slices': [128],
             'turns': [10000],
@@ -625,7 +625,8 @@ slurm:
             'precision': ['single'],
             'withtp': [0],
             # 'reduce': [2, 2, 2, 2, 2, 3, 3, 3, 3, 3, 4, 4, 4, 4, 4],
-            'reduce': [2, 2, 3, 3, 4, 4],
+            # 'reduce': [2, 2, 3, 3, 4, 4],
+            'reduce': [2, 3, 4],
             'approx': [1],
             'log': [1],
             'loadbalance': ['reportonly,,,,'],
@@ -633,7 +634,7 @@ slurm:
             'gpu': [0],
             'timing': ['timing'],
             # 'workers': [1, 2, 4, 8, 16],
-            'workers': [32, 64],
+            'workers': [64],
             'omp': [10],
             'mpi': ['openmpi4'],
             'time': [60],
@@ -643,7 +644,7 @@ slurm:
         'f32-rds-timing': {
             'exe': ['PSBUnstableExample.py'],
             # 'particles': [1000000, 2000000, 4000000, 8000000, 16000000],
-            'particles': [32000000, 64000000],
+            'particles': [64000000],
             'bunches': [1],  # 192
             'slices': [128],
             'turns': [10000],
@@ -660,7 +661,7 @@ slurm:
             # 'gpu': [0],
             'timing': ['timing'],
             # 'workers': [1, 2, 4, 8, 16],
-            'workers': [32, 64],
+            'workers': [64],
             'omp': [10],
             'mpi': ['openmpi4'],
             'time': [60],
@@ -671,7 +672,7 @@ slurm:
         'srp-timing': {
             'exe': ['PSBUnstableExample.py'],
             # 'particles': [1000000, 2000000, 4000000, 8000000, 16000000],
-            'particles': [32000000, 64000000],
+            'particles': [64000000],
             'bunches': [1],  # 192
             'slices': [128],
             'turns': [10000],
@@ -681,7 +682,7 @@ slurm:
             'precision': ['double'],
             'withtp': [0],
             # 'reduce': [2, 2, 2, 2, 2, 3, 3, 3, 3, 3, 4, 4, 4, 4, 4],
-            'reduce': [2, 2, 3, 3, 4, 4],
+            'reduce': [2, 3, 4],
             'approx': [1],
             'log': [1],
             'loadbalance': ['reportonly,,,,'],
@@ -689,7 +690,7 @@ slurm:
             'gpu': [0],
             'timing': ['timing'],
             # 'workers': [1, 2, 4, 8, 16],
-            'workers': [32, 64],
+            'workers': [64],
             'omp': [10],
             'mpi': ['openmpi4'],
             'time': [60],
@@ -700,7 +701,7 @@ slurm:
         'rds-timing': {
             'exe': ['PSBUnstableExample.py'],
             # 'particles': [1000000, 2000000, 4000000, 8000000, 16000000],
-            'particles': [32000000, 64000000],
+            'particles': [64000000],
             'bunches': [1],  # 192
 
             'slices': [128],
@@ -718,7 +719,7 @@ slurm:
             # 'gpu': [0],
             'timing': ['timing'],
             # 'workers': [1, 2, 4, 8, 16],
-            'workers': [32, 64],
+            'workers': [64],
             'omp': [10],
             'mpi': ['openmpi4'],
             'time': [60],
@@ -728,7 +729,7 @@ slurm:
         'exact-timing': {
             'exe': ['PSBUnstableExample.py'],
             # 'particles': [1000000, 2000000, 4000000, 8000000, 16000000],
-            'particles': [32000000, 64000000],
+            'particles': [64000000],
             'bunches': [1],  # 192
 
             'slices': [128],
@@ -746,7 +747,7 @@ slurm:
             # 'gpu': [0],
             'timing': ['timing'],
             # 'workers': [1, 2, 4, 8, 16],
-            'workers': [32, 64],
+            'workers': [64],
             'omp': [10],
             'mpi': ['openmpi4'],
             'time': [60],
@@ -757,7 +758,7 @@ slurm:
         'float32-timing': {
             'exe': ['PSBUnstableExample.py'],
             # 'particles': [1000000, 2000000, 4000000, 8000000, 16000000],
-            'particles': [32000000, 64000000],
+            'particles': [64000000],
             'bunches': [1],  # 192
             'slices': [128],
             'turns': [10000],
@@ -774,7 +775,7 @@ slurm:
             # 'gpu': [0],
             'timing': ['timing'],
             # 'workers': [1, 2, 4, 8, 16],
-            'workers': [32, 64],
+            'workers': [64],
             'omp': [10],
             'mpi': ['openmpi4'],
             'time': [60],

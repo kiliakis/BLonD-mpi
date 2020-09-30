@@ -612,8 +612,10 @@ slurm:
             # 'particles': [1000000, 1000000, 2000000, 2000000, 4000000],
             # 'bunches': [1, 2, 2, 4, 4],  # 192
 
-            'particles': [4000000, 8000000],
-            'bunches': [8, 8],  # 192
+            'particles': [4000000],
+            # 'particles': [4000000, 8000000],
+            # 'bunches': [8, 8],  # 192
+            'bunches': [8],  # 192
 
             'slices': [1408],
             'turns': [40000],
@@ -623,14 +625,14 @@ slurm:
             'precision': ['single'],
             'withtp': [0],
             # 'reduce': [2, 2, 2, 2, 2, 3, 3, 3, 3, 3, 4, 4, 4, 4, 4],
-            'reduce': [2, 2, 3, 3, 4, 4],
+            'reduce': [2, 3, 4],
             'approx': [1],
             'log': [1],
             'loadbalance': ['reportonly,,,,'],
             'artificialdelay': ['off'],
             'timing': ['timing'],
             # 'workers': [1, 2, 4, 8, 16],
-            'workers': [32, 64],
+            'workers': [32],
             'omp': [10],
             'mpi': ['openmpi4'],
             'time': [90],
@@ -642,8 +644,11 @@ slurm:
             # 'particles': [1000000, 1000000, 2000000, 2000000, 4000000],
             # 'bunches': [1, 2, 2, 4, 4],  # 192
 
-            'particles': [4000000, 8000000],
-            'bunches': [8, 8],  # 192
+            # 'particles': [4000000, 8000000],
+            # 'bunches': [8, 8],  # 192
+
+            'particles': [4000000],
+            'bunches': [8],  # 192
 
             'slices': [1408],
             'turns': [40000],
@@ -660,7 +665,8 @@ slurm:
             # 'gpu': [0],
             'timing': ['timing'],
             # 'workers': [1, 2, 4, 8, 16],
-            'workers': [32, 64],
+            # 'workers': [32, 64],
+            'workers': [32],
             'omp': [10],
             'mpi': ['openmpi4'],
             'time': [90],
@@ -674,8 +680,12 @@ slurm:
             # 'particles': [1000000, 1000000, 2000000, 2000000],
             # 'bunches': [1, 2, 2, 4],  # 192
 
-            'particles': [4000000, 8000000],
-            'bunches': [8, 8],  # 192
+            # 'particles': [4000000, 8000000],
+            # 'bunches': [8, 8],  # 192
+
+            'particles': [4000000],
+            'bunches': [8],  # 192
+
 
             'slices': [1408],
             'turns': [10000],
@@ -685,14 +695,16 @@ slurm:
             'precision': ['double'],
             'withtp': [0],
             # 'reduce': [2, 2, 2, 2, 3, 3, 3, 3, 4, 4, 4, 4],
-            'reduce': [2, 2, 3, 3, 4, 4],
+            # 'reduce': [2, 2, 3, 3, 4, 4],
+            'reduce': [2, 3, 4],
             'approx': [1],
             'log': [1],
             'loadbalance': ['reportonly,,,,'],
             'artificialdelay': ['off'],
             'timing': ['timing'],
             # 'workers': [1, 2, 4, 8],
-            'workers': [32, 64],
+            # 'workers': [32, 64],
+            'workers': [32],
             'omp': [10],
             'mpi': ['openmpi4'],
             'time': [90],
@@ -704,8 +716,11 @@ slurm:
             # 'particles': [1000000, 1000000, 2000000, 2000000],
             # 'bunches': [1, 2, 2, 4],  # 192
 
-            'particles': [4000000, 8000000],
-            'bunches': [8, 8],  # 192
+            # 'particles': [4000000, 8000000],
+            # 'bunches': [8, 8],  # 192
+
+            'particles': [4000000],
+            'bunches': [8],  # 192
 
             'slices': [1408],
             'turns': [10000],
@@ -722,7 +737,8 @@ slurm:
             # 'gpu': [0],
             'timing': ['timing'],
             # 'workers': [1, 2, 4, 8],
-            'workers': [32, 64],
+            # 'workers': [32, 64],
+            'workers': [32],
             'omp': [10],
             'mpi': ['openmpi4'],
             'time': [90],
@@ -734,8 +750,12 @@ slurm:
             # 'particles': [1000000, 1000000, 2000000, 2000000],
             # 'bunches': [1, 2, 2, 4],  # 192
 
-            'particles': [4000000, 8000000],
-            'bunches': [8, 8],  # 192
+            # 'particles': [4000000, 8000000],
+            # 'bunches': [8, 8],  # 192
+
+            'particles': [4000000],
+            'bunches': [8],  # 192
+
 
             'slices': [1408],
             'turns': [10000],
@@ -752,7 +772,7 @@ slurm:
             # 'gpu': [0],
             'timing': ['timing'],
             # 'workers': [1, 2, 4, 8],
-            'workers': [32, 64],
+            'workers': [32],
             'omp': [10],
             'mpi': ['openmpi4'],
             'time': [90],
@@ -765,8 +785,8 @@ slurm:
             # 'particles': [1000000, 1000000, 2000000, 2000000],
             # 'bunches': [1, 2, 2, 4],  # 192
 
-            'particles': [4000000, 8000000],
-            'bunches': [8, 8],  # 192
+            'particles': [4000000],
+            'bunches': [8],  # 192
 
             'slices': [1408],
             'turns': [10000],
@@ -782,7 +802,7 @@ slurm:
             'artificialdelay': ['off'],
             # 'gpu': [0],
             'timing': ['timing'],
-            'workers': [32, 64],
+            'workers': [32],
             # 'workers': [1, 2, 4, 8],
             'omp': [10],
             'mpi': ['openmpi4'],

@@ -94,8 +94,9 @@ parser.add_argument('-u', '--update', action='store_true',
 parser.add_argument('-d', '--delta', action='store_true',
                     help='Calculate the worker times deltas too.')
 
-parser.add_argument('-check', '--check-std', action='store_true',
-                    help='Check the STD of the extracted reports and flag configs with too high variation.')
+parser.add_argument('-check', '--check-std', type=int, default=1,
+                    help='Check the STD of the extracted reports and flag configs with too high variation.'
+                    'default: 1 (run the check)')
 
 parser.add_argument('-check-std-func', '--check-std-func', nargs='+', default=['total_time'],
                     help='Functions to check for their std. A list of strings.')
@@ -180,12 +181,17 @@ def write_avg(files, outfile, outfile_std, check_std=False):
                                         np.mean(data_dic[f], axis=0)), 2))
         )
 
-    if check_std and len(files) > 1:
-        for line in acc_data_std:
-            if line[0] in args.check_std_func and np.float(line[1]) > args.check_std_cutoff:
-                print('\n[{}] WARNING: STD is {}.\n'.format(
-                    os.path.dirname(os.path.commonprefix((files[0], files[1]))),
-                    np.float(line[1])), file=args.check_std_file)
+    if check_std:
+        if len(files) == 1:
+            print('\n[{}] WARNING: Only one input file!.\n'.format(
+                os.path.dirname(files[0])), file=args.check_std_file)
+        else:
+            for line in acc_data_std:
+                if line[0] in args.check_std_func and np.float(line[1]) > args.check_std_cutoff:
+                    print('\n[{}] WARNING: STD is {}.\n'.format(
+                        os.path.dirname(os.path.commonprefix(
+                            (files[0], files[1]))),
+                        np.float(line[1])), file=args.check_std_file)
 
     writer1 = csv.writer(outfile, delimiter='\t')
     writer1.writerows(acc_data)
@@ -210,7 +216,7 @@ def aggregate_reports(input):
         files = [os.path.join(dirs, s, average_worker_fname) for s in sdirs]
         write_avg(files, open(os.path.join(dirs, average_fname), 'w'),
                   open(os.path.join(dirs, average_std_fname), 'w'),
-                  check_std=args.check_std)
+                  check_std=args.check_std != 0)
 
         files = [os.path.join(dirs, s, average_std_worker_fname) for s in sdirs]
         write_avg(files, open(os.path.join(dirs, average_std_avg_fname), 'w'),
@@ -285,7 +291,7 @@ if __name__ == '__main__':
 
     indirs = glob.glob(args.indir)
 
-    if args.check_std:
+    if args.check_std != 0:
         if args.check_std_file is None:
             args.check_std_file = sys.stdout
         else:
