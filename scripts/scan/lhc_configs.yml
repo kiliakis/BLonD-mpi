@@ -149,6 +149,7 @@ local:
             'omp': [4],
             'mpi': ['mpich3'],
             'time': [180],
+            'gpu': [0],
             'repeats': 1
         },
 
@@ -175,6 +176,7 @@ local:
             'omp': [2],
             'mpi': ['mpich3'],
             'time': [180],
+            'gpu': [0],
             'repeats': 1
         },
 
@@ -199,6 +201,7 @@ local:
             'omp': [4],
             'mpi': ['mpich3'],
             'time': [180],
+            'gpu': [0],
             'repeats': 1
         },
 
@@ -225,6 +228,7 @@ local:
             'omp': [4],
             'mpi': ['mpich3'],
             'time': [180],
+            'gpu': [0],
             'repeats': 1
         },
 
@@ -251,6 +255,7 @@ local:
             'omp': [4],
             'mpi': ['mpich3'],
             'time': [180],
+            'gpu': [0],
             'repeats': 1
         },
 
@@ -275,6 +280,7 @@ local:
             'omp': [4],
             'mpi': ['mpich3'],
             'time': [180],
+            'gpu': [0],
             'repeats': 1
         },
 
