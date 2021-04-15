@@ -37,7 +37,7 @@ if __name__ == '__main__':
 
         result_dir = top_result_dir + '/{}/{}/{}/{}/{}'
 
-        job_name_form = '_p{}_b{}_s{}_t{}_w{}_o{}_N{}_red{}_mtw{}_seed{}_approx{}_mpi{}_lb{}_monitor{}_tp{}_prec{}_artdel{}_'
+        job_name_form = '_p{}_b{}_s{}_t{}_w{}_o{}_N{}_red{}_mtw{}_seed{}_approx{}_mpi{}_lb{}_monitor{}_tp{}_prec{}_artdel{}_gpu{}_'
 
         total_sims = 0
         for rc in yc['run_configs']:
@@ -79,26 +79,29 @@ if __name__ == '__main__':
             mpis = config['mpi']
             logs = config['log']
             lbs = config['loadbalance']
-            # lbas = config['loadbalancearg']
             repeats = config['repeats']
             tps = config['withtp']
             precs = config['precision']
             artdels = config['artificialdelay']
+            gpus = config['gpu']
 
-            for (p, b, s, t, r, w, o, time,
+            nodes = config.get('nodes', [0]*len(ps))
+
+            for (N, p, b, s, t, r, w, o, time,
                  mtw, m, seed, exe, approx,
                  timing, mpi, log, lb,
-                 tp, prec, reps, artdel) in zip(ps, bs, ss, ts, rs, ws,
+                 tp, prec, reps, artdel, gpu) in zip(nodes, ps, bs, ss, ts, rs, ws,
                                                 oss, times, mtws, ms, seeds,
                                                 exes, approxs, timings, mpis,
                                                 logs, lbs, tps, precs,
-                                                repeats, artdels):
+                                                repeats, artdels, gpus):
 
-                N = int(max(np.ceil(w * o / common.cores_per_cpu), 1))
+                if N == 0:
+                    N = int(max(np.ceil(w * o / common.cores_per_cpu), 1))
 
                 job_name = job_name_form.format(p, b, s, t, w, o, N,
                                                 r, mtw, seed, approx, mpi,
-                                                lb, m, tp, prec, artdel)
+                                                lb, m, tp, prec, artdel, gpu)
 
                 for i in range(reps):
                     timestr = datetime.now().strftime('%d%b%y.%H-%M-%S')
@@ -142,7 +145,8 @@ if __name__ == '__main__':
                         '--loadbalance='+lb,
                         '--withtp='+str(tp),
                         '--log='+str(log), '--logdir='+log_dir,
-                        '--artificialdelay='+str(artdel)]
+                        '--artificialdelay='+str(artdel),
+                        '--gpu='+str(gpu)]
 
                     if args.environment == 'local':
                         batch_args = [common.mpirun, '-n', str(w),

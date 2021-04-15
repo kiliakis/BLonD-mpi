@@ -125,14 +125,14 @@ gconfig = {
     'inputkeys': [
         # 'psb-100kt',
         # 'psb-100kt-seed',
-        'psb-500kt-seed',
-        'psb-500kt',
+        # 'psb-500kt-seed',
+        # 'psb-500kt',
         # 'ex01-1mt-acc',
         # 'ex01-1mt-acc-seed',
-        # 'lhc-40kt-seed', 
-        # 'lhc-40kt',
-        # 'sps-40kt-seed', 'ps-40kt-seed',
-        # 'sps-40kt', 'ps-40kt'
+        'lhc-40kt-seed', 
+        'lhc-40kt',
+        'sps-40kt-seed', 'ps-40kt-seed',
+        'sps-40kt', 'ps-40kt'
     ],
     'plots': {
         'ex01-2kt-acc': {
