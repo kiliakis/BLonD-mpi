@@ -314,6 +314,7 @@ mpiprint('dt std: ', np.std(beam.dt))
 # mpiprint('shift ', rf.phi_rf[0, turn]/rf.omega_rf[0, turn])
 
 mpiprint('profile mean: ', np.mean(profile.n_macroparticles))
+mpiprint('profile sum: ', np.sum(profile.n_macroparticles))
 mpiprint('profile std: ', np.std(profile.n_macroparticles))
 
 mpiprint('Done!')
